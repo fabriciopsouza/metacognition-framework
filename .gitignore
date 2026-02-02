@@ -1,0 +1,47 @@
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*~
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~.nib
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Personal notes (não versionar anotações pessoais)
+NOTES.md
+TODO_PERSONAL.md
+DRAFT_*.md
+
+# Dados sensíveis (NUNCA versionar)
+*.env
+.env.*
+secrets/
+private/
+credentials/
+
+# Backups
+*.bak
+*.backup
+*~
