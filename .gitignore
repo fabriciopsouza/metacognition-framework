@@ -1,0 +1,8 @@
+# Framework — não versionar
+.agent/brain/
+.env
+.env.*
+*.key
+*.pem
+**/credentials*.json
+outputs/

@@ -1,0 +1,48 @@
+# Framework Metacognitivo Agêntico — Genérico e Escalável
+
+> **Versão:** 1.3.0 · **Base:** pesquisas A0–A3 · **PT-BR** · **CC BY 4.0**
+> **Princípio:** o framework é agnóstico de domínio. SAP, Tableau, GCP, normas
+> setoriais, AIVI etc. são **aplicações/contextos** — não fazem parte do núcleo.
+
+## Camadas
+```
+ROTEADOR     AGENT-FRAMEWORK.md (v2.3)   decide o MODO (contexto × complexidade)
+NÚCLEO       _shared/                    regras transversais (fonte única)
+PROCESSO     .agent/skills/              papéis genéricos: pmo, architect, developer,
+                                         qa-critic, docops, explorer, _template
+CONTRATO     docs/specs/                 requirements.md + validation.md (gate binário)
+INFRA        _meta/                      isolamento de subagente, external-access, evals
+APLICAÇÕES   exemplos/                   COMO aplicar (BI, regulado…) — NÃO é o núcleo
+```
+
+## Tudo no núcleo é genérico
+Nenhum arquivo de `_shared/`, `.agent/` ou `docs/` cita um produto ou norma. O
+framework sabe **orquestrar, classificar, validar, isolar, rastrear** — para
+qualquer domínio.
+
+## Como aplicar a um contexto (escala por clonagem)
+1. `cp -r .agent/skills/_template <aplicacao>` e preencher só o domínio.
+2. Caso concreto → `cp -r docs/specs/_template docs/specs/<caso>`.
+3. Sistema externo? → padrão `_meta/external-access` (MCP).
+4. Eval-set (`_meta/eval-template`) — só entra em produção passando.
+A aplicação herda `_shared/` automaticamente; mudar regra transversal = editar **um** arquivo.
+
+## Matriz de ambiente
+| Recurso | Claude Code / SDK | Chat web |
+|---|---|---|
+| Ler `_shared/` via filesystem | sim | referência via contexto do Projeto |
+| Isolamento real de subagente (explorer) | sim | hats sequenciais simulados |
+| Hooks OTel / auditoria | sim | checklist manual |
+| Spec, roteamento por confiança, papéis | sim | sim |
+
+## Papéis emergentes (hats — sem skill nova; ver GUIA-EQUIPE)
+skill-librarian · evals-engineer · governance-lead.
+
+## Documentos (mapa)
+- **Comece aqui:** `guia/INSTALAR-NO-VSCODE.md` (instalar) e `guia/SETUP.md` (3 modos).
+- **Quem lê o quê:** `guia/ORIENTACAO.md` (humano × IA).
+- **Uso diário:** `guia/GUIA-EQUIPE.md` · **Revisar repo:** `guia/COMO-REVISAR-OUTRO-REPO.md`.
+- **Git/versão:** `guia/GIT-VERSIONAMENTO.md` · **Referências:** `guia/REFERENCIAS.md`.
+- **Versão web:** `guia/web/index.html` (abre no navegador).
+- **Prompt do chat web:** `guia/PROMPT-CHAT-WEB-v4.2.md` (colar nas Instruções do Claude.ai).
+- **Proveniência:** `CHANGELOG.md` (raiz). **Exemplos de aplicação:** `exemplos/`.
