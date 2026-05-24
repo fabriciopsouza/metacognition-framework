@@ -14,7 +14,8 @@ Ver .agent/rules/ (todas referenciam _shared/).
 
 ## Aplicações
 Domínios específicos (BI, regulado, etc.) NÃO ficam no núcleo — são criados clonando
-.agent/skills/_template. Exemplos em exemplos/.
+.agent/skills/_template e vivem FORA do núcleo (no seu repositório).
+Ver `exemplos/README.md` para o guia de criação.
 
 ## Roteador base
 https://raw.githubusercontent.com/fabriciopsouza/metacognition-framework/main/AGENT-FRAMEWORK.md

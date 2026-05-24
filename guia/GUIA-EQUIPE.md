@@ -30,12 +30,14 @@
 | número vai a decisão executiva ou é regulado | roteamento reflexivo (QA + revisão humana) |
 
 ## 5. Comandos
-`/start-session` (toda sessão) · `/feature-plan` · `/implement` · `/sap-change`
-`/bi-deliverable` · `/handoff <papel>` · `/checkpoint`
+`/start-session` (toda sessão) · `/feature-plan` · `/implement` · `/handoff <papel>` · `/checkpoint`
+> Comandos específicos de domínio (ex.: `/sap-change`, `/bi-deliverable`) são adicionados
+> pela sua aplicação — não vivem no núcleo. Crie em `<sua-aplicacao>/workflows/`.
 
 ## 6. Onde mudar uma regra
-Regra transversal → edite **um** arquivo em `_shared/` (propaga p/ todas as roles).
-Domínio Tableau/Python/Pharma → a `roles/` correspondente.
+Regra transversal → edite **um** arquivo em `_shared/` (propaga p/ todas as aplicações).
+Domínio específico (BI, regulado, contexto X) → a aplicação correspondente (criada
+clonando `.agent/skills/_template`); vive FORA do núcleo. Ver `exemplos/README.md`.
 Nunca duplique — se a regra existe em `_shared/`, referencie.
 
 ## 7. Sinais de que algo saiu do trilho

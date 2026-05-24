@@ -18,11 +18,16 @@
 | ... | | | | |
 | N | <frase que NÃO deve ativar> | NO-TRIGGER | | ☐ |
 
-## Exemplo concreto — `python-fuel-forecaster`
-**Should-trigger:** "prever volume de diesel por base no 2º semestre"; "validar
-schema do CSV de vendas com Pandera"; "qual método de forecast para etanol na safra".
-**Should-NOT (deve apontar outra role):** "criar um LOD no Tableau" (→ tableau);
-"promover transport SAP para PRD" (→ pharma); "qual a capital da França" (→ resposta direta).
+## Exemplo concreto (genérico — adapte ao seu domínio)
+Suponha uma aplicação `<minha-aplicacao>` criada via `cp -r .agent/skills/_template`.
+**Should-trigger:** frases típicas do domínio em que ela DEVE agir (3+ exemplos com
+verbos e entidades que aparecem no fluxo real do usuário).
+**Should-NOT:** frases que pertencem a OUTRA aplicação ou a um papel de processo
+(devem apontar para a aplicação/papel correto, não disparar esta), + frases casuais
+que devem ser respondidas direto sem skill alguma.
+
+> Cada aplicação mantém seu próprio eval-set junto do seu SKILL.md, não aqui.
+> Este arquivo é apenas o **template** do formato.
 
 ## Meta de cobertura
 Cada role/skill nova **só entra em produção** com seu eval-set escrito e passando.

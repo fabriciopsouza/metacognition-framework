@@ -11,7 +11,7 @@
 - Subagentes (isolamento real): `.claude/agents/` — explorer, qa-critic.
 - Regras sempre ativas: `.agent/rules/`.
 - Workflows: `.agent/workflows/`.
-- Aplicações de domínio (exemplos): `exemplos/` — NÃO é núcleo.
+- Aplicações de domínio: vivem FORA do núcleo (clonar `.agent/skills/_template`); ver `exemplos/README.md`.
 
 ## Primeira ação obrigatória em toda sessão
 /start-session   (abre a sessão pelo PMO; lê rules + briefing + history)

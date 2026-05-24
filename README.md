@@ -1,6 +1,6 @@
 # Framework Metacognitivo Agêntico — Genérico e Escalável
 
-> **Versão:** 1.3.0 · **Base:** pesquisas A0–A3 · **PT-BR** · **CC BY 4.0**
+> **Versão:** 1.4.0 · **Base:** pesquisas A0–A3 · **PT-BR** · **CC BY 4.0**
 > **Princípio:** o framework é agnóstico de domínio. SAP, Tableau, GCP, normas
 > setoriais, AIVI etc. são **aplicações/contextos** — não fazem parte do núcleo.
 
@@ -12,7 +12,7 @@ PROCESSO     .agent/skills/              papéis genéricos: pmo, architect, dev
                                          qa-critic, docops, explorer, _template
 CONTRATO     docs/specs/                 requirements.md + validation.md (gate binário)
 INFRA        _meta/                      isolamento de subagente, external-access, evals
-APLICAÇÕES   exemplos/                   COMO aplicar (BI, regulado…) — NÃO é o núcleo
+APLICAÇÕES   exemplos/README.md          COMO criar aplicações (clonando _template) — vivem FORA do núcleo
 ```
 
 ## Tudo no núcleo é genérico
@@ -44,5 +44,9 @@ skill-librarian · evals-engineer · governance-lead.
 - **Uso diário:** `guia/GUIA-EQUIPE.md` · **Revisar repo:** `guia/COMO-REVISAR-OUTRO-REPO.md`.
 - **Git/versão:** `guia/GIT-VERSIONAMENTO.md` · **Referências:** `guia/REFERENCIAS.md`.
 - **Versão web:** `guia/web/index.html` (abre no navegador).
-- **Prompt do chat web:** `guia/PROMPT-CHAT-WEB-v4.2.md` (colar nas Instruções do Claude.ai).
-- **Proveniência:** `CHANGELOG.md` (raiz). **Exemplos de aplicação:** `exemplos/`.
+- **Prompt do chat web:** `PROMPT-CHAT-WEB-v4.2.md` (raiz) — encarnação do framework para
+  ambientes sem filesystem (Claude.ai, Gemini). Mesmos princípios, mesmos resultados,
+  papéis e subagentes simulados. Par dos outros load-bearing da raiz (`CLAUDE.md`,
+  `AGENTS.md`, `AGENT-FRAMEWORK.md`).
+- **Proveniência:** `CHANGELOG.md` (raiz). **Aplicações de domínio:** vivem FORA do núcleo —
+  criadas clonando `.agent/skills/_template`. Ver `exemplos/README.md`.

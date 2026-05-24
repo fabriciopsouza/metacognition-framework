@@ -10,4 +10,4 @@ com motivo específico. 4. Prosseguir conforme sua skill.
 
 ## Papéis válidos
 pmo | architect | developer | qa-critic | docops | explorer
-(+ aplicações de domínio em exemplos/)
+(+ qualquer aplicação de domínio que sua equipe tenha criado clonando `_template`)
