@@ -172,8 +172,9 @@ Este prompt é uma APLICAÇÃO do framework para o chat. Ao revisar uma regra:
 - **Regra transversal** (anti-alucinação, anti-loop, validação, formato): a verdade é o
   `_shared/` do framework (zip). Atualizar lá PRIMEIRO; refletir aqui o resumo.
 - **Regra de domínio** (Tableau/Python/KPI/regulado): ao mudar AQUI (resumo), atualizar
-  TAMBÉM (a) o detalhe no Project Knowledge e (b) a aplicação correspondente em
-  `exemplos/` do framework. Não deixar os três divergirem.
+  TAMBÉM (a) o detalhe no Project Knowledge e (b) a aplicação correspondente que você
+  mantém (criada clonando `.agent/skills/_template`; aplicações vivem FORA do núcleo
+  do framework). Não deixar os três divergirem.
 - Toda revisão sobe a versão deste prompt (v4.2 → v4.3 …) e registra no CHANGELOG do framework.
 
 ---
