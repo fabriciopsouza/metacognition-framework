@@ -13,7 +13,7 @@
 | `guia/GIT-VERSIONAMENTO.md` | como versionar com git |
 | `guia/REFERENCIAS.md` | bibliografia e pesquisas-base |
 | `guia/web/index.html` | versão web (abre no navegador) |
-| `guia/PROMPT-CHAT-WEB-v4.2.md` | instruções p/ colar no Claude.ai chat |
+| `PROMPT-CHAT-WEB-v4.2.md` (raiz) | instruções p/ colar no Claude.ai chat — encarnação do framework para ambientes sem filesystem (mesmos princípios, mesmos resultados, papéis/subagentes simulados) |
 | `CHANGELOG.md` (raiz) | o que mudou, versão a versão |
 
 ## Para a IA (Claude Code e afins) — você normalmente NÃO edita à mão
@@ -29,7 +29,7 @@
 | `.claude/agents/` | subagentes isolados (explorer, qa-critic) |
 | `.claude/skills/` | espelho opcional p/ auto-trigger |
 | `_meta/` | isolamento de subagente, external-access, evals |
-| `exemplos/` | aplicações de domínio (NÃO é núcleo) |
+| `exemplos/README.md` | guia de como criar aplicações de domínio (aplicações vivem FORA do núcleo) |
 
 ## Os dois únicos arquivos que VOCÊ preenche por projeto
 - `docs/briefing.md` — objetivo, escopo, critério de aceite.

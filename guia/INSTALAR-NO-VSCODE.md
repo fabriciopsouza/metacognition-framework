@@ -5,20 +5,22 @@
 
 ## ANTES DE COMEÇAR — qual pasta e qual zip
 
-- **O zip certo:** `framework-metacognitivo-v1.0.0.zip` — o que tem **56 arquivos**.
-  Confirmação: ao abrir, tem `SETUP.md`, `CLAUDE.md` e a pasta `.claude/` na raiz.
-  Ignore/apague qualquer outro zip ou .md solto baixado antes.
+- **O zip certo:** `framework-metacognitivo-v1.4.0.zip` — o que tem **54 arquivos**.
+  Confirmação: ao abrir, tem `CLAUDE.md`, `AGENTS.md`, `AGENT-FRAMEWORK.md`,
+  `PROMPT-CHAT-WEB-v4.2.md` e as pastas `.claude/` e `guia/` (esta contém o `SETUP.md`)
+  na raiz. Ignore/apague qualquer outro zip ou .md solto baixado antes.
 - **A pasta:** vamos chamá-la de PASTA-FRAMEWORK. Sugestão de caminho limpo:
-  `F:\Frameworks\metacognitivo-v1.0.0\`  (ou a que você já tem em Downloads).
+  `F:\Frameworks\metacognitivo-v1.4.0\`  (ou a que você já tem em Downloads).
 
 ---
 
 ## PASSO 1 — Preparar a PASTA-FRAMEWORK (só o que temos aqui)
 
-1. Crie uma pasta nova e vazia (ex.: `F:\Frameworks\metacognitivo-v1.0.0`).
-2. Extraia o `framework-metacognitivo-v1.0.0.zip` (56 arquivos) DENTRO dela.
-3. Confira que a raiz tem: `CLAUDE.md`, `SETUP.md`, `README.md`, `AGENTS.md`,
-   e as pastas `_shared/`, `.agent/`, `.claude/`, `docs/`, `_meta/`, `exemplos/`.
+1. Crie uma pasta nova e vazia (ex.: `F:\Frameworks\metacognitivo-v1.4.0`).
+2. Extraia o `framework-metacognitivo-v1.4.0.zip` (54 arquivos) DENTRO dela.
+3. Confira que a raiz tem: `CLAUDE.md`, `AGENTS.md`, `AGENT-FRAMEWORK.md`, `README.md`,
+   `PROMPT-CHAT-WEB-v4.2.md`, e as pastas `_shared/`, `.agent/`, `.claude/`, `docs/`,
+   `_meta/`, `exemplos/`, `guia/` (o `SETUP.md` vive em `guia/SETUP.md`).
 
 Pronto — esta pasta contém SOMENTE o nosso framework. Nada antigo entrou.
 
@@ -91,10 +93,10 @@ Sem este passo o framework funciona igual — só não auto-dispara as skills.
 ---
 
 ## CHECKLIST FINAL
-- [ ] PASTA-FRAMEWORK tem os 56 arquivos (CLAUDE.md + SETUP.md + .claude/ presentes)
+- [ ] PASTA-FRAMEWORK tem os 54 arquivos (CLAUDE.md + guia/SETUP.md + .claude/ presentes)
 - [ ] Configs antigas renomeadas para *_BACKUP (ou pasta antiga não aberta)
 - [ ] VS Code abriu a PASTA-FRAMEWORK
 - [ ] `/start-session` respondeu
 - [ ] (se for revisar) repo-alvo adicionado via Add Folder to Workspace
 
-Dúvida de qual arquivo abrir? Sempre o `SETUP.md`. Dúvida de qual zip? Sempre o de 56 arquivos.
+Dúvida de qual arquivo abrir? Sempre o `guia/SETUP.md`. Dúvida de qual zip? Sempre o de 54 arquivos.

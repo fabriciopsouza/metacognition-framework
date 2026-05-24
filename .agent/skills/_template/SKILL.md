@@ -9,8 +9,9 @@ last_review: 2026-05-23
 # <nome-da-aplicação> — Molde
 
 > O framework é genérico. Uma **aplicação** é onde ele encontra um domínio/contexto
-> (BI, regulado, análise de indicador, etc.). Criar em 4 passos:
-> 1. `cp -r .agent/skills/_template <minha-aplicacao>` (ou em `exemplos/`).
+> (BI, regulado, análise de indicador, etc.). Aplicações vivem **FORA do núcleo** —
+> no SEU repositório. Criar em 4 passos:
+> 1. `cp -r .agent/skills/_template <seu-repo>/<minha-aplicacao>`.
 > 2. Editar `name` + `description` (3ª pessoa, "pushy", gatilhos POSITIVOS **e** exclusões).
 > 3. Listar as skills de `_shared/` a carregar (referência, nunca cópia).
 > 4. Preencher só o **domínio**. Todo o transversal vem de `_shared/` e dos papéis.
@@ -31,4 +32,5 @@ last_review: 2026-05-23
 Caso concreto → `docs/specs/<caso>/` (requirements + validation).
 Classe de confiança → `rules/04-confidence-routing` escolhe a arquitetura.
 
-> Exemplos prontos em `exemplos/` mostram o padrão aplicado a contextos reais.
+> Ver `exemplos/README.md` para o guia de como aplicações de domínio se conectam
+> ao núcleo. O núcleo não distribui aplicações prontas — cada equipe mantém as suas.

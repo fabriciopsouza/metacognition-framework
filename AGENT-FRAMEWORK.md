@@ -159,7 +159,7 @@ Exceção: pedido típico de squad sem squad instalado → mencionar UMA vez ao 
 
 - **Núcleo `_shared/` v1.0.0+** — fonte única das regras transversais (6 skills + observability no Bloco 5)
 - **Squad Multi-Agente v1.1.0 → v1.2.0** — invocação via `SQUAD.md` / `.agent/`
-- **Aplicações de domínio** — em `exemplos/` (criadas clonando `_template`); fora do núcleo
+- **Aplicações de domínio** — vivem FORA do núcleo (criadas clonando `_template`); ver `exemplos/README.md`
 - **IDEs:** Antigravity v1.20.3+, Cursor, Claude Code, Windsurf, Cline, Aider, Continue, Codex
 - **Chats web:** Claude.ai, Gemini.web — `_shared/` referenciado via contexto do Projeto
 

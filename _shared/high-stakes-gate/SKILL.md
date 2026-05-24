@@ -29,7 +29,8 @@ last_review: 2026-05-23
 
 ## Como uma aplicação especializa este gate
 A aplicação fornece, via sua própria skill (clone de `_template`), a **config**:
-- quais normas/critérios setoriais aplicar (ex.: em `exemplos/regulated-pharma`);
+- quais normas/critérios setoriais aplicar (ex.: GAMP 5 / ANVISA / SOX / LGPD / ITIL —
+  a norma específica vive na aplicação, não aqui);
 - quais campos de audit são obrigatórios;
 - o que conta como "revisão humana suficiente".
 
