@@ -3,6 +3,18 @@
 Formato: Keep a Changelog + SemVer. Cada mudança vincula-se à pesquisa que a sustenta.
 Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
+## Política
+
+- **SemVer + Conventional Commits**: feature nova compatível → MINOR; correção sem
+  feature → PATCH; quebra → MAJOR. Tag, número no `README.md` e nome do .zip sobem
+  juntos a cada release. Detalhe em `guia/GIT-VERSIONAMENTO.md`.
+- **Núcleo × aplicação**: o framework é genérico. Domínio (BI, regulado, contexto X)
+  vive FORA do núcleo, criado clonando `.agent/skills/_template`. Ver `exemplos/README.md`.
+- **Sincronia PROMPT-CHAT-WEB**: o `PROMPT-CHAT-WEB-v4.x.md` na raiz é a encarnação do
+  framework para ambientes sem filesystem (Claude.ai, Gemini). Parte dos mesmos
+  princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
+  necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
+
 ## [1.0.0] — 2026-05-23 — Consolidação dos Blocos 1–5
 
 ### Bloco 1 — Núcleo `_shared/` (fonte única)
@@ -127,3 +139,71 @@ Núcleo agnóstico de domínio; específico nasce por clonagem. Sem roles especu
 ### Nota de design
 - v4.2 é uma APLICAÇÃO do framework para o ambiente de chat (sem filesystem; papéis
   simulados). O núcleo genérico no zip permanece a fonte única; o prompt o encarna inline.
+
+## [1.4.0] — 2026-05-24 — Repo 100% genérico + drift fix + PROMPT-CHAT-WEB consolidado
+
+> Distribuição do framework deixa de carregar aplicações específicas. Aplicações
+> de domínio vivem **FORA do núcleo** a partir desta versão (criadas clonando
+> `.agent/skills/_template` no repositório de cada equipe). Fonte: A2 (núcleo
+> agnóstico de domínio; antipadrão "skill sprawl" evitado). [CONSOLIDADO] / [CONFIRMADO].
+
+### Removed (BLOCO A — repo genérico)
+- `exemplos/aivi-indicator-analyst/`, `exemplos/python-fuel-forecaster/`,
+  `exemplos/regulated-pharma/`, `exemplos/tableau-senior-analyst/` — aplicações
+  de domínio específicas que não pertencem ao núcleo distribuído.
+- `exemplos/workflows/{bi-deliverable.md, sap-change.md}` — workflows de domínio
+  (BI/SAP), também aplicação-específicos.
+- `docs/specs/aivi-recalculo-limites/` — spec específica que estava bloqueada por
+  domínio (pendência registrada na entrada [1.0.0] "Pendências conhecidas"). Sai
+  junto com a aplicação correspondente.
+- `guia/PROMPT-CHAT-WEB-v4.2.md` — duplicata. A cópia canônica é a da RAIZ.
+
+### Added (BLOCO A — guia de criação substitui exemplos prontos)
+- `exemplos/README.md` reescrito como **guia de como criar aplicações** (clonando
+  `_template` no SEU repositório). Deixa de listar aplicações pré-prontas.
+
+### Added (BLOCO D — sincronia formal do PROMPT-CHAT-WEB)
+- `guia/GIT-VERSIONAMENTO.md` checklist de release ganha item: revisar e, se
+  necessário, bumpar `PROMPT-CHAT-WEB-v4.x.md` da raiz a cada release. Liga o
+  ciclo de vida do prompt web ao do núcleo.
+- `CHANGELOG.md` ganha seção `## Política` no topo (SemVer + núcleo×aplicação +
+  sincronia PROMPT-CHAT-WEB). Consolida políticas vivas dispersas. [CONFIRMADO].
+
+### Changed (BLOCO B — PROMPT-CHAT-WEB consolidado na RAIZ)
+- A cópia canônica do prompt é `PROMPT-CHAT-WEB-v4.2.md` na RAIZ (par de
+  `CLAUDE.md`/`AGENTS.md`/`AGENT-FRAMEWORK.md` — load-bearing).
+- `README.md` e `guia/ORIENTACAO.md` atualizados: descrevem o arquivo como
+  "encarnação do framework para ambientes sem filesystem (Claude.ai, Gemini) —
+  mesmos princípios, mesmos resultados, papéis/subagentes simulados".
+
+### Fixed (BLOCO C — drift detectado pela auditoria do `explorer` em 2026-05-24)
+- `guia/INSTALAR-NO-VSCODE.md`: contagem 56→54 arquivos; lista de raiz corrigida
+  (`SETUP.md` vive em `guia/`, não na raiz desde v1.2.0); referência ao zip
+  `v1.0.0` → `v1.4.0`. Causa-raiz: o guia não acompanhou a reorganização da v1.2.0.
+- `guia/GUIA-EQUIPE.md`: linha 38 referência órfã `roles/` → atualizada para
+  "aplicação criada clonando `_template`, fora do núcleo". Linha 33 (comandos):
+  removidos `/sap-change` e `/bi-deliverable` (eram aplicação-específicos);
+  adicionada nota de que comandos de domínio vivem na aplicação.
+- `guia/GIT-VERSIONAMENTO.md`: exemplos atualizados de v1.2.0 → v1.4.0.
+- `guia/web/index.html`: versão visível e camada APLICAÇÕES atualizadas.
+- Back-references órfãs varridas e corrigidas em: `AGENTS.md`, `CLAUDE.md`,
+  `AGENT-FRAMEWORK.md`, `_meta/eval-template.md`, `.agent/workflows/handoff.md`,
+  `.agent/skills/_template/SKILL.md`, `_shared/high-stakes-gate/SKILL.md`,
+  `PROMPT-CHAT-WEB-v4.2.md` (§10).
+
+### Changed (system version)
+- Versão do sistema: 1.3.0 → 1.4.0 (feature/refactor compatível = MINOR).
+
+### Não tocado nesta entrega (registro deliberado — BLOCO E adiado)
+- Renome `_template-application` (no frontmatter) ↔ pasta `_template/`:
+  inconsistência menor detectada pelo `explorer`. **Exige ADR pela regra
+  anti-rename** (`.agent/rules/01-anti-rename.md` → `_shared/traceability`).
+  Fica para entrega separada, com ADR próprio.
+
+### Pipeline auditável desta entrega
+- PMO orquestra → `explorer` (subagente read-only) auditou o repo → developer
+  executou A–D na branch `chore/repo-generico-drift-e-prompt-web` → `qa-critic`
+  (subagente adversarial) validou contra critérios binários C1–C6 (todos
+  V; recomendação `aprovar_com_ressalvas` — ressalva 1 incorporada neste
+  commit: bump do `index.html` para v1.4.0) → docops (esta entrada).
+- Merge **bloqueado**: gate humano. Branch espera revisão antes de cair em `main`.

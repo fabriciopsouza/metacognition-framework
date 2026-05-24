@@ -8,7 +8,7 @@
 cd <pasta-do-framework>
 git init
 git add .
-git commit -m "chore: framework metacognitivo v1.2.0 (base)"
+git commit -m "chore: framework metacognitivo v1.4.0 (base)"
 ```
 O `.gitignore` já ignora segredos, `.env`, credenciais e `.agent/brain/`.
 
@@ -38,7 +38,7 @@ Fluxo: branch → commits → PR/merge em main → tag de release.
 
 ## Marcar um release (tag)
 ```bash
-git tag -a v1.2.0 -m "Camada Claude Code + referências + web"
+git tag -a v1.4.0 -m "Repo 100% genérico + drift fix + consolida PROMPT-CHAT-WEB na raiz"
 git push origin main --tags
 ```
 A tag deve casar com a versão do `README.md` e a entrada do `CHANGELOG.md`.
@@ -49,6 +49,9 @@ A tag deve casar com a versão do `README.md` e a entrada do `CHANGELOG.md`.
 - [ ] Commit `feat:`/`fix:` conforme o tipo
 - [ ] Tag `vX.Y.Z` criada e empurrada
 - [ ] Nome do .zip (se distribuir) = vX.Y.Z
+- [ ] Revisar e, se necessário, atualizar `PROMPT-CHAT-WEB-v4.x.md` na raiz — ele
+      parte dos mesmos princípios e busca os mesmos resultados do núcleo. Bump
+      da versão do prompt (v4.2→v4.3…) quando mudar.
 
 ## Nunca comitar
 Segredos, `.env`, credenciais, `.agent/brain/` (já no `.gitignore`).
