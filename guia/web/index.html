@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Framework Metacognitivo Agêntico — v1.2.0</title>
+<style>
+  :root{
+    --ink:#0d1117; --panel:#11161f; --line:#1f2730; --grid:#161c26;
+    --fg:#d9e0e8; --muted:#8a97a6; --accent:#e8a13a; --accent2:#4fd1c5;
+    --mono:ui-monospace,'SF Mono','JetBrains Mono','Cascadia Code',Menlo,monospace;
+    --serif:Georgia,'Times New Roman',serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--ink); color:var(--fg); font-family:var(--mono);
+    line-height:1.6; font-size:15px;
+    background-image:
+      linear-gradient(var(--grid) 1px,transparent 1px),
+      linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:42px 42px;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:0 24px}
+  header{padding:90px 0 50px;border-bottom:1px solid var(--line);position:relative}
+  .tag{font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:var(--accent2);
+    opacity:0;animation:rise .7s .05s forwards}
+  h1{font-family:var(--serif);font-weight:400;font-size:clamp(34px,6vw,64px);
+    line-height:1.05;margin:18px 0;letter-spacing:-.01em;
+    opacity:0;animation:rise .7s .15s forwards}
+  h1 em{font-style:italic;color:var(--accent)}
+  .lede{color:var(--muted);max-width:620px;font-size:16px;
+    opacity:0;animation:rise .7s .3s forwards}
+  .ver{position:absolute;top:90px;right:24px;font-size:12px;color:var(--muted);
+    border:1px solid var(--line);padding:6px 12px;border-radius:2px}
+  .ver b{color:var(--accent)}
+  section{padding:54px 0;border-bottom:1px solid var(--line)}
+  h2{font-family:var(--serif);font-weight:400;font-size:26px;margin-bottom:8px}
+  h2 .n{font-family:var(--mono);font-size:13px;color:var(--accent2);margin-right:12px}
+  .sub{color:var(--muted);margin-bottom:26px;font-size:14px}
+  .layers{display:grid;gap:10px}
+  .layer{border:1px solid var(--line);background:var(--panel);padding:16px 18px;
+    border-left:3px solid var(--accent);display:grid;grid-template-columns:150px 1fr;gap:18px;
+    transition:.2s}
+  .layer:hover{border-left-color:var(--accent2);transform:translateX(4px)}
+  .layer .k{color:var(--accent);font-size:13px;letter-spacing:.05em}
+  .layer .v{color:var(--fg);font-size:14px}
+  .layer .v small{color:var(--muted);display:block;margin-top:3px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+  .card{border:1px solid var(--line);background:var(--panel);padding:20px}
+  .card h3{font-size:14px;color:var(--accent2);margin-bottom:8px;letter-spacing:.03em}
+  .card p{color:var(--muted);font-size:13px}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px}
+  .node{border:1px solid var(--line);padding:8px 14px;background:var(--panel);border-radius:2px}
+  .node.hi{border-color:var(--accent);color:var(--accent)}
+  .arrow{color:var(--muted)}
+  ul.clean{list-style:none}
+  ul.clean li{padding:8px 0;border-bottom:1px dashed var(--line);font-size:14px}
+  ul.clean li::before{content:"→ ";color:var(--accent2)}
+  ul.clean b{color:var(--fg)}
+  a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent;transition:.2s}
+  a:hover{border-bottom-color:var(--accent)}
+  .pill{display:inline-block;font-size:11px;border:1px solid var(--line);padding:2px 8px;
+    border-radius:99px;color:var(--muted);margin-left:6px}
+  footer{padding:46px 0 80px;color:var(--muted);font-size:13px}
+  footer code{color:var(--accent2);background:var(--panel);padding:2px 7px;border:1px solid var(--line)}
+  @keyframes rise{to{opacity:1;transform:translateY(0)}}
+  .tag,h1,.lede{transform:translateY(14px)}
+  @media(max-width:600px){.layer{grid-template-columns:1fr;gap:6px}.ver{position:static;display:inline-block;margin-top:16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="ver">v<b>1.2.0</b></div>
+    <div class="tag">Framework Metacognitivo</div>
+    <h1>Um núcleo <em>genérico</em><br>para orquestrar agentes.</h1>
+    <p class="lede">Roteador por contexto e complexidade, papéis de processo, regras transversais em fonte única, e isolamento de subagente — agnóstico de domínio, escalável por clonagem. Fundamentado em evidência (pesquisas A0–A3).</p>
+  </header>
+
+  <section id="camadas">
+    <h2><span class="n">01</span>Arquitetura em camadas</h2>
+    <p class="sub">Cada regra mora em um lugar só. O domínio nunca entra no núcleo.</p>
+    <div class="layers">
+      <div class="layer"><div class="k">ROTEADOR</div><div class="v">AGENT-FRAMEWORK.md (v2.3)<small>decide o modo: metacognição pontual × squad multi-etapa</small></div></div>
+      <div class="layer"><div class="k">NÚCLEO _shared/</div><div class="v">7 regras transversais (fonte única / SSoT)<small>anti-alucinação · confiança · formato · rastreabilidade · metacognição · observabilidade · high-stakes-gate</small></div></div>
+      <div class="layer"><div class="k">PROCESSO</div><div class="v">papéis genéricos<small>pmo · architect · developer · qa-critic · docops · explorer · _template</small></div></div>
+      <div class="layer"><div class="k">CONTRATO</div><div class="v">docs/specs/<small>requirements.md + validation.md (critério binário de "pronto")</small></div></div>
+      <div class="layer"><div class="k">INFRA</div><div class="v">_meta/<small>isolamento de subagente · external-access (MCP) · eval-sets</small></div></div>
+      <div class="layer"><div class="k">APLICAÇÕES</div><div class="v">exemplos/<small>como aplicar (BI, regulado, AIVI) — NÃO é o núcleo</small></div></div>
+    </div>
+  </section>
+
+  <section id="fluxo">
+    <h2><span class="n">02</span>Fluxo de trabalho</h2>
+    <p class="sub">Da abertura ao fechamento — incremental, validado, rastreável.</p>
+    <div class="flow">
+      <span class="node hi">/start-session</span><span class="arrow">→</span>
+      <span class="node">pmo</span><span class="arrow">→</span>
+      <span class="node">spec (validation.md)</span><span class="arrow">→</span>
+      <span class="node">developer</span><span class="arrow">→</span>
+      <span class="node">qa-critic</span><span class="arrow">→</span>
+      <span class="node">docops</span><span class="arrow">→</span>
+      <span class="node hi">/checkpoint</span>
+    </div>
+  </section>
+
+  <section id="principios">
+    <h2><span class="n">03</span>Princípios não-negociáveis</h2>
+    <div class="cards">
+      <div class="card"><h3>Anti-alucinação</h3><p>Classifica tudo (CONFIRMADO/INFERIDO/DESCONHECIDO); diz NÃO SEI; nunca inventa.</p></div>
+      <div class="card"><h3>Single source of truth</h3><p>Cada regra em um arquivo. Papéis referenciam, não copiam.</p></div>
+      <div class="card"><h3>Roteamento por confiança</h3><p>Operacional → linear. Regulado/crítico → reflexivo, com revisão humana.</p></div>
+      <div class="card"><h3>Context é finito</h3><p>Compaction, note-taking, isolamento de subagente. Mitiga context rot.</p></div>
+      <div class="card"><h3>Escala por clonagem</h3><p>Aplicação nova = clonar _template + eval-set. Núcleo não muda.</p></div>
+      <div class="card"><h3>Validado</h3><p>Roteamento dos papéis testado 33/33. Toda aplicação entra só com eval passando.</p></div>
+    </div>
+  </section>
+
+  <section id="comece">
+    <h2><span class="n">04</span>Comece por aqui</h2>
+    <ul class="clean">
+      <li><b>Instalar no VS Code</b> — guia/INSTALAR-NO-VSCODE.md</li>
+      <li><b>3 modos de uso</b> (novo / revisar / migrar) — guia/SETUP.md</li>
+      <li><b>Revisar outro repo</b> read-only — guia/COMO-REVISAR-OUTRO-REPO.md</li>
+      <li><b>Uso diário (equipe)</b> — guia/GUIA-EQUIPE.md</li>
+      <li><b>Versionamento git</b> — guia/GIT-VERSIONAMENTO.md</li>
+      <li><b>Quem lê o quê</b> (humano × IA) — guia/ORIENTACAO.md</li>
+      <li><b>Referências e pesquisas</b> — guia/REFERENCIAS.md</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>Para iniciar: abra a pasta no VS Code → o Claude Code lê <code>CLAUDE.md</code> → rode <code>/start-session</code>.</p>
+    <p style="margin-top:14px">Framework Metacognitivo Agêntico · v1.2.0 · PT-BR · CC BY 4.0 · base de evidência A0–A3.</p>
+  </footer>
+
+</div>
+</body>
+</html>
