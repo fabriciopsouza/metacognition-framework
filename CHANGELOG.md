@@ -15,6 +15,86 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.5.0] — 2026-05-24 — Papel `discovery` + molde de subagente ocultado (ADR-001)
+
+> Adiciona um papel genérico que faltava entre PMO e architect: a elicitação
+> profunda. PMO faz UMA pergunta e segue; `discovery` mergulha — combate a
+> *spec rasa* (limitada ao que o usuário já sabe pedir). Genérico e agnóstico
+> de domínio. Em paralelo, o molde de subagente sai da lista `/agents` via
+> renomeação consciente (ADR-001), respeitando a regra anti-rename.
+
+### Added — papel `discovery`
+- `.agent/skills/discovery/SKILL.md` — **elicitação profunda universal**.
+  Método por dimensões de spec (objetivo, stakeholders, funcional, não-funcional,
+  dados, restrições, aceite, edge cases, fora de escopo); perguntas em
+  **lotes temáticos** (não 1 a 1, não 50 de uma vez); etapa **anti-raso
+  obrigatória** ("o que um sênior NESTE campo levantaria que ainda não
+  cobrimos?") antes de fechar. Anti-alucinação: o que o usuário não souber
+  vira `[DESCONHECIDO]` explícito no requirements — nunca chute disfarçado.
+  Fonte: pedido do usuário + fundamentos A0 (decomposição) + A2 (spec-driven).
+  [CONSOLIDADO] / [CONFIRMADO].
+- **Banco de partida editável** (acelerador, NUNCA gaiola): conjuntos-semente
+  para dev/software, BI/analytics, BA/processo, web/produto, dados/ETL,
+  regulado. Estender à vontade; se o assunto for novo, gerar pelas dimensões
+  universais. A ausência de trilha não impede o discovery.
+- **Modo "revisar projeto existente"** dentro de `discovery` (um caso de uso,
+  não outro papel): delega a varredura ao subagente `explorer` (read-only) e
+  **exige baseline golden** antes de mexer em lógica. Critério de aceite =
+  "comportamento idêntico ao golden + critérios de limpeza atingidos".
+
+### Fronteiras do `discovery` (registradas para não colidir com papéis adjacentes)
+- NÃO implementa (developer) · NÃO decide arquitetura (architect) · NÃO audita
+  código por conta própria (delega ao explorer). Entrega `requirements.md` de
+  nível sênior, com cada requisito classificado, que alimenta `feature-plan` /
+  `architect`. Encerra quando o requirements tem critério de aceite binário e
+  as lacunas `[DESCONHECIDO]` estão explícitas.
+
+### Changed — molde de subagente ocultado (ADR-001)
+- `.claude/agents/_template.md` renomeado para `.claude/agents/_template.md.txt`
+  para que o Claude Code não o liste em `/agents` como subagente ativável (a
+  extensão `.md` válida na pasta o registrava como "<nome-do-subagente>",
+  poluindo a lista e arriscando invocação por engano). Conteúdo preservado e
+  versionado. Decisão e alternativas em `docs/adr/001-ocultar-template-agente.md`.
+  **Regra anti-rename** (`_shared/traceability`) respeitada via ADR formal.
+  Fonte: auto-auditoria do `explorer` (sinal anterior: `name: _template-application`
+  × pasta `_template`). [CONSOLIDADO] / [CONFIRMADO].
+- `guia/SETUP.md` — referência ao molde atualizada para `_template.md.txt`
+  (sweep de órfãs após o rename, exigência da regra anti-rename).
+
+### Added — integração do `discovery` no resto do núcleo (qa-critic v1.5.0 ressalvas #2 e #3)
+- `README.md` — papel `discovery` incluído na tabela de camadas (campo PROCESSO).
+- `AGENT-FRAMEWORK.md` — nova subseção "Gatilho do `discovery`" sob §2.B Modo
+  Squad, formalizando a fronteira PMO (UMA pergunta) → discovery (mergulha em
+  spec rasa) → architect (decide). Sem isso o papel ficaria invisível para quem
+  segue só o roteador.
+
+### Added — eval-set do `discovery` (qa-critic v1.5.0 ressalva #1)
+- `_meta/eval-results-papeis.md` — seção G (9 should-trigger) + G' (9 should-NOT)
+  para o papel `discovery`. Marcado **[EMERGENTE — DESIGN-TIME, NÃO EXECUTADO]**
+  conforme `anti-hallucination`: casos escritos e revisados, execução real é
+  pendência registrada para o próximo ciclo de release. Header e tabela de
+  resultado final atualizados para distinguir 6 papéis EXECUTADOS (A–F) de 1
+  EMERGENTE (G). [EMERGENTE] / [CONFIRMADO].
+
+### Changed — system version
+- Versão do sistema: 1.4.0 → 1.5.0 (feature nova compatível = MINOR, conforme
+  política registrada em `## Política`).
+
+### Pipeline auditável desta entrega
+- PMO orquestra → developer aplica BLOCO C + rename do `_template` →
+  `qa-critic` (subagente adversarial, contexto fresh) **round 1**: C1–C6 todos
+  V; C7 (adversarial extra) achou **3 itens principais** (#1 BLOQUEADOR: eval-set
+  ausente para discovery — viola política do próprio framework; #2 MÉDIO:
+  discovery não listado em `README.md:11`; #3 MÉDIO: gatilho de discovery
+  ausente em `AGENT-FRAMEWORK.md`) **+ 3 ressalvas menores** acionáveis fora
+  deste PR (global install `~/.claude/agents/` espelhado / monitorar pattern
+  `.md.txt` / zona cinzenta PMO×discovery) → user decidiu `resolver #1+#2+#3
+  neste PR` → developer aplicou os fixes → **round 2 do qa-critic**:
+  aprovado_com_ressalvas (2 BAIXA, ambas incorporadas neste commit:
+  reconciliação desta narrativa de pipeline + reescrita do caso G'#12 do
+  eval-set para teste isolado) → docops (esta entrada). Merge **bloqueado**:
+  gate humano.
+
 ## [1.0.0] — 2026-05-23 — Consolidação dos Blocos 1–5
 
 ### Bloco 1 — Núcleo `_shared/` (fonte única)

@@ -1,6 +1,6 @@
 # Framework Metacognitivo Agêntico — Genérico e Escalável
 
-> **Versão:** 1.4.0 · **Base:** pesquisas A0–A3 · **PT-BR** · **CC BY 4.0**
+> **Versão:** 1.5.0 · **Base:** pesquisas A0–A3 · **PT-BR** · **CC BY 4.0**
 > **Princípio:** o framework é agnóstico de domínio. SAP, Tableau, GCP, normas
 > setoriais, AIVI etc. são **aplicações/contextos** — não fazem parte do núcleo.
 
@@ -8,8 +8,8 @@
 ```
 ROTEADOR     AGENT-FRAMEWORK.md (v2.3)   decide o MODO (contexto × complexidade)
 NÚCLEO       _shared/                    regras transversais (fonte única)
-PROCESSO     .agent/skills/              papéis genéricos: pmo, architect, developer,
-                                         qa-critic, docops, explorer, _template
+PROCESSO     .agent/skills/              papéis genéricos: pmo, discovery, architect,
+                                         developer, qa-critic, docops, explorer, _template
 CONTRATO     docs/specs/                 requirements.md + validation.md (gate binário)
 INFRA        _meta/                      isolamento de subagente, external-access, evals
 APLICAÇÕES   exemplos/README.md          COMO criar aplicações (clonando _template) — vivem FORA do núcleo
