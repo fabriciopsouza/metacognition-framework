@@ -76,6 +76,27 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   resultado final atualizados para distinguir 6 papéis EXECUTADOS (A–F) de 1
   EMERGENTE (G). [EMERGENTE] / [CONFIRMADO].
 
+### Added — auto-sync repo → `~/.claude/` global (fecha pendência do ADR-001)
+- `.claude/hooks/sync-global.ps1` — script PowerShell idempotente que espelha
+  `_shared/`, `.agent/skills/` e `.claude/agents/*.md` (NÃO `*.md.txt`) do
+  working tree do repo para `~/.claude/skills/` e `~/.claude/agents/` (instalação
+  global usada por todas as outras sessões/projetos). Self-healing
+  (`Remove-Item` antes de `Copy-Item` para evitar aninhamento). Falha "soft":
+  warning no stderr + `exit 0` (nunca bloqueia sessão).
+- `.claude/settings.json` — hook `SessionStart` que invoca o script a cada
+  abertura de sessão neste projeto. Project-level (commitado, não personal):
+  funciona para qualquer dev em Windows que clonar o repo, sem hardcodar
+  caminho (usa `$env:USERPROFILE`).
+- Resolve a pendência registrada no ADR-001 ("instalação GLOBAL é cópia
+  separada — sem owner/prazo") nascida da auto-auditoria do `explorer`.
+  Owner agora = este hook. Mesmo critério de exclusão do `_template.md.txt`
+  vale no global (não vaza pra `/agents` em outros projetos).
+- Pipe-test capturou 2 bugs antes do deploy: (1) `Split-Path` com nível
+  errado fez `projectRoot` apontar pra `.claude/` em vez do repo
+  (sync silencioso de 0 skills); (2) `Copy-Item -Recurse` em destino
+  existente aninhava `<name>/<name>/SKILL.md`. Ambos corrigidos no script
+  publicado. [CONSOLIDADO] / [CONFIRMADO].
+
 ### Changed — system version
 - Versão do sistema: 1.4.0 → 1.5.0 (feature nova compatível = MINOR, conforme
   política registrada em `## Política`).
