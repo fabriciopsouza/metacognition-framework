@@ -31,4 +31,8 @@ o Claude Code não o registre como subagente, preservando-o como molde de refer�
   mesma renomeação lá para manter paridade, senão a global ainda lista o molde.
 
 ## Implementação (commit hash após aceito)
-<preencher com o hash do commit que aplica a renomeação>
+- Commit: `9a74f66f93563be2c9183a74db41d34d30d39098` (branch `feat/discovery-v150`).
+- Nota histórica: o hash original deste commit (`c8bb35c4…`) foi reescrito porque o commit saiu com autor placeholder (`seu-email@exemplo.com`, herdado do `.gitconfig` global pré-existente). Após detectado, o git config foi corrigido para o email real do mantenedor e a branch passou por `git rebase HEAD~2 --exec "git commit --amend --reset-author"` (autoria refeita; conteúdo idêntico). Este ADR registra o hash pós-correção. Lição: validar `git config user.email` antes do primeiro commit em sessões assistidas.
+- Aplicação: rename detectado pelo git como `R .claude/agents/_template.md -> .claude/agents/_template.md.txt` (100% similaridade — histórico preservado). Sweep de referência órfã aplicado em `guia/SETUP.md` no mesmo commit.
+- Verificação adversarial: qa-critic (subagente isolado) rodou dois rounds; ambos confirmaram que `.claude/agents/_template.md.txt` está presente, `.claude/agents/_template.md` removido, e a regra anti-rename foi respeitada via este ADR.
+- Pendência aberta (registrada nas "Consequências/Riscos" acima): aplicar a mesma renomeação na instalação GLOBAL `~/.claude/agents/_template.md` — fora do escopo deste PR, sem owner/prazo neste momento.
