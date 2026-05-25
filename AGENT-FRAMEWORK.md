@@ -87,6 +87,17 @@ Metacognição dentro do squad **não desaparece** — vive nos papéis, sempre 
 `_shared/` (classificação no PMO; reflexão no QA-Critic; validação no checklist;
 decomposição no `/feature-plan`). Nenhuma regra é recopiada no papel.
 
+### Gatilho do `discovery` (entre PMO e architect)
+
+PMO faz **UMA** pergunta de desambiguação e segue. Quando o pedido é **novo,
+vago, ou a spec pode estar rasa** (limitada ao que o usuário já sabe pedir),
+acionar o papel `discovery` ANTES do `architect`: ele mergulha em perguntas
+temáticas, aplica a etapa anti-raso obrigatória, e entrega um `requirements.md`
+de nível sênior com cada requisito classificado (`CONFIRMADO|INFERIDO|
+DESCONHECIDO`). É a fronteira: PMO desambigua → `discovery` elicita →
+`architect` decide. Discovery NÃO implementa, NÃO decide arquitetura, NÃO
+audita código (delega ao explorer no modo "revisar projeto existente").
+
 Escape para metacognição pura (mesmo com squad instalado): debug simples,
 explicação conceitual, tarefa que não muda código, override "responde direto".
 Nesse modo, só as 4 regras invioláveis seguem ativas — todas referenciando

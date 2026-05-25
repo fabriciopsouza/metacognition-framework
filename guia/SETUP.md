@@ -85,8 +85,10 @@ Dois caminhos:
 ## Criar skills e subagentes novos (templates)
 - **Skill / aplicação de domínio:** clone `.agent/skills/_template/` → preencha só o
   domínio (referencie `_shared/`). É assim que o AIVI nasceu.
-- **Subagente:** clone `.claude/agents/_template.md` → defina `tools` (menor
-  privilégio), `model` (diferente do principal) e `skills` (liste explicitamente).
+- **Subagente:** clone `.claude/agents/_template.md.txt` (renomeie para `.md` no
+  destino) → defina `tools` (menor privilégio), `model` (diferente do principal) e
+  `skills` (liste explicitamente). O molde fica como `.md.txt` para não aparecer
+  na lista `/agents` (ver `docs/adr/001-ocultar-template-agente.md`).
 - **Antes de produção:** escreva o eval-set (`_meta/eval-template.md`), 8–12
   should-trigger + 8–10 should-NOT, e rode (ver `_meta/eval-results-papeis.md`).
 
