@@ -22,6 +22,14 @@
 3. File-first: ler/inspecionar antes de assumir.
 4. NÃO SEI direto — nunca inventar.
 
+## Modos de execução (v1.7.0 — ADR-005)
+O framework opera sob 1 de 3 níveis registrados em `~/.claude/framework-mode.json`:
+- **default** — conservador, prompts para a maioria das ações shell.
+- **avançado** — confia no shell em geral, pede só em git push/merge/pr.
+- **autosuficiente** — `bypassPermissions`, só guard-rails absolutos no deny.
+
+Ratchet forward-only: escalação livre (default→avançado→autosuficiente), downgrade só por edição manual do state file. Reativação dispara só quando `~/.claude/hooks/framework-sync.ps1` muda (hash trigger). Detalhe: `_shared/execution-modes/SKILL.md`.
+
 ## Como ler skills
 As skills de processo vivem em `.agent/skills/<nome>/SKILL.md` e o núcleo em
 `_shared/<nome>/SKILL.md`. Carregue o SKILL.md relevante antes de agir. Para
