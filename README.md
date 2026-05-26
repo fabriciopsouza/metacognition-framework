@@ -1,6 +1,6 @@
 # Framework Metacognitivo Agêntico — Genérico e Escalável
 
-> **Versão:** 1.5.0 · **Base:** pesquisas A0–A3 · **PT-BR** · **CC BY 4.0**
+> **Versão:** 1.6.1 · **Base:** pesquisas A0–A3 · **PT-BR** · **CC BY 4.0**
 > **Princípio:** o framework é agnóstico de domínio. SAP, Tableau, GCP, normas
 > setoriais, AIVI etc. são **aplicações/contextos** — não fazem parte do núcleo.
 
@@ -8,7 +8,8 @@
 ```
 ROTEADOR     AGENT-FRAMEWORK.md (v2.3)   decide o MODO (contexto × complexidade)
 NÚCLEO       _shared/                    regras transversais (fonte única)
-PROCESSO     .agent/skills/              papéis genéricos: pmo, discovery, architect,
+PROCESSO     .agent/skills/              papéis genéricos: pmo, discovery (+ sub-modo
+                                         "mapeamento de processo" em v1.6.0), architect,
                                          developer, qa-critic, docops, explorer, _template
 CONTRATO     docs/specs/                 requirements.md + validation.md (gate binário)
 INFRA        _meta/                      isolamento de subagente, external-access, evals
@@ -34,6 +35,18 @@ A aplicação herda `_shared/` automaticamente; mudar regra transversal = editar
 | Isolamento real de subagente (explorer) | sim | hats sequenciais simulados |
 | Hooks OTel / auditoria | sim | checklist manual |
 | Spec, roteamento por confiança, papéis | sim | sim |
+
+## Papéis (skills do framework)
+
+| Papel | Quando ativa | Sub-modos |
+|---|---|---|
+| **pmo** | Entrada padrão · projeto novo · ambiguidade | — |
+| **discovery** | Pedido novo/vago · spec rasa | (1) método universal · (2) revisar projeto existente · (3) **mapeamento de processo (v1.6.0)** — para processo de negócio com gatilhos/RACI/handoffs/exceções |
+| **architect** | Decisão técnica > 1 arquivo · ADR | — |
+| **developer** | Implementação de código/skill/template | — |
+| **qa-critic** | Validação adversarial pós-developer | — |
+| **docops** | Documentação final pós-aprovação | — |
+| **explorer** | Auditoria read-only | — |
 
 ## Papéis emergentes (hats — sem skill nova; ver GUIA-EQUIPE)
 skill-librarian · evals-engineer · governance-lead.

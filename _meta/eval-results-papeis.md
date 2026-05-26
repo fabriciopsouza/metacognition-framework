@@ -118,12 +118,44 @@
 > executado antes de entrar em produção. v1.5.0 entrega o papel + os casos;
 > execução vira tarefa do próximo ciclo de release.
 
+## H. Discovery sub-modo "mapeamento de processo" — should-trigger [EMERGENTE — DESIGN-TIME, NÃO EXECUTADO]
+| # | Frase | Esperado | Roteou para | OK |
+|---|---|---|---|---|
+|19|"Preciso mapear o processo de liberação de lote da fábrica"|discovery (sub-modo mapeamento de processo)|—|⏳|
+|20|"Quero entender o fluxo de onboarding de clientes B2B que temos hoje"|discovery (sub-modo mapeamento de processo)|—|⏳|
+|21|"O fechamento contábil mensal está travando, faz um mapa as-is pra mim"|discovery (sub-modo mapeamento de processo)|—|⏳|
+|22|"Documenta esse processo de aprovação de orçamento, com RACI e handoffs"|discovery (sub-modo mapeamento de processo)|—|⏳|
+|23|"Não sei quem é o dono desse processo cross-funcional, precisa elicitar"|discovery (sub-modo mapeamento de processo)|—|⏳|
+|24|"O fluxo de tratamento de sinistro tem gargalos, levanta o as-is"|discovery (sub-modo mapeamento de processo)|—|⏳|
+|25|"Processo regulado de farma, precisa de mapa com ALCOA+ na borda"|discovery (sub-modo + high-stakes-gate em paralelo)|—|⏳|
+|26|"Levanta o processo declarado vs o que o sistema mostra que rola"|discovery (sub-modo + delega ao explorer paralelo)|—|⏳|
+|27|"Quero gap-analysis do processo de cobrança antes de redesenhar"|discovery (sub-modo — gap-analysis pertence aqui)|—|⏳|
+
+## H'. Discovery sub-modo "mapeamento de processo" — should-NOT [EMERGENTE — DESIGN-TIME, NÃO EXECUTADO]
+| # | Frase | NÃO mapeamento-de-processo | Roteou para | OK |
+|---|---|---|---|---|
+|28|"Mapeia o fluxo de telas do app de checkout"|→discovery trilha web/produto (jornada UI ≠ processo)|—|⏳|
+|29|"Documenta o procedimento de deploy em produção"|→developer/docops (runbook técnico ≠ processo de negócio)|—|⏳|
+|30|"Mapeia o que essa função faz internamente"|→developer (algoritmo de código ≠ processo)|—|⏳|
+|31|"Configura o workflow de aprovação de PR no GitHub"|→configuração da ferramenta (workflow de tool ≠ processo modelado)|—|⏳|
+|32|"Desenha o to-be do processo de liberação"|→architect (to-be é design arquitetural, não descoberta)|—|⏳|
+|33|"Simula o processo com 10x o volume atual"|→fora do framework (process simulation OUT)|—|⏳|
+|34|"Recomenda RPA para automatizar isso"|→fora do sub-modo (recomendação de automação OUT)|—|⏳|
+|35|"Audita a trilha ALCOA+ desse processo regulado"|→high-stakes-gate (compliance OUT do sub-modo)|—|⏳|
+|36|"Já temos o as-is mapeado, decide o to-be"|→architect (spec já fechada → decisão arquitetural)|—|⏳|
+
+> **Pendência registrada (H+H'):** mesma política do G+G' — execução real do
+> eval do sub-modo "mapeamento de processo" vira tarefa do próximo ciclo de
+> release. v1.6.0 entrega o sub-modo + os 18 casos; execução pendente. Marcado
+> [EMERGENTE] deliberadamente — não fingir CONFIRMADO o que não foi rodado.
+
 ## Resumo
-- Total: 33 casos EXECUTADOS (A–F) + 18 casos EMERGENTES DESIGN-TIME (G).
+- Total: 33 casos EXECUTADOS (A–F) + 18 casos EMERGENTES DESIGN-TIME (G) + 18 casos EMERGENTES DESIGN-TIME (H — sub-modo mapeamento de processo, v1.6.0).
 - Passou direto (A–F): 32 · Atenção (A–F): 1 (ver achados).
 - Cobertura should-trigger EXECUTADA: ✅ 6 papéis (A–F) disparam corretamente.
 - Cobertura should-NOT EXECUTADA: 1 ambiguidade real (ver achados).
 - Cobertura discovery (G): casos escritos, execução pendente.
+- Cobertura discovery sub-modo mapeamento de processo (H): 18 casos escritos (9 should-trigger + 9 should-NOT) cobrindo os 4 falsos positivos confirmados (UI/runbook/algoritmo/workflow-tool) e o handoff para architect; execução pendente.
 
 ## Achados e correção (iteração 2 — pesquisa A2: ajustar description e reavaliar)
 
@@ -139,13 +171,14 @@
 | Métrica | Valor |
 |---|---|
 | Papéis EXECUTADOS | 6 (A–F: pmo, architect, developer, qa-critic, docops, explorer) |
-| Papel EMERGENTE | 1 (G: discovery — design-time, execução pendente) |
+| Papéis EMERGENTES | 2 (G: discovery v1.5.0 — design-time, execução pendente · H: discovery sub-modo mapeamento de processo v1.6.0 — design-time, execução pendente) |
 | Casos testados EXECUTADOS | 33 |
 | Passou EXECUTADOS (iteração 1) | 32 |
 | Achados corrigidos | 1 |
 | Passou EXECUTADOS (iteração 2) | 33 / 33 |
 | Falsos disparos restantes (executados) | 0 |
-| Casos EMERGENTES (discovery) | 18 (9 should-trigger + 9 should-NOT) |
+| Casos EMERGENTES (discovery G) | 18 (9 should-trigger + 9 should-NOT) |
+| Casos EMERGENTES (discovery sub-modo mapeamento H) | 18 (9 should-trigger + 9 should-NOT) |
 
 **Conclusão (papéis A–F):** roteamento é assertivo e reprodutível para entradas
 agnósticas de domínio.
@@ -156,3 +189,10 @@ release. Marcado [EMERGENTE] em v1.5.0 deliberadamente — não fingir CONFIRMAD
 o que não foi rodado. A escala por clonagem (`_template`) herda esse roteamento;
 cada aplicação nova deve trazer seu próprio eval-set (8–12 / 8–10) antes de
 produção — regra registrada em `_meta/eval-template.md`.
+
+**Status do `discovery` sub-modo "mapeamento de processo" (H):** casos escritos
+cobrem o filtro de entrada (4 falsos positivos confirmados em UI/runbook/
+algoritmo/workflow-tool), o handoff para architect (to-be), o handoff para
+high-stakes-gate (compliance) e os 5 falsos positivos clássicos de adjacência
+(process simulation, RPA, change management, etc.). Execução real pendente —
+v1.6.0 entrega os 18 casos design-time conforme ADR-002.

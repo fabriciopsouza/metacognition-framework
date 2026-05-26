@@ -15,6 +15,95 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.6.1] — 2026-05-26 — Auto-boot do squad via SessionStart hook (ADR-004)
+
+> PATCH operacional: `/start-session` deixa de depender de memória humana. Um
+> 2º hook SessionStart, paralelo ao `sync-global.ps1` existente, injeta a
+> orientação de boot do squad no contexto inicial — Claude entra com PMO ativo
+> por default. Flag de escape `.claude/session.lock` permite sessão rápida
+> (debug, pergunta pontual) sob controle manual. Resolve a discrepância
+> arquitetural detectada pelo mantenedor: sync mecânico já era automático;
+> boot cognitivo continuava dependendo de o usuário lembrar do comando.
+
+### Added
+- `.claude/hooks/inject-start-session.ps1` — script PowerShell que injeta `additionalContext` (conteúdo de `.agent/workflows/start-session.md`) via `hookSpecificOutput` JSON. Detecta `.claude/session.lock` e pula injeção quando presente.
+- `.claude/settings.json` — 2º hook SessionStart registrado em paralelo ao `sync-global.ps1`, com `statusMessage` que mostra a instrução de escape ao usuário.
+- `.gitignore` — `.claude/session.lock` adicionado (flag é pessoal por cópia de trabalho, não versionada).
+- `docs/adr/004-auto-start-session-com-escape.md` — ADR formal. Ponteiro = branch+data+grep.
+
+### Como usar
+- **Default** (sem lock): toda sessão entra com PMO ativo; Claude produz STATUS no 1º turno automaticamente.
+- **Pular o auto-boot:** `New-Item .claude/session.lock -ItemType File -Force` → sessões subsequentes pulam o boot até o lock ser deletado.
+- **Reativar:** `Remove-Item .claude/session.lock`.
+
+### Pipeline
+PMO/Discovery (elicitação da pergunta "preciso dar /start-session?") → Architect (ADR-004, 5 alternativas, escolha Opção C) → Developer (script + settings + .gitignore + CHANGELOG). qa-critic não rodou neste PATCH — feature pequena, validação manual via abrir sessão nova com e sem lock.
+
+[CONSOLIDADO] / [CONFIRMADO].
+
+---
+
+## [1.6.0] — 2026-05-25 — `discovery` ganha sub-modo "mapeamento de processo" (ADR-002) + 4 saneamentos adjacentes + progressive disclosure via companion files (ADR-003)
+
+> Estende o papel `discovery` (v1.5.0) com uma capacidade BPM-sênior para
+> processo de negócio. Critério de aceite: 12 itens binários, validação via
+> gabarito em `docs/specs/discovery-process-mapping/validation.md`. Em paralelo,
+> 4 saneamentos adjacentes detectados na revisão adversarial entram no mesmo
+> ciclo (correção de drift de versão da skill, atualização proativa do template
+> ADR, harmonização ergonômica do sub-modo "revisar projeto existente",
+> criação do `validation.md` companion da spec). Após qa-critic round 2 (PASS)
+> + revisão arquitetural questionando o tamanho monolítico (190 linhas vs
+> média 37), aplicado **progressive disclosure**: SKILL.md reduzida a 100 linhas
+> + 2 companion files (`mapeamento-de-processo.md`, `revisar-projeto-existente.md`)
+> carregados sob demanda. Coerente com Bloco 2.5 do framework (context engineering).
+
+### Added — progressive disclosure via companion files (ADR-003)
+- `.agent/skills/discovery/SKILL.md` reduzida de 190 → **100 linhas** (entry point: princípio · método universal · banco de partida · tabela de apontadores para sub-modos · output obrigatório · fronteiras).
+- `.agent/skills/discovery/mapeamento-de-processo.md` (~97 linhas) — companion novo do sub-modo BPM (filtro de entrada, profundidade, notação plugável, formalidade, matriz de 13 dimensões, output em 3 arquivos, integração com explorer, validação A4). Carregado sob demanda.
+- `.agent/skills/discovery/revisar-projeto-existente.md` (~20 linhas) — companion extraído do sub-modo v1.5.0 (filtro de entrada + 3 passos preservados). Carregado sob demanda.
+- `.claude/hooks/sync-global.ps1` — header atualizado documentando suporte automático a companion files (já existia via `Copy-Item -Recurse`; agora declarado).
+- **Ganho operacional:** modo universal puro (caso mais comum) carrega 100 linhas em vez de 190 (−47% context budget). Manutenção isolada por sub-modo.
+- **Regra de aplicação futura:** ADR-003 define gatilhos para outras skills adotarem o padrão (>80 linhas OU 2+ sub-modos identificáveis).
+
+### Added — sub-modo "mapeamento de processo"
+- Conteúdo movido para `.agent/skills/discovery/mapeamento-de-processo.md` (companion file). Inclui:
+  - **Filtro de entrada** rejeitando 4 falsos positivos: jornada UI · runbook técnico · algoritmo de código · workflow de tool de aprovação.
+  - **3 níveis de profundidade configuráveis:** `quick` (SIPOC + macro), `standard` (default, macro + sub-processo), `deep` (atividade granular).
+  - **Notação plugável:** markdown-só / +Mermaid flow/sequence / +Mermaid swimlane/BPMN-lite / plug livre.
+  - **Formalidade configurável:** pragmático/lean · sênior BA prático · BPMN 2.0 estrito · per case.
+  - **Matriz de 13 dimensões:** 4 MUST (Trigger+Output, Owner+RACI, SIPOC por atividade, Rules+Exceptions+Handoffs) modulada por profundidade; 4 MAY (métricas operacionais, mapa tecnológico, variações, lean/maturity); 1 condicional as-is-only (pain points/bottlenecks); 4 anti-raso BPM (VoC/CTQ, Boundaries, Declarativo×Observacional, Validação stakeholders).
+  - **Output em 3 arquivos** lado a lado: `requirements.md` + `process-map-as-is.md` + `gap-analysis.md`. Cabeçalho YAML obrigatório em cada quando persona=subagente-automatizado (NF1 garantida sem cancelar plugabilidade — gap #1 da revisão adversarial).
+  - **Integração com explorer (EARS-W5):** quando processo está em código (BPMS, n8n, Airflow), discovery + explorer rodam em paralelo — sequência rápida em single-thread, subagentes reais em persona-4 pipeline. Discovery consolida o cruzamento em `gap-analysis.md` (anti-padrão #1 do BPM tratado como built-in).
+  - **Escalação automática (EARS-I5):** persona-4 sem stakeholder → bloco `[BLOQUEADOR: validação humana pendente]` + exit-code não-zero.
+- `docs/specs/_template-process/` — novo template (3 arquivos com cabeçalho YAML e seções nomeadas).
+- `docs/specs/exemplos/H1-farma-liberacao-de-lote/` — exemplo trabalhado de cabo a rabo (cenário regulado: RACI QC/QA/Produção, 6+ tags `[DECLARADO]`/`[OBSERVADO]`, 5 gaps detectados, compliance OUT delegado ao `high-stakes-gate`).
+
+### Added — saneamentos adjacentes (oportunidades incorporadas pós-revisão adversarial)
+- **Versão da skill harmonizada (oportunidade O1):** frontmatter de `.agent/skills/discovery/SKILL.md` corrigido `1.0.0` → `1.5.0` → `1.6.0` (drift detectado pelo explorer).
+- **Template ADR atualizado (oportunidade O2):** `docs/adr/000-template.md` seção "Implementação" agora instrui `Ponteiro: branch + data + grep` como padrão, com hash apenas como complemento opcional — codifica a lição do ADR-001 (hash é frágil a rewrites).
+- **Sub-modos harmonizados (oportunidade O3):** sub-modo "revisar projeto existente" (v1.5.0) ganha cabeçalho `### Filtro de entrada` simétrico ao do novo sub-modo. Comportamento downstream preservado.
+- **validation.md companion (oportunidade O4):** `docs/specs/discovery-process-mapping/validation.md` com gabarito de validação binária dos 12 itens do critério de aceite + 13 gaps fechados + 4 anti-raso BPM + 4 invioláveis preservados. Cinco blocos com reprovação binária para `qa-critic`.
+
+### Changed — sweep do banco de partida (mudança subtrativa registrada em ADR-002 D2)
+- `.agent/skills/discovery/SKILL.md` linha `BA/processo` no banco de partida:
+  - **Antes:** `as-is × to-be, donos do processo, regras de negócio, exceções, indicadores de sucesso, mudança organizacional.`
+  - **Depois:** `processo de negócio/BPM → usar sub-modo "mapeamento de processo" (ver seção dedicada abaixo).`
+  - Os 6 termos não desapareceram — foram relocados, expandidos e refinados dentro do sub-modo dedicado.
+
+### Added — ADR e governança
+- `docs/adr/002-discovery-process-mapping-v160.md` — ADR formal cobrindo **7 sub-decisões** (D1-D7): encaixe sub-modo · sweep BA/processo · harmonização revisar · bump versão skill · template ADR atualizado · handoff 3 arquivos · protocolo discovery+explorer. Ponteiro = branch + data + grep (NÃO hash de commit).
+- `_meta/eval-results-papeis.md` ganha seções **H + H'** com 18 casos (9 should-trigger + 9 should-NOT) marcados `[EMERGENTE — DESIGN-TIME, NÃO EXECUTADO]`, paridade direta com G+G' de v1.5.0.
+
+### Spec e revisão adversarial
+- `docs/specs/discovery-process-mapping/requirements.md` — spec sênior (auto-elicitação meta) com 13 gaps fechados pós-revisão adversarial (`qa-critic` + `explorer` rodaram em paralelo): 3 BLOQUEADORES + 6 MÉDIOS + 3 MENORES + NF7 enganoso. Critério de aceite expandido de 8 → 12 itens com seções nomeadas verificáveis por grep.
+
+### Pipeline
+PMO/Discovery → Discovery (auto-elicitação meta, 4 lotes temáticos) → revisão adversarial (qa-critic + explorer em paralelo) → Discovery (13 gaps fechados + 4 oportunidades incorporadas) → Architect (ADR-002 com 7 sub-decisões) → Developer (12 itens implementados) → QA-Critic (validation.md) → DocOps. Merge bloqueado por gate humano.
+
+[CONSOLIDADO] / [CONFIRMADO].
+
+---
+
 ## [1.5.0] — 2026-05-24 — Papel `discovery` + molde de subagente ocultado (ADR-001)
 
 > Adiciona um papel genérico que faltava entre PMO e architect: a elicitação

@@ -98,6 +98,26 @@ DESCONHECIDO`). É a fronteira: PMO desambigua → `discovery` elicita →
 `architect` decide. Discovery NÃO implementa, NÃO decide arquitetura, NÃO
 audita código (delega ao explorer no modo "revisar projeto existente").
 
+### Sub-modo mapeamento de processo (v1.6.0)
+
+Quando o trabalho é **processo de negócio** (fluxo cross-funcional com gatilhos,
+donos, RACI, regras, handoffs, exceções), `discovery` ativa o sub-modo
+"mapeamento de processo" via **filtro de entrada explícito** (EARS-W1): 1ª
+pergunta após detectar natureza=processo é se é processo de negócio ou um dos 4
+redirecionáveis (jornada UI → web/produto · runbook técnico → developer/docops ·
+algoritmo de código → developer · workflow de tool → configuração da ferramenta).
+Confirmado, o operador escolhe profundidade (`quick`/`standard`/`deep`),
+notação (markdown / mermaid / swimlane) e formalidade (lean / sênior BA /
+BPMN 2.0). Output em **3 arquivos**: `requirements.md` (dimensões), `process-map-as-is.md`
+(mapa com tags `[DECLARADO]`/`[OBSERVADO]` por atividade) e `gap-analysis.md`
+(diagnóstico com seção MUST "Itens para architect"). Quando o processo está
+implementado em código, `discovery` + `explorer` rodam em paralelo (sequência
+rápida em single-thread; subagentes reais em persona-4 pipeline) — `discovery`
+consolida o cruzamento em `gap-analysis.md`. Compliance/ALCOA+ delegado ao
+`high-stakes-gate`. To-be design fica com `architect` via ADR. Spec completa:
+[`docs/specs/discovery-process-mapping/requirements.md`](docs/specs/discovery-process-mapping/requirements.md);
+ADR: [`docs/adr/002-discovery-process-mapping-v160.md`](docs/adr/002-discovery-process-mapping-v160.md).
+
 Escape para metacognição pura (mesmo com squad instalado): debug simples,
 explicação conceitual, tarefa que não muda código, override "responde direto".
 Nesse modo, só as 4 regras invioláveis seguem ativas — todas referenciando
