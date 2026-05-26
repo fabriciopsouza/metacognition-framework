@@ -28,6 +28,11 @@ qualquer domínio.
 4. Eval-set (`_meta/eval-template`) — só entra em produção passando.
 A aplicação herda `_shared/` automaticamente; mudar regra transversal = editar **um** arquivo.
 
+## Setup em PC novo (idempotente)
+- **Windows:** `pwsh ./bootstrap.ps1` (opcional `-MemoryRepo "<owner/repo>"` para sincronizar memória do Claude Code).
+- **macOS/Linux:** `./bootstrap.sh` (opcional `--memory-repo <owner/repo>`).
+- O script faz git config, garante `gh` CLI autenticado, clona o repo, e opcionalmente clona seu repo privado de memória no path esperado pelo Claude Code. Roda 2x sem destruir nada.
+
 ## Matriz de ambiente
 | Recurso | Claude Code / SDK | Chat web |
 |---|---|---|
