@@ -9,7 +9,21 @@
             "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude\\hooks\\sync-global.ps1\"",
             "timeout": 30,
             "statusMessage": "Sincronizando framework para ~/.claude/"
-          },
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude\\hooks\\check-execution-mode.ps1\"",
+            "timeout": 10,
+            "statusMessage": "Verificando modo de execucao do framework"
+          }
+        ]
+      },
+      {
+        "hooks": [
           {
             "type": "command",
             "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude\\hooks\\inject-start-session.ps1\"",

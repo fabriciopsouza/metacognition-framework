@@ -15,6 +15,45 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.7.0] — 2026-05-26 — Modos de execução com ratchet por hash de hook (ADR-005)
+
+> MINOR feature: framework passa a operar sob 1 de 3 níveis explícitos
+> (`default` / `avançado` / `autosuficiente`) registrados em
+> `~/.claude/framework-mode.json`. Templates declarativos em
+> `_shared/execution-modes/`. Reativação dispara SÓ quando o estado é ausente
+> OU o SHA-256 de `~/.claude/hooks/framework-sync.ps1` muda — em sessões
+> normais o hook é silencioso. Ratchet forward-only no fluxo normal
+> (escalação livre default→avançado→autosuficiente); downgrade apenas via
+> edição manual do state file. Resolve a falta de estado explícito sobre o
+> regime de confiança em vigor, evita downgrade silencioso, e conecta a
+> revisão de permissões ao update da automação de sync.
+
+### Added
+- `_shared/execution-modes/SKILL.md` — núcleo SSoT dos 3 modos: descrição, ratchet, formato do state file, algoritmo de aplicação (merge ao settings.json global), relações com `traceability` e `high-stakes-gate`.
+- `_shared/execution-modes/default.json` — template do modo conservador: `defaultMode: default`, allow só de Read/Edit/Write, ask em git push/merge/pr, deny destrutivo robusto (20 regras: rm variantes, git push force, git reset hard, PowerShell Remove-Item/rm/rmdir/del/erase/ri/Clear-Content).
+- `_shared/execution-modes/avancado.json` — template do modo avançado: + bare `Bash`/`PowerShell` em allow; mesmo ask + deny do default.
+- `_shared/execution-modes/autosuficiente.json` — template do modo autosuficiente: `defaultMode: bypassPermissions`, allow blanket, deny mínimo de guard-rails absolutos (push --force, mkfs, dd if=, Format-Volume, Clear-Disk, Initialize-Disk, Remove-Partition).
+- `.claude/hooks/check-execution-mode.ps1` — hook SessionStart que computa SHA-256 do `~/.claude/hooks/framework-sync.ps1`, lê `~/.claude/framework-mode.json`, e emite `additionalContext` pedindo ativação se estado ausente (INITIAL) ou hash mudou (HOOK_CHANGED). Silencioso nos demais casos. Falha "soft" com warning em stderr + exit 0.
+### Changed
+- `.claude/settings.json` — **restruturado** de 1 grupo SessionStart com 2 hooks (v1.6.1) para **3 grupos paralelos** com 1 hook cada (`sync-global.ps1` → `check-execution-mode.ps1` → `inject-start-session.ps1`). Motivo: dentro do mesmo grupo, hooks sequenciais que emitem `hookSpecificOutput.additionalContext` podem disputar a chave (último-ganha); grupos separados preservam isolamento de contexto. Achado do qa-critic round 1 (B1).
+
+### Added (continuação)
+- `docs/adr/005-niveis-de-execucao-framework.md` — ADR formal. 6 alternativas avaliadas (hash de wrapper local vencedora; HEAD do repo rejeitado por fricção). Ponteiro = branch+data+grep.
+- `CLAUDE.md` (raiz) e `AGENTS.md` — seção curta "Modos de execução" com ponteiro para a skill.
+
+### Como usar
+- **Primeira instalação** (state ausente): próxima sessão recebe `additionalContext` pedindo escolha entre os 3 modos.
+- **Update do framework que altera `framework-sync.ps1`:** próxima sessão pede reconfirmação (motivo `HOOK_CHANGED`).
+- **Sessões normais:** zero fricção — hook silencioso.
+- **Downgrade emergencial:** editar `~/.claude/framework-mode.json` à mão. Não normalizado.
+
+### Pipeline
+PMO (recebe pedido "incorpore como segundo nível de execução") → Architect (ADR-005, 6 alternativas, escolha hash-local + ratchet + escape manual após elicitação em 4 dimensões com mantenedor) → Developer (ADR + 3 templates + SKILL + hook + settings + CLAUDE/AGENTS/CHANGELOG; pipe-test do hook validou caminho INITIAL: JSON correto, SHA calculado, exit 0; caminho silent inferido por simetria). qa-critic round adversarial pendente.
+
+[CONSOLIDADO] / [CONFIRMADO].
+
+---
+
 ## [1.6.1] — 2026-05-26 — Auto-boot do squad via SessionStart hook (ADR-004)
 
 > PATCH operacional: `/start-session` deixa de depender de memória humana. Um

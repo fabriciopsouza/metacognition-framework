@@ -1,0 +1,29 @@
+{
+  "_mode": "autosuficiente",
+  "_description": "Modo autosuficiente. defaultMode=bypassPermissions — Claude Code não pede prompt para nada que não esteja em deny. Allow blanket. Deny mínimo: apenas guard-rails absolutos (push --force, Format-Volume, mkfs). FOOT-GUN: use só quando souber o que está fazendo. Ratchet forward-only no fluxo normal — só descer via edição manual de ~/.claude/framework-mode.json.",
+  "_applies_to": "permissions.allow + permissions.ask + permissions.deny + permissions.defaultMode em ~/.claude/settings.json",
+  "permissions": {
+    "defaultMode": "bypassPermissions",
+    "allow": [
+      "Read",
+      "Edit",
+      "Write",
+      "Bash",
+      "PowerShell"
+    ],
+    "ask": [],
+    "deny": [
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push --force-with-lease:*)",
+      "Bash(mkfs:*)",
+      "Bash(mkfs.ext4:*)",
+      "Bash(mkfs.xfs:*)",
+      "Bash(dd if=:*)",
+      "PowerShell(Format-Volume:*)",
+      "PowerShell(Clear-Disk:*)",
+      "PowerShell(Initialize-Disk:*)",
+      "PowerShell(Remove-Partition:*)"
+    ]
+  }
+}
