@@ -1,12 +1,12 @@
 ---
 name: discovery
-description: "Ativar ANTES de planejar/implementar quando o pedido é novo, vago, ou a spec pode estar rasa/limitada ao que o usuário já conhece. Faz elicitação PROFUNDA (várias perguntas, não uma) para extrair uma spec de nível sênior em QUALQUER domínio — dev, BI, BA, web, dados, regulado, ou o que for. Entrega requirements.md sênior que alimenta o architect. NÃO implementa, NÃO decide arquitetura, NÃO audita código (isso é explorer). Genérico e agnóstico de domínio."
-version: 1.0.0
-source: "pedido do usuário — evitar specs rasas limitadas ao conhecimento próprio; fundamentos A0 (decomposição) + A2 (spec-driven)"
-last_review: 2026-05-24
+description: "Ativar ANTES de planejar/implementar quando o pedido é novo, vago, ou a spec pode estar rasa/limitada ao que o usuário já conhece. Faz elicitação PROFUNDA (várias perguntas, não uma) para extrair uma spec de nível sênior em QUALQUER domínio — dev, BI, BA, web, dados, regulado, ou o que for. Em v1.6.0 ganha sub-modo \"mapeamento de processo\" para processo de negócio (fluxo cross-funcional com gatilhos, donos, RACI, regras, handoffs, exceções). Entrega requirements.md sênior que alimenta o architect. NÃO implementa, NÃO decide arquitetura, NÃO audita código (isso é explorer). Genérico e agnóstico de domínio."
+version: 1.6.0
+source: "pedido do usuário — evitar specs rasas limitadas ao conhecimento próprio; fundamentos A0 (decomposição) + A2 (spec-driven); v1.6.0 adiciona BPM-sênior via sub-modo nomeado + progressive disclosure (ADR-003)"
+last_review: 2026-05-25
 ---
 
-# Discovery — Elicitação Profunda Universal (genérico)
+# Discovery — Elicitação Profunda Universal (entry point)
 
 ## Antes de agir, carregar de `_shared/`
 `anti-hallucination` · `confidence-classification` · `metacognition-core`
@@ -51,8 +51,7 @@ exaustivos: estenda à vontade; se o assunto for novo, gere pelas dimensões aci
   deploy, retrocompatibilidade.
 - **BI/analytics:** grão, métricas vs dimensões, fontes, atualização, definição
   de cada KPI, público do dashboard, acurácia × performance.
-- **BA/processo:** as-is × to-be, donos do processo, regras de negócio, exceções,
-  indicadores de sucesso, mudança organizacional.
+- **BA/processo:** processo de negócio/BPM → usar sub-modo "mapeamento de processo" (ver "Sub-modos" abaixo).
 - **web/produto:** usuários, jornadas, responsividade, acessibilidade, SEO,
   estados vazios/erro, métricas de produto.
 - **dados/ETL:** schema, volume, frequência, qualidade, idempotência, lineage.
@@ -60,19 +59,27 @@ exaustivos: estenda à vontade; se o assunto for novo, gere pelas dimensões aci
 > Adicione trilhas livremente. A ausência de uma trilha NÃO impede o discovery —
 > o método universal cobre qualquer caso.
 
-## Modo "revisar projeto existente" (um caso de uso, não outro papel)
-Quando a entrada é um sistema que já existe (não uma ideia):
-1. Delegar a varredura ao **explorer** (read-only) — mapa, órfãos, duplicação.
-2. Sobre o relatório do explorer, conduzir a elicitação: o que sanear, profundidade
-   (superfície × refatorar), e **exigir baseline golden** se for mexer em lógica.
-3. Produzir o requirements.md do saneamento com critério de aceite =
-   "comportamento idêntico ao golden + critérios de limpeza atingidos".
+## Sub-modos (progressive disclosure — carregar SOB DEMANDA)
+
+Quando a natureza do trabalho ativar um sub-modo, carregar o **companion file**
+correspondente. A SKILL.md permanece curta; o detalhe vive no companion.
+Decisão arquitetural: `docs/adr/003-progressive-disclosure-companion-files.md`.
+
+| Sub-modo | Companion file | Quando carregar |
+|---|---|---|
+| **Universal puro** | (este SKILL.md) | Default — não há sub-modo ativado |
+| **Revisar projeto existente** | `revisar-projeto-existente.md` (vizinho) | Entrada é sistema que já existe; relatório do explorer disponível |
+| **Mapeamento de processo** (v1.6.0) | `mapeamento-de-processo.md` (vizinho) | Trabalho é processo de negócio com gatilhos/RACI/handoffs/exceções. Filtro de entrada rejeita: UI journey, runbook técnico, algoritmo de código, workflow de tool |
+
+Cada companion contém: filtro de entrada explícito, fluxo do sub-modo, output esperado.
 
 ## Output obrigatório
-Entrega um **`requirements.md` de nível sênior** (clonar `docs/specs/_template/`),
-com cada requisito classificado. Resumo ao orquestrador:
+Entrega um **`requirements.md` de nível sênior** (clonar `docs/specs/_template/`
+para modo universal/revisar; `docs/specs/_template-process/` para mapeamento de
+processo), com cada requisito classificado. Resumo ao orquestrador:
 ```yaml
 papel: discovery
+modo: universal | revisar-projeto-existente | mapeamento-de-processo
 natureza_do_trabalho: <o que o usuário nomeou>
 dimensoes_cobertas: [lista]
 requisitos: [cada um CONFIRMADO|INFERIDO|DESCONHECIDO]
@@ -86,5 +93,8 @@ recomendacao_ao_orquestrador: "feature-plan / architect / mais elicitação"
   NÃO audita/varre código por conta própria (delega ao explorer).
 - NÃO promete onisciência: faz as perguntas certas de ESTRUTURA em qualquer campo;
   a profundidade factual de nicho depende do que o usuário confirmar.
+- NÃO desenha to-be (architect via ADR de processo, quando sub-modo de processo).
+- NÃO trata compliance/audit trail (high-stakes-gate, quando aplicável).
 - Encerra quando o requirements tem critério de aceite binário e as lacunas estão
-  explícitas — então entrega ao `feature-plan`.
+  explícitas — então entrega ao `feature-plan` (modo universal) ou `architect`
+  (modo mapeamento de processo — gap-analysis.md vai para ADR de to-be).

@@ -1,8 +1,12 @@
 # sync-global.ps1
 # Espelha o framework do repo para ~/.claude/ (instalacao global do Claude Code).
-# - _shared/<name>/SKILL.md      -> ~/.claude/skills/<name>/
-# - .agent/skills/<name>/SKILL.md -> ~/.claude/skills/<name>/
+# - _shared/<name>/         -> ~/.claude/skills/<name>/      (pasta inteira via Copy-Item -Recurse;
+#                                                            inclui SKILL.md + qualquer companion *.md ou helpers)
+# - .agent/skills/<name>/   -> ~/.claude/skills/<name>/      (idem)
 # - .claude/agents/*.md (NAO .txt) -> ~/.claude/agents/
+# Pre-requisito de "skill valida": ter SKILL.md na pasta (entry point).
+# Companion files (ex.: discovery/mapeamento-de-processo.md, ADR-003 progressive disclosure) sao
+# copiados automaticamente porque o -Recurse copia a pasta inteira. Nao precisa adicionar regra nova.
 # Idempotente. Falha "soft": warning no stderr, exit 0 (nao bloqueia sessao).
 # Disparado pelo SessionStart hook em .claude/settings.json. Tambem pode rodar a mao.
 
