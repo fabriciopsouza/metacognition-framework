@@ -112,17 +112,48 @@ else
     ok "Sem --memory-repo informado; pulando setup de memoria"
 fi
 
-# 6. Resumo
+# 6. Configurar auto-boot global (ADR-006 v1.8.0) - subset cross-platform
+# Os hooks PowerShell so rodam em Windows; aqui criamos o squad-owners.txt e
+# avisamos sobre a limitacao. Quando Linux/macOS port chegar (ADR cross-platform
+# futuro), este passo ganha equivalente .sh.
+step "Configurando auto-boot global (subset cross-platform)"
+GLOBAL_DIR="$HOME/.claude"
+OWNERS_FILE="$GLOBAL_DIR/squad-owners.txt"
+mkdir -p "$GLOBAL_DIR"
+
+if [[ ! -f "$OWNERS_FILE" ]]; then
+    cat > "$OWNERS_FILE" <<'EOF'
+# squad-owners.txt - allowlist de owners para auto-boot global (ADR-006).
+# Uma linha por token; substring match case-insensitive contra owner do remote origin.
+# Use # para comentar; linhas vazias ignoradas.
+fpsouza
+fpsouz
+fsouza
+fabriciosouza
+fabriciopsouza
+vibraenergia
+natulab
+EOF
+    ok "squad-owners.txt criado com 7 tokens default"
+else
+    ok "squad-owners.txt ja existe; preservando customizacao"
+fi
+
+warn "Hooks PowerShell (.ps1) so rodam em Windows; o hook global de auto-boot fica inativo aqui ate o port .sh chegar (ADR cross-platform futuro)."
+
+# 7. Resumo
 echo ""
 echo "================================================================"
 echo " Setup concluido. Proximos passos:"
 echo "================================================================"
 echo " 1. cd \"$PROJECT_DIR\""
 echo " 2. Abrir Claude Code neste diretorio."
-echo "    -> SessionStart hook roda automaticamente:"
-echo "       * sync-global.ps1 espelha skills para ~/.claude/"
-echo "       * inject-start-session.ps1 ativa PMO no 1o turno"
+echo "    -> SessionStart hook roda automaticamente (apenas Windows nesta versao):"
+echo "       * sync-global.ps1 espelha skills + hooks + workflows para ~/.claude/"
+echo "       * inject-start-session-global.ps1 ativa PMO se owner bate com squad-owners.txt"
 echo " 3. Para pular o auto-boot em sessao rapida:"
-echo "       touch .claude/session.lock"
+echo "       touch .claude/session.lock         (este projeto)"
+echo "       touch ~/.claude/session.lock       (todos os projetos)"
+echo " 4. Para adicionar owner: editar ~/.claude/squad-owners.txt"
 echo ""
 echo " Pronto."

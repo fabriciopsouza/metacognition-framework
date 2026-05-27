@@ -30,6 +30,13 @@ O framework opera sob 1 de 3 níveis registrados em `~/.claude/framework-mode.js
 
 Ratchet forward-only: escalação livre (default→avançado→autosuficiente), downgrade só por edição manual do state file. Reativação dispara só quando `~/.claude/hooks/framework-sync.ps1` muda (hash trigger). Detalhe: `_shared/execution-modes/SKILL.md`.
 
+## Auto-boot global (v1.8.0 — ADR-006)
+Após `bootstrap.ps1`, o squad acorda automaticamente em qualquer IDE/projeto
+cujo owner do remote `origin` bata com `~/.claude/squad-owners.txt` (substring
+match case-insensitive). Fallback: marker explícito (`AGENTS.md` ou `.agent/`).
+Pular sessão: `New-Item .claude/session.lock` (projeto) ou `~/.claude/session.lock` (global).
+Adicionar owner: editar `~/.claude/squad-owners.txt`.
+
 ## Como ler skills
 As skills de processo vivem em `.agent/skills/<nome>/SKILL.md` e o núcleo em
 `_shared/<nome>/SKILL.md`. Carregue o SKILL.md relevante antes de agir. Para

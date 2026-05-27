@@ -15,6 +15,81 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.8.0] — 2026-05-27 — Auto-boot global do squad com allowlist de owners (ADR-006)
+
+> MINOR feature: promove o auto-boot do squad para `~/.claude/settings.json`
+> global com ativação condicional. Em qualquer IDE/projeto cujo owner do
+> remote `origin` bata com `~/.claude/squad-owners.txt` (substring match
+> case-insensitive), o squad acorda sozinho — sem precisar pedir "aplique
+> o framework" manualmente. Fallback para marker explícito (`AGENTS.md` ou
+> `.agent/`) em repos sem remote ou em colaboração ativa com terceiros.
+> Locks (`.claude/session.lock` por projeto, `~/.claude/session.lock` global)
+> pulam por sessão única. Reusa infra `~/.claude/hooks/` já criada na v1.7.1.
+
+### Added
+- `.claude/hooks/inject-start-session-global.template.ps1` — fonte versionada
+  do hook global. Algoritmo: CWD → locks → extrair owner do remote (regex
+  HTTPS + SSH) → substring match em `squad-owners.txt` → fallback marker
+  (`AGENTS.md`/`.agent/`) → injeta `additionalContext` lendo
+  `~/.claude/workflows/start-session.md` + `statusMessage` formato
+  `owner=<completo> match=<token>` para diagnóstico de falso positivo
+  (qa-critic round 1 ADR-006, C6). Falha soft.
+- `~/.claude/squad-owners.txt` (criado por bootstrap, não versionado) —
+  allowlist com 7 tokens default: `fpsouza`, `fpsouz`, `fsouza`,
+  `fabriciosouza`, `fabriciopsouza`, `vibraenergia`, `natulab`.
+- `~/.claude/workflows/` (criado pelo sync-global) — espelhamento de
+  `.agent/workflows/` para o hook global ler `start-session.md`.
+
+### Changed
+- `.claude/hooks/sync-global.ps1` — agora também copia
+  `inject-start-session-global.template.ps1` → `~/.claude/hooks/inject-start-session-global.ps1`
+  e `.agent/workflows/*` → `~/.claude/workflows/*`. `systemMessage` final
+  ganha contador `workflows`.
+- `bootstrap.ps1` — passo 7 novo: cria `squad-owners.txt` (preserva customização
+  se já existe), faz merge não-destrutivo de `hooks.SessionStart` em
+  `~/.claude/settings.json` (backup `.modeswap.bak`-style; rollback automático
+  se JSON ficar inválido), roda sync inicial.
+- `bootstrap.sh` — passo 7 paridade subset: cria `squad-owners.txt`; avisa
+  que hooks PowerShell ficam inativos em Linux/macOS até porte cross-platform.
+- `CLAUDE.md` + `AGENTS.md` — seção curta "Auto-boot global" com critérios
+  de ativação e ponteiro para `~/.claude/squad-owners.txt`.
+- `docs/adr/006-auto-boot-global-squad-allowlist-owners.md` — status mudou
+  para `Aceito (2026-05-27)`.
+
+### Como usar
+- **Repos do mantenedor** (`github.com/fabriciopsouza/foo`, etc.): squad ativa
+  automaticamente após `bootstrap.ps1` rodar uma vez por PC.
+- **Repo de terceiro com colaboração ativa**: `New-Item AGENTS.md` na raiz
+  local → próximas sessões ativam.
+- **Pular sessão única**: `New-Item .claude/session.lock` (projeto) ou
+  `~/.claude/session.lock` (global).
+- **Customizar allowlist**: editar `~/.claude/squad-owners.txt`.
+- **Diagnóstico** ("por que não ativou?"): olhar `statusMessage` na barra de
+  status — formato `owner=<completo> match=<token>` ou `skipped (<motivo>)`.
+
+### Migração de PC com v1.7.1 já instalado
+Quem já tem v1.7.1 ativa não rodou `bootstrap.ps1` recentemente — o auto-boot global não aparece sozinho. Passos manuais (idempotentes):
+```powershell
+cd <caminho-para-o-repo>
+git pull --ff-only
+pwsh ./bootstrap.ps1        # roda apenas o passo 6 efetivamente (resto detecta "já existe")
+```
+O passo 6 do bootstrap cria `~/.claude/squad-owners.txt` (preserva customização se já existe) e faz merge não-destrutivo de `hooks.SessionStart` em `~/.claude/settings.json` com backup `.modeswap.bak`. Idempotente: rodar 2× não duplica nada.
+
+### Pipeline
+PMO/Discovery (sessão "retome adr005" 2026-05-27) → Architect (ADR-006
+revisto pós-v1.7.1, escopo enxuto: gap do ADR-005 já resolvido) → qa-critic
+round 1 do ADR (4 ressalvas: C5 USERPROFILE, C6 statusMessage formato,
+C8 divergência hook global×project-level, adversarial extra pré-requisito
+test plan — todas incorporadas no próprio ADR) → mantenedor aprovou ADR
+("o que aprovamos para adr06, sem inflar, sem piorar") → Developer (esta
+implementação) → qa-critic adversarial em rounds até APROVADO LIMPO →
+DocOps → PR + merge no modo `autosuficiente`.
+
+[CONSOLIDADO] / [CONFIRMADO] · validação operacional em campo pós-merge.
+
+---
+
 ## [1.7.1] — 2026-05-27 — Fix do gap do ADR-005 — espelhar sync-global como framework-sync.ps1
 
 > PATCH operacional: o `check-execution-mode.ps1` da v1.7.0 monitora SHA-256 de

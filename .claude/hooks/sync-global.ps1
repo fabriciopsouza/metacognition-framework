@@ -4,7 +4,9 @@
 #                                                            inclui SKILL.md + qualquer companion *.md ou helpers)
 # - .agent/skills/<name>/   -> ~/.claude/skills/<name>/      (idem)
 # - .claude/agents/*.md (NAO .txt) -> ~/.claude/agents/
-# - este proprio script    -> ~/.claude/hooks/framework-sync.ps1  (v1.7.1 — fecha o gap do ADR-005)
+# - este proprio script                              -> ~/.claude/hooks/framework-sync.ps1  (v1.7.1)
+# - .claude/hooks/inject-start-session-global.template.ps1 -> ~/.claude/hooks/inject-start-session-global.ps1  (v1.8.0)
+# - .agent/workflows/<file>                          -> ~/.claude/workflows/<file>  (v1.8.0 - hook global le start-session.md de la)
 # Pre-requisito de "skill valida": ter SKILL.md na pasta (entry point).
 # Companion files (ex.: discovery/mapeamento-de-processo.md, ADR-003 progressive disclosure) sao
 # copiados automaticamente porque o -Recurse copia a pasta inteira. Nao precisa adicionar regra nova.
@@ -22,19 +24,22 @@ if ($env:CLAUDE_PROJECT_DIR -and (Test-Path $env:CLAUDE_PROJECT_DIR)) {
                   else { $null }
     $projectRoot = if ($scriptPath) { Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $scriptPath)) } else { $null }
 }
-$dest        = Join-Path $env:USERPROFILE '.claude'
-$skillsDest  = Join-Path $dest 'skills'
-$agentsDest  = Join-Path $dest 'agents'
-$hooksDest   = Join-Path $dest 'hooks'
+$dest          = Join-Path $env:USERPROFILE '.claude'
+$skillsDest    = Join-Path $dest 'skills'
+$agentsDest    = Join-Path $dest 'agents'
+$hooksDest     = Join-Path $dest 'hooks'
+$workflowsDest = Join-Path $dest 'workflows'
 
-$skillCount = 0
-$agentCount = 0
-$hookCount  = 0
+$skillCount    = 0
+$agentCount    = 0
+$hookCount     = 0
+$workflowCount = 0
 
 try {
-    if (-not (Test-Path $skillsDest)) { New-Item -ItemType Directory -Path $skillsDest -Force | Out-Null }
-    if (-not (Test-Path $agentsDest)) { New-Item -ItemType Directory -Path $agentsDest -Force | Out-Null }
-    if (-not (Test-Path $hooksDest))  { New-Item -ItemType Directory -Path $hooksDest -Force | Out-Null }
+    if (-not (Test-Path $skillsDest))    { New-Item -ItemType Directory -Path $skillsDest -Force | Out-Null }
+    if (-not (Test-Path $agentsDest))    { New-Item -ItemType Directory -Path $agentsDest -Force | Out-Null }
+    if (-not (Test-Path $hooksDest))     { New-Item -ItemType Directory -Path $hooksDest -Force | Out-Null }
+    if (-not (Test-Path $workflowsDest)) { New-Item -ItemType Directory -Path $workflowsDest -Force | Out-Null }
 
     # Guard $projectRoot=$null: Join-Path com $null lanca erro terminante (try/catch
     # captura mas mata o self-copy junto). Guardar mantem o self-copy alcancavel.
@@ -93,7 +98,27 @@ try {
         if (Test-Path $selfTarget) { $hookCount++ }
     }
 
-    $msg  = "Framework sync: $skillCount skills + $agentCount agents + $hookCount hooks -> ~/.claude/"
+    # ADR-006 / v1.8.0 — espelha o template do hook global (fonte versionada) para a
+    # instancia executavel em ~/.claude/hooks/. Par fonte/binario igual ao framework-sync.
+    if ($projectRoot) {
+        $hookGlobalSource = Join-Path $projectRoot '.claude\hooks\inject-start-session-global.template.ps1'
+        $hookGlobalTarget = Join-Path $hooksDest 'inject-start-session-global.ps1'
+        if (Test-Path $hookGlobalSource) {
+            Copy-Item -Path $hookGlobalSource -Destination $hookGlobalTarget -Force -ErrorAction SilentlyContinue
+            if (Test-Path $hookGlobalTarget) { $hookCount++ }
+        }
+
+        # Espelha .agent/workflows/ — o hook global le start-session.md de ~/.claude/workflows/.
+        $workflowsRoot = Join-Path $projectRoot '.agent\workflows'
+        if (Test-Path $workflowsRoot) {
+            Get-ChildItem -Path $workflowsRoot -File -ErrorAction SilentlyContinue | ForEach-Object {
+                Copy-Item -Path $_.FullName -Destination (Join-Path $workflowsDest $_.Name) -Force -ErrorAction SilentlyContinue
+                $workflowCount++
+            }
+        }
+    }
+
+    $msg  = "Framework sync: $skillCount skills + $agentCount agents + $hookCount hooks + $workflowCount workflows -> ~/.claude/"
     $json = @{ systemMessage = $msg } | ConvertTo-Json -Compress
     Write-Output $json
 }
