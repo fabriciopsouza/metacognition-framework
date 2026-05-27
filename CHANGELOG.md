@@ -15,6 +15,53 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.7.1] — 2026-05-27 — Fix do gap do ADR-005 — espelhar sync-global como framework-sync.ps1
+
+> PATCH operacional: o `check-execution-mode.ps1` da v1.7.0 monitora SHA-256 de
+> `~/.claude/hooks/framework-sync.ps1`, mas nada na v1.7.0 cria esse arquivo —
+> nem o `sync-global.ps1` (que só espelhava skills/agents), nem o bootstrap.
+> Resultado observado: gate de modos de execução **dormente desde a v1.7.0**
+> (hook cai sempre no branch `Test-Path = false` → exit silencioso → nenhuma
+> ativação dispara). Auditoria 2026-05-27 (sessão "retome adr005"): em PC
+> ativo do mantenedor, `~/.claude/hooks/` sequer existe; `framework-mode.json`
+> ausente; nenhum modo foi ativado em campo desde o merge da v1.7.0.
+
+### Fixed
+- `.claude/hooks/sync-global.ps1` — cria `~/.claude/hooks/` e espelha a si mesmo
+  como `~/.claude/hooks/framework-sync.ps1` (rolling overwrite via `Copy-Item -Force`).
+  Nome diferente é deliberado: `sync-global.ps1` é o **fonte** (project-level);
+  `framework-sync.ps1` é a **instância instalada** (global-level). Par fonte/binário,
+  não rename. Resolução do path do próprio script usa cadeia robusta
+  `$PSCommandPath → $MyInvocation.MyCommand.Path → $null` (também aplicada ao
+  `$projectRoot` por consistência); guard `if ($projectRoot)` evita falha
+  terminante no `Join-Path` quando ambos são nulos (iex/dot-source). Contador
+  `$hookCount` na `systemMessage` final.
+
+### Validação manual
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .claude\hooks\sync-global.ps1
+Test-Path ~/.claude/hooks/framework-sync.ps1   # → True
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .claude\hooks\check-execution-mode.ps1
+# → JSON com additionalContext motivo INITIAL (após estado limpo); silencioso após ativação.
+```
+
+### Limitações conhecidas
+- ACL ruim em `~/.claude/hooks/` → `hookCount=0`; sessão não bloqueia; diagnosticar com `New-Item` manual.
+- Diagnóstico via cópia instalada copia self sobre self (Windows trunca+recópia; sem efeito).
+
+### Pipeline
+PMO (auditoria casual detectou gap) → Developer (commit `2fb46d8`) →
+qa-critic 3 rounds adversariais em subagente isolado: round 1
+(`APROVADO_COM_RESSALVAS`: 1 médio + 2 baixos + 1 adversarial) → incorporado
+(`7e63023`) → round 2 (`APROVADO_COM_RESSALVAS`: 1 médio derivado, consistência
+`$projectRoot`) → incorporado (`96b2a81`) → round 3 (**`APROVADO LIMPO`**) →
+algoritmo `execution-modes` 8 passos: modo `avancado` ativado em campo
+2026-05-27T00:42-03:00; gate agora silencioso → DocOps (`d106a0f`).
+
+[CONSOLIDADO] / [CONFIRMADO] · validado em campo (2026-05-27).
+
+---
+
 ## [1.7.0] — 2026-05-26 — Modos de execução com ratchet por hash de hook (ADR-005)
 
 > MINOR feature: framework passa a operar sob 1 de 3 níveis explícitos

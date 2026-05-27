@@ -132,10 +132,59 @@ Não há flag de escape para o check em si — ele é silencioso quando não há
 ## Implementação (ponteiro após aceito)
 
 - **Ponteiro:**
-  - Branch: `feat/execution-modes-v170` (a criar pelo developer)
+  - Branch: `feat/execution-modes-v170` (mergeada em main via PR #6 em 2026-05-26)
   - Data: 2026-05-26 (aplicado em série pós-ADR)
   - Grep para localizar implementação: `git log --all --grep "v1.7.0" --grep "execution-modes"`
 - **Hash de commit:** opcional, NUNCA único (lição ADR-001 / ADR-003).
+
+### Pós-merge — defeito de execução detectado e corrigido (v1.7.1 / 2026-05-27)
+
+A v1.7.0 mergeou com um **gap de execução**: o `check-execution-mode.ps1`
+referencia `~/.claude/hooks/framework-sync.ps1` (linha 18), mas nenhum
+arquivo da v1.7.0 cria esse destino — nem o `sync-global.ps1` (que só
+espelhava `_shared/`, `.agent/skills/`, `.claude/agents/`), nem o
+bootstrap. Resultado em campo: hook caiu sempre no branch
+`Test-Path $hookFile = $false` → exit silencioso → **gate de modos
+ficou dormente desde o merge**.
+
+Auditoria 2026-05-27 (sessão "retome adr005, finalize") confirmou em PC ativo
+do mantenedor: `~/.claude/hooks/` não existia, `framework-mode.json` ausente,
+nenhum modo ativado desde 2026-05-26. A decisão arquitetural deste ADR está
+correta; faltou o vínculo entre fonte (project-level) e instância instalada
+(global-level).
+
+**Fix aplicado em v1.7.1** (branch `fix/adr-005-framework-sync-gap`):
+`.claude/hooks/sync-global.ps1` passa a também criar `~/.claude/hooks/` e
+copiar a si mesmo (via `$MyInvocation.MyCommand.Path`) para
+`~/.claude/hooks/framework-sync.ps1` — rolling overwrite idempotente. Nome
+diferente é deliberado: `sync-global.ps1` é o **fonte** versionado;
+`framework-sync.ps1` é a **instância instalada** no global. Par fonte/binário,
+não rename (regra anti-rename não acionada).
+
+**Lição:** ADRs aceitos precisam de validação em campo (ao menos uma
+ativação real) **antes** que features dependentes empilhem em cima. A
+sessão imediatamente seguinte ao merge da v1.7.0 começou a desenhar
+o ADR-006 — só o passo de "auditar estado real do `~/.claude/`" revelou
+o gap. Critério de aceite de ADRs futuros: incluir 1 passo de
+"validação operacional pós-merge" antes de marcar [CONFIRMADO].
+
+### Estado pós-fix (v1.7.1, branch `fix/adr-005-framework-sync-gap`)
+
+- **Gap:** RESOLVIDO. `~/.claude/hooks/framework-sync.ps1` é criado e mantido
+  em sincronia pelo `sync-global.ps1` (cópia byte-a-byte rolling-overwrite).
+- **qa-critic adversarial (3 rounds, subagente isolado):** APROVADO LIMPO no
+  round 3. Round 1 e 2 produziram 4 ressalvas (1 médio + 1 médio derivado +
+  2 baixos + 1 observação adversarial); todas incorporadas em código (médios)
+  ou documentação (baixos + adversarial).
+- **Ativação operacional:** modo `avancado` ativado pela primeira vez em
+  2026-05-27T00:42-03:00 no PC do mantenedor, seguindo os 8 passos canônicos
+  do `execution-modes/SKILL.md` (backup, template, merge validado, state
+  file, confirmação). State file ativo. Gate agora satisfeito (silencioso até
+  o hash do hook mudar).
+- **Lição validada:** o defeito só apareceu porque uma sessão posterior fez
+  auditoria casual — confirmou que "validação operacional pós-merge" deve
+  virar passo formal do ciclo de release. Já registrado como memória de
+  feedback `feedback-framework-integral` (2026-05-27).
 - **Validação:**
   1. State ausente: deletar `~/.claude/framework-mode.json` (se existir) → abrir nova sessão → Claude deve receber `additionalContext` pedindo ativação → escolher um modo → settings.json muda + state file aparece.
   2. State presente, hash bate: abrir sessão normal → nenhum prompt de ativação → settings.json intocado.
