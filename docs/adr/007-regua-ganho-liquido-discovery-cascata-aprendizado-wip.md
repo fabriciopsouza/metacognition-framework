@@ -1,6 +1,6 @@
 # ADR 007 — Régua §0 (GANHO LÍQUIDO) + Discovery em cascata (G1) + extensões de aprendizado e WIP
 
-- **Status:** Proposto (2026-05-27 — pelo papel `architect`; aguarda aceite do mantenedor)
+- **Status:** Aceito (2026-05-27 — mantenedor autorizou trabalho noturno autônomo; qa-critic adversarial 3 rounds: round 1 APROVADO_COM_RESSALVAS (2M+3B+3A), round 2 APROVADO_COM_RESSALVAS (1 cosmética), round 3 APROVADO LIMPO)
 - **Data:** 2026-05-27 · **Decisores:** Fabricio (mantenedor) + Claude (papel `architect`)
 - **Substitui:** nenhum · **Substituído por:** nenhum
 - **Relaciona-se a:** ADR-002 (discovery v1.6.0), ADR-003 (progressive disclosure), ADR-004 (auto-boot), ADR-005 (modos), ADR-006 (auto-boot global)
