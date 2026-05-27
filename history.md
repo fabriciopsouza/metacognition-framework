@@ -9,6 +9,19 @@
 
 ---
 
+## 2026-05-27T20:50 — Sessão: reconciliação de sync + 2 bugs de encoding/boot nos hooks
+
+Abertura via /start-session detectou `main` ahead 1 de origin (commit `5b0b2a2`, fix UTF-8 runtime dos hooks de inject, não pushado). Pushado após avaliação §0 (devido: não pushar regrediria mojibake em outro PC — [[fabricio-multi-pc-workflow]]).
+
+Dois bugs corrigidos + housekeeping:
+- **`9321e28` — header v1.6.1 ASCII-safe.** O fix runtime anterior não pegava o literal `—` no heredoc da linha 58 de `inject-start-session.ps1`: PS 5.1 parseia `.ps1` sem BOM como CP-1252 ANTES de `[Console]::OutputEncoding` rodar. Trocado por `-` ASCII (unifica com o header global v1.8.0 que já era ASCII). Convenção registrada em memória.
+- **Duplicação de /start-session (gap impl v1.8.0/ADR-006).** Confirmado: o `.claude/settings.json` do repo registra o hook de PROJETO v1.6.1 e o `~/.claude/settings.json` (via bootstrap) registra o GLOBAL — os dois disparam ao abrir o framework-repo. Fix: guard no hook de projeto que cede (`exit 0`) quando `~/.claude/hooks/inject-start-session-global.ps1` existe. Preserva boot de primeira-execução (global ainda ausente), elimina injeção dupla pós-bootstrap. Honra de lock preservada (global checa os locks).
+- **Housekeeping:** 5 branches remotas de PRs mergeados deletadas (`chore/backlog-and-summary`, `feat/auto-sync-hook`, `feat/discovery-cascata-v190`, `feat/framework-optimization-v180`, `fix/adr-005-framework-sync-gap`). `_backup/*` preservado.
+
+**v1.9.0 FECHADA:** impl 4/4 + DocOps + ADR-007 mergeados (commits `4ec6f60`, `6bb20ef`, `8c7f8ab`, merge `197b354`). Item removido de `## Em aberto`.
+
+---
+
 ## 2026-05-27T03:30 — Sessão noturna: gap intake↔realidade na v1.9.0 reconhecido
 
 Aprendizado documental (não-bloqueante): o intake §4 estimou "~6 edições de 1-3 linhas + 2 linhas de princípio" para a v1.9.0. A realidade do PR foi 428 inserções. O conteúdo é justificável linha a linha pela régua §0 (ADR-007: 160 linhas decisórias; companion + template: ~160 linhas substantivas; edições cirúrgicas: ~100 linhas). Não há regressão funcional — apenas a estimativa do intake estava errada por ~70× porque não considerava ADR+companion+template como artefatos novos legítimos. Lição: estimativas em intake devem distinguir "edições" de "artefatos novos". Não vira ADR (caso isolado, não padrão recorrente — §Aprendizado).
@@ -42,7 +55,7 @@ Riscos ativos: race condition humano vs orquestrador no history.md (mitigada por
 
 > WIP atual (ex-G11). Reconciliar com branches do git e ADRs em status `Proposto` no `/start-session` (modo squad).
 
-- *(nenhum item em aberto além da implementação em curso da v1.9.0)*
+- *(nenhum item em aberto — v1.9.0 fechada em 2026-05-27T20:50: impl 4/4 mergeada)*
 
 ---
 
