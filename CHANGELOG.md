@@ -27,82 +27,38 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 > ausente; nenhum modo foi ativado em campo desde o merge da v1.7.0.
 
 ### Fixed
-- `.claude/hooks/sync-global.ps1` — adiciona destino `~/.claude/hooks/` e
-  espelha a si mesmo (via `$MyInvocation.MyCommand.Path`) para
-  `~/.claude/hooks/framework-sync.ps1`. Idempotente (rolling overwrite via
-  `Copy-Item -Force`). Nome diferente é deliberado: `sync-global.ps1` é o
-  FONTE (project-level, versionado no repo), `framework-sync.ps1` é a
-  INSTÂNCIA INSTALADA (global-level, espelhada pelo hook). Par fonte/binário,
-  não rename — regra anti-rename não acionada.
-- `.claude/hooks/sync-global.ps1` — cabeçalho documenta o novo destino;
-  contador `$hookCount` somado ao `systemMessage` final
-  (`Framework sync: N skills + M agents + K hooks -> ~/.claude/`) para
-  visibilidade do espelhamento na barra de status.
+- `.claude/hooks/sync-global.ps1` — cria `~/.claude/hooks/` e espelha a si mesmo
+  como `~/.claude/hooks/framework-sync.ps1` (rolling overwrite via `Copy-Item -Force`).
+  Nome diferente é deliberado: `sync-global.ps1` é o **fonte** (project-level);
+  `framework-sync.ps1` é a **instância instalada** (global-level). Par fonte/binário,
+  não rename. Resolução do path do próprio script usa cadeia robusta
+  `$PSCommandPath → $MyInvocation.MyCommand.Path → $null` (também aplicada ao
+  `$projectRoot` por consistência); guard `if ($projectRoot)` evita falha
+  terminante no `Join-Path` quando ambos são nulos (iex/dot-source). Contador
+  `$hookCount` na `systemMessage` final.
 
-### Como validar manualmente
+### Validação manual
 ```powershell
-# 1. Rodar o sync
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .claude\hooks\sync-global.ps1
-# 2. Verificar o destino do gap
-Test-Path ~/.claude/hooks/framework-sync.ps1   # deve retornar True
-# 3. Forçar primeira ativação
+Test-Path ~/.claude/hooks/framework-sync.ps1   # → True
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .claude\hooks\check-execution-mode.ps1
-# Saída esperada: JSON com hookSpecificOutput.additionalContext != "" (motivo INITIAL).
+# → JSON com additionalContext motivo INITIAL (após estado limpo); silencioso após ativação.
 ```
 
-### Limitações conhecidas (qa-critic round 1, severidade BAIXA — registradas, não bloqueantes)
-- **ACL ruim em `~/.claude/hooks/`:** se `New-Item` falhar ao criar a pasta global
-  (permissões), o script segue (falha soft), `hookCount` permanece em 0 e a
-  `systemMessage` exibe `0 hooks`. Sessão não bloqueia; skills/agents continuam
-  espelhados normalmente. Diagnóstico: rodar `New-Item ~/.claude/hooks -ItemType Directory`
-  à mão e re-executar `sync-global.ps1`.
-- **Diagnóstico via cópia instalada:** se o usuário rodar manualmente
-  `~/.claude/hooks/framework-sync.ps1` (em vez de `.claude/hooks/sync-global.ps1`
-  do repo), o script copiará a si mesmo sobre si mesmo (Windows trunca+recópia,
-  sem efeito prático). Comportamento esperado, documentado em comentário inline.
+### Limitações conhecidas
+- ACL ruim em `~/.claude/hooks/` → `hookCount=0`; sessão não bloqueia; diagnosticar com `New-Item` manual.
+- Diagnóstico via cópia instalada copia self sobre self (Windows trunca+recópia; sem efeito).
 
-### Pipeline (completo após 3 rounds adversariais)
+### Pipeline
+PMO (auditoria casual detectou gap) → Developer (commit `2fb46d8`) →
+qa-critic 3 rounds adversariais em subagente isolado: round 1
+(`APROVADO_COM_RESSALVAS`: 1 médio + 2 baixos + 1 adversarial) → incorporado
+(`7e63023`) → round 2 (`APROVADO_COM_RESSALVAS`: 1 médio derivado, consistência
+`$projectRoot`) → incorporado (`96b2a81`) → round 3 (**`APROVADO LIMPO`**) →
+algoritmo `execution-modes` 8 passos: modo `avancado` ativado em campo
+2026-05-27T00:42-03:00; gate agora silencioso → DocOps (`d106a0f`).
 
-PMO (sessão "como vc esta em relacao ao repositorio fonte" 2026-05-27 detectou
-o gap via leitura cruzada do ADR-005 + `check-execution-mode.ps1` + estado
-real do `~/.claude/`) → mantenedor escolheu "retome adr005, finalize, e entao
-avancamos do jeito certo" → Developer (commit `2fb46d8`, branch
-`fix/adr-005-framework-sync-gap`) →
-
-- **qa-critic round 1** (subagente isolado, contexto fresh):
-  `APROVADO_COM_RESSALVAS` — C3 [MÉDIO] (`$MyInvocation.MyCommand.Path` é frágil
-  em `iex`/dot-source; trocar por cadeia `$PSCommandPath` → `$MyInvocation` →
-  `$null`) + C9/C10 [BAIXO] (ACL e contador) + 1 observação adversarial
-  (self-copy quando invocado da própria cópia instalada).
-- Developer incorporou C3+C10 no código; C9 + adversarial documentados acima;
-  commit `7e63023`.
-- **qa-critic round 2** (subagente isolado, novo contexto):
-  `APROVADO_COM_RESSALVAS` — 1 ressalva [MÉDIO] pré-existente: linha 20 do mesmo
-  arquivo tinha a mesma vulnerabilidade do C3 no cálculo de `$projectRoot`. Não
-  introduzida pelo patch, mas exposta por inconsistência cross-código.
-- Developer aplicou a mesma cadeia robusta em `$projectRoot` + guard
-  `if ($projectRoot)` em volta dos 3 `Join-Path` subsequentes; self-copy
-  mantido fora do guard (alcança mesmo no caso degradado, garantindo que o
-  gap não reaparece); commit `96b2a81`.
-- **qa-critic round 3** (subagente isolado, novo contexto):
-  `APROVADO LIMPO` — sem novas ressalvas. Incorporação validada com simetria.
-
-→ Algoritmo `execution-modes` (8 passos) executado pelo Claude operador:
-  backup `.modeswap.bak` OK · template `avancado.json` lido · merge ao
-  `~/.claude/settings.json` (preservadas `enabledPlugins`, `autoUpdatesChannel`;
-  substituídas `permissions.*`) · JSON validado antes de gravar (UTF-8 sem BOM)
-  · state file `~/.claude/framework-mode.json` criado com `mode=avancado`,
-  `hookSha256=73FB2BDF...`, `activatedAt=2026-05-27T00:42-03:00`, `history` com
-  entrada `INITIAL` · `check-execution-mode.ps1` agora SILENCIOSO (gate
-  satisfeito; reativação só em `HOOK_CHANGED`).
-
-→ DocOps fechando o bloco (esta nota).
-
-**Resultado em campo:** gate do ADR-005 deixou de ser dormente; modo `avancado`
-operacional pela primeira vez desde o merge da v1.7.0 (2026-05-26). Próxima
-reativação só quando o hash do `framework-sync.ps1` mudar.
-
-[CONSOLIDADO] / [CONFIRMADO] · validado operacionalmente em campo (2026-05-27).
+[CONSOLIDADO] / [CONFIRMADO] · validado em campo (2026-05-27).
 
 ---
 

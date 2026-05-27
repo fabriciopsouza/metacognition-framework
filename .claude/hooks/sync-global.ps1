@@ -12,25 +12,15 @@
 # Disparado pelo SessionStart hook em .claude/settings.json. Tambem pode rodar a mao.
 
 $ErrorActionPreference = 'Continue'
-# Script vive em <projectRoot>/.claude/hooks/sync-global.ps1 — 3 niveis acima.
-# Preferir $env:CLAUDE_PROJECT_DIR quando Claude Code o setar; fallback walking up.
-#
-# Resolucao do caminho do proprio script (qa-critic round 2, consistencia com C3):
-# preferir $PSCommandPath (PowerShell 3+, robusto); fallback para $MyInvocation.MyCommand.Path
-# (que retorna $null em iex/dot-source). Sem essa cadeia, Split-Path -Parent $null lanca
-# erro terminante capturado pelo catch externo, fazendo o sync inteiro cair silencioso
-# (zero skills + zero agents + zero hooks com apenas warning em stderr).
+# projectRoot: $env:CLAUDE_PROJECT_DIR (Claude Code) ou walking up 3 niveis do script.
+# Cadeia $PSCommandPath -> $MyInvocation.MyCommand.Path -> $null cobre iex/dot-source (ADR-005 pos-merge).
 if ($env:CLAUDE_PROJECT_DIR -and (Test-Path $env:CLAUDE_PROJECT_DIR)) {
     $projectRoot = $env:CLAUDE_PROJECT_DIR
 } else {
     $scriptPath = if ($PSCommandPath) { $PSCommandPath }
                   elseif ($MyInvocation.MyCommand.Path) { $MyInvocation.MyCommand.Path }
                   else { $null }
-    if ($scriptPath) {
-        $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $scriptPath))
-    } else {
-        $projectRoot = $null
-    }
+    $projectRoot = if ($scriptPath) { Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $scriptPath)) } else { $null }
 }
 $dest        = Join-Path $env:USERPROFILE '.claude'
 $skillsDest  = Join-Path $dest 'skills'
@@ -46,10 +36,8 @@ try {
     if (-not (Test-Path $agentsDest)) { New-Item -ItemType Directory -Path $agentsDest -Force | Out-Null }
     if (-not (Test-Path $hooksDest))  { New-Item -ItemType Directory -Path $hooksDest -Force | Out-Null }
 
-    # Guard contra $projectRoot=$null (qa-critic round 2): se a resolucao do script falhou em iex/dot-source
-    # SEM $env:CLAUDE_PROJECT_DIR setado, $projectRoot vira $null. Join-Path com $null lanca erro terminante;
-    # o try/catch externo captura mas o self-copy block tambem nao roda. Guardar aqui mantem o self-copy
-    # alcancavel mesmo nesse cenario degradado (pelo menos o gap do ADR-005 nao reaparece).
+    # Guard $projectRoot=$null: Join-Path com $null lanca erro terminante (try/catch
+    # captura mas mata o self-copy junto). Guardar mantem o self-copy alcancavel.
     if ($projectRoot) {
         $sharedRoot      = Join-Path $projectRoot '_shared'
         $agentSkillsRoot = Join-Path $projectRoot '.agent\skills'
@@ -91,21 +79,11 @@ try {
         [Console]::Error.WriteLine("[framework-sync] aviso: projectRoot nao resolvido ($PSCommandPath e $MyInvocation.MyCommand.Path ambos nulos, e CLAUDE_PROJECT_DIR ausente). Pulando sync de skills/agents; self-copy ainda tentara rodar.")
     }
 
-    # ADR-005 / v1.7.1 — espelha este proprio sync-global.ps1 para ~/.claude/hooks/framework-sync.ps1.
-    # Resolve a referencia orfa do check-execution-mode.ps1 (linha 18) que monitora SHA-256 deste arquivo
-    # no destino global. Sem isso, o gate de modos de execucao (ADR-005) cai sempre no branch silencioso
-    # "Test-Path $hookFile = false" e nunca dispara reativacao. Nome diferente e deliberado: sync-global.ps1
-    # e o FONTE (project-level), framework-sync.ps1 e a INSTANCIA INSTALADA (global-level). Par fonte/binario.
-    #
-    # Resolucao do caminho do proprio script (qa-critic round 1, C3 [MEDIO]): preferir $PSCommandPath
-    # (PowerShell 3+, robusto em todos os modos de invocacao); fallback para $MyInvocation.MyCommand.Path
-    # (que retorna $null em iex/dot-source). Sem essa cadeia, o gap reaparece silenciosamente se o
-    # runtime do hook do Claude Code invocar o script via iex em vez de -File.
-    #
-    # Edge conhecida (qa-critic round 1, adversarial extra): se este script for invocado a partir da
-    # PROPRIA copia em ~/.claude/hooks/framework-sync.ps1 (uso manual como diagnostico), $selfSource
-    # apontaria para ~/.claude/hooks/framework-sync.ps1 e $selfTarget para o mesmo path -> Copy-Item de
-    # si para si. Comportamento do Windows: truncamento + recopia do mesmo conteudo, sem efeito pratico.
+    # Self-copy: espelha este script como ~/.claude/hooks/framework-sync.ps1 (par fonte/binario,
+    # ADR-005 pos-merge). Necessario porque check-execution-mode.ps1 (linha 18) monitora SHA-256
+    # desse path — sem este espelhamento o gate de modos de execucao fica dormente.
+    # Edge: rodar manualmente do path instalado faz Copy-Item de si para si (Windows trunca+recopia,
+    # sem efeito pratico).
     $selfSource = if ($PSCommandPath) { $PSCommandPath }
                   elseif ($MyInvocation.MyCommand.Path) { $MyInvocation.MyCommand.Path }
                   else { $null }
