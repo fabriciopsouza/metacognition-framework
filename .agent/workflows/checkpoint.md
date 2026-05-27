@@ -15,3 +15,8 @@ Riscos ativos: <risco + mitigação>
 
 ## Quando
 Fim de bloco aprovado · antes de encerrar · ao mudar direção · a cada ≥20 turnos.
+
+## Aprendizado (ex-G9 / ADR-007)
+Se gatilho de fracasso disparou (anti-loop, qa-critic reprovou ≥2×, file-first violado, estouro de token, [CONFIRMADO] que se revelou falso) → anotar em `history.md` sob `## Aprendizado`. Single-writer (orquestrador), append-only com timestamp.
+
+**Firewall:** notas de aprendizado são **inertes** — só viram comportamento via skill/regra destilada, aprovada via ADR e mergeada. Nota errada não propaga.

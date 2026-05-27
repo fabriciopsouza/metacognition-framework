@@ -19,6 +19,9 @@ Ver .agent/rules/ (todas referenciam _shared/).
 ## Auto-boot global (v1.8.0 — ADR-006)
 Após `bootstrap.ps1`, o squad acorda automaticamente em qualquer IDE/projeto cujo owner do remote `origin` bata com `~/.claude/squad-owners.txt` (substring match). Fallback: `AGENTS.md` ou `.agent/` no projeto. Pular: `.claude/session.lock` ou `~/.claude/session.lock`.
 
+## Régua §0 — GANHO LÍQUIDO (v1.9.0 — ADR-007)
+Princípio 10 do `AGENT-FRAMEWORK.md` §6: adição pura é rejeitada. Aceitar só se (a) funde/remove ≥ adiciona, (b) reduz tokens/latência, ou (c) destrava eval inalcançável editando existente. Sub-modo `pesquisa-cascata` do discovery (sob demanda) é a primeira aplicação.
+
 ## Aplicações
 Domínios específicos (BI, regulado, etc.) NÃO ficam no núcleo — são criados clonando
 .agent/skills/_template e vivem FORA do núcleo (no seu repositório).
