@@ -167,6 +167,24 @@ sessão imediatamente seguinte ao merge da v1.7.0 começou a desenhar
 o ADR-006 — só o passo de "auditar estado real do `~/.claude/`" revelou
 o gap. Critério de aceite de ADRs futuros: incluir 1 passo de
 "validação operacional pós-merge" antes de marcar [CONFIRMADO].
+
+### Estado pós-fix (v1.7.1, branch `fix/adr-005-framework-sync-gap`)
+
+- **Gap:** RESOLVIDO. `~/.claude/hooks/framework-sync.ps1` é criado e mantido
+  em sincronia pelo `sync-global.ps1` (cópia byte-a-byte rolling-overwrite).
+- **qa-critic adversarial (3 rounds, subagente isolado):** APROVADO LIMPO no
+  round 3. Round 1 e 2 produziram 4 ressalvas (1 médio + 1 médio derivado +
+  2 baixos + 1 observação adversarial); todas incorporadas em código (médios)
+  ou documentação (baixos + adversarial).
+- **Ativação operacional:** modo `avancado` ativado pela primeira vez em
+  2026-05-27T00:42-03:00 no PC do mantenedor, seguindo os 8 passos canônicos
+  do `execution-modes/SKILL.md` (backup, template, merge validado, state
+  file, confirmação). State file ativo. Gate agora satisfeito (silencioso até
+  o hash do hook mudar).
+- **Lição validada:** o defeito só apareceu porque uma sessão posterior fez
+  auditoria casual — confirmou que "validação operacional pós-merge" deve
+  virar passo formal do ciclo de release. Já registrado como memória de
+  feedback `feedback-framework-integral` (2026-05-27).
 - **Validação:**
   1. State ausente: deletar `~/.claude/framework-mode.json` (se existir) → abrir nova sessão → Claude deve receber `additionalContext` pedindo ativação → escolher um modo → settings.json muda + state file aparece.
   2. State presente, hash bate: abrir sessão normal → nenhum prompt de ativação → settings.json intocado.

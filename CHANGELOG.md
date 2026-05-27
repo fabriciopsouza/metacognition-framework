@@ -61,20 +61,48 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .claude\hooks\check-exec
   do repo), o script copiará a si mesmo sobre si mesmo (Windows trunca+recópia,
   sem efeito prático). Comportamento esperado, documentado em comentário inline.
 
-### Pipeline
+### Pipeline (completo após 3 rounds adversariais)
+
 PMO (sessão "como vc esta em relacao ao repositorio fonte" 2026-05-27 detectou
 o gap via leitura cruzada do ADR-005 + `check-execution-mode.ps1` + estado
-real do `~/.claude/`) → mantenedor escolheu "retome adr005, finalize" →
-Developer (commit `2fb46d8`, branch `fix/adr-005-framework-sync-gap`) →
-**qa-critic round 1** (subagente isolado, contexto fresh):
-`APROVADO_COM_RESSALVAS` — C3 [MÉDIO] (`$MyInvocation.MyCommand.Path` é frágil
-em `iex`/dot-source; trocar por cadeia `$PSCommandPath` → `$MyInvocation` →
-`$null`) + C9/C10 [BAIXO] (ACL e contador) + 1 observação adversarial
-(self-copy quando invocado da própria cópia instalada) → Developer (incorporou
-C3 no patch; C9/C10 + adversarial documentados aqui; commit incremental) →
-qa-critic round 2 pendente.
+real do `~/.claude/`) → mantenedor escolheu "retome adr005, finalize, e entao
+avancamos do jeito certo" → Developer (commit `2fb46d8`, branch
+`fix/adr-005-framework-sync-gap`) →
 
-[CONSOLIDADO] / [CONFIRMADO].
+- **qa-critic round 1** (subagente isolado, contexto fresh):
+  `APROVADO_COM_RESSALVAS` — C3 [MÉDIO] (`$MyInvocation.MyCommand.Path` é frágil
+  em `iex`/dot-source; trocar por cadeia `$PSCommandPath` → `$MyInvocation` →
+  `$null`) + C9/C10 [BAIXO] (ACL e contador) + 1 observação adversarial
+  (self-copy quando invocado da própria cópia instalada).
+- Developer incorporou C3+C10 no código; C9 + adversarial documentados acima;
+  commit `7e63023`.
+- **qa-critic round 2** (subagente isolado, novo contexto):
+  `APROVADO_COM_RESSALVAS` — 1 ressalva [MÉDIO] pré-existente: linha 20 do mesmo
+  arquivo tinha a mesma vulnerabilidade do C3 no cálculo de `$projectRoot`. Não
+  introduzida pelo patch, mas exposta por inconsistência cross-código.
+- Developer aplicou a mesma cadeia robusta em `$projectRoot` + guard
+  `if ($projectRoot)` em volta dos 3 `Join-Path` subsequentes; self-copy
+  mantido fora do guard (alcança mesmo no caso degradado, garantindo que o
+  gap não reaparece); commit `96b2a81`.
+- **qa-critic round 3** (subagente isolado, novo contexto):
+  `APROVADO LIMPO` — sem novas ressalvas. Incorporação validada com simetria.
+
+→ Algoritmo `execution-modes` (8 passos) executado pelo Claude operador:
+  backup `.modeswap.bak` OK · template `avancado.json` lido · merge ao
+  `~/.claude/settings.json` (preservadas `enabledPlugins`, `autoUpdatesChannel`;
+  substituídas `permissions.*`) · JSON validado antes de gravar (UTF-8 sem BOM)
+  · state file `~/.claude/framework-mode.json` criado com `mode=avancado`,
+  `hookSha256=73FB2BDF...`, `activatedAt=2026-05-27T00:42-03:00`, `history` com
+  entrada `INITIAL` · `check-execution-mode.ps1` agora SILENCIOSO (gate
+  satisfeito; reativação só em `HOOK_CHANGED`).
+
+→ DocOps fechando o bloco (esta nota).
+
+**Resultado em campo:** gate do ADR-005 deixou de ser dormente; modo `avancado`
+operacional pela primeira vez desde o merge da v1.7.0 (2026-05-26). Próxima
+reativação só quando o hash do `framework-sync.ps1` mudar.
+
+[CONSOLIDADO] / [CONFIRMADO] · validado operacionalmente em campo (2026-05-27).
 
 ---
 
