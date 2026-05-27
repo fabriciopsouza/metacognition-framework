@@ -10,3 +10,7 @@ outputs/
 # v1.6.1 — flag de escape do auto-start-session (pessoal por cópia de trabalho)
 .claude/session.lock
 /WORKING-CONTEXT.md
+
+# Claude Code scheduler internal
+.claude/scheduled_tasks.lock
+.claude/scheduled_tasks.json
