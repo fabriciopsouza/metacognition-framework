@@ -37,6 +37,12 @@ match case-insensitive). Fallback: marker explícito (`AGENTS.md` ou `.agent/`).
 Pular sessão: `New-Item .claude/session.lock` (projeto) ou `~/.claude/session.lock` (global).
 Adicionar owner: editar `~/.claude/squad-owners.txt`.
 
+## Régua §0 — GANHO LÍQUIDO (v1.9.0 — ADR-007)
+Princípio 10 do `AGENT-FRAMEWORK.md` §6: adição pura é rejeitada por padrão. Mudança só passa se (a) funde/remove ≥ adiciona, (b) reduz tokens/latência, ou (c) destrava eval inalcançável editando existente. Antes de criar arquivo/skill/regra: "o que dá para remover, fundir, simplificar?"
+
+## Discovery sub-modo pesquisa-cascata (v1.9.0 — ADR-007)
+Quando o trabalho exige pesquisa antes da spec (pergunta de fundo sem fonte canônica, e a resposta destrava decisão), o discovery carrega `pesquisa-cascata.md` (companion sob demanda). Pipeline 9 passos: decompor → buscar via explorer → refletir → ramificar (≤2 rodadas) → sintetizar → **ataque anti-raso obrigatório** → refinar → handoff. Output: `research-brief.md`.
+
 ## Como ler skills
 As skills de processo vivem em `.agent/skills/<nome>/SKILL.md` e o núcleo em
 `_shared/<nome>/SKILL.md`. Carregue o SKILL.md relevante antes de agir. Para

@@ -15,6 +15,40 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.9.0] — 2026-05-27 — Régua §0 GANHO LÍQUIDO + Discovery sub-modo pesquisa-cascata (G1) + aprendizado e WIP por extensão (ADR-007)
+
+> MINOR feature: aplica o intake do plano de otimização (`docs/_intake/2026-05-27-plano-otimizacao-framework.md`) ao framework. **Régua §0** entra como princípio 10 do `AGENT-FRAMEWORK.md` §6: adição pura é rejeitada por padrão. **G1 pesquisa-cascata** vira sub-modo do discovery (companion sob demanda, ADR-003) — pipeline 9 passos com ataque anti-raso obrigatório. **Aprendizado de fracassos** (ex-G9) e **WIP/nada esquecido** (ex-G11) atendidos por **extensão** (não subsistema novo): `/checkpoint` + `history.md` + release checklist + `start-session`.
+
+### Added
+- **`.agent/skills/discovery/pesquisa-cascata.md`** — companion sob demanda do discovery (G1). Algoritmo: filtro de entrada → decompor (3-5 sub-perguntas multi-hop) → buscar via explorer (paralelo) → refletir → ramificar (≤2 rodadas) → sintetizar → **ataque anti-raso obrigatório (R3)** → refinar com critério binário → handoff. Falha do explorer registra `[DESCONHECIDO]` sem repetir sub-pergunta.
+- **`docs/specs/_template-research/research-brief.md`** — template do artefato de saída (cabeçalho YAML + 8 seções: pergunta principal, decomposição, fontes, achados classificados, gaps, ataque anti-raso, recomendação, metadados).
+- **`history.md`** (raiz) — arquivo formalizado (já era referenciado pelo `AGENT-FRAMEWORK.md` §2.B sequência de squad). 3 seções: histórico cronológico + `## Em aberto` (WIP) + `## Aprendizado` (fracassos com firewall).
+
+### Changed
+- **`AGENT-FRAMEWORK.md` §6** — princípio 10 novo: **Otimização líquida (GANHO LÍQUIDO)**. Adição só passa se (a) funde/remove ≥ adiciona, (b) reduz tokens/latência, ou (c) destrava eval inalcançável editando existente. Detalhe: ADR-007.
+- **`.agent/skills/discovery/SKILL.md`** — bump versão `1.6.0` → `1.7.0`; +1 linha na tabela de sub-modos apontando para `pesquisa-cascata.md`.
+- **`.agent/workflows/checkpoint.md`** — seção **Aprendizado** (ex-G9): gatilhos de fracasso disparam append em `history.md` `## Aprendizado`. **Firewall**: notas são inertes; só viram comportamento via skill/regra destilada, aprovada via ADR e mergeada.
+- **`.agent/workflows/start-session.md`** — passo 2 novo: reconciliar `## Em aberto` do history.md com branches git e ADRs `Proposto` (modo squad apenas). **WIP-limit**: finalizar antes de iniciar; STATUS > 4 linhas → refatorar.
+- **`guia/GIT-VERSIONAMENTO.md`** — +1 linha no checklist de release: revisar `## Aprendizado` do history.md; padrão recorrente (≥3) → propor ADR.
+- **`CLAUDE.md`** + **`AGENTS.md`** — nota da Régua §0 e do sub-modo pesquisa-cascata.
+
+### Como usar
+- **Acionar pesquisa-cascata:** quando o trabalho exige pesquisa antes da spec E não há fonte canônica no contexto E a resposta destrava decisão → `discovery` carrega o companion sob demanda.
+- **Registrar aprendizado:** ao rodar `/checkpoint`, se gatilho de fracasso (anti-loop, qa-critic ≥2× reprovou, file-first violado, etc.) → anotar em `history.md` `## Aprendizado` com timestamp.
+- **Manter WIP visível:** em modo squad, `/start-session` reconcilia `## Em aberto` + branches + ADRs Proposto. Item só muda de status com razão registrada.
+- **Aplicar a régua §0:** antes de criar arquivo/skill/regra, perguntar "o que dá para remover, fundir ou simplificar?". Adição só passa por (a)/(b)/(c).
+
+### Pipeline
+PMO (intake colado pelo mantenedor) → Architect (ADR-007 com 6 alternativas, escolha Alternativa 1) → qa-critic adversarial em subagente isolado, 3 rounds:
+- Round 1: APROVADO_COM_RESSALVAS (2 médias + 3 baixas + 3 adversariais) → incorporadas
+- Round 2: APROVADO_COM_RESSALVAS (1 cosmética) → incorporada
+- Round 3: **APROVADO LIMPO** → ADR Aceito
+→ Developer (4 blocos serializados de implementação) → qa-critic código (rounds até LIMPO) → DocOps → PR + merge no modo `autosuficiente`.
+
+[CONSOLIDADO] / [CONFIRMADO] (após validação operacional em campo).
+
+---
+
 ## [1.8.0] — 2026-05-27 — Auto-boot global do squad com allowlist de owners (ADR-006)
 
 > MINOR feature: promove o auto-boot do squad para `~/.claude/settings.json`
