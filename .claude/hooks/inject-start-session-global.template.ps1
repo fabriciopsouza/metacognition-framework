@@ -20,6 +20,11 @@
 
 $ErrorActionPreference = 'Continue'
 
+# UTF-8 sem BOM no stdout: PS 5.1 default emite na codepage do console, corrompendo
+# acentos e multibyte (—, →) para o consumidor UTF-8 (Claude Code le o stdout do hook).
+# BOM quebraria o parse do JSON, por isso UTF8Encoding($false).
+[Console]::OutputEncoding = New-Object System.Text.UTF8Encoding $false
+
 $cwd = if ($env:CLAUDE_PROJECT_DIR -and (Test-Path $env:CLAUDE_PROJECT_DIR)) {
     $env:CLAUDE_PROJECT_DIR
 } else {
@@ -95,7 +100,7 @@ try {
         Emit-Result '' 'skipped (start-session.md ausente; rode sync no repo-framework primeiro)'
     }
 
-    $startContent = Get-Content $startDoc -Raw
+    $startContent = Get-Content $startDoc -Raw -Encoding UTF8
     $status = if ($matchToken) { "owner=$owner match=$matchToken" } else { "marker=$marker" }
     $context = @"
 # Boot automatico do squad - global (ADR-006 v1.8.0)
