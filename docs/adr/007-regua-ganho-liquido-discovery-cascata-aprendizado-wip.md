@@ -47,11 +47,14 @@ A escolha pela numeração **ADR-007** (intake propunha "ADR-005"): conflita com
 ### Decisões internas do architect
 
 1. **Régua §0 entra como princípio 10** do §6 (após "Override do usuário vence o roteamento automático"). 1 linha; referencia este ADR.
-2. **WIP-limit não vira princípio §6** — vira sub-regra na seção do `start-session` (escopo: modo squad). Pela régua §0: princípio é mais caro que sub-regra; aplicar onde dói.
+2. **WIP-limit não vira princípio §6** — vira sub-regra na seção do `start-session` (escopo: modo squad). Pela régua §0: princípio é mais caro que sub-regra; aplicar onde dói. **Diverge do intake §4** (que propunha "no §6 junto da régua") — override consciente do architect aplicando a própria régua §0 ao escopo: WIP-limit só vale em modo squad, princípio §6 vale para tudo; sub-regra é mais barata e cirúrgica. Override registrado aqui para audit trail (qa-critic round 1, ressalva C2).
 3. **Discovery bumpa 1.6.0 → 1.7.0** (companion novo sob demanda = feature MINOR).
 4. **Sistema bumpa 1.8.0 → 1.9.0** (feature nova compatível).
 5. **Companion `pesquisa-cascata.md`** segue o padrão do ADR-003 (carregado sob demanda; não infla a SKILL.md). Inclui **STORM nomeado + 1 passo de pergunta adversarial obrigatório** (R3 do intake, dobrado em 2 linhas).
 6. **`history.md` ganha 2 seções**: `## Em aberto` (WIP) e `## Aprendizado` (fracassos). Single-writer = orquestrador (PMO), append-only.
+7. **Entregáveis do intake omitidos** (qa-critic round 1, ressalva sobre fidelidade):
+   - "+subseção curta no AGENT-FRAMEWORK.md §2.B" → **omitido**: §2.B já tem a subseção "Gatilho do discovery" (linhas 90-99) que descreve a fronteira PMO→discovery→architect. Adicionar nova subseção seria duplicação. Por critério (a) da régua §0.
+   - "+item no README.md" → **omitido**: adição pura sem critério (a)(b)(c). README é entry-point humano; sub-modo novo no discovery não exige menção lá (a tabela do discovery/SKILL.md basta).
 
 ## Implementação
 
@@ -65,7 +68,7 @@ Escopo: **5 arquivos** (1 novo companion + 1 novo template + 4 edições cirúrg
 | `.agent/skills/discovery/pesquisa-cascata.md` | **NOVO companion** (sob demanda; ~80 linhas). Filtro de entrada: trabalho exige pesquisa antes da spec (não há trilha pronta). Método: decompor pergunta → buscar via `explorer` → refletir → ramificar → sintetizar `research-brief.md` (single-thread, monólito). **R3 do intake (anti-raso):** após sintetizar, ATAQUE adversarial obrigatório: persona read-only ataca os achados (lacunas, viés de confirmação, fontes fracas) antes de fechar. Output: `research-brief.md` com achados classificados (`CONFIRMADO|INFERIDO|DESCONHECIDO`). |
 | `.agent/skills/discovery/SKILL.md` | **+1 linha** na tabela de sub-modos (apontando para o companion novo) + **bump de versão** 1.6.0 → 1.7.0. |
 | `docs/specs/_template-research/research-brief.md` | **NOVO template** do artefato de saída (~40 linhas; cabeçalho YAML + seções: questão decomposta, fontes consultadas, achados classificados, gaps, sugestão ao orquestrador). |
-| `.agent/workflows/checkpoint.md` | **+1 linha** (ex-G9): "Se gatilho de fracasso disparou (anti-loop, qa-critic reprovou ≥2×, file-first violado, estouro de token, [CONFIRMADO] que se revelou falso), anotar em `history.md` sob `## Aprendizado`. Single-writer (orquestrador), append-only." |
+| `.agent/workflows/checkpoint.md` | **+2 linhas** (ex-G9 + firewall): linha 1 — "Se gatilho de fracasso disparou (anti-loop, qa-critic reprovou ≥2×, file-first violado, estouro de token, [CONFIRMADO] que se revelou falso), anotar em `history.md` sob `## Aprendizado`. Single-writer (orquestrador), append-only." Linha 2 (qa-critic round 1, ressalva firewall C7) — "Notas de aprendizado são **inertes**: só viram comportamento via skill/regra destilada, aprovada via ADR e mergeada. Nota errada não propaga." |
 | `.agent/workflows/start-session.md` | **+1 linha** (ex-G11): "STATUS reconcilia `## Em aberto` do `history.md` + branches do git + ADRs `Proposto` (modo squad apenas)." |
 | `guia/GIT-VERSIONAMENTO.md` | **+1 linha** (ex-G9): "Antes do release, revisar `## Aprendizado` do `history.md`; padrão recorrente (≥3) → propor ADR." |
 | `history.md` (raiz) | **NOVO** (arquivo). 2 seções vazias: `## Em aberto` e `## Aprendizado`. Single-writer = orquestrador. |
@@ -88,8 +91,10 @@ Discovery carrega `pesquisa-cascata.md` **apenas** quando a natureza do trabalho
 5. Ramificar: lacunas viraram novas sub-perguntas → volta ao passo 3 (limite N=2 rodadas)
 6. Sintetizar: monólito single-thread em research-brief.md
 7. ATAQUE ANTI-RASO (R3 obrigatorio): persona read-only ataca achados
-8. Refinar: incorporar achados do ataque; fechar quando lacunas critica
-   estiverem documentadas como DESCONHECIDO
+8. Refinar: incorporar achados do ataque; fechar QUANDO (criterio binario,
+   qa-critic round 1 C4): lacunas que BLOQUEAM decisao de spec ou que, se
+   erradas, invalidam a hipotese principal, estiverem todas marcadas como
+   DESCONHECIDO com sugestao de validacao. Lacunas perifericas nao bloqueiam.
 9. Handoff: research-brief.md → discovery (continua spec) ou architect
 ```
 
@@ -104,6 +109,7 @@ Test plan binário (8 casos):
 6. Ataque anti-raso registrado (não opcional).
 7. `research-brief.md` segue template (cabeçalho YAML correto).
 8. Lacunas críticas viraram `[DESCONHECIDO]` com sugestão de validação.
+9. **Falha do explorer** (qa-critic round 1, ressalva eval C10): se explorer retornar vazio/falhar em todas as sub-perguntas de uma rodada, registrar a sub-pergunta como `[DESCONHECIDO]` com sugestão de fonte alternativa; NÃO repetir a mesma sub-pergunta na rodada N+1. Evita loop quando a fonte simplesmente não existe.
 
 ## Consequências
 
@@ -127,6 +133,9 @@ Test plan binário (8 casos):
 1. **Companion `pesquisa-cascata.md` virar onda nova de cargo culting.** Mitigação: filtro de entrada explícito (passo 1 do algoritmo) rejeita casos que não exigem pesquisa.
 2. **`history.md` `## Aprendizado` virar inflamento.** Mitigação: append-only single-writer; firewall (notas inertes — só viram comportamento via skill/regra aprovada).
 3. **Régua §0 vira fardo retórico.** Mitigação: princípio 10 referencia este ADR; qualquer reprovação cita critério (a)/(b)/(c).
+4. **Acoplamento não declarado ao start-session** (qa-critic round 1, adversarial). A extensão ex-G11 "+1 linha" no start-session reconcilia 3 fontes (history `## Em aberto` + branches git + ADRs Proposto) — comportamento emergente é mais do que "1 linha". Risco contra intake §1.2 ("não acoplar maquinário pesado ao startup"). Mitigação: a reconciliação só roda em **modo squad** (não em tarefa pontual nem em chat web sem workspace); custo concentrado onde o squad já paga a leitura de history e ADRs. Vigiar se o STATUS infla > 4 linhas — se inflar, refatorar.
+5. **Race condition humano vs orquestrador** (qa-critic round 1, adversarial). Se o mantenedor editar `history.md` manualmente fora de sessão (ex.: adicionar item em `## Em aberto` por outro PC) e o orquestrador fizer append simultâneo, há merge conflict não gerenciado. Mitigação: convenção append-only com timestamp por entrada (`## Em aberto / [2026-05-27 - ...]`); resolução via git merge padrão.
+6. **SKILL.md desatualizada como gate do eval** (qa-critic round 1, adversarial). O eval seção I caso 1 requer que o companion carregue — só executável após o developer implementar a edição na tabela de sub-modos do `discovery/SKILL.md`. Gate explícito documentado no campo "Validação" (próximo): eval só roda após PR mergeado, não em design-time.
 
 ## Implementação (ponteiro após aceito)
 
