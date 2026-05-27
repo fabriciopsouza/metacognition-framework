@@ -11,6 +11,22 @@ A versão original (2026-05-26) tinha escopo coordenado: auto-boot global **+** 
 
 Este ADR-006 agora cobre apenas o que resta: **auto-boot global + allowlist**. Infra `~/.claude/hooks/` já existe; `framework-sync.ps1` já é espelhado a cada SessionStart.
 
+## Estado pós-implementação (v1.8.0, 2026-05-27)
+
+- **Implementado** na branch `feat/framework-optimization-v180`. 6 arquivos efetivos.
+- **qa-critic adversarial em 2 rounds** (subagente isolado, contexto fresh):
+  - Round 1: APROVADO_COM_RESSALVAS — 1 média (WORKING-CONTEXT.md violava Régua §0), 2 baixas (statusMessage exemplo + numeração de passos), 3 adversariais (%USERPROFILE% ambíguo, migração v1.7.1→v1.8.0, multi-repo race).
+  - Round 2: **APROVADO LIMPO** — 6 incorporações verificadas, zero regressão.
+- **Validação operacional em campo** (2026-05-27, PC do mantenedor):
+  - sync rodou: `16 skills + 2 agents + 2 hooks + 5 workflows -> ~/.claude/`
+  - Teste 1 (allowlist match): `owner=fabriciopsouza match=fabriciopsouza` ✓
+  - Teste 2 (project-lock): `skipped (project-lock)` ✓
+  - Teste 3 (CWD=temp, sem marker): `skipped (no-match-no-marker)` ✓
+- **`squad-owners.txt`** criado em `~/.claude/` com os 7 tokens default.
+- **HOOK_CHANGED orgânico** esperado após este merge (sync-global.ps1 estendido → hash mudou) — próxima sessão dispara reconfirmação do modo `autosuficiente` (ratchet ADR-005 funcionando como projetado).
+
+[CONSOLIDADO] / [CONFIRMADO] · validação operacional em campo confirmada.
+
 ## Contexto
 
 O auto-boot do squad introduzido pelo ADR-004 (v1.6.1) vive **apenas no `.claude/settings.json` deste repositório-framework**. Consequência operacional reportada pelo mantenedor (sessão 2026-05-26): em qualquer outra IDE/projeto, o squad não acorda sozinho — é preciso pedir "aplique o framework" manualmente. Skills estão instaladas globalmente em `~/.claude/skills/` (efeito colateral benigno do ADR-001/sync-global), mas dormem até alguém invocar.
