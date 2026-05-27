@@ -39,11 +39,14 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 - **Aplicar a régua §0:** antes de criar arquivo/skill/regra, perguntar "o que dá para remover, fundir ou simplificar?". Adição só passa por (a)/(b)/(c).
 
 ### Pipeline
-PMO (intake colado pelo mantenedor) → Architect (ADR-007 com 6 alternativas, escolha Alternativa 1) → qa-critic adversarial em subagente isolado, 3 rounds:
+PMO (intake colado pelo mantenedor) → Architect (ADR-007 com 6 alternativas, escolha Alternativa 1) → qa-critic adversarial do ADR em subagente isolado, 3 rounds:
 - Round 1: APROVADO_COM_RESSALVAS (2 médias + 3 baixas + 3 adversariais) → incorporadas
 - Round 2: APROVADO_COM_RESSALVAS (1 cosmética) → incorporada
 - Round 3: **APROVADO LIMPO** → ADR Aceito
-→ Developer (4 blocos serializados de implementação) → qa-critic código (rounds até LIMPO) → DocOps → PR + merge no modo `autosuficiente`.
+→ Developer (4 blocos serializados: §6 + companion + template + checkpoint/start-session/history.md + CHANGELOG/CLAUDE/AGENTS/GIT) → qa-critic adversarial do código, 2 rounds:
+- Round 1: APROVADO_COM_RESSALVAS (1 média + 2 baixas + 3 adversariais; 2 adversariais arquiteturais aceitos como backlog FASE C) → 3 corrigíveis incorporadas
+- Round 2: **APROVADO LIMPO**
+→ DocOps → PR + merge no modo `autosuficiente`.
 
 [CONSOLIDADO] / [CONFIRMADO] (após validação operacional em campo).
 
