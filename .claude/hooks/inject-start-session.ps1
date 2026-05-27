@@ -55,7 +55,7 @@ try {
     $startContent = Get-Content -Path $startSessionDoc -Raw -Encoding UTF8
 
     $context = @"
-# Boot automatico do squad — v1.6.1 (auto-start-session)
+# Boot automatico do squad - v1.6.1 (auto-start-session)
 
 Esta sessao foi inicializada com o squad em modo auto-boot. Sua **primeira acao**
 neste turno DEVE ser ativar o papel PMO e executar o /start-session conforme
