@@ -14,10 +14,23 @@
 $ErrorActionPreference = 'Continue'
 # Script vive em <projectRoot>/.claude/hooks/sync-global.ps1 — 3 niveis acima.
 # Preferir $env:CLAUDE_PROJECT_DIR quando Claude Code o setar; fallback walking up.
+#
+# Resolucao do caminho do proprio script (qa-critic round 2, consistencia com C3):
+# preferir $PSCommandPath (PowerShell 3+, robusto); fallback para $MyInvocation.MyCommand.Path
+# (que retorna $null em iex/dot-source). Sem essa cadeia, Split-Path -Parent $null lanca
+# erro terminante capturado pelo catch externo, fazendo o sync inteiro cair silencioso
+# (zero skills + zero agents + zero hooks com apenas warning em stderr).
 if ($env:CLAUDE_PROJECT_DIR -and (Test-Path $env:CLAUDE_PROJECT_DIR)) {
     $projectRoot = $env:CLAUDE_PROJECT_DIR
 } else {
-    $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path))
+    $scriptPath = if ($PSCommandPath) { $PSCommandPath }
+                  elseif ($MyInvocation.MyCommand.Path) { $MyInvocation.MyCommand.Path }
+                  else { $null }
+    if ($scriptPath) {
+        $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $scriptPath))
+    } else {
+        $projectRoot = $null
+    }
 }
 $dest        = Join-Path $env:USERPROFILE '.claude'
 $skillsDest  = Join-Path $dest 'skills'
@@ -33,41 +46,49 @@ try {
     if (-not (Test-Path $agentsDest)) { New-Item -ItemType Directory -Path $agentsDest -Force | Out-Null }
     if (-not (Test-Path $hooksDest))  { New-Item -ItemType Directory -Path $hooksDest -Force | Out-Null }
 
-    $sharedRoot      = Join-Path $projectRoot '_shared'
-    $agentSkillsRoot = Join-Path $projectRoot '.agent\skills'
-    $agentsRoot      = Join-Path $projectRoot '.claude\agents'
+    # Guard contra $projectRoot=$null (qa-critic round 2): se a resolucao do script falhou em iex/dot-source
+    # SEM $env:CLAUDE_PROJECT_DIR setado, $projectRoot vira $null. Join-Path com $null lanca erro terminante;
+    # o try/catch externo captura mas o self-copy block tambem nao roda. Guardar aqui mantem o self-copy
+    # alcancavel mesmo nesse cenario degradado (pelo menos o gap do ADR-005 nao reaparece).
+    if ($projectRoot) {
+        $sharedRoot      = Join-Path $projectRoot '_shared'
+        $agentSkillsRoot = Join-Path $projectRoot '.agent\skills'
+        $agentsRoot      = Join-Path $projectRoot '.claude\agents'
 
-    if (Test-Path $sharedRoot) {
-        Get-ChildItem -Path $sharedRoot -Directory -ErrorAction SilentlyContinue | ForEach-Object {
-            if (Test-Path (Join-Path $_.FullName 'SKILL.md')) {
-                $target = Join-Path $skillsDest $_.Name
-                # Remove destino existente antes de copiar — evita aninhamento (Copy-Item -Recurse copia INTO se destino existe).
-                if (Test-Path $target) { Remove-Item -Path $target -Recurse -Force -ErrorAction SilentlyContinue }
-                Copy-Item -Path $_.FullName -Destination $target -Recurse -Force -ErrorAction SilentlyContinue
-                $skillCount++
+        if (Test-Path $sharedRoot) {
+            Get-ChildItem -Path $sharedRoot -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+                if (Test-Path (Join-Path $_.FullName 'SKILL.md')) {
+                    $target = Join-Path $skillsDest $_.Name
+                    # Remove destino existente antes de copiar — evita aninhamento (Copy-Item -Recurse copia INTO se destino existe).
+                    if (Test-Path $target) { Remove-Item -Path $target -Recurse -Force -ErrorAction SilentlyContinue }
+                    Copy-Item -Path $_.FullName -Destination $target -Recurse -Force -ErrorAction SilentlyContinue
+                    $skillCount++
+                }
             }
         }
-    }
 
-    if (Test-Path $agentSkillsRoot) {
-        Get-ChildItem -Path $agentSkillsRoot -Directory -ErrorAction SilentlyContinue | ForEach-Object {
-            if (Test-Path (Join-Path $_.FullName 'SKILL.md')) {
-                $target = Join-Path $skillsDest $_.Name
-                # Remove destino existente antes de copiar — evita aninhamento (Copy-Item -Recurse copia INTO se destino existe).
-                if (Test-Path $target) { Remove-Item -Path $target -Recurse -Force -ErrorAction SilentlyContinue }
-                Copy-Item -Path $_.FullName -Destination $target -Recurse -Force -ErrorAction SilentlyContinue
-                $skillCount++
+        if (Test-Path $agentSkillsRoot) {
+            Get-ChildItem -Path $agentSkillsRoot -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+                if (Test-Path (Join-Path $_.FullName 'SKILL.md')) {
+                    $target = Join-Path $skillsDest $_.Name
+                    # Remove destino existente antes de copiar — evita aninhamento (Copy-Item -Recurse copia INTO se destino existe).
+                    if (Test-Path $target) { Remove-Item -Path $target -Recurse -Force -ErrorAction SilentlyContinue }
+                    Copy-Item -Path $_.FullName -Destination $target -Recurse -Force -ErrorAction SilentlyContinue
+                    $skillCount++
+                }
             }
         }
-    }
 
-    if (Test-Path $agentsRoot) {
-        Get-ChildItem -Path $agentsRoot -File -ErrorAction SilentlyContinue |
-            Where-Object { $_.Extension -eq '.md' } |
-            ForEach-Object {
-                Copy-Item -Path $_.FullName -Destination (Join-Path $agentsDest $_.Name) -Force -ErrorAction SilentlyContinue
-                $agentCount++
-            }
+        if (Test-Path $agentsRoot) {
+            Get-ChildItem -Path $agentsRoot -File -ErrorAction SilentlyContinue |
+                Where-Object { $_.Extension -eq '.md' } |
+                ForEach-Object {
+                    Copy-Item -Path $_.FullName -Destination (Join-Path $agentsDest $_.Name) -Force -ErrorAction SilentlyContinue
+                    $agentCount++
+                }
+        }
+    } else {
+        [Console]::Error.WriteLine("[framework-sync] aviso: projectRoot nao resolvido ($PSCommandPath e $MyInvocation.MyCommand.Path ambos nulos, e CLAUDE_PROJECT_DIR ausente). Pulando sync de skills/agents; self-copy ainda tentara rodar.")
     }
 
     # ADR-005 / v1.7.1 — espelha este proprio sync-global.ps1 para ~/.claude/hooks/framework-sync.ps1.
