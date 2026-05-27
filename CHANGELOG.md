@@ -50,12 +50,29 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .claude\hooks\check-exec
 # Saída esperada: JSON com hookSpecificOutput.additionalContext != "" (motivo INITIAL).
 ```
 
+### Limitações conhecidas (qa-critic round 1, severidade BAIXA — registradas, não bloqueantes)
+- **ACL ruim em `~/.claude/hooks/`:** se `New-Item` falhar ao criar a pasta global
+  (permissões), o script segue (falha soft), `hookCount` permanece em 0 e a
+  `systemMessage` exibe `0 hooks`. Sessão não bloqueia; skills/agents continuam
+  espelhados normalmente. Diagnóstico: rodar `New-Item ~/.claude/hooks -ItemType Directory`
+  à mão e re-executar `sync-global.ps1`.
+- **Diagnóstico via cópia instalada:** se o usuário rodar manualmente
+  `~/.claude/hooks/framework-sync.ps1` (em vez de `.claude/hooks/sync-global.ps1`
+  do repo), o script copiará a si mesmo sobre si mesmo (Windows trunca+recópia,
+  sem efeito prático). Comportamento esperado, documentado em comentário inline.
+
 ### Pipeline
 PMO (sessão "como vc esta em relacao ao repositorio fonte" 2026-05-27 detectou
 o gap via leitura cruzada do ADR-005 + `check-execution-mode.ps1` + estado
 real do `~/.claude/`) → mantenedor escolheu "retome adr005, finalize" →
-Developer (este patch, branch `fix/adr-005-framework-sync-gap`). qa-critic
-adversarial após este commit.
+Developer (commit `2fb46d8`, branch `fix/adr-005-framework-sync-gap`) →
+**qa-critic round 1** (subagente isolado, contexto fresh):
+`APROVADO_COM_RESSALVAS` — C3 [MÉDIO] (`$MyInvocation.MyCommand.Path` é frágil
+em `iex`/dot-source; trocar por cadeia `$PSCommandPath` → `$MyInvocation` →
+`$null`) + C9/C10 [BAIXO] (ACL e contador) + 1 observação adversarial
+(self-copy quando invocado da própria cópia instalada) → Developer (incorporou
+C3 no patch; C9/C10 + adversarial documentados aqui; commit incremental) →
+qa-critic round 2 pendente.
 
 [CONSOLIDADO] / [CONFIRMADO].
 

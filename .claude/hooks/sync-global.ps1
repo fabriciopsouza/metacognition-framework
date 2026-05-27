@@ -75,11 +75,23 @@ try {
     # no destino global. Sem isso, o gate de modos de execucao (ADR-005) cai sempre no branch silencioso
     # "Test-Path $hookFile = false" e nunca dispara reativacao. Nome diferente e deliberado: sync-global.ps1
     # e o FONTE (project-level), framework-sync.ps1 e a INSTANCIA INSTALADA (global-level). Par fonte/binario.
-    $selfSource = $MyInvocation.MyCommand.Path
+    #
+    # Resolucao do caminho do proprio script (qa-critic round 1, C3 [MEDIO]): preferir $PSCommandPath
+    # (PowerShell 3+, robusto em todos os modos de invocacao); fallback para $MyInvocation.MyCommand.Path
+    # (que retorna $null em iex/dot-source). Sem essa cadeia, o gap reaparece silenciosamente se o
+    # runtime do hook do Claude Code invocar o script via iex em vez de -File.
+    #
+    # Edge conhecida (qa-critic round 1, adversarial extra): se este script for invocado a partir da
+    # PROPRIA copia em ~/.claude/hooks/framework-sync.ps1 (uso manual como diagnostico), $selfSource
+    # apontaria para ~/.claude/hooks/framework-sync.ps1 e $selfTarget para o mesmo path -> Copy-Item de
+    # si para si. Comportamento do Windows: truncamento + recopia do mesmo conteudo, sem efeito pratico.
+    $selfSource = if ($PSCommandPath) { $PSCommandPath }
+                  elseif ($MyInvocation.MyCommand.Path) { $MyInvocation.MyCommand.Path }
+                  else { $null }
     $selfTarget = Join-Path $hooksDest 'framework-sync.ps1'
-    if (Test-Path $selfSource) {
+    if ($selfSource -and (Test-Path $selfSource)) {
         Copy-Item -Path $selfSource -Destination $selfTarget -Force -ErrorAction SilentlyContinue
-        $hookCount++
+        if (Test-Path $selfTarget) { $hookCount++ }
     }
 
     $msg  = "Framework sync: $skillCount skills + $agentCount agents + $hookCount hooks -> ~/.claude/"
