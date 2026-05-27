@@ -15,6 +15,52 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.7.1] — 2026-05-27 — Fix do gap do ADR-005 — espelhar sync-global como framework-sync.ps1
+
+> PATCH operacional: o `check-execution-mode.ps1` da v1.7.0 monitora SHA-256 de
+> `~/.claude/hooks/framework-sync.ps1`, mas nada na v1.7.0 cria esse arquivo —
+> nem o `sync-global.ps1` (que só espelhava skills/agents), nem o bootstrap.
+> Resultado observado: gate de modos de execução **dormente desde a v1.7.0**
+> (hook cai sempre no branch `Test-Path = false` → exit silencioso → nenhuma
+> ativação dispara). Auditoria 2026-05-27 (sessão "retome adr005"): em PC
+> ativo do mantenedor, `~/.claude/hooks/` sequer existe; `framework-mode.json`
+> ausente; nenhum modo foi ativado em campo desde o merge da v1.7.0.
+
+### Fixed
+- `.claude/hooks/sync-global.ps1` — adiciona destino `~/.claude/hooks/` e
+  espelha a si mesmo (via `$MyInvocation.MyCommand.Path`) para
+  `~/.claude/hooks/framework-sync.ps1`. Idempotente (rolling overwrite via
+  `Copy-Item -Force`). Nome diferente é deliberado: `sync-global.ps1` é o
+  FONTE (project-level, versionado no repo), `framework-sync.ps1` é a
+  INSTÂNCIA INSTALADA (global-level, espelhada pelo hook). Par fonte/binário,
+  não rename — regra anti-rename não acionada.
+- `.claude/hooks/sync-global.ps1` — cabeçalho documenta o novo destino;
+  contador `$hookCount` somado ao `systemMessage` final
+  (`Framework sync: N skills + M agents + K hooks -> ~/.claude/`) para
+  visibilidade do espelhamento na barra de status.
+
+### Como validar manualmente
+```powershell
+# 1. Rodar o sync
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .claude\hooks\sync-global.ps1
+# 2. Verificar o destino do gap
+Test-Path ~/.claude/hooks/framework-sync.ps1   # deve retornar True
+# 3. Forçar primeira ativação
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .claude\hooks\check-execution-mode.ps1
+# Saída esperada: JSON com hookSpecificOutput.additionalContext != "" (motivo INITIAL).
+```
+
+### Pipeline
+PMO (sessão "como vc esta em relacao ao repositorio fonte" 2026-05-27 detectou
+o gap via leitura cruzada do ADR-005 + `check-execution-mode.ps1` + estado
+real do `~/.claude/`) → mantenedor escolheu "retome adr005, finalize" →
+Developer (este patch, branch `fix/adr-005-framework-sync-gap`). qa-critic
+adversarial após este commit.
+
+[CONSOLIDADO] / [CONFIRMADO].
+
+---
+
 ## [1.7.0] — 2026-05-26 — Modos de execução com ratchet por hash de hook (ADR-005)
 
 > MINOR feature: framework passa a operar sob 1 de 3 níveis explícitos
