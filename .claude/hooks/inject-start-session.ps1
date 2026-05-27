@@ -22,6 +22,14 @@ $ErrorActionPreference = 'Continue'
 # BOM quebraria o parse do JSON, por isso UTF8Encoding($false).
 [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding $false
 
+# Anti-duplicacao (ADR-006): se o hook GLOBAL de auto-boot ja esta instalado em
+# ~/.claude/hooks/, ELE assume o boot deste repo (owner-match ou marker .agent/) e
+# tambem honra os session.lock. Este hook de PROJETO (v1.6.1) entao so atua como
+# fallback de primeira execucao, ANTES do bootstrap instalar o global. Sem este guard,
+# abrir o framework-repo ja bootstrapped injeta /start-session DUAS vezes (gap v1.8.0).
+$globalBootHook = Join-Path $env:USERPROFILE '.claude\hooks\inject-start-session-global.ps1'
+if (Test-Path $globalBootHook) { exit 0 }
+
 # Resolver projectRoot (mesma logica de sync-global.ps1).
 if ($env:CLAUDE_PROJECT_DIR -and (Test-Path $env:CLAUDE_PROJECT_DIR)) {
     $projectRoot = $env:CLAUDE_PROJECT_DIR
