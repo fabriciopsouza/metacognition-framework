@@ -9,6 +9,12 @@
 
 ---
 
+## 2026-05-27T03:30 — Sessão noturna: gap intake↔realidade na v1.9.0 reconhecido
+
+Aprendizado documental (não-bloqueante): o intake §4 estimou "~6 edições de 1-3 linhas + 2 linhas de princípio" para a v1.9.0. A realidade do PR foi 428 inserções. O conteúdo é justificável linha a linha pela régua §0 (ADR-007: 160 linhas decisórias; companion + template: ~160 linhas substantivas; edições cirúrgicas: ~100 linhas). Não há regressão funcional — apenas a estimativa do intake estava errada por ~70× porque não considerava ADR+companion+template como artefatos novos legítimos. Lição: estimativas em intake devem distinguir "edições" de "artefatos novos". Não vira ADR (caso isolado, não padrão recorrente — §Aprendizado).
+
+---
+
 ## 2026-05-27T01:00 — Sessão noturna: ADR-006 + ADR-007 + Régua §0
 
 Aprovado e funcionando:

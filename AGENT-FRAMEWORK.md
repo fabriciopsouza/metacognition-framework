@@ -183,7 +183,7 @@ Exceção: pedido típico de squad sem squad instalado → mencionar UMA vez ao 
 7. Modo certo para tarefa certa — sinais concretos do §1, não intuição
 8. Context é recurso finito — compactar, anotar, isolar (§2.5)
 9. Override do usuário vence o roteamento automático
-10. **Otimização líquida (GANHO LÍQUIDO)** — adição só passa se (a) funde/remove superfície ≥ à que adiciona, (b) reduz tokens/latência comprovadamente, ou (c) destrava eval inalcançável editando existente. Adição pura é rejeitada por padrão. Detalhe: `docs/adr/007-regua-ganho-liquido-discovery-cascata-aprendizado-wip.md`.
+10. **Otimização líquida (GANHO LÍQUIDO)** — adição só passa se (a) funde/remove superfície ≥ à que adiciona, (b) reduz tokens/latência comprovadamente, ou (c) destrava eval inalcançável editando existente. Adição pura é rejeitada por padrão. Detalhe: **ADR-007** (`docs/adr/007-regua-ganho-liquido-discovery-cascata-aprendizado-wip.md`).
 
 ---
 

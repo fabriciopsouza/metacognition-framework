@@ -30,7 +30,9 @@ Pesquisa em cascata é **monólito single-thread** que segue o pipeline da pesqu
 5. Ramificar: lacunas viraram novas sub-perguntas → volta ao passo 3
    (LIMITE HARD: N=2 rodadas no maximo; alem disso, lacuna fica DESCONHECIDO)
 6. Sintetizar: monolito single-thread em `research-brief.md`
-   (clonar `docs/specs/_template-research/research-brief.md`)
+   (clonar o diretorio `docs/specs/_template-research/` para
+   `docs/specs/<nome-do-tema>/` e preencher o research-brief.md;
+   manter o diretorio como container caso o template ganhe arquivos auxiliares)
 7. **ATAQUE ANTI-RASO (obrigatorio, R3 do intake)**: persona read-only ataca
    os achados antes de fechar. Perguntas tipicas: lacuna nao declarada?
    vies de confirmacao? fonte fraca? alternativa rejeitada sem registro?
