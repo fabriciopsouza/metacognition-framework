@@ -112,7 +112,7 @@ else
     ok "Sem --memory-repo informado; pulando setup de memoria"
 fi
 
-# 7. Configurar auto-boot global (ADR-006 v1.8.0) - subset cross-platform
+# 6. Configurar auto-boot global (ADR-006 v1.8.0) - subset cross-platform
 # Os hooks PowerShell so rodam em Windows; aqui criamos o squad-owners.txt e
 # avisamos sobre a limitacao. Quando Linux/macOS port chegar (ADR cross-platform
 # futuro), este passo ganha equivalente .sh.
@@ -141,7 +141,7 @@ fi
 
 warn "Hooks PowerShell (.ps1) so rodam em Windows; o hook global de auto-boot fica inativo aqui ate o port .sh chegar (ADR cross-platform futuro)."
 
-# 8. Resumo
+# 7. Resumo
 echo ""
 echo "================================================================"
 echo " Setup concluido. Proximos passos:"

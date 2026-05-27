@@ -67,6 +67,15 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 - **Diagnóstico** ("por que não ativou?"): olhar `statusMessage` na barra de
   status — formato `owner=<completo> match=<token>` ou `skipped (<motivo>)`.
 
+### Migração de PC com v1.7.1 já instalado
+Quem já tem v1.7.1 ativa não rodou `bootstrap.ps1` recentemente — o auto-boot global não aparece sozinho. Passos manuais (idempotentes):
+```powershell
+cd <caminho-para-o-repo>
+git pull --ff-only
+pwsh ./bootstrap.ps1        # roda apenas o passo 6 efetivamente (resto detecta "já existe")
+```
+O passo 6 do bootstrap cria `~/.claude/squad-owners.txt` (preserva customização se já existe) e faz merge não-destrutivo de `hooks.SessionStart` em `~/.claude/settings.json` com backup `.modeswap.bak`. Idempotente: rodar 2× não duplica nada.
+
 ### Pipeline
 PMO/Discovery (sessão "retome adr005" 2026-05-27) → Architect (ADR-006
 revisto pós-v1.7.1, escopo enxuto: gap do ADR-005 já resolvido) → qa-critic

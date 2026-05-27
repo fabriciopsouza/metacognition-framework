@@ -43,7 +43,7 @@ A escolha do mantenedor pela ativação **condicional por owner** (Alternativa 1
 ### Decisões internas do architect (que o mantenedor aceita ou reverte no review)
 
 1. **Allowlist em arquivo externo** (`~/.claude/squad-owners.txt`), uma linha por token, `#` para comentário, criado por bootstrap com os 7 tokens fornecidos. Razão: usuário edita sem recompilar PowerShell; bootstrap dá o estado inicial; o arquivo serve como audit trail de "quem é considerado eu".
-2. **Logar decisão de ativação no `statusMessage` do hook** (formato: `auto-boot: owner=fabriciopsouza match=fpsouza (allowlist)` ou `auto-boot: skipped (owner=anthropics, sem match)`). Razão: sem isso, o mantenedor não consegue diagnosticar "por que não ativou aqui?" sem rodar o script à mão. Custo: 1 linha de PowerShell.
+2. **Logar decisão de ativação no `statusMessage` do hook** (formato normativo: `auto-boot: owner=<owner-completo> match=<token>` quando allowlist match, `auto-boot: marker=<arquivo>` quando marker, ou `auto-boot: skipped (<motivo>)`). Razão: sem isso, o mantenedor não consegue diagnosticar "por que não ativou aqui?" sem rodar o script à mão. Custo: 1 linha de PowerShell.
 
 ## Implementação
 

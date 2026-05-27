@@ -9,3 +9,4 @@ outputs/
 
 # v1.6.1 — flag de escape do auto-start-session (pessoal por cópia de trabalho)
 .claude/session.lock
+/WORKING-CONTEXT.md

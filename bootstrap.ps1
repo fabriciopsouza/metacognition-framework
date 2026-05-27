@@ -111,11 +111,12 @@ if ($MemoryRepo) {
     Write-Ok "Sem -MemoryRepo informado; pulando setup de memoria (terceiros que clonam o framework usam memoria propria)"
 }
 
-# 7. Configurar auto-boot global (ADR-006 v1.8.0)
+# 6. Configurar auto-boot global (ADR-006 v1.8.0)
 Write-Step "Configurando auto-boot global (ADR-006)"
-$globalDir   = Join-Path $env:USERPROFILE '.claude'
-$ownersFile  = Join-Path $globalDir 'squad-owners.txt'
+$globalDir      = Join-Path $env:USERPROFILE '.claude'
+$ownersFile     = Join-Path $globalDir 'squad-owners.txt'
 $globalSettings = Join-Path $globalDir 'settings.json'
+$globalHookPath = Join-Path $globalDir 'hooks\inject-start-session-global.ps1'
 if (-not (Test-Path $globalDir)) { New-Item -ItemType Directory -Path $globalDir -Force | Out-Null }
 
 # squad-owners.txt: nao sobrescrever se ja existe (respeita customizacao do usuario)
@@ -141,7 +142,9 @@ if (-not (Test-Path $ownersFile)) {
 # Merge nao-destrutivo de hooks.SessionStart no ~/.claude/settings.json
 # Backup antes de qualquer escrita; restaura se JSON ficar invalido.
 $utf8NoBom = New-Object System.Text.UTF8Encoding $false
-$globalHookCmd = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%USERPROFILE%\.claude\hooks\inject-start-session-global.ps1"'
+# Path literal expandido por este PC: evita dependencia de expansao %USERPROFILE% em
+# shell desconhecido (CMD vs PowerShell vs futura versao do Claude Code).
+$globalHookCmd = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$globalHookPath`""
 
 if (Test-Path $globalSettings) {
     $backupPath = "$globalSettings.modeswap.bak"
@@ -210,7 +213,7 @@ if (Test-Path $syncScript) {
     Write-Ok "Sync inicial executado"
 }
 
-# 8. Resumo final
+# 7. Resumo final
 Write-Host ""
 Write-Host "================================================================" -ForegroundColor Cyan
 Write-Host " Setup concluido. Proximos passos:" -ForegroundColor Cyan
