@@ -111,17 +111,118 @@ if ($MemoryRepo) {
     Write-Ok "Sem -MemoryRepo informado; pulando setup de memoria (terceiros que clonam o framework usam memoria propria)"
 }
 
-# 6. Resumo final
+# 7. Configurar auto-boot global (ADR-006 v1.8.0)
+Write-Step "Configurando auto-boot global (ADR-006)"
+$globalDir   = Join-Path $env:USERPROFILE '.claude'
+$ownersFile  = Join-Path $globalDir 'squad-owners.txt'
+$globalSettings = Join-Path $globalDir 'settings.json'
+if (-not (Test-Path $globalDir)) { New-Item -ItemType Directory -Path $globalDir -Force | Out-Null }
+
+# squad-owners.txt: nao sobrescrever se ja existe (respeita customizacao do usuario)
+if (-not (Test-Path $ownersFile)) {
+    $defaultOwners = @(
+        '# squad-owners.txt - allowlist de owners para auto-boot global (ADR-006).'
+        '# Uma linha por token; substring match case-insensitive contra owner do remote origin.'
+        '# Use # para comentar; linhas vazias ignoradas.'
+        'fpsouza'
+        'fpsouz'
+        'fsouza'
+        'fabriciosouza'
+        'fabriciopsouza'
+        'vibraenergia'
+        'natulab'
+    )
+    Set-Content -Path $ownersFile -Value $defaultOwners -Encoding UTF8
+    Write-Ok "squad-owners.txt criado com 7 tokens default"
+} else {
+    Write-Ok "squad-owners.txt ja existe; preservando customizacao"
+}
+
+# Merge nao-destrutivo de hooks.SessionStart no ~/.claude/settings.json
+# Backup antes de qualquer escrita; restaura se JSON ficar invalido.
+$utf8NoBom = New-Object System.Text.UTF8Encoding $false
+$globalHookCmd = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%USERPROFILE%\.claude\hooks\inject-start-session-global.ps1"'
+
+if (Test-Path $globalSettings) {
+    $backupPath = "$globalSettings.modeswap.bak"
+    Copy-Item $globalSettings $backupPath -Force
+    try {
+        $cfg = Get-Content $globalSettings -Raw | ConvertFrom-Json
+        $needsHook = $true
+        if ($cfg.hooks -and $cfg.hooks.SessionStart) {
+            $existing = $cfg.hooks.SessionStart | ConvertTo-Json -Depth 10 -Compress
+            if ($existing -like '*inject-start-session-global*') { $needsHook = $false }
+        }
+        if ($needsHook) {
+            if (-not $cfg.hooks) { $cfg | Add-Member -NotePropertyName hooks -NotePropertyValue ([pscustomobject]@{}) -Force }
+            $newGroup = [ordered]@{
+                hooks = @(
+                    [ordered]@{
+                        type    = 'command'
+                        command = $globalHookCmd
+                        timeout = 10
+                        statusMessage = 'Auto-boot global (ADR-006)'
+                    }
+                )
+            }
+            if ($cfg.hooks.SessionStart) {
+                $cfg.hooks.SessionStart = @($cfg.hooks.SessionStart) + $newGroup
+            } else {
+                $cfg.hooks | Add-Member -NotePropertyName SessionStart -NotePropertyValue @($newGroup) -Force
+            }
+            $newJson = $cfg | ConvertTo-Json -Depth 10
+            $null = $newJson | ConvertFrom-Json -ErrorAction Stop
+            [System.IO.File]::WriteAllText($globalSettings, $newJson, $utf8NoBom)
+            Write-Ok "hooks.SessionStart adicionado a $globalSettings (backup: .modeswap.bak)"
+        } else {
+            Write-Ok "hooks.SessionStart ja contem auto-boot global; preservando"
+        }
+    } catch {
+        Move-Item -Path $backupPath -Destination $globalSettings -Force
+        Write-Warn "Merge falhou ($($_.Exception.Message)); restaurado do backup"
+    }
+} else {
+    $initial = [ordered]@{
+        hooks = [ordered]@{
+            SessionStart = @(
+                [ordered]@{
+                    hooks = @(
+                        [ordered]@{
+                            type = 'command'
+                            command = $globalHookCmd
+                            timeout = 10
+                            statusMessage = 'Auto-boot global (ADR-006)'
+                        }
+                    )
+                }
+            )
+        }
+    }
+    [System.IO.File]::WriteAllText($globalSettings, ($initial | ConvertTo-Json -Depth 10), $utf8NoBom)
+    Write-Ok "$globalSettings criado com hooks.SessionStart"
+}
+
+# Rodada inicial do sync-global para popular ~/.claude/hooks/ + workflows/
+$syncScript = Join-Path $ProjectDir '.claude\hooks\sync-global.ps1'
+if (Test-Path $syncScript) {
+    Write-Step "Rodada inicial do sync-global"
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $syncScript | Out-Null
+    Write-Ok "Sync inicial executado"
+}
+
+# 8. Resumo final
 Write-Host ""
 Write-Host "================================================================" -ForegroundColor Cyan
 Write-Host " Setup concluido. Proximos passos:" -ForegroundColor Cyan
 Write-Host "================================================================" -ForegroundColor Cyan
 Write-Host " 1. cd `"$ProjectDir`""
-Write-Host " 2. Abrir Claude Code neste diretorio."
-Write-Host "    -> SessionStart hook roda automaticamente:"
-Write-Host "       * sync-global.ps1 espelha skills para ~/.claude/"
-Write-Host "       * inject-start-session.ps1 ativa PMO no 1o turno"
-Write-Host " 3. Para pular o auto-boot em sessao rapida:"
-Write-Host "       New-Item .claude/session.lock -ItemType File -Force"
+Write-Host " 2. Abrir Claude Code (em qualquer projeto seu)."
+Write-Host "    -> SessionStart hook global ativa PMO automaticamente"
+Write-Host "       se o owner do remote bate com ~/.claude/squad-owners.txt"
+Write-Host "       ou se o projeto tem AGENTS.md / .agent/"
+Write-Host " 3. Para pular auto-boot:"
+Write-Host "       New-Item .claude/session.lock -ItemType File -Force   (este projeto)"
+Write-Host "       New-Item ~/.claude/session.lock -ItemType File -Force (todos)"
+Write-Host " 4. Para adicionar owner: editar ~/.claude/squad-owners.txt"
 Write-Host ""
 Write-Host " Pronto." -ForegroundColor Green
