@@ -1,6 +1,6 @@
 # ADR 009 — Método sênior de discovery (domain-agnóstico) + auto-melhoria do framework
 
-- **Status:** Proposto (2026-05-28 — rounds 1 e 2 incorporados: round 1 corrigiu A1 colisão ADR-008→ADR-009 + A2 template ganha §7 Antecipações + §8 Backlog + M1-M5 + B1; round 2 corrigiu 4 MEDIO + 1 BAIXO + 2 ADV — stale counts, AGENTS.md sync, checkpoint precision, pesquisa-cascata reciprocidade. Aguardando qa-critic round 3 LIMPO para promover a Aceito)
+- **Status:** Aceito (2026-05-28 — qa-critic rounds 1+2+3 incorporados em commits `01e598a` (2 ALTO + 4 MEDIO + 1 BAIXO), `f622f89` (4 MEDIO + 1 BAIXO + 2 ADV), `3d96d94` (3 MEDIO + 1 BAIXO + 2 ADV); round 4 confirmou substância LIMPA — único bloqueador residual era a auto-referência meta-recursiva do próprio campo Status (sempre 1 round atrás), resolvido nesta promoção. Total: 4 rounds adversariais, 16 findings endereçados.)
 - **Data:** 2026-05-28 · **Decisores:** Fabricio (mantenedor) + Claude (papel `architect`)
 - **Substitui:** nenhum · **Substituído por:** nenhum
 - **Relaciona-se a:** ADR-002 (discovery v1.6.0), ADR-003 (progressive disclosure), ADR-007 (régua §0 + pesquisa-cascata + ex-G9/ex-G11)
