@@ -20,3 +20,6 @@ Fim de bloco aprovado · antes de encerrar · ao mudar direção · a cada ≥20
 Se gatilho de fracasso disparou (anti-loop, qa-critic reprovou ≥2×, file-first violado, estouro de token, [CONFIRMADO] que se revelou falso) → anotar em `history.md` sob `## Aprendizado`. Single-writer (orquestrador), append-only com timestamp.
 
 **Firewall:** notas de aprendizado são **inertes** — só viram comportamento via skill/regra destilada, aprovada via ADR e mergeada. Nota errada não propaga.
+
+## Method-Audit autônomo (ADR-008)
+Em sessão substantiva (≥10 turnos OU ambiente regulado/alto-risco), o PMO emite **0-3 method-audit notes** em `history.md ## Aprendizado` no formato: `Method-audit: <gap observado> · Causa-raiz: <skill/regra ausente ou fraca> · Proposta (lean): <artefato a editar ≥ criar>`. Sinais a captar: norma citada sem vigência, regra despriorizada sem semântica, correções repetidas do dono sobre mesmo padrão, violação régua §0, loops/retrabalho. Firewall preservado.

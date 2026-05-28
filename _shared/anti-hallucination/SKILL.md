@@ -34,3 +34,6 @@ verificável ⇒ `[INFERIDO]` ou `[DESCONHECIDO]`, nunca `[CONFIRMADO]`.
 - Assumir estrutura de dados sem inspecionar a fonte real (ver `traceability`,
   regra file-first).
 - Afirmar comportamento de versão específica de sistema sem fonte.
+- **Citar norma/regulamento/spec/padrão externo sem checar VIGÊNCIA** atual
+  (em vigor? alterada? revogada por qual sucessora? datas?). Reforço sênior:
+  ADR-008 + `.agent/skills/discovery/metodo-senior.md` passo 2.
