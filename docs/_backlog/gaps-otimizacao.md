@@ -69,6 +69,7 @@
 - **Origem:** ADR-006 §"Convivência com ADR-004" + qa-critic v1.8.0 C12.
 - **Descrição:** após v1.8.0, hook project-level continua existindo como redundância benigna (`additionalContext` duplicado). Cleanup foi adiado para "ADR-007 candidato" — agora renomeado como **ADR-008 candidato**.
 - **Gatilho:** v1.8.0 estável em ≥2 PCs (validado por commit/push de outras máquinas do mantenedor).
+- **Status:** RESOLVIDO 2026-05-27 via guard em `inject-start-session.ps1` (commit `cd0bc3e`) — hook de projeto faz `exit 0` quando o global existe, preservando o caso pré-bootstrap. Gatilho antecipado por observação direta do mantenedor. NÃO virou ADR (fix trivial, §0); some assim da contenda "ADR-008 candidato" (que fica só com D2/check-execution-mode).
 
 ### D2. `check-execution-mode.ps1` permanece project-level (não promovido a global)
 - **Origem:** ADR-006 §"Convivência com ADR-005".

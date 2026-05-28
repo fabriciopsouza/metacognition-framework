@@ -109,6 +109,8 @@ Alternativa de remover o hook project-level foi rejeitada: introduzir ordem de i
 
 Cleanup do hook project-level fica como follow-up opcional (ADR-007 candidato), depois que o global estiver provadamente robusto em 2-3 PCs.
 
+> **Atualização 2026-05-27:** follow-up implementado via guard (commit `cd0bc3e`), não por remoção — o hook de projeto faz `exit 0` quando `~/.claude/hooks/inject-start-session-global.ps1` existe, preservando o caso pré-bootstrap (qualquer ordem) que motivou a não-remoção em L108. Gatilho antecipado por observação em campo; sem ADR próprio (§0 — fix trivial).
+
 ### Convivência com ADR-005 (gate de modos de execução)
 
 Gap do ADR-005 já foi resolvido em v1.7.1 (PR #7). O `check-execution-mode.ps1` do projeto-framework continua sendo o que monitora hash — não é promovido ao global neste ADR. Razão: o gate de modos é decisão sobre **permissões da IA**, que faz sentido reconfirmar quando o **mecanismo de sync** muda; faz menos sentido reconfirmar quando o usuário abre projeto qualquer.
