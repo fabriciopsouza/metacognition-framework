@@ -17,7 +17,7 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [1.10.0] — 2026-05-28 — Método sênior de discovery (domain-agnóstico) + auto-observação do framework (ADR-009)
 
-> MINOR feature: o framework absorve o método sênior validado no case real **AIVI** (2026-05-27, repo `LIMITES-BATENTES-RECALC` branch `claude/discovery-aivi-metodo-2026-05-27`, commits `74bd613`+`039fd6d`) como **reforço transversal** do discovery (carregado sob demanda quando há fonte canônica/normativa citada — domain-agnóstico) + **princípio 11** de auto-observação (method-audit autônomo). Régua §0 mantida: 2 novos + 4 edições cirúrgicas.
+> MINOR feature: o framework absorve o método sênior validado no case real **AIVI** (2026-05-27, repo `LIMITES-BATENTES-RECALC` branch `claude/discovery-aivi-metodo-2026-05-27`, commits `74bd613`+`039fd6d`) como **reforço transversal** do discovery (carregado sob demanda quando há fonte canônica/normativa citada — domain-agnóstico) + **princípio 11** de auto-observação (method-audit autônomo). Régua §0 mantida: 2 novos + 9 edições cirúrgicas (escopo original era 2+4+1; cresceu para 2+9 pela incorporação adversarial dos rounds 1 e 2 do qa-critic — todas edições de 1-3 linhas).
 
 ### Added
 - **`docs/adr/009-metodo-senior-discovery-auto-melhoria-framework.md`** — decisão arquitetural que consolida (a) método sênior em 8 passos como reforço transversal do discovery e (b) princípio 11 de auto-observação. Fonte: case AIVI; substância em memórias `[[senior-discovery-method]]`, `[[framework-self-improvement]]`, `[[framework-gaps-from-aivi-case-2026-05-27]]`.

@@ -44,7 +44,7 @@ Princípio 10 do `AGENT-FRAMEWORK.md` §6: adição pura é rejeitada por padrã
 Quando o trabalho exige pesquisa antes da spec (pergunta de fundo sem fonte canônica, e a resposta destrava decisão), o discovery carrega `pesquisa-cascata.md` (companion sob demanda). Pipeline 9 passos: decompor → buscar via explorer → refletir → ramificar (≤2 rodadas) → sintetizar → **ataque anti-raso obrigatório** → refinar → handoff. Output: `research-brief.md`.
 
 ## Método sênior de discovery — reforço transversal (v1.10.0 — ADR-009)
-Quando há **fonte canônica/normativa citada** (norma regulatória, spec oficial, padrão técnico, regra de negócio com peso semântico declarado), o discovery carrega `metodo-senior.md` (companion sob demanda) em adição ao sub-modo ativo. 8 passos: mapeamento + **vigência** + complementações + cross-domain + pertinência + elicitação + classificação + adversarial. Domain-agnóstico. Output ganha **Antecipações** + **Backlog de elicitação** (seções obrigatórias do `research-brief.md`). Princípio 11 do `AGENT-FRAMEWORK.md` §6 + method-audit autônomo no `/checkpoint`.
+Quando há **fonte canônica/normativa citada** (norma regulatória, spec oficial, padrão técnico, regra de negócio com peso semântico declarado), o discovery carrega `metodo-senior.md` (companion sob demanda) em adição ao sub-modo ativo. 8 passos: mapeamento + **vigência** + complementações + cross-domain + pertinência + elicitação + classificação + adversarial. Domain-agnóstico. Output ganha **Antecipações** + **Backlog de elicitação** (§7-8 obrigatórias do `research-brief.md`). Princípio 11 do `AGENT-FRAMEWORK.md` §6 + method-audit autônomo no `/checkpoint`.
 
 ## Como ler skills
 As skills de processo vivem em `.agent/skills/<nome>/SKILL.md` e o núcleo em

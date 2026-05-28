@@ -1,6 +1,6 @@
 # ADR 009 — Método sênior de discovery (domain-agnóstico) + auto-melhoria do framework
 
-- **Status:** Proposto (2026-05-28 — round 1 com 2 ALTO corrigidos: A1 colisão de namespace ADR-008→ADR-009; A2 template `research-brief.md` ganha seções Antecipações + Backlog. Pendente qa-critic round 2)
+- **Status:** Proposto (2026-05-28 — rounds 1 e 2 incorporados: round 1 corrigiu A1 colisão ADR-008→ADR-009 + A2 template ganha §7 Antecipações + §8 Backlog + M1-M5 + B1; round 2 corrigiu 4 MEDIO + 1 BAIXO + 2 ADV — stale counts, AGENTS.md sync, checkpoint precision, pesquisa-cascata reciprocidade. Aguardando qa-critic round 3 LIMPO para promover a Aceito)
 - **Data:** 2026-05-28 · **Decisores:** Fabricio (mantenedor) + Claude (papel `architect`)
 - **Substitui:** nenhum · **Substituído por:** nenhum
 - **Relaciona-se a:** ADR-002 (discovery v1.6.0), ADR-003 (progressive disclosure), ADR-007 (régua §0 + pesquisa-cascata + ex-G9/ex-G11)
@@ -30,7 +30,7 @@ Adicionar **(a) o método sênior de discovery em 8 passos** como reforço condi
 
 | # | Alternativa | Prós | Contras |
 |---|---|---|---|
-| 1 | **Escopo enxuto: ADR + 1 companion + 4 edições cirúrgicas (escolhida)** | Aplica régua §0 (1 novo arquivo de decisão + 1 companion progressive disclosure + edições 1-3 linhas em 4 arquivos existentes). Resolve as 2 propriedades-chave (método sênior agnóstico + auto-observação). Sem custo fixo novo no caminho rápido. | Senior method fica em companion (não inline na SKILL.md) — risco de não ser lido sob demanda. Mitigação: filtro de entrada explícito + gatilhos no SKILL.md base. |
+| 1 | **Escopo enxuto: ADR + 1 companion + 9 edições cirúrgicas (escolhida — escopo cresceu de 4 para 9 pós-qa-critic rounds 1 e 2; ver §Implementação)** | Aplica régua §0 (1 novo arquivo de decisão + 1 companion progressive disclosure + edições 1-3 linhas em 4 arquivos existentes). Resolve as 2 propriedades-chave (método sênior agnóstico + auto-observação). Sem custo fixo novo no caminho rápido. | Senior method fica em companion (não inline na SKILL.md) — risco de não ser lido sob demanda. Mitigação: filtro de entrada explícito + gatilhos no SKILL.md base. |
 | 2 | Inline na `discovery/SKILL.md` (sem companion) | Sempre carregado, garantido visível. | Infla SKILL.md em ~50 linhas para algo que só vale quando há fonte canônica. Fere ADR-003. Caminho rápido (modo PMO sem discovery) paga custo desnecessário. |
 | 3 | Nova skill independente `senior-discovery` | Skill própria, fácil de auditar. | Duplica responsabilidade do discovery; fere SSoT. Régua §0 rejeita criação de skill onde companion + edição cirúrgica resolve. |
 | 4 | Apenas o ADR + edições, sem companion (princípio sem detalhe acessível) | Mínimo absoluto. | Os 8 passos ficam só no ADR — não-carregáveis pelo agente no runtime. Reduz à decisão registrada sem operacionalização. |
@@ -41,7 +41,7 @@ Adicionar **(a) o método sênior de discovery em 8 passos** como reforço condi
 
 Escolha pela **Alternativa 1** segue 4 princípios:
 
-- **Régua §0 (ADR-007)**: 1 novo arquivo de decisão (ADR-009) + 1 companion progressive disclosure (`metodo-senior.md`) + 4 edições cirúrgicas (1-3 linhas cada). Adição mínima necessária; rejeita criação de workflow/template/skill nova.
+- **Régua §0 (ADR-007)**: 1 novo arquivo de decisão (ADR-009) + 1 companion progressive disclosure (`metodo-senior.md`) + 9 edições cirúrgicas (1-3 linhas cada; 5 nasceram dos rounds 1 e 2 do qa-critic). Adição mínima necessária; rejeita criação de workflow/template/skill nova.
 - **Progressive disclosure (ADR-003)**: companion carregado sob demanda quando há fonte canônica/normativa citada — não infla SKILL.md, não paga custo no caminho rápido.
 - **SSoT**: o método agnóstico vive em UM lugar (companion); SKILL.md referencia, demais skills referenciam o discovery. Sem duplicação.
 - **Pertinência ao objetivo do dono**: método **agnóstico de domínio** (não restrito a "regulado"); aplicável em dev/BI/BPM/regulado/qualquer caso onde há fonte citada.
@@ -115,7 +115,7 @@ Detalhado no companion. Em uma linha: 8 passos — mapear fontes / verificar VIG
 1. **Default operacional do framework sobe para sênior** quando há fonte canônica citada — sem inflação no caminho rápido.
 2. **Auto-observação estrutural** — framework para de regredir à média entre sessões.
 3. **Domain-agnóstico** — vale em dev/BI/BPM/regulado/qualquer caso (atende explícitamente a instrução do dono).
-4. **Régua §0 mantida** — 2 novos + 4 edições; sem nova skill, workflow ou template.
+4. **Régua §0 mantida** — 2 novos + 9 edições (cresceu de 4 para 9 pela incorporação adversarial; ainda dentro do princípio); sem nova skill, workflow ou template.
 5. **Validity-check integrado ao SSoT** (`anti-hallucination`) — não vira regra órfã.
 
 ### Negativas
@@ -141,6 +141,7 @@ Detalhado no companion. Em uma linha: 8 passos — mapear fontes / verificar VIG
 ## Pendências e follow-ups
 
 - **High-stakes-gate auto-load** por gatilhos contextuais (regulado, ANP, FDA, BACEN, ALCOA+, perda financeira, executive) — próximo ciclo.
+- **Template `docs/specs/_template/requirements.md` para caminho universal+sênior** — o template `_template-research/research-brief.md` cobre cascata+sênior (§7+§8); o universal+sênior (discovery universal com fonte canônica citada) usa `requirements.md` que ainda não tem seções equivalentes. Decisão consciente de adiar: cobertura cascata+sênior basta para o caso AIVI atual; estender o `requirements.md` quando surgir caso real universal+sênior. Levantado por qa-critic round 3 ADV-R2.
 - **Antecipações no template padrão de `output-format`** — propagar do companion para o output base. Próximo ciclo.
 - **External research handle no discovery pesquisa-cascata** — explorer EXTERNAL via WebSearch/WebFetch; gap conhecido (item J).
 - **Detector de drift hook deployado-vs-versionado** (framework-boot.ps1 órfão) — gap de infra, item I.
