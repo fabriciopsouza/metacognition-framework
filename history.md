@@ -9,6 +9,34 @@
 
 ---
 
+## 2026-05-28T09:01 — Sessão: v1.10.0 mergeada — método sênior de discovery (domain-agnóstico) + auto-observação (ADR-009)
+
+Absorção pelo framework do método sênior validado no case real **AIVI** (LIMITES-BATENTES-RECALC, branch `claude/discovery-aivi-metodo-2026-05-27`). Substância: memórias `[[senior-discovery-method]]` + `[[framework-self-improvement]]` + `[[framework-gaps-from-aivi-case-2026-05-27]]`.
+
+Aprovado e funcionando:
+- **ADR-009 Aceito** após **4 rounds qa-critic adversariais (16 findings endereçados)**: round 1 (2 ALTO A1 colisão namespace ADR-008→009 + A2 template ganha §7 Antecipações + §8 Backlog + M1-M5+B1), round 2 (4 MEDIO + 1 BAIXO + 2 ADV), round 3 (3 MEDIO + 1 BAIXO + 2 ADV stale counts), round 4 LIMPO (único bloqueador foi meta-recursão do próprio campo Status).
+- **v1.10.0 mergeada** em main via `--no-ff` (commit `d73244e`), **tag `v1.10.0`** anotada criada, branch `feat/v1.10.0-senior-discovery-method-auto-improvement` deletada (local + remote).
+- 5 commits no branch: `11c1289` feat + `01e598a`/`f622f89`/`3d96d94` fixes rounds 1-3 + `3d8c873` promoção a Aceito.
+- **Régua §0 mantida**: 2 novos + 9 edições cirúrgicas (escopo cresceu de 2+4+1 para 2+9 pela incorporação adversarial; todas edições de 1-3 linhas; sem nova pasta/workflow/template/skill).
+
+Nomenclaturas estabelecidas:
+- **Reforço transversal sênior** = método de discovery domain-agnóstico (não sub-modo; carregado sob demanda quando há fonte canônica/normativa citada).
+- **Companion `metodo-senior.md`** = 8 passos auditáveis (mapeamento + **vigência** + complementações + cross-domain + pertinência + elicitação + classificação + adversarial).
+- **Method-audit autônomo** = 0-3 notes/sessão substantiva em `## Aprendizado` (plug em ex-G9 de ADR-007).
+- **Princípio 11** (`AGENT-FRAMEWORK.md` §6) = auto-observação do framework.
+- **ADR-008 candidato** continua reservado para D2/check-execution-mode global (ADR-006 §Pendências).
+
+Decisões permanentes:
+- ADR-009: método sênior + auto-observação (Aceito, mergeado `d73244e`).
+
+Próximo passo: **AIVI fechamento** no repo `LIMITES-BATENTES-RECALC` branch `claude/discovery-aivi-metodo-2026-05-27` — implementar REQ-001..007 contra a SPEC + qa-critic round 1+2 + run com `dados_mestre/2026_VAR_INT_CSV.csv` + validar CA-1..CA-6 + gate humano. Trabalho fora deste repo.
+
+Riscos ativos:
+- 6 follow-ups em ADR-009 §Pendências (não-bloqueantes): high-stakes-gate auto-load por gatilhos, requirements.md universal+sênior, external research handle (WebSearch), drift detector framework-boot.ps1, ADV1-4 estruturais (revisitar se padrão recorrer), AIVI fechamento.
+- Meta-recursão de Status do ADR pode reaparecer em próximo ADR — registrado como method-audit.
+
+---
+
 ## 2026-05-27T21:59 — Sessão: pagamento da dívida de eval do G1 (pesquisa-cascata) + 1ª cascata real
 
 Abertura via /start-session reconciliou o repo vivo contra o "PLANO DE OTIMIZAÇÃO" colado pelo mantenedor: o plano é o **intake já entregue** na v1.9.0 (arquivado em `docs/_intake/`, virou ADR-007 Aceito). Nada a re-fazer — confirmado warning #6 (snapshot vs repo vivo). Decisão do mantenedor no gate: **pagar a dívida de eval do G1** (única pendência acionável do próprio plano, §5.2 / ADR-007 §Pendências).
@@ -70,7 +98,9 @@ Riscos ativos: race condition humano vs orquestrador no history.md (mitigada por
 
 > WIP atual (ex-G11). Reconciliar com branches do git e ADRs em status `Proposto` no `/start-session` (modo squad).
 
-- *(nenhum item em aberto.)* O brief `cross-platform-hooks` é insumo do backlog **D4** (trigger-gated, Windows-only hoje) — rastreado lá, não é WIP ativo. **GAP-2 DESCARTADO** como não-bug: `~/.claude/settings.json` é local de cada máquina e o `bootstrap` regenera o caminho ao rodar; nunca é copiado entre PCs. (Correção: eu havia inflado "cuidado com origin" em requisito multi-PC — não era.)
+- *(nenhum item em aberto no FRAMEWORK; v1.10.0 fechada em 2026-05-28T09:01 — ADR-009 Aceito, merge `d73244e`, tag `v1.10.0`)*.
+- **[2026-05-27/28 · em-revisão] AIVI fechamento** — repo `LIMITES-BATENTES-RECALC` branch `claude/discovery-aivi-metodo-2026-05-27`. SPEC pronta (Q1-Q5 do dono respondidas: Q1=VI a 20°C/FCV, Q2=sem flag físico-vs-virtual, Q5=indicador por Grupo de Produto, teto ±0,60% fixo, Gate-C ≥50% junta-por-mês; Q3/Q4/Q6/Q7 não-bloqueantes/diferidos). **Próximo passo:** implementar REQ-001..007 + qa-critic round 1+2 + run com `dados_mestre/2026_VAR_INT_CSV.csv` (Jan-Mai/2026 reais) + validar CA-1..CA-6 + gate humano. Trabalho fora deste repo; rastreado aqui para visibilidade.
+- Insumo de backlog **D4** (cross-platform hooks, trigger-gated, Windows-only hoje): brief `docs/specs/cross-platform-hooks/research-brief.md` permanece como referência futura — não é WIP ativo. **GAP-2 DESCARTADO** como não-bug (settings global é local de cada máquina; bootstrap regenera).
 
 ---
 
@@ -78,4 +108,6 @@ Riscos ativos: race condition humano vs orquestrador no history.md (mitigada por
 
 > Notas de fracassos capturadas via `/checkpoint` (ex-G9). **Firewall:** notas são **inertes** — só viram comportamento via skill/regra destilada, aprovada via ADR e mergeada. Nota errada não propaga.
 
-- *(nenhum aprendizado registrado nesta sessão — sem gatilho de fracasso disparado)*
+- **[2026-05-28T09:01] Method-audit (ADR-009 / princípio 11):** Stale counts ("4 edições" vs "9 edições") residuais em múltiplos arquivos atravessaram 3 dos 4 rounds qa-critic da v1.10.0. · **Causa-raiz:** scope cresceu por incorporação adversarial sem step de varredura de coerência interna antes de re-submeter — skill ausente: validation pre-commit de contagens/números/listas que possam ter ficado stale após scope-creep. · **Proposta (lean):** +1 linha em `_shared/docops` ou release checklist (`guia/GIT-VERSIONAMENTO.md`): "antes de re-submeter ADR/spec ao qa-critic após scope-creep, varrer documento por contagens stale (totais, listas, tabelas de implementação)".
+- **[2026-05-28T09:01] Method-audit (ADR-009 / princípio 11):** Meta-recursão do campo `Status` do ADR — sempre 1 round atrás do qa-critic em curso (cada round novo encontra Status descrevendo o round anterior). · **Causa-raiz:** Status descreve auto-referencialmente um processo que ainda está rodando — impossível fechar sem fork. · **Proposta (lean):** se padrão se repetir em próximo ADR, atualizar template `docs/adr/000-template.md` para que Status use metadado externo (último commit-hash de round qa-critic) em vez de descrever rounds pendentes. **Não-preemptivo** — decisão sob demanda.
+- **[2026-05-28T09:01] Method-audit (ADR-009 / princípio 11):** ADV-1 round 1 (localização do companion `metodo-senior.md` em `.agent/skills/discovery/` vs `_shared/`) foi marcado como follow-up sem decisão consciente. · **Causa-raiz:** framework não tem critério explícito para distinguir "transversal entre papéis" (vive em `_shared/`) de "companion-de-skill" (vive ao lado da skill dona). · **Proposta (lean):** se próximo ADR (architect/developer/qa-critic) precisar referenciar `metodo-senior.md`, decidir then — não criar regra preemptiva.
