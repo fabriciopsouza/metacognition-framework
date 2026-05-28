@@ -22,6 +22,9 @@ Após `bootstrap.ps1`, o squad acorda automaticamente em qualquer IDE/projeto cu
 ## Régua §0 — GANHO LÍQUIDO (v1.9.0 — ADR-007)
 Princípio 10 do `AGENT-FRAMEWORK.md` §6: adição pura é rejeitada. Aceitar só se (a) funde/remove ≥ adiciona, (b) reduz tokens/latência, ou (c) destrava eval inalcançável editando existente. Sub-modo `pesquisa-cascata` do discovery (sob demanda) é a primeira aplicação.
 
+## Método sênior de discovery — reforço transversal (v1.10.0 — ADR-009)
+Quando há **fonte canônica/normativa citada** (norma regulatória, spec oficial, padrão técnico, regra de negócio com peso semântico declarado), o discovery carrega `metodo-senior.md` (companion sob demanda) em adição ao sub-modo ativo. 8 passos: mapeamento + **vigência** + complementações + cross-domain + pertinência + elicitação + classificação + adversarial. Domain-agnóstico. Output ganha **Antecipações** + **Backlog de elicitação** (§7-8 obrigatórias do `research-brief.md`). Princípio 11 do `AGENT-FRAMEWORK.md` §6 + method-audit autônomo no `/checkpoint`.
+
 ## Aplicações
 Domínios específicos (BI, regulado, etc.) NÃO ficam no núcleo — são criados clonando
 .agent/skills/_template e vivem FORA do núcleo (no seu repositório).

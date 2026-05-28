@@ -1,9 +1,9 @@
 ---
 name: discovery
 description: "Ativar ANTES de planejar/implementar quando o pedido é novo, vago, ou a spec pode estar rasa/limitada ao que o usuário já conhece. Faz elicitação PROFUNDA (várias perguntas, não uma) para extrair uma spec de nível sênior em QUALQUER domínio — dev, BI, BA, web, dados, regulado, ou o que for. Em v1.6.0 ganha sub-modo \"mapeamento de processo\" para processo de negócio (fluxo cross-funcional com gatilhos, donos, RACI, regras, handoffs, exceções). Entrega requirements.md sênior que alimenta o architect. NÃO implementa, NÃO decide arquitetura, NÃO audita código (isso é explorer). Genérico e agnóstico de domínio."
-version: 1.7.0
-source: "pedido do usuário — evitar specs rasas limitadas ao conhecimento próprio; fundamentos A0 (decomposição) + A2 (spec-driven); v1.6.0 adiciona BPM-sênior via sub-modo nomeado + progressive disclosure (ADR-003); v1.7.0 adiciona sub-modo pesquisa-cascata para G1 (ADR-007)"
-last_review: 2026-05-27
+version: 1.8.0
+source: "pedido do usuário — evitar specs rasas limitadas ao conhecimento próprio; fundamentos A0 (decomposição) + A2 (spec-driven); v1.6.0 adiciona BPM-sênior via sub-modo nomeado + progressive disclosure (ADR-003); v1.7.0 adiciona sub-modo pesquisa-cascata para G1 (ADR-007); v1.8.0 adiciona reforço transversal método sênior 8 passos (ADR-009) domain-agnóstico para qualquer caso com fonte canônica/normativa citada"
+last_review: 2026-05-28
 ---
 
 # Discovery — Elicitação Profunda Universal (entry point)
@@ -73,6 +73,9 @@ Decisão arquitetural: `docs/adr/003-progressive-disclosure-companion-files.md`.
 | **Pesquisa em cascata** (v1.7.0 — G1, ADR-007) | `pesquisa-cascata.md` (vizinho) | Há pergunta de fundo sem fonte canônica no contexto, e a resposta destrava decisão. Pipeline: decompor → buscar via explorer → refletir → ramificar (≤2 rodadas) → sintetizar → ataque anti-raso → fechar. Output: `research-brief.md` |
 
 Cada companion contém: filtro de entrada explícito, fluxo do sub-modo, output esperado.
+
+### Reforço transversal sênior (v1.8.0 — ADR-009)
+Quando há **fonte canônica/normativa citada** no contexto (norma, regulamento, spec oficial, padrão técnico, regra de negócio com peso semântico), carregar `metodo-senior.md` (vizinho) em ADIÇÃO ao sub-modo ativo. Aplica 8 passos auditáveis: mapeamento + **vigência** + complementações + cross-domain + pertinência + elicitação + classificação + adversarial. Domain-agnóstico (dev/BI/BPM/regulado/qualquer). NÃO é sub-modo; é reforço transversal. Output ganha 2 seções obrigatórias: **Antecipações** + **Backlog de elicitação**.
 
 ## Output obrigatório
 Entrega um **`requirements.md` de nível sênior** (clonar `docs/specs/_template/`
