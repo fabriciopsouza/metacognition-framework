@@ -55,6 +55,7 @@ Entrega `research-brief.md` (clonar template) preenchido com:
 - **Gaps críticos** (com sugestão de validação).
 - **Ataque anti-raso** (perguntas que persona adversarial levantou + respostas).
 - **Recomendação ao orquestrador** (continuar para spec via discovery, ou enviar direto ao architect, ou mais elicitação).
+- **Antecipações + Backlog de elicitação** — quando o reforço transversal sênior está ativo em paralelo (`metodo-senior.md`, ADR-009; gatilho: há fonte canônica/normativa citada), preencher também **§7 Antecipações** e **§8 Backlog de elicitação** do template `research-brief.md` (obrigatórias). Sobreposição cascata + sênior produz brief de 10 seções (vs 8 da cascata pura).
 
 Resumo YAML ao orquestrador:
 ```yaml

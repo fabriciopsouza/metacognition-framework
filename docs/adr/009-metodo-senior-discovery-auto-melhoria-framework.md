@@ -56,14 +56,14 @@ Decisão pela auto-observação no §6 (princípio 11) ao invés de skill nova: 
 4. **`checkpoint.md` ganha 2-3 linhas**: mecanismo de **method-audit notes** autônomo (0-3 notes/sessão), plugado no `## Aprendizado` da history.md (ex-G9 / ADR-007), com firewall preservado (notas inertes até virar skill/regra mergeada).
 5. **Discovery `SKILL.md` ganha 3 linhas**: aponta para o companion sob a condição "há fonte canônica/normativa citada" — não vira sub-modo (não é um modo, é um reforço transversal).
 6. **Sem edição em `output-format` e `high-stakes-gate`** nesta v1.10.0: antecipações como entregável vivem no companion (cita output-format por referência); auto-load do high-stakes-gate fica como follow-up (low-risk, alta complexidade de gatilhos — separar bloco).
-7. **CHANGELOG.md** ganha bloco [1.10.0]; **CLAUDE.md/AGENTS.md** NÃO atualizadas nesta v (caminho rápido leitura — só atualiza em mudança de superfície de comando/skill; aqui é interna).
+7. **CHANGELOG.md** ganha bloco [1.10.0]; **CLAUDE.md + AGENTS.md ATUALIZADOS** com seção v1.10.0 (decisão revisada pós-qa-critic round 1: precedente v1.9.0 manda atualizar entry points para features de magnitude equivalente — não-bloqueante mas honra de consistência).
 8. **Bump v1.9.0 → v1.10.0** (feature minor: novo reforço + novo princípio; compatível).
 
 ## Implementação
 
 ### Arquivos criados/alterados na v1.10.0
 
-Escopo: **2 novos + 4 edições cirúrgicas + 1 CHANGELOG**:
+Escopo: **2 novos + 9 edições cirúrgicas (incluindo CHANGELOG)** — post-qa-critic rounds 1 e 2 (escopo original na proposta era 2 novos + 4 + 1 CHANGELOG; cresceu 5 arquivos pela incorporação adversarial — todas edições de 1-3 linhas):
 
 | Arquivo | Mudança | Justificativa régua §0 |
 |---|---|---|
@@ -73,9 +73,13 @@ Escopo: **2 novos + 4 edições cirúrgicas + 1 CHANGELOG**:
 | `_shared/anti-hallucination/SKILL.md` | **+2 linhas** | Anti-pattern de citar sem vigência; cirúrgico |
 | `.agent/workflows/checkpoint.md` | **+3 linhas** | Method-audit autônomo plugado em `## Aprendizado` existente |
 | `AGENT-FRAMEWORK.md` (§6) | **+1 linha** (princípio 11) | Auto-observação do framework |
+| `docs/specs/_template-research/research-brief.md` | **+§7 Antecipações + §8 Backlog + renumeração 7→9, 8→10** (round 1 fix A2) | Gate funcional do output sênior; sem template a obrigatoriedade era fictícia |
+| `CLAUDE.md` | **+1 seção** v1.10.0 (round 1 fix M5) | Entry point Claude Code; precedente v1.9.0 |
+| `AGENTS.md` | **+1 seção** v1.10.0 (round 2 fix BAIXO-1) | Entry point cross-tool; sync com CLAUDE.md |
+| `.agent/skills/discovery/pesquisa-cascata.md` | **+1 nota** de reciprocidade no output (round 2 fix ADV-2) | Sobreposição cascata+sênior explicitada (evita omissão silenciosa) |
 | `CHANGELOG.md` | **+1 bloco** [1.10.0] | Convenção |
 
-**Total efetivo:** 2 novos + 4 edições de 1-3 linhas + 1 bloco changelog. Sem nova pasta. Sem novo workflow. Sem nova skill.
+**Total efetivo:** 2 novos + 9 edições de 1-3 linhas (incluindo CHANGELOG). Sem nova pasta. Sem novo workflow. Sem nova skill.
 
 ### Mecanismo de method-audit autônomo (princípio 11)
 

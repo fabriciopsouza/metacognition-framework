@@ -50,7 +50,7 @@ Se nenhum se verifica → NÃO carregar. Voltar ao método universal do `SKILL.m
 
 ## Princípios anexos (parte do método sênior, não bônus)
 
-- **Antecipação sênior é ENTREGA**, não bônus: listar pontos pertinentes que o dono **não pediu** mas pode não ter visto (premissas que mordem, riscos não-óbvios, alternativas não-avaliadas). Vai numa seção dedicada do output (`research-brief.md` §6 ou `requirements.md` seção equivalente).
+- **Antecipação sênior é ENTREGA**, não bônus: listar pontos pertinentes que o dono **não pediu** mas pode não ter visto (premissas que mordem, riscos não-óbvios, alternativas não-avaliadas). Vai em seção dedicada do output — `research-brief.md` **§7 Antecipações + §8 Backlog de elicitação** (template `docs/specs/_template-research/`) ou seções equivalentes do `requirements.md`.
 - **Crítica do MÉTODO ≠ crítica do PRODUTO** — antes de auditar o output, auditar se a discovery em si está bem-apontada (objetivo do cliente, pertinência, viés, recorte).
 - **Conflito instrução-dono × canon = surface-and-reconcile** — quando o dono diz X e o canon diz Y, surfacear EXPLICITAMENTE com análise; o dono decide com meta-contexto (pode estar com entendimento mais novo que o canon).
 - **Regra de negócio tem SEMÂNTICA** — anti-fraude, audit, ALCOA+, fairness; não despriorizar regra sem entender o papel.

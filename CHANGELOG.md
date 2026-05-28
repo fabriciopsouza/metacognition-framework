@@ -28,6 +28,9 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 - **`.agent/skills/discovery/SKILL.md`** — bump versão `1.7.0` → `1.8.0`; +1 seção "Reforço transversal sênior" após a tabela de sub-modos, apontando para o companion.
 - **`_shared/anti-hallucination/SKILL.md`** — +1 anti-pattern: "Citar norma/regulamento/spec/padrão externo sem checar **vigência**". SSoT do validity-check.
 - **`.agent/workflows/checkpoint.md`** — +1 seção **Method-Audit autônomo (ADR-009)**: PMO emite 0-3 notes em sessão substantiva. Sinais: norma sem vigência, regra despriorizada sem semântica, correções repetidas do dono, violação régua §0, loops/retrabalho. Firewall preservado.
+- **`docs/specs/_template-research/research-brief.md`** — passa de 8 para 10 seções: novas **§7 Antecipações** e **§8 Backlog de elicitação** (obrigatórias quando o reforço transversal sênior está ativo); §7 antiga (Recomendação) → §9; §8 antiga (Metadados) → §10.
+- **`.agent/skills/discovery/pesquisa-cascata.md`** — +1 bullet no Output obrigatório explicitando que §7 Antecipações + §8 Backlog são obrigatórias quando o reforço sênior está ativo em paralelo (evita omissão silenciosa).
+- **`CLAUDE.md`** + **`AGENTS.md`** — nova seção "Método sênior de discovery — reforço transversal (v1.10.0 — ADR-009)".
 
 ### Como usar
 - **Acionar reforço sênior:** sempre que houver fonte canônica/normativa citada (norma, spec, padrão, regra de negócio com peso semântico) → discovery carrega `metodo-senior.md` em adição ao sub-modo ativo. Aplica os 8 passos; output ganha **Antecipações** + **Backlog**.
