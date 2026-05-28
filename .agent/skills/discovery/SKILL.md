@@ -74,7 +74,7 @@ Decisão arquitetural: `docs/adr/003-progressive-disclosure-companion-files.md`.
 
 Cada companion contém: filtro de entrada explícito, fluxo do sub-modo, output esperado.
 
-### Reforço transversal sênior (v1.8.0 — ADR-008)
+### Reforço transversal sênior (v1.8.0 — ADR-009)
 Quando há **fonte canônica/normativa citada** no contexto (norma, regulamento, spec oficial, padrão técnico, regra de negócio com peso semântico), carregar `metodo-senior.md` (vizinho) em ADIÇÃO ao sub-modo ativo. Aplica 8 passos auditáveis: mapeamento + **vigência** + complementações + cross-domain + pertinência + elicitação + classificação + adversarial. Domain-agnóstico (dev/BI/BPM/regulado/qualquer). NÃO é sub-modo; é reforço transversal. Output ganha 2 seções obrigatórias: **Antecipações** + **Backlog de elicitação**.
 
 ## Output obrigatório

@@ -63,7 +63,23 @@ Persona read-only ataca os achados antes do fechamento. Registrar perguntas-ataq
 | Alternativa rejeitada sem registro? | <qual + razão> |
 | ... | ... |
 
-## 7. Recomendação ao orquestrador
+## 7. Antecipações (sênior — ADR-009)
+
+Coisas pertinentes que o dono **não pediu** mas podem morder (premissas frágeis, riscos não-óbvios, alternativas não-avaliadas, vieses do recorte). **Seção obrigatória** quando o reforço transversal sênior está ativo (companion `metodo-senior.md`).
+
+- <antecipação 1>: <por que importa>
+- ...
+
+## 8. Backlog de elicitação (sênior — ADR-009)
+
+Fatos pertinentes **não-documentados** que precisam vir do dono — não calar gaps. **Seção obrigatória** quando o reforço transversal sênior está ativo.
+
+| # | Pergunta | Por que importa | Forma da resposta |
+|---|---|---|---|
+| Q1 | <pergunta> | <impacto> | <formato esperado> |
+| ... | | | |
+
+## 9. Recomendação ao orquestrador
 
 Escolher UMA:
 
@@ -71,7 +87,7 @@ Escolher UMA:
 - **Enviar direto ao `architect`** — achados são suficientes para decisão arquitetural; ADR é o próximo artefato.
 - **Mais elicitação** — pergunta principal não foi respondida (gaps críticos restantes); rodar nova rodada de pesquisa-cascata (até N=2) ou voltar ao usuário.
 
-## 8. Metadados
+## 10. Metadados
 
 - **Rodadas executadas:** <1 ou 2 — limite hard do passo 5 do algoritmo>
 - **Falhas do explorer:** <sub-perguntas que retornaram vazio + tratamento>

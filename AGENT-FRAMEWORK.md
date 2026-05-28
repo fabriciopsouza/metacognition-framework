@@ -184,7 +184,7 @@ Exceção: pedido típico de squad sem squad instalado → mencionar UMA vez ao 
 8. Context é recurso finito — compactar, anotar, isolar (§2.5)
 9. Override do usuário vence o roteamento automático
 10. **Otimização líquida (GANHO LÍQUIDO)** — adição só passa se (a) funde/remove superfície ≥ à que adiciona, (b) reduz tokens/latência comprovadamente, ou (c) destrava eval inalcançável editando existente. Adição pura é rejeitada por padrão. Detalhe: **ADR-007** (`docs/adr/007-regua-ganho-liquido-discovery-cascata-aprendizado-wip.md`).
-11. **Auto-observação do framework (método sênior)** — quando há fonte canônica/normativa citada, aplicar o reforço sênior em 8 passos (validade, cross-domain, antecipação, classificação, adversarial — companion `.agent/skills/discovery/metodo-senior.md`). Cada checkpoint emite 0-3 `method-audit notes` (gap + causa-raiz + proposta lean) em `history.md ## Aprendizado`. Padrão recorrente vira ADR (release checklist). Detalhe: **ADR-008** (`docs/adr/008-metodo-senior-discovery-auto-melhoria-framework.md`).
+11. **Auto-observação do framework (método sênior)** — quando há fonte canônica/normativa citada, carregar o reforço sênior (`.agent/skills/discovery/metodo-senior.md`). Cada checkpoint emite 0-3 `method-audit notes`; padrão recorrente vira ADR. Detalhe: **ADR-009** (`docs/adr/009-metodo-senior-discovery-auto-melhoria-framework.md`).
 
 ---
 

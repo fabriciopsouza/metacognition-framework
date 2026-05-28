@@ -1,21 +1,21 @@
 # Discovery — Reforço sênior (método em 8 passos)
 
-> Companion do `discovery` (v1.7.0+). Progressive disclosure (ADR-003):
+> Companion do `discovery` (v1.8.0+). Progressive disclosure (ADR-003):
 > carregado SOB DEMANDA quando há **fonte canônica/normativa citada** no contexto.
 > Domain-agnóstico — vale para dev/BI/BPM/regulado/qualquer caso onde se cita norma,
-> spec, padrão técnico, doc oficial ou regra de negócio.
-> Fonte: ADR-008. NÃO carregar em discovery sem citação de fonte (vira inflação).
+> spec, padrão técnico ou doc oficial específico.
+> Fonte: ADR-009. NÃO carregar em discovery sem citação de fonte (vira inflação — fere régua §0).
 
-## Filtro de entrada (passo 1 — obrigatório)
+## Filtro de entrada (passo 1 — obrigatório; restritivo por design)
 
-Ativar este reforço quando **algum** dos critérios se verifica:
+Ativar este reforço **apenas** quando **algum** dos critérios abaixo se verifica de forma explícita. Em dúvida, NÃO carregar (default: discovery universal).
 
-1. Há **citação de norma** regulatória ou padrão técnico (ANP, ANVISA, FDA, BACEN, ABNT, ISO, API, GAMP, IEEE, RFC, etc.).
-2. Há **referência a doc oficial/canônico** (spec, regulamento, manual fabricante, contrato).
-3. Há **regra de negócio interna** com peso semântico (anti-fraude, ALCOA+, audit trail, financeiro, conformidade).
-4. Há **decisão downstream de alto impacto** (executiva, financeira, regulatória, irreversível).
+1. **Citação de norma regulatória ou padrão técnico EXTERNO** (ANP, ANVISA, FDA, BACEN, ABNT, ISO, API, GAMP, IEEE, RFC, NBR, etc.). Não inclui "convenção" interna.
+2. **Referência a documento OFICIAL específico**: resolução, portaria, regulamento técnico, manual oficial de fabricante, spec assinada. **NÃO inclui** contratos comerciais genéricos, documentação interna de projeto, ou READMEs.
+3. **Regra de negócio interna com peso semântico DECLARADO** — anti-fraude, ALCOA+, audit trail, fairness, conformidade regulatória. **NÃO inclui qualquer regra de negócio** — só aquelas cujo impacto envolve perda financeira material ou compliance.
+4. **Decisão downstream de alto impacto confirmada**: executiva irreversível, financeira material, regulatória/auditável.
 
-Se nenhum se verifica → NÃO carregar. Voltar ao método universal do `SKILL.md`.
+Se nenhum se verifica → NÃO carregar. Voltar ao método universal do `SKILL.md`. Filtro permissivo demais derrota o progressive disclosure.
 
 ## Os 8 passos auditáveis
 
@@ -73,7 +73,7 @@ E garantir que **toda** afirmação tem classificação + fonte com data/vigênc
 
 ## Referências
 
-- ADR-008 (decisão arquitetural).
+- ADR-009 (decisão arquitetural).
 - ADR-003 (progressive disclosure companion).
 - ADR-007 (régua §0 + ex-G9/ex-G11).
 - `_shared/anti-hallucination` (passo 2 validity-check).

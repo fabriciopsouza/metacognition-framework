@@ -15,19 +15,19 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
-## [1.10.0] — 2026-05-28 — Método sênior de discovery (domain-agnóstico) + auto-observação do framework (ADR-008)
+## [1.10.0] — 2026-05-28 — Método sênior de discovery (domain-agnóstico) + auto-observação do framework (ADR-009)
 
 > MINOR feature: o framework absorve o método sênior validado no case real **AIVI** (2026-05-27, repo `LIMITES-BATENTES-RECALC` branch `claude/discovery-aivi-metodo-2026-05-27`, commits `74bd613`+`039fd6d`) como **reforço transversal** do discovery (carregado sob demanda quando há fonte canônica/normativa citada — domain-agnóstico) + **princípio 11** de auto-observação (method-audit autônomo). Régua §0 mantida: 2 novos + 4 edições cirúrgicas.
 
 ### Added
-- **`docs/adr/008-metodo-senior-discovery-auto-melhoria-framework.md`** — decisão arquitetural que consolida (a) método sênior em 8 passos como reforço transversal do discovery e (b) princípio 11 de auto-observação. Fonte: case AIVI; substância em memórias `[[senior-discovery-method]]`, `[[framework-self-improvement]]`, `[[framework-gaps-from-aivi-case-2026-05-27]]`.
+- **`docs/adr/009-metodo-senior-discovery-auto-melhoria-framework.md`** — decisão arquitetural que consolida (a) método sênior em 8 passos como reforço transversal do discovery e (b) princípio 11 de auto-observação. Fonte: case AIVI; substância em memórias `[[senior-discovery-method]]`, `[[framework-self-improvement]]`, `[[framework-gaps-from-aivi-case-2026-05-27]]`.
 - **`.agent/skills/discovery/metodo-senior.md`** — companion sob demanda (ADR-003) com os 8 passos auditáveis: mapeamento + **vigência** + complementações + cross-domain + pertinência + elicitação + classificação + adversarial. Output ganha seções obrigatórias **Antecipações** + **Backlog de elicitação**. Carregado quando há fonte canônica/normativa citada (qualquer domínio).
 
 ### Changed
 - **`AGENT-FRAMEWORK.md` §6** — **princípio 11** novo: auto-observação do framework. Cada checkpoint emite 0-3 `method-audit notes`; padrão recorrente vira ADR.
 - **`.agent/skills/discovery/SKILL.md`** — bump versão `1.7.0` → `1.8.0`; +1 seção "Reforço transversal sênior" após a tabela de sub-modos, apontando para o companion.
 - **`_shared/anti-hallucination/SKILL.md`** — +1 anti-pattern: "Citar norma/regulamento/spec/padrão externo sem checar **vigência**". SSoT do validity-check.
-- **`.agent/workflows/checkpoint.md`** — +1 seção **Method-Audit autônomo (ADR-008)**: PMO emite 0-3 notes em sessão substantiva. Sinais: norma sem vigência, regra despriorizada sem semântica, correções repetidas do dono, violação régua §0, loops/retrabalho. Firewall preservado.
+- **`.agent/workflows/checkpoint.md`** — +1 seção **Method-Audit autônomo (ADR-009)**: PMO emite 0-3 notes em sessão substantiva. Sinais: norma sem vigência, regra despriorizada sem semântica, correções repetidas do dono, violação régua §0, loops/retrabalho. Firewall preservado.
 
 ### Como usar
 - **Acionar reforço sênior:** sempre que houver fonte canônica/normativa citada (norma, spec, padrão, regra de negócio com peso semântico) → discovery carrega `metodo-senior.md` em adição ao sub-modo ativo. Aplica os 8 passos; output ganha **Antecipações** + **Backlog**.

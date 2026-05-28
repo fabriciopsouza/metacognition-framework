@@ -1,6 +1,6 @@
-# ADR 008 — Método sênior de discovery (domain-agnóstico) + auto-melhoria do framework
+# ADR 009 — Método sênior de discovery (domain-agnóstico) + auto-melhoria do framework
 
-- **Status:** Proposto (2026-05-28 — pendente qa-critic round 1)
+- **Status:** Proposto (2026-05-28 — round 1 com 2 ALTO corrigidos: A1 colisão de namespace ADR-008→ADR-009; A2 template `research-brief.md` ganha seções Antecipações + Backlog. Pendente qa-critic round 2)
 - **Data:** 2026-05-28 · **Decisores:** Fabricio (mantenedor) + Claude (papel `architect`)
 - **Substitui:** nenhum · **Substituído por:** nenhum
 - **Relaciona-se a:** ADR-002 (discovery v1.6.0), ADR-003 (progressive disclosure), ADR-007 (régua §0 + pesquisa-cascata + ex-G9/ex-G11)
@@ -41,7 +41,7 @@ Adicionar **(a) o método sênior de discovery em 8 passos** como reforço condi
 
 Escolha pela **Alternativa 1** segue 4 princípios:
 
-- **Régua §0 (ADR-007)**: 1 novo arquivo de decisão (ADR-008) + 1 companion progressive disclosure (`metodo-senior.md`) + 4 edições cirúrgicas (1-3 linhas cada). Adição mínima necessária; rejeita criação de workflow/template/skill nova.
+- **Régua §0 (ADR-007)**: 1 novo arquivo de decisão (ADR-009) + 1 companion progressive disclosure (`metodo-senior.md`) + 4 edições cirúrgicas (1-3 linhas cada). Adição mínima necessária; rejeita criação de workflow/template/skill nova.
 - **Progressive disclosure (ADR-003)**: companion carregado sob demanda quando há fonte canônica/normativa citada — não infla SKILL.md, não paga custo no caminho rápido.
 - **SSoT**: o método agnóstico vive em UM lugar (companion); SKILL.md referencia, demais skills referenciam o discovery. Sem duplicação.
 - **Pertinência ao objetivo do dono**: método **agnóstico de domínio** (não restrito a "regulado"); aplicável em dev/BI/BPM/regulado/qualquer caso onde há fonte citada.
@@ -67,7 +67,7 @@ Escopo: **2 novos + 4 edições cirúrgicas + 1 CHANGELOG**:
 
 | Arquivo | Mudança | Justificativa régua §0 |
 |---|---|---|
-| `docs/adr/008-metodo-senior-discovery-auto-melhoria-framework.md` | **NOVO** (este arquivo) | Critério (c): registra decisão arquitetural inalcançável editando ADR existente |
+| `docs/adr/009-metodo-senior-discovery-auto-melhoria-framework.md` | **NOVO** (este arquivo) | Critério (c): registra decisão arquitetural inalcançável editando ADR existente |
 | `.agent/skills/discovery/metodo-senior.md` | **NOVO companion** (~70 linhas) | Critério (c) + ADR-003: detalha 8 passos sob demanda; não infla SKILL.md base |
 | `.agent/skills/discovery/SKILL.md` | **+3 linhas** | Aponta para companion sob condição; cirúrgico |
 | `_shared/anti-hallucination/SKILL.md` | **+2 linhas** | Anti-pattern de citar sem vigência; cirúrgico |
@@ -130,7 +130,7 @@ Detalhado no companion. Em uma linha: 8 passos — mapear fontes / verificar VIG
 
 - **Branch:** `feat/v1.10.0-senior-discovery-method-auto-improvement`
 - **Data:** 2026-05-28
-- **Grep:** `git log --all --grep "v1.10.0" --grep "ADR-008"`
+- **Grep:** `git log --all --grep "v1.10.0" --grep "ADR-009"`
 - **Hash de commit:** opcional como complemento; nunca único.
 - **Validação:** qa-critic adversarial em rounds até LIMPO + reaplicação do método em próximo case real (AIVI fechamento ou outro domínio) verificando se as ~10 correções do dono caem para ≤3.
 
