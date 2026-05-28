@@ -149,6 +149,32 @@
 > release. v1.6.0 entrega o sub-modo + os 18 casos; execução pendente. Marcado
 > [EMERGENTE] deliberadamente — não fingir CONFIRMADO o que não foi rodado.
 
+## I. Discovery sub-modo "pesquisa-cascata" — eval FUNCIONAL [EXECUTADO 2026-05-27]
+
+> Diferente de G/H (que testam **roteamento** da `description`), este eval testa o
+> **comportamento do pipeline** do sub-modo `pesquisa-cascata` (G1 / ADR-007). Os 9
+> casos binários são os definidos no ADR-007 §"Eval seção I" (linhas 103-112).
+> **Método de execução:** uma pesquisa-cascata real foi disparada de ponta a ponta
+> (tema: porte cross-platform dos hooks — backlog D4), e cada caso foi verificado
+> contra a execução real. Artefato: `docs/specs/cross-platform-hooks/research-brief.md`.
+
+| # | Caso (critério binário) | Evidência da execução real | OK |
+|---|---|---|---|
+| 1 | Trabalho exige pesquisa, contexto SEM fonte → companion carrega | Pergunta "estratégia de porte cross-platform" sem resposta canônica no contexto → `pesquisa-cascata.md` carregado | ✅ |
+| 2 | Trabalho exige pesquisa, contexto COM fonte canônica → companion NÃO carrega | Mesma sessão, abertura "ativar framework": resposta estava em CLAUDE.md+ADR-007+history → companion NÃO carregado, respondido das fontes canônicas | ✅ |
+| 3 | Decomposição produz 3-5 sub-perguntas (não 1 nem 20) | 4 sub-perguntas round 1 (SQ1-SQ4) + 1 ramificação round 2 (SQ5) | ✅ |
+| 4 | Cada BUSCA delegada ao explorer em contexto isolado | SQ1/SQ2/SQ3 = 3 explorers paralelos isolados (round 1) + SQ5 = 1 explorer (round 2). SQ4 é síntese (reflexão), não busca — fiel ao passo 4 do algoritmo | ✅ |
+| 5 | Classificação aplicada em cada achado | brief §4: todo achado marcado CONFIRMADO\|INFERIDO\|DESCONHECIDO | ✅ |
+| 6 | Ataque anti-raso registrado (não opcional) | brief §6: 5 perguntas adversariais + respostas; pegou viés de confirmação `.sh`-only e a lacuna decisiva não-provada | ✅ |
+| 7 | research-brief.md segue template (cabeçalho YAML correto) | frontmatter bate com `docs/specs/_template-research/research-brief.md` (papel, sub_modo, pergunta_principal, rodadas, data, status) | ✅ |
+| 8 | Lacunas críticas viram [DESCONHECIDO] com sugestão de validação | GAP-1 (bifurcação pwsh vs .sh) + comportamento do host + dependência jq → todos DESCONHECIDO com caminho de validação | ✅ |
+| 9 | Falha/vazio do explorer numa rodada → DESCONHECIDO, NÃO repetir | SQ5 confirmou ausência de fonte no repo p/ pwsh-viabilidade e host-behavior → marcados DESCONHECIDO; round 3 NÃO executado (N=2). **Nuance honesta:** nenhuma busca retornou vazio *técnico* — o guard foi exercido por *natureza external-knowledge*, não por falha de tooling. O loop-guard (não re-perguntar o insolúvel) foi exercido; um empty-return técnico não foi disparado naturalmente | ✅* |
+
+> **Resultado seção I:** 9/9 PASS (caso 9 com nuance honesta marcada `✅*` — guard exercido por
+> ausência-de-fonte, não por falha técnica de explorer). Custo de busca: ~104K tokens (4 explorers).
+> **Escopo pago:** apenas o eval do **G1** (pesquisa-cascata). Os evals de **roteamento G e H
+> permanecem DESIGN-TIME** — não foram pagos nesta sessão (fora do escopo escolhido).
+
 ## Resumo
 - Total: 33 casos EXECUTADOS (A–F) + 18 casos EMERGENTES DESIGN-TIME (G) + 18 casos EMERGENTES DESIGN-TIME (H — sub-modo mapeamento de processo, v1.6.0).
 - Passou direto (A–F): 32 · Atenção (A–F): 1 (ver achados).

@@ -9,6 +9,21 @@
 
 ---
 
+## 2026-05-27T21:59 — Sessão: pagamento da dívida de eval do G1 (pesquisa-cascata) + 1ª cascata real
+
+Abertura via /start-session reconciliou o repo vivo contra o "PLANO DE OTIMIZAÇÃO" colado pelo mantenedor: o plano é o **intake já entregue** na v1.9.0 (arquivado em `docs/_intake/`, virou ADR-007 Aceito). Nada a re-fazer — confirmado warning #6 (snapshot vs repo vivo). Decisão do mantenedor no gate: **pagar a dívida de eval do G1** (única pendência acionável do próprio plano, §5.2 / ADR-007 §Pendências).
+
+Executado:
+- **Eval seção I (funcional, ADR-007:103-112) RODADO: 9/9 PASS** — registrado em `_meta/eval-results-papeis.md` §I [EXECUTADO]. Método: 1 pesquisa-cascata real de ponta a ponta, casos verificados contra a execução. Caso 9 marcado `✅*` (nuance honesta: guard de não-repetição exercido por ausência-de-fonte, não por empty-return técnico).
+- **1ª pesquisa-cascata real disparada** (field-validation que o ADR-007 §Validação pedia). Tema: porte cross-platform dos hooks (backlog D4). 2 rodadas, 4 explorers isolados (~104K tokens — confirma empiricamente o custo multi-agente do intake §2). Output: `docs/specs/cross-platform-hooks/research-brief.md`.
+- **Achados que destravam decisão futura:** (a) o lock-in PowerShell já é dívida registrada (ADR-004/005/006 + D4, trigger-gated); (b) `bootstrap.sh` já existe mas stuba a instalação de hooks de propósito; (c) **GAP-1** — a bifurcação `pwsh` (PowerShell Core) vs reescrita `.sh` nunca foi avaliada pelos ADRs e decide o custo do porte (recomendação: spike de 1h antes de qualquer ADR); (d) **GAP-2** — caminho absoluto `$env:USERPROFILE` inscrito no `~/.claude/settings.json` global é bug latente multi-PC, não-documentado.
+
+Régua §0 aplicada à própria execução: NÃO abri ADR nem implementei (D4 é trigger-gated; abrir agora seria adição pré-gatilho). NÃO spawn de qa-critic separado — o ataque anti-raso (passo 7 do pipeline) é o gate adversarial do brief, e o eval é a verificação; um qa-critic extra não mudaria o resultado (custo sem ganho).
+
+Sem gatilho de fracasso disparado → nada em `## Aprendizado`. Próximo passo: gate humano (ver `## Em aberto`).
+
+---
+
 ## 2026-05-27T20:50 — Sessão: reconciliação de sync + 2 bugs de encoding/boot nos hooks
 
 Abertura via /start-session detectou `main` ahead 1 de origin (commit `5b0b2a2`, fix UTF-8 runtime dos hooks de inject, não pushado). Pushado após avaliação §0 (devido: não pushar regrediria mojibake em outro PC — [[fabricio-multi-pc-workflow]]).
@@ -55,7 +70,8 @@ Riscos ativos: race condition humano vs orquestrador no history.md (mitigada por
 
 > WIP atual (ex-G11). Reconciliar com branches do git e ADRs em status `Proposto` no `/start-session` (modo squad).
 
-- *(nenhum item em aberto — v1.9.0 fechada em 2026-05-27T20:50: impl 4/4 mergeada)*
+- **[2026-05-27 · em-revisão] research-brief cross-platform-hooks (D4).** `docs/specs/cross-platform-hooks/research-brief.md` pronto e revisado. Bloqueado por: (i) gatilho de D4 não disparado (mantenedor Windows-only) + (ii) GAP-1 (spike `pwsh` vs `.sh`). **Próximo passo:** gate humano decide — rodar o spike `pwsh` (1h) agora, ou aguardar o gatilho. NÃO abrir ADR antes do spike.
+- **[2026-05-27 · planejado] GAP-2 — bug latente multi-PC.** Caminho absoluto `$env:USERPROFILE` inscrito no `~/.claude/settings.json` global (`bootstrap.ps1:147`) é frágil entre PCs (cruza `[[fabricio-multi-pc-workflow]]`). Independente do porte cross-platform. **Próximo passo:** gate humano decide — fix pequeno direto na main, ou entrada no backlog.
 
 ---
 
