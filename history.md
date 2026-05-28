@@ -70,8 +70,7 @@ Riscos ativos: race condition humano vs orquestrador no history.md (mitigada por
 
 > WIP atual (ex-G11). Reconciliar com branches do git e ADRs em status `Proposto` no `/start-session` (modo squad).
 
-- **[2026-05-27 · em-revisão] research-brief cross-platform-hooks (D4).** `docs/specs/cross-platform-hooks/research-brief.md` pronto e revisado. Bloqueado por: (i) gatilho de D4 não disparado (mantenedor Windows-only) + (ii) GAP-1 (spike `pwsh` vs `.sh`). **Próximo passo:** gate humano decide — rodar o spike `pwsh` (1h) agora, ou aguardar o gatilho. NÃO abrir ADR antes do spike.
-- **[2026-05-27 · planejado] GAP-2 — bug latente multi-PC.** Caminho absoluto `$env:USERPROFILE` inscrito no `~/.claude/settings.json` global (`bootstrap.ps1:147`) é frágil entre PCs (cruza `[[fabricio-multi-pc-workflow]]`). Independente do porte cross-platform. **Próximo passo:** gate humano decide — fix pequeno direto na main, ou entrada no backlog.
+- *(nenhum item em aberto.)* O brief `cross-platform-hooks` é insumo do backlog **D4** (trigger-gated, Windows-only hoje) — rastreado lá, não é WIP ativo. **GAP-2 DESCARTADO** como não-bug: `~/.claude/settings.json` é local de cada máquina e o `bootstrap` regenera o caminho ao rodar; nunca é copiado entre PCs. (Correção: eu havia inflado "cuidado com origin" em requisito multi-PC — não era.)
 
 ---
 
