@@ -145,7 +145,7 @@ Output vai para o `requirements.md`/`research-brief.md` em seção **`## Escopo 
 
 ### Negativas
 
-1. **Discovery default ganha lote temático "escopo de domínio"** — 4 perguntas a mais quando há sinal. Mitigado: as 4 só disparam se há sinal; em projeto puramente operacional (sem norma citada), discovery universal permanece igual.
+1. **Discovery default ganha lote temático "escopo de domínio"** — 4 perguntas a mais quando há sinal (**EMENDA v1.13.0 (ADR-012):** 4 → 5 com adição de (e) "alimenta outra sessão?"). Mitigado: só disparam se há sinal; em projeto puramente operacional (sem norma citada), discovery universal permanece igual.
 2. **Exemplos didáticos perdidos** — `regulado:` no banco de partida (linha 58 da SKILL) vira "trilha de auditoria, validação, aprovação, rollback" sem âncora concreta. Mitigado: companion sênior (`metodo-senior.md`) ainda existe para casos confirmados; banco de partida não é exaustivo por design.
 3. **PROMPT-CHAT-WEB-v4.2.md perde "identidade personalizada"** distribuída — usuário precisa customizar §1 e §5 ao plugar no Claude.ai. Mitigado: template explícito com placeholders + instrução clara de customização.
 
