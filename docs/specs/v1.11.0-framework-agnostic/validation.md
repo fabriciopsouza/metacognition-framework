@@ -111,7 +111,7 @@ grep -qE "^12\. \*\*Framework agn[oó]stico" AGENT-FRAMEWORK.md
 
 - [ ] `.agent/skills/discovery/SKILL.md` passo 6 contém Modo A (Transcribe) + Modo B (Interview) com 4 perguntas + candidate-skill surface.
 - [ ] `.agent/skills/discovery/metodo-senior.md` lista 9 passos auditáveis (8 originais + passo 9 Coherence Pass) + seção "Gaps não-bloqueantes" no Output esperado.
-- [ ] `.agent/workflows/checkpoint.md` contém gate RRC obrigatório com checklist binário de 5 itens.
+- [ ] `.agent/workflows/checkpoint.md` contém gate RRC obrigatório com checklist binário de 6 itens (5 dimensões de coerência ADR-010 §ii.2 + 1 check operacional anti-vazamento).
 - [ ] `_shared/high-stakes-gate/SKILL.md` carrega SOB DECLARAÇÃO do discovery (não por sinal semântico).
 - [ ] `.agent/rules/04-confidence-routing.md` desacopla HITL/regulado (HITL via ADR-005).
 
