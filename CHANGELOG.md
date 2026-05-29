@@ -15,6 +15,50 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.11.0] — 2026-05-28 — Framework estritamente agnóstico de domínio + discovery declara escopo + anti-vazamento cross-projeto (ADR-010)
+
+> MINOR feature. Diagnóstico: a v1.10.0 declarava-se "domain-agnóstico" mas o próprio `metodo-senior.md`, a memória companheira, `04-confidence-routing.md`, `discovery/SKILL.md` (banco de partida), `mapeamento-de-processo.md`, `high-stakes-gate/SKILL.md`, `AGENT-FRAMEWORK.md` §1 e o `PROMPT-CHAT-WEB-v4.2.md` (raiz) carregavam **listas hardcoded** de normas (ANP, ANVISA, FDA, BACEN, ABNT, ISO, GAMP, ALCOA+, COBIT, CSV/CSA, etc.). Sintoma observado durante a tentativa de absorção do método sênior (mesma sessão 2026-05-28): vazamento cross-projeto materializado — convenções de projetos de outros domínios do mesmo dono entravam como gatilhos do framework para qualquer projeto. A v1.11.0 PURGA esses anchors + introduz princípio 12 (framework agnóstico — discovery declara o escopo).
+
+### Changed (PURGA — subtração em prompts/regras/templates)
+- **`.agent/skills/discovery/metodo-senior.md`** — filtro de entrada agnóstico: lista "(ANP, ANVISA, FDA, BACEN, ABNT, ISO, API, GAMP, IEEE, RFC, NBR, etc.)" → "norma regulatória ou padrão técnico EXTERNO declarado pelo discovery do projeto como pertinente". ALCOA+ removido das 2 ocorrências (filtro entrada item 3 + princípio anexo "Regra de negócio tem semântica").
+- **`.agent/skills/discovery/SKILL.md`** — banco de partida `regulado:` perde ALCOA+ (reframe: norma específica é declarada pelo dono).
+- **`.agent/skills/discovery/mapeamento-de-processo.md`** — "Compliance/audit trail/ALCOA+" → "Compliance/audit trail (quando declarado pelo discovery — ADR-010)".
+- **`.agent/rules/04-confidence-routing.md`** — desacoplamento HITL × regulado: ALCOA+ removido; HITL passa a viver inteiramente no eixo `execution-modes` (ADR-005), sem duplicação; roteamento reflexivo carrega SOB DECLARAÇÃO do discovery.
+- **`_shared/high-stakes-gate/SKILL.md`** — placeholder agnóstico no "Como uma aplicação especializa este gate" (remove lista "GAMP 5 / ANVISA / SOX / LGPD / ITIL"). Gate carrega SOB DECLARAÇÃO do discovery, não por sinal semântico.
+- **`AGENT-FRAMEWORK.md` §1** — "ambiente regulado" como sinal de squad → "ambiente declarado regulado pelo discovery do projeto (ADR-010)".
+- **`AGENT-FRAMEWORK.md` §2.B** — "Compliance/ALCOA+" → "Compliance/audit trail" no sub-modo mapeamento de processo.
+- **`PROMPT-CHAT-WEB-v4.2.md`** — §1 IDENTIDADE e §5 DOMÍNIO substituídas por **templates com placeholders** (`<PERSONALIZAR AQUI>`). Conteúdo hardcoded (Tableau · distribuição de combustíveis · farmacêutico ANVISA/GAMP/COBIT · ALCOA+ · KPIs combustíveis) **removido** — não distribuir prompt com domínio de uma pessoa cravado. Regras transversais agnósticas em §5 preservadas (Acurácia≠Performance, Agregação≠Dimensão, anti-alucinação, etc.).
+- **`docs/specs/_template-process/gap-analysis.md`** — sumário executivo exemplo: ALCOA+ → "trilha de auditoria (norma específica declarada pelo discovery)".
+
+### Added (mínimo, com critério régua §0)
+- **`docs/adr/010-framework-agnostico-discovery-declara-escopo.md`** — decisão arquitetural; 6 alternativas avaliadas; relaciona ADR-005 (HITL desacoplado), ADR-007 (régua §0), ADR-009 (método sênior cuja contradição interna detectou o gap).
+- **`AGENT-FRAMEWORK.md` §6 — princípio 12 NOVO:** Framework agnóstico de domínio — discovery declara o escopo (4 perguntas) + anti-vazamento cross-projeto + gaps não-bloqueantes flagados.
+- **`.agent/skills/discovery/SKILL.md` — passo 6 NOVO no método universal:** lote temático obrigatório "Escopo declarado pelo discovery" com 4 perguntas estruturadas (regulado/alto-risco/regra-com-semântica/gaps-não-bloqueantes). Anti-vazamento explicitado.
+- **`.agent/skills/discovery/metodo-senior.md` — seção `§ Gaps não-bloqueantes` NOVA no Output esperado:** abordagem sênior flagua, não silencia.
+- **`CLAUDE.md` + `AGENTS.md` + `README.md`** — seção/menção v1.11.0; README bump de versão (1.6.1 drift → 1.11.0).
+
+### Como usar
+- **Discovery default** ganha lote temático "Escopo declarado" quando há QUALQUER sinal de contexto especializado. As 4 perguntas vão para `## Escopo declarado pelo discovery` no `requirements.md`/`research-brief.md`.
+- **High-stakes-gate / reforço sênior / roteamento reflexivo** carregam SOB DECLARAÇÃO afirmativa do discovery — não por detecção semântica.
+- **HITL operacional** continua governado por modo de execução (ADR-005): `default` → prompts amplos; `avançado` → blanket shell + ask em git push/merge/PR; `autosuficiente` → bypassPermissions. Eixo separado de "regulado".
+- **PROMPT-CHAT-WEB:** ao plugar no Claude.ai, **customizar §1 (identidade) e §5 (domínio)** OU mover domínio para Project Knowledge (recomendado para manter o prompt genérico).
+
+### Validação executada
+- `grep -r "ALCOA\|ANVISA\|\bANP\b\|\bFDA\b\|\bBACEN\b\|GAMP" _shared/ .agent/ AGENT-FRAMEWORK.md CLAUDE.md AGENTS.md` no master pós-merge = **0 ocorrências** (excluindo CHANGELOG histórico e exemplos didáticos rotulados em `docs/specs/exemplos/H1-farma-*/` — diretório nomeado como exemplo, intenção explícita).
+- Memória do agente (`~/.claude/projects/.../memory/senior-discovery-method.md`) purgada na mesma sessão (anti-vazamento estrutural).
+
+### Pipeline
+PMO/Discovery (auto-observação — princípio 11 da v1.10.0 detectou contradição interna: framework "agnóstico" carregava listas de domínio) → Architect (ADR-010, 6 alternativas, escolha Alternativa 1 = purga estrita + discovery-declara-escopo + decouplagem HITL via ADR-005) → Developer (purga + adições mínimas em 11 arquivos + ADR + companion update) → qa-critic adversarial em rounds.
+
+### Pendências e follow-ups (fora desta v1.11.0)
+- **Templates `_template-research/research-brief.md` e `_template/requirements.md`** ganham seção `## Escopo declarado pelo discovery` no próximo ciclo.
+- **Validação operacional em case real** — próximo projeto que dispare discovery declara explicitamente o escopo? Method-audit no `/checkpoint` verifica.
+- **Exemplos `docs/specs/exemplos/H1-farma-*/`** ficam intencionalmente intocados — diretório rotulado como exemplo didático regulado-pharma. Quem clona entende que é exemplo, não regra do framework.
+
+[CONSOLIDADO] / [CONFIRMADO] (após qa-critic LIMPO + validação em campo).
+
+---
+
 ## [1.10.0] — 2026-05-28 — Método sênior de discovery (domain-agnóstico) + auto-observação do framework (ADR-009)
 
 > MINOR feature: o framework absorve o método sênior validado no case real **AIVI** (2026-05-27, repo `LIMITES-BATENTES-RECALC` branch `claude/discovery-aivi-metodo-2026-05-27`, commits `74bd613`+`039fd6d`) como **reforço transversal** do discovery (carregado sob demanda quando há fonte canônica/normativa citada — domain-agnóstico) + **princípio 11** de auto-observação (method-audit autônomo). Régua §0 mantida: 2 novos + 9 edições cirúrgicas (escopo original era 2+4+1; cresceu para 2+9 pela incorporação adversarial dos rounds 1 e 2 do qa-critic — todas edições de 1-3 linhas).

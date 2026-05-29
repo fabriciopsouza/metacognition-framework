@@ -43,6 +43,13 @@ perguntado. Este papel encarna esse método — não um catálogo de domínios, 
 5. **Anti-alucinação:** nunca inventar requisito, número ou nome. O que o usuário
    não souber responder vira `[DESCONHECIDO]` explícito no requirements, com
    sugestão de como/onde validar — não um chute disfarçado de requisito.
+6. **Escopo declarado pelo discovery (ADR-010, obrigatório quando há QUALQUER sinal de contexto especializado):** lote temático com 4 perguntas explícitas registradas no `requirements.md`/`research-brief.md` em seção `## Escopo declarado pelo discovery`:
+   - **(a) Regulado?** Este projeto opera sob alguma norma/convenção externa? Quais especificamente? Vigência? (Por norma, classificar `[CONFIRMADO]`/`[INFERIDO]`/`[DESCONHECIDO]`.)
+   - **(b) Alto-risco?** Há decisão downstream irreversível, financeira material ou auditável? (Sim/Não + justificativa.)
+   - **(c) Regras com semântica?** Há regra de negócio onde o "como" importa tanto quanto o "quê" (anti-fraude, audit trail, fairness, etc. — listar as concretas do projeto)? (Sim/Não + lista.)
+   - **(d) Gaps não-bloqueantes?** Dimensões/dados sabidos ausentes mas não impedem entrega? (Lista + decisão "manter gap" / "tratar follow-up".)
+
+   **Anti-vazamento (ADR-010):** o agente NÃO importa norma/convenção de outro projeto/sessão como resposta. Resposta vem do dono ou fica `[DESCONHECIDO]`. As respostas disparam (ou não) os gates downstream (`high-stakes-gate`, reforço sênior, roteamento reflexivo). Sem declaração afirmativa → defaults agnósticos.
 
 ## Banco de partida (acelerador EDITÁVEL — nunca gaiola)
 Conjuntos-semente de perguntas para casos comuns. São **ponto de partida**, não
@@ -55,7 +62,7 @@ exaustivos: estenda à vontade; se o assunto for novo, gere pelas dimensões aci
 - **web/produto:** usuários, jornadas, responsividade, acessibilidade, SEO,
   estados vazios/erro, métricas de produto.
 - **dados/ETL:** schema, volume, frequência, qualidade, idempotência, lineage.
-- **regulado:** trilha de auditoria, validação, ALCOA+, aprovação, rollback.
+- **regulado:** trilha de auditoria, validação, aprovação, rollback (norma específica é declarada pelo dono no lote "Escopo declarado pelo discovery"; framework não pré-lista — ADR-010).
 > Adicione trilhas livremente. A ausência de uma trilha NÃO impede o discovery —
 > o método universal cobre qualquer caso.
 

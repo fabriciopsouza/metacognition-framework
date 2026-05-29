@@ -10,9 +10,9 @@
 
 Ativar este reforço **apenas** quando **algum** dos critérios abaixo se verifica de forma explícita. Em dúvida, NÃO carregar (default: discovery universal).
 
-1. **Citação de norma regulatória ou padrão técnico EXTERNO** (ANP, ANVISA, FDA, BACEN, ABNT, ISO, API, GAMP, IEEE, RFC, NBR, etc.). Não inclui "convenção" interna.
+1. **Citação de norma regulatória ou padrão técnico EXTERNO declarado pelo discovery do projeto como pertinente**. Não inclui "convenção" interna. **Domínio é declarado pelo projeto, não inferido por sinais semânticos** (ADR-010).
 2. **Referência a documento OFICIAL específico**: resolução, portaria, regulamento técnico, manual oficial de fabricante, spec assinada. **NÃO inclui** contratos comerciais genéricos, documentação interna de projeto, ou READMEs.
-3. **Regra de negócio interna com peso semântico DECLARADO** — anti-fraude, ALCOA+, audit trail, fairness, conformidade regulatória. **NÃO inclui qualquer regra de negócio** — só aquelas cujo impacto envolve perda financeira material ou compliance.
+3. **Regra de negócio interna com peso semântico DECLARADO** pelo projeto (ex.: anti-fraude, audit trail, fairness, conformidade regulatória — a regra específica é declarada via discovery, não pré-listada aqui). **NÃO inclui qualquer regra de negócio** — só aquelas cujo impacto envolve perda financeira material ou compliance, confirmado pelo dono.
 4. **Decisão downstream de alto impacto confirmada**: executiva irreversível, financeira material, regulatória/auditável.
 
 Se nenhum se verifica → NÃO carregar. Voltar ao método universal do `SKILL.md`. Filtro permissivo demais derrota o progressive disclosure.
@@ -46,6 +46,16 @@ Se nenhum se verifica → NÃO carregar. Voltar ao método universal do `SKILL.m
 
 8. PASS ADVERSARIAL — sobreviveria a um auditor/regulador/revisor
    sênior? Antecipar perguntas que NÃO foram feitas mas mordem.
+
+9. COHERENCE PASS (RRC, ADR-010 sub-princípio anexo ii — obrigatório
+   antes de declarar "pronto") — LER todos os artefatos potencialmente
+   afetados (não só os editados): ADRs vinculadas, skills relacionadas,
+   CLAUDE/AGENTS/README, CHANGELOG, history "Em aberto", _shared/,
+   PROMPT-CHAT-WEB, web/index.html. VERIFICAR coerência: versões em
+   sync, referências cruzadas válidas, nomenclatura consistente,
+   contradições semânticas entre documentos. REPORTAR em formato
+   auditável binário. Inconsistência detectada = corrigir ANTES de
+   declarar "pronto". Atalhar = não-sênior.
 ```
 
 ## Princípios anexos (parte do método sênior, não bônus)
@@ -53,15 +63,16 @@ Se nenhum se verifica → NÃO carregar. Voltar ao método universal do `SKILL.m
 - **Antecipação sênior é ENTREGA**, não bônus: listar pontos pertinentes que o dono **não pediu** mas pode não ter visto (premissas que mordem, riscos não-óbvios, alternativas não-avaliadas). Vai em seção dedicada do output — `research-brief.md` **§7 Antecipações + §8 Backlog de elicitação** (template `docs/specs/_template-research/`) ou seções equivalentes do `requirements.md`.
 - **Crítica do MÉTODO ≠ crítica do PRODUTO** — antes de auditar o output, auditar se a discovery em si está bem-apontada (objetivo do cliente, pertinência, viés, recorte).
 - **Conflito instrução-dono × canon = surface-and-reconcile** — quando o dono diz X e o canon diz Y, surfacear EXPLICITAMENTE com análise; o dono decide com meta-contexto (pode estar com entendimento mais novo que o canon).
-- **Regra de negócio tem SEMÂNTICA** — anti-fraude, audit, ALCOA+, fairness; não despriorizar regra sem entender o papel.
+- **Regra de negócio tem SEMÂNTICA** — anti-fraude, audit, fairness, etc. (regras concretas declaradas pelo discovery do projeto); não despriorizar regra sem entender o papel.
 - **Conscious-lean** — cada output passa pelo "isso serve o objetivo, ou estou polindo o lado errado?". Lean operacional, não preguiça.
 
 ## Output esperado
 
-Adicionar ao output base do discovery (`requirements.md` ou `research-brief.md`) **2 seções obrigatórias**:
+Adicionar ao output base do discovery (`requirements.md` ou `research-brief.md`) **3 seções obrigatórias**:
 
 - **§ Antecipações** — coisas que o dono não pediu mas pode não ter visto.
 - **§ Backlog de elicitação** — Q1..Qn numerada, com "por que importa" e "forma da resposta".
+- **§ Gaps não-bloqueantes** (ADR-010) — gaps detectados que NÃO impedem entrega mas existem: (i) descrição, (ii) impacto se não tratado, (iii) decisão registrada do dono ("manter gap" / "tratar follow-up"). **Silenciar gap não-bloqueante = perda de assertividade sênior.**
 
 E garantir que **toda** afirmação tem classificação + fonte com data/vigência.
 
@@ -73,9 +84,11 @@ E garantir que **toda** afirmação tem classificação + fonte com data/vigênc
 
 ## Referências
 
-- ADR-009 (decisão arquitetural).
+- ADR-009 (decisão arquitetural do método sênior).
+- **ADR-010 (framework agnóstico — discovery declara escopo; gaps não-bloqueantes flagados).**
 - ADR-003 (progressive disclosure companion).
 - ADR-007 (régua §0 + ex-G9/ex-G11).
+- ADR-005 (HITL via execution-modes — desacoplado de "regulado").
 - `_shared/anti-hallucination` (passo 2 validity-check).
 - `_shared/confidence-classification` (passo 7).
-- `_shared/high-stakes-gate` (carregar em paralelo se decisão é alto-risco).
+- `_shared/high-stakes-gate` (carrega SOB DECLARAÇÃO do discovery, não por sinal semântico).

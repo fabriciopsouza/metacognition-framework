@@ -46,6 +46,9 @@ Quando o trabalho exige pesquisa antes da spec (pergunta de fundo sem fonte can�
 ## Método sênior de discovery — reforço transversal (v1.10.0 — ADR-009)
 Quando há **fonte canônica/normativa citada** (norma regulatória, spec oficial, padrão técnico, regra de negócio com peso semântico declarado), o discovery carrega `metodo-senior.md` (companion sob demanda) em adição ao sub-modo ativo. 8 passos: mapeamento + **vigência** + complementações + cross-domain + pertinência + elicitação + classificação + adversarial. Domain-agnóstico. Output ganha **Antecipações** + **Backlog de elicitação** (§7-8 obrigatórias do `research-brief.md`). Princípio 11 do `AGENT-FRAMEWORK.md` §6 + method-audit autônomo no `/checkpoint`.
 
+## Framework agnóstico de domínio — discovery declara o escopo (v1.11.0 — ADR-010)
+O núcleo NÃO carrega listas hardcoded de normas/convenções/regras de domínio. Quando há sinal de contexto especializado, o **discovery pergunta explicitamente ao dono** (lote temático obrigatório, passo 6 do `discovery/SKILL.md`): *(a) regulado? quais normas? (b) decisão de alto impacto? (c) regra de negócio com peso semântico? (d) gaps não-bloqueantes?* A resposta vai para o `requirements.md`/`research-brief.md` em `## Escopo declarado pelo discovery` e dispara os gates downstream (`high-stakes-gate`, reforço sênior, roteamento reflexivo). **Sem declaração afirmativa → defaults agnósticos.** Anti-vazamento cross-projeto: o agente NÃO importa convenção/norma de outra sessão/projeto sem confirmação. **Gaps não-bloqueantes são flagados, não silenciados** (abordagem sênior). HITL fica desacoplado, no eixo `execution-modes` (ADR-005), sem duplicação. Princípio 12 do `AGENT-FRAMEWORK.md` §6.
+
 ## Como ler skills
 As skills de processo vivem em `.agent/skills/<nome>/SKILL.md` e o núcleo em
 `_shared/<nome>/SKILL.md`. Carregue o SKILL.md relevante antes de agir. Para

@@ -11,10 +11,13 @@ last_review: 2026-05-23
 > Capability **agnóstica de domínio**. O *o quê* validar vem da aplicação; o *como*
 > garantir rigor vem daqui. Trabalha com `traceability`, `observability` e
 > `confidence-classification`.
+>
+> **Carga é DECLARADA pelo discovery do projeto** (ADR-010), não inferida por sinais semânticos do framework. Sem declaração no `requirements.md`/`research-brief.md`, este gate NÃO carrega.
 
 ## Quando este gate é obrigatório
+Quando o `## Escopo declarado pelo discovery` do projeto afirma **qualquer** dos seguintes:
 - Decisão **irreversível** ou de alto custo.
-- **Ambiente regulado** (qualquer norma — a norma específica é config da aplicação).
+- **Ambiente regulado** (qualquer norma — a norma específica é declarada pelo discovery; o framework não pré-lista).
 - Número/saída que **embasa decisão executiva**.
 - Mudança que **afeta produção crítica**.
 
@@ -28,10 +31,9 @@ last_review: 2026-05-23
    estratégica → arquitetura reflexiva).
 
 ## Como uma aplicação especializa este gate
-A aplicação fornece, via sua própria skill (clone de `_template`), a **config**:
-- quais normas/critérios setoriais aplicar (ex.: GAMP 5 / ANVISA / SOX / LGPD / ITIL —
-  a norma específica vive na aplicação, não aqui);
+A aplicação fornece, via sua própria skill (clone de `_template`) E via declaração do discovery do projeto, a **config**:
+- quais normas/critérios setoriais aplicar (a norma específica vive na declaração do projeto, não em listas pré-fixadas aqui — ADR-010);
 - quais campos de audit são obrigatórios;
-- o que conta como "revisão humana suficiente".
+- o que conta como "revisão humana suficiente" (HITL adicional governado por ADR-005 / execution-modes).
 
-O núcleo nunca cita uma norma específica — ele garante o **mecanismo** de rigor.
+O núcleo nunca cita uma norma específica nem mantém lista de exemplos — ele garante o **mecanismo** de rigor. Anti-vazamento cross-projeto (ADR-010): exemplos de outros projetos NÃO entram aqui mesmo como ilustração.

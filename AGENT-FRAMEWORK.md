@@ -38,7 +38,7 @@ workspace; workspace virgem.
 **Sinais de PROJETO MULTI-ETAPA** (squad ATIVA): toca > 2 arquivos; > 2 etapas
 com dependência; workspace tem `SQUAD.md` ou `.agent/`; menção a
 "projeto/feature/refactor/deploy/CR"; muda produção; nomenclatura formal
-estabelecida; documentação prévia a respeitar; ambiente regulado.
+estabelecida; documentação prévia a respeitar; ambiente **declarado regulado pelo discovery do projeto** (ADR-010 — não inferido por sinais semânticos do framework).
 
 ### Regra de decisão
 ```
@@ -113,8 +113,8 @@ BPMN 2.0). Output em **3 arquivos**: `requirements.md` (dimensões), `process-ma
 (diagnóstico com seção MUST "Itens para architect"). Quando o processo está
 implementado em código, `discovery` + `explorer` rodam em paralelo (sequência
 rápida em single-thread; subagentes reais em persona-4 pipeline) — `discovery`
-consolida o cruzamento em `gap-analysis.md`. Compliance/ALCOA+ delegado ao
-`high-stakes-gate`. To-be design fica com `architect` via ADR. Spec completa:
+consolida o cruzamento em `gap-analysis.md`. Compliance/audit trail delegado ao
+`high-stakes-gate` quando declarado pelo discovery (ADR-010). To-be design fica com `architect` via ADR. Spec completa:
 [`docs/specs/discovery-process-mapping/requirements.md`](docs/specs/discovery-process-mapping/requirements.md);
 ADR: [`docs/adr/002-discovery-process-mapping-v160.md`](docs/adr/002-discovery-process-mapping-v160.md).
 
@@ -185,6 +185,7 @@ Exceção: pedido típico de squad sem squad instalado → mencionar UMA vez ao 
 9. Override do usuário vence o roteamento automático
 10. **Otimização líquida (GANHO LÍQUIDO)** — adição só passa se (a) funde/remove superfície ≥ à que adiciona, (b) reduz tokens/latência comprovadamente, ou (c) destrava eval inalcançável editando existente. Adição pura é rejeitada por padrão. Detalhe: **ADR-007** (`docs/adr/007-regua-ganho-liquido-discovery-cascata-aprendizado-wip.md`).
 11. **Auto-observação do framework (método sênior)** — quando há fonte canônica/normativa citada, carregar o reforço sênior (`.agent/skills/discovery/metodo-senior.md`). Cada checkpoint emite 0-3 `method-audit notes`; padrão recorrente vira ADR. Detalhe: **ADR-009** (`docs/adr/009-metodo-senior-discovery-auto-melhoria-framework.md`).
+12. **Framework agnóstico de domínio — discovery declara o escopo** — o núcleo NÃO carrega listas hardcoded de normas/convenções/regras de domínio. Quando há sinal de contexto especializado, o `discovery` pergunta explicitamente ao dono: *(a) regulado? quais normas? (b) decisão de alto impacto? (c) regra de negócio com peso semântico?* A resposta vai para o `requirements.md`/`research-brief.md` e dispara gates downstream (`high-stakes-gate`, reforço sênior, roteamento reflexivo). **Sem declaração, defaults agnósticos.** Anti-vazamento cross-projeto: o agente NÃO importa convenção/norma de outra sessão sem confirmação. Gaps não-bloqueantes são **flagados, não silenciados** (abordagem sênior). Detalhe: **ADR-010** (`docs/adr/010-framework-agnostico-discovery-declara-escopo.md`).
 
 ---
 

@@ -1,8 +1,7 @@
 # Framework Metacognitivo Agêntico — Genérico e Escalável
 
-> **Versão:** 1.6.1 · **Base:** pesquisas A0–A3 · **PT-BR** · **CC BY 4.0**
-> **Princípio:** o framework é agnóstico de domínio. SAP, Tableau, GCP, normas
-> setoriais, AIVI etc. são **aplicações/contextos** — não fazem parte do núcleo.
+> **Versão:** 1.11.0 · **Base:** pesquisas A0–A3 · **PT-BR** · **CC BY 4.0**
+> **Princípio:** o framework é **estritamente agnóstico de domínio** (ADR-010 / Princípio 12). SAP, Tableau, GCP, normas setoriais, AIVI, ALCOA+/ANP/FDA/BACEN/GAMP etc. são **aplicações/contextos** — não fazem parte do núcleo, **não aparecem hardcoded em prompts/regras**. Domínio é **declarado pelo discovery** por projeto.
 
 ## Camadas
 ```
@@ -16,10 +15,8 @@ INFRA        _meta/                      isolamento de subagente, external-acces
 APLICAÇÕES   exemplos/README.md          COMO criar aplicações (clonando _template) — vivem FORA do núcleo
 ```
 
-## Tudo no núcleo é genérico
-Nenhum arquivo de `_shared/`, `.agent/` ou `docs/` cita um produto ou norma. O
-framework sabe **orquestrar, classificar, validar, isolar, rastrear** — para
-qualquer domínio.
+## Tudo no núcleo é genérico (ADR-010 / Princípio 12)
+**Estritamente agnóstico:** nenhum arquivo de `_shared/`, `.agent/` ou `docs/` (excluindo CHANGELOG histórico e exemplos didáticos rotulados em `docs/specs/exemplos/`) carrega listas hardcoded de produto, norma, convenção ou regra de domínio. O framework sabe **orquestrar, classificar, validar, isolar, rastrear** — para qualquer domínio. Quando há sinal de contexto especializado, **o `discovery` pergunta ao dono** (4 perguntas obrigatórias: regulado/alto-risco/regra-com-semântica/gaps-não-bloqueantes); a resposta vai para o `requirements.md`/`research-brief.md` em `## Escopo declarado pelo discovery` e dispara os gates downstream. **Anti-vazamento cross-projeto:** o agente não importa convenção/norma de outra sessão/projeto sem confirmação.
 
 ## Como aplicar a um contexto (escala por clonagem)
 1. `cp -r .agent/skills/_template <aplicacao>` e preencher só o domínio.

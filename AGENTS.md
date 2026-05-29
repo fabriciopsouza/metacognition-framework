@@ -25,6 +25,9 @@ Princípio 10 do `AGENT-FRAMEWORK.md` §6: adição pura é rejeitada. Aceitar s
 ## Método sênior de discovery — reforço transversal (v1.10.0 — ADR-009)
 Quando há **fonte canônica/normativa citada** (norma regulatória, spec oficial, padrão técnico, regra de negócio com peso semântico declarado), o discovery carrega `metodo-senior.md` (companion sob demanda) em adição ao sub-modo ativo. 8 passos: mapeamento + **vigência** + complementações + cross-domain + pertinência + elicitação + classificação + adversarial. Domain-agnóstico. Output ganha **Antecipações** + **Backlog de elicitação** (§7-8 obrigatórias do `research-brief.md`). Princípio 11 do `AGENT-FRAMEWORK.md` §6 + method-audit autônomo no `/checkpoint`.
 
+## Framework agnóstico — discovery declara escopo (v1.11.0 — ADR-010)
+Núcleo NÃO carrega listas hardcoded de normas/convenções de domínio. Discovery pergunta explicitamente: (a) regulado? quais normas? (b) alto-risco? (c) regra com semântica? (d) gaps não-bloqueantes? Respostas vão para `## Escopo declarado pelo discovery` no output e disparam gates downstream (`high-stakes-gate`, reforço sênior, roteamento reflexivo). Sem declaração → defaults agnósticos. **Anti-vazamento cross-projeto**: não importar convenção/norma de outra sessão sem confirmação. **Gaps não-bloqueantes flagados, não silenciados** (abordagem sênior). HITL via `execution-modes` (ADR-005). Princípio 12 do §6.
+
 ## Aplicações
 Domínios específicos (BI, regulado, etc.) NÃO ficam no núcleo — são criados clonando
 .agent/skills/_template e vivem FORA do núcleo (no seu repositório).

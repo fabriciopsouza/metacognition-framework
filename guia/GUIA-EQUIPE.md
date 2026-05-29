@@ -4,8 +4,10 @@
 
 ## 1. O modelo decide o modo sozinho
 - Pergunta rápida / 1 fórmula / debug → **metacognição** (resposta direta validada).
-- Projeto / >2 arquivos / >2 etapas / regulado → **squad** (papéis + workflows).
+- Projeto / >2 arquivos / >2 etapas / **regulado declarado pelo discovery** → **squad** (papéis + workflows).
 - Você pode forçar: "use o squad" ou "responde direto".
+
+> **v1.11.0 (ADR-010):** "regulado" NÃO é mais inferido por palavras-chave — o **discovery pergunta ao dono** (4 perguntas: regulado? quais normas? · alto-risco? · regra com semântica? · gaps não-bloqueantes?). Sem declaração afirmativa → defaults agnósticos. Anti-vazamento cross-projeto.
 
 ## 2. As 4 regras que nunca caem (de `_shared/`)
 1. **Classificar** toda afirmação relevante: CONFIRMADO / INFERIDO / DESCONHECIDO.
@@ -51,6 +53,5 @@ Em equipe pequena, a mesma pessoa veste o chapéu quando necessário — não cr
 - **evals-engineer** — dono dos eval-sets (`_meta/eval-template`); skill nova só entra passando.
 - **governance-lead** — políticas, auditoria, compliance; aciona `_shared/high-stakes-gate`.
 
-## 9. Núcleo × aplicação (regra de ouro)
-O framework é genérico. Domínio (BI, regulado, contexto X) nasce clonando
-`.agent/skills/_template` → vai para uma aplicação. Nunca coloque domínio no núcleo.
+## 9. Núcleo × aplicação (regra de ouro — ADR-010 v1.11.0)
+O framework é **estritamente agnóstico**. Domínio (BI, regulado, contexto X, normas ANP/ANVISA/FDA/qualquer) nasce **declarado pelo discovery do projeto** + clonando `.agent/skills/_template` → vai para uma aplicação. **Nunca coloque domínio no núcleo nem em prompts distribuídos.** Anti-vazamento cross-projeto: agente não importa convenção/norma de outra sessão sem confirmação.
