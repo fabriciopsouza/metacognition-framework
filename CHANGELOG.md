@@ -21,7 +21,7 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ### Added
 - **`docs/adr/011-qa-bicelular-juncoes-binarias-process-critic-rewind.md`** — decisão arquitetural; 6 alternativas avaliadas (bicelular cascata escolhida; cirúrgico fica pendência v1.13.0; forward-only sem rewind rejeitado por bug-órfão; rewind-em-qualquer-junção rejeitado por loop eterno). Discovery inline 2026-05-29 (Q1-Q5 + Antecipações + Backlog + Gaps não-bloqueantes ADR-009/010).
-- **`docs/specs/v1.12.0-qa-bicelular/validation.md`** — gate binário V1-V7 do release.
+- **`docs/specs/v1.12.0-qa-bicelular/validation.md`** — gate binário V1-V8 do release.
 
 ### Changed
 - **`AGENT-FRAMEWORK.md §6` — princípio 13 NOVO:** Arquitetura bicelular de QA.
@@ -33,6 +33,7 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 - **`README.md`** — bump 1.11.0 → 1.12.0 + linha do princípio 13.
 - **`guia/GUIA-EQUIPE.md`** — nota "Junções binárias forward-only" no fluxo squad.
 - **`guia/web/index.html`** — bump versão + 1 card "QA bicelular".
+- **`PROMPT-CHAT-WEB-v4.2.md`** — revisado conforme política do CHANGELOG: **não-afetado** por feature de processo interno (sem bumpar versão; arquitetura bicelular vive em workflows/skills do filesystem, fora do escopo do chat web sem filesystem).
 
 ### Como usar
 - **Antes de `/handoff B`:** autor declara `junção J_n PASS` + artefato-gate + critério binário com evidência objetiva.

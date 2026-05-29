@@ -28,7 +28,7 @@ Diretrizes do dono nesta sessão (2026-05-29):
 
 ## Decisão (1 frase ativa)
 
-Formalizar **arquitetura bicelular de QA** com 6 junções binárias forward-only (J0-J5) — cada uma com artefato-gate e critério binário declarados, iterações ilimitadas DENTRO da junção até PASS, forward-only ENTRE junções após PASS — somando-se ao **process-critic adversarial final** (qa-critic em modo subagente isolado) que detém poder de rewind cascata cirúrgico a qualquer junção anterior; pós-rewind, junções afetadas re-passam binárias (iterações OK).
+Formalizar **arquitetura bicelular de QA** com 6 junções binárias forward-only (J0-J5) — cada uma com artefato-gate e critério binário declarados, iterações ilimitadas DENTRO da junção até PASS, forward-only ENTRE junções após PASS — somando-se ao **process-critic adversarial final** (qa-critic em modo subagente isolado) que detém poder de **rewind cascata** (Alt 1; rewind cirúrgico = Alt 2 deferido) a qualquer junção anterior; pós-rewind, junções afetadas re-passam binárias (iterações OK).
 
 ## Alternativas consideradas
 
@@ -55,7 +55,7 @@ Escolha pela **Alternativa 1** por 5 razões:
 
 ### Princípio 13 (`AGENT-FRAMEWORK.md §6`) — Arquitetura bicelular de QA
 
-> **QA é arquitetura bicelular: junções binárias forward-only + process-critic adversarial com rewind cascata.** O fluxo do squad (PMO → discovery → architect → developer → qa-critic → docops → release) tem 6 junções (J0-J5); cada uma com **artefato-gate + critério binário declarados** (ver `/handoff` workflow). **DENTRO da junção:** iterações ilimitadas até PASS binário (emendas no mesmo artefato, padrão STATUS-field). **ENTRE junções:** forward-only após PASS (circuit-breaker contra loop eterno). **Process-critic adversarial** (qa-critic em subagente isolado) roda ao final de cada BLOCO APROVADO (release, ADR aceito, spec fechada, feature delivered) + on-demand + opcional em /checkpoint substantivo; detém poder de **rewind cascata cirúrgica** para qualquer junção anterior. **TODO QA é adversarial** (hipótese default = bug). **Política SUPLANTA × EMENDA**: rewind afeta §Decisão/§Alternativas → SUPLANTA novo ADR + `Substituído por:`; afeta §Implementação/§Consequências → EMENDA in-place via STATUS-field. Within-junction rounds = EMENDA (não conta como rewind). Detalhe: **ADR-011**.
+> **QA é arquitetura bicelular: junções binárias forward-only + process-critic adversarial com rewind cascata.** O fluxo do squad (PMO → discovery → architect → developer → qa-critic → docops → release) tem 6 junções (J0-J5); cada uma com **artefato-gate + critério binário declarados** (ver `/handoff` workflow). **DENTRO da junção:** iterações ilimitadas até PASS binário (emendas no mesmo artefato, padrão STATUS-field). **ENTRE junções:** forward-only após PASS (circuit-breaker contra loop eterno). **Process-critic adversarial** (qa-critic em subagente isolado) roda ao final de cada BLOCO APROVADO (release, ADR aceito, spec fechada, feature delivered) + on-demand + opcional em /checkpoint substantivo; detém poder de **rewind cascata** (Alt 1 escolhida; rewind cirúrgico = Alt 2, deferido para v1.13.0) para qualquer junção anterior. **TODO QA é adversarial** (hipótese default = bug). **Política SUPLANTA × EMENDA**: rewind afeta §Decisão/§Alternativas → SUPLANTA novo ADR + `Substituído por:`; afeta §Implementação/§Consequências → EMENDA in-place via STATUS-field. Within-junction rounds = EMENDA (não conta como rewind). Detalhe: **ADR-011**.
 
 ## Topologia das 6 junções (declaração obrigatória — §gate binário)
 
@@ -67,7 +67,7 @@ Escolha pela **Alternativa 1** por 5 razões:
 | **J3** | developer → qa-critic | commits + diff + (se aplicável) testes verdes | implementação cobre TODOS REQ do `requirements.md` + sem regressão + RRC self-applied (ADR-010 §ii) | PMO adversarial (checklist binário) |
 | **J4** | qa-critic → docops | resultado adversarial do qa-critic subagente | `APROVADO_LIMPO` (não `APROVADO_COM_RESSALVAS` nem `REPROVADO`) — ressalvas devem ser endereçadas in-place via EMENDA até virar LIMPO | qa-critic adversarial (subagente isolado, modelo diferente) |
 | **J5** | docops → release | `validation.md` do release (V1-Vn) | TODOS critérios = PASSA | PMO + dono (revisão humana final binária) |
-| **PC** | **process-critic (final adversarial)** | revisão do bloco completo | LIMPO → autoriza merge/tag; ELSE → rewind cascata cirúrgica para Ji + iterações até re-PASS de J_i a J_5 | qa-critic adversarial (subagente isolado, mesma instância expandida em escopo) |
+| **PC** | **process-critic (final adversarial)** | revisão do bloco completo | LIMPO → autoriza merge/tag; ELSE → rewind cascata para J_i + iterações até re-PASS de J_i a J_5 | qa-critic adversarial (subagente isolado, mesma instância expandida em escopo) |
 
 **TODO QA é adversarial** — PMO aplica gate de J0-J3 com mentalidade adversarial (assume bug, força evidência); qa-critic em subagente isolado aplica em J4 e PC com profundidade adversarial. Mesmo papel `qa-critic` em duas modalidades; intermediate gates podem usar PMO com checklist adversarial como "junction-critic lightweight" para preservar custo.
 
@@ -111,7 +111,7 @@ Escopo: **2 novos + 8 edições cirúrgicas (majoritariamente formalização do 
 | Arquivo | Mudança | Tipo |
 |---|---|---|
 | `docs/adr/011-qa-bicelular-juncoes-binarias-process-critic-rewind.md` | **NOVO** (este arquivo) | Adição — critério (c) |
-| `docs/specs/v1.12.0-qa-bicelular/validation.md` | **NOVO** — gate binário V1-V7 do release | Adição — critério (c) gate per release |
+| `docs/specs/v1.12.0-qa-bicelular/validation.md` | **NOVO** — gate binário V1-V8 do release | Adição — critério (c) gate per release |
 | `.agent/workflows/handoff.md` | **+seção "Junções binárias (J0-J5) e seus gates"** com tabela operacional + invariante forward-only | Adição cirúrgica (formaliza tácito) |
 | `.agent/workflows/checkpoint.md` | **+1 linha** esclarecendo: `/checkpoint` é save-point + gate RRC (não invoca process-critic adversarial automaticamente; backstop opcional sob demanda do dono) | Edit cirúrgico (esclarecimento) |
 | `.agent/skills/qa-critic/SKILL.md` | **+seção "Duas modalidades: junction-critic intermediate (J4) e process-critic final (PC com rewind)"** | Edit cirúrgico (clarifica papel) |
