@@ -51,7 +51,19 @@ Escolha pela **Alternativa 1** por 4 razões alinhadas com princípios já regis
 
 ### Sub-princípio anexo (i) — Gaps não-bloqueantes são flagados, não silenciados
 
-> Abordagem sênior de discovery: gaps detectados que NÃO bloqueiam entrega (ex.: cobertura parcial de fonte, dimensão sem dados mas dispensável) **ainda são apresentados explicitamente** no output (seção `## Gaps não-bloqueantes`) com (i) descrição, (ii) impacto se não tratado, (iii) decisão registrada do dono ("manter gap" / "tratar follow-up"). Silenciar gap não-bloqueante = perda de assertividade. Aplicação: `metodo-senior.md` (output esperado) + `_template-research/research-brief.md` (§7 Antecipações ganha sub-seção).
+> Abordagem sênior de discovery: gaps detectados que NÃO bloqueiam entrega (ex.: cobertura parcial de fonte, dimensão sem dados mas dispensável) **ainda são apresentados explicitamente** no output (seção `## Gaps não-bloqueantes`) com (i) descrição, (ii) impacto se não tratado, (iii) decisão registrada do dono ("manter gap" / "tratar follow-up"). Silenciar gap não-bloqueante = perda de assertividade. Aplicação: `metodo-senior.md` (output esperado) + `_template-research/research-brief.md` (§7 Antecipações ganha sub-seção §7.1).
+
+### Sub-princípio anexo (ii) — Read-and-Review-for-Coherence (RRC) obrigatório
+
+> **Comportamento sênior absorvido:** antes de declarar "pronto" qualquer mudança substantiva (release, bloco aprovado, ADR aceito, merge para main), o agente DEVE executar um pass **RRC** auditável:
+>
+> 1. **LER todos os artefatos potencialmente afetados** — não só os que ele próprio editou. Inclui: ADRs vinculadas, skills relacionadas (via `referencias` cruzadas), `CLAUDE.md`/`AGENTS.md`/`README.md` (entry points), `CHANGELOG.md`, `history.md ## Em aberto`, `_shared/` dependências, prompt distribuído (`PROMPT-CHAT-WEB`), `web/index.html`.
+> 2. **VERIFICAR coerência** — versões em sync (versão no README × versão na tag × versão no web/index × CHANGELOG); referências cruzadas válidas (ADR-N citado existe; arquivo citado existe; linha citada existe); nomenclatura consistente (nome aprovado em todos os arquivos); contradições semânticas (ex.: ADR-X declara "agnóstico" mas exemplo Y carrega norma específica); **contagens em sync (ex.: "N passos" igual em SKILL.md, companion, CLAUDE.md, AGENTS.md)**.
+> 3. **REPORTAR** ao dono em formato auditável binário (passa/não-passa por critério). Inconsistência detectada = corrigir ANTES da declaração de "pronto", não depois.
+>
+> **Atalhar este passo = comportamento não-sênior**. O case AIVI demonstrou: 4 rounds de qa-critic na v1.10.0 absorção surgiram porque a coerência cross-documentos não foi verificada antes do round 1. A própria v1.11.0 confirmou o padrão: round 2 do qa-critic encontrou 4 MEDIO de stale counts ("8 passos" em CLAUDE/AGENTS após método ganhar passo 9), expondo que RRC self-applied pelo agente tem **limites reais** — gate humano externo (qa-critic adversarial) é complemento necessário, não opcional.
+>
+> **Aplicação:** método sênior ganha **passo 9 (Coherence Pass)** em `.agent/skills/discovery/metodo-senior.md`; `/checkpoint` workflow ganha **gate de saída RRC** (não fecha checkpoint sem RRC executado); `qa-critic` continua como crítico adversarial — RRC pré-qa **tem como objetivo** reduzir achados de coerência (não promete eliminação total: ADV-3 round 2 confirmou limite).
 
 ### Sub-princípio anexo (ii-a) — Briefing inequívoco e ubíquo dispensa interview-mode
 
@@ -71,18 +83,6 @@ Escolha pela **Alternativa 1** por 4 razões alinhadas com princípios já regis
 ### Sub-princípio anexo (ii-b) — Novas skills só via discovery + gate humano régua §0
 
 > **Flexibilidade SEM porta aberta:** discovery PODE surfacear "candidate-skill" como antecipação no `research-brief.md`/`requirements.md` quando o método sênior identificar gap recorrente que não cabe em edição cirúrgica. **O dono aplica gate binário régua §0 (ADR-007) sobre a proposta:** (a) funde/remove ≥ adiciona? (b) reduz tokens/latência? (c) destrava eval inalcançável editando existente? Falha em todas as 3 → vira `method-audit-note` (firewall ADR-007: inerte). Passa em ao menos uma → vira ADR proposta com qa-critic adversarial. **Não é autorização para agente criar skill** — é canal estruturado para PROPOR, com gate humano + ADR + qa-critic obrigatórios.
-
-### Sub-princípio anexo (ii) — Read-and-Review-for-Coherence (RRC) obrigatório
-
-> **Comportamento sênior absorvido:** antes de declarar "pronto" qualquer mudança substantiva (release, bloco aprovado, ADR aceito, merge para main), o agente DEVE executar um pass **RRC** auditável:
->
-> 1. **LER todos os artefatos potencialmente afetados** — não só os que ele próprio editou. Inclui: ADRs vinculadas, skills relacionadas (via `referencias` cruzadas), `CLAUDE.md`/`AGENTS.md`/`README.md` (entry points), `CHANGELOG.md`, `history.md ## Em aberto`, `_shared/` dependências, prompt distribuído (`PROMPT-CHAT-WEB`), `web/index.html`.
-> 2. **VERIFICAR coerência** — versões em sync (versão no README × versão na tag × versão no web/index × CHANGELOG); referências cruzadas válidas (ADR-N citado existe; arquivo citado existe; linha citada existe); nomenclatura consistente (nome aprovado em todos os arquivos); contradições semânticas (ex.: ADR-X declara "agnóstico" mas exemplo Y carrega norma específica).
-> 3. **REPORTAR** ao dono em formato auditável binário (passa/não-passa por critério). Inconsistência detectada = corrigir ANTES da declaração de "pronto", não depois.
->
-> **Atalhar este passo = comportamento não-sênior**. O case AIVI demonstrou: 4 rounds de qa-critic na v1.10.0 absorção surgiram porque a coerência cross-documentos não foi verificada antes do round 1 — múltiplos lugares precisavam ser ajustados (research-brief template, CLAUDE.md, AGENTS.md, pesquisa-cascata) e foram descobertos pelo crítico, não pelo autor. v1.11.0 absorve o protocolo para o autor (agente) executar antes do crítico.
->
-> **Aplicação:** método sênior ganha **passo 9 (Coherence Pass)** em `.agent/skills/discovery/metodo-senior.md`; `/checkpoint` workflow ganha **gate de saída RRC** (não fecha checkpoint sem RRC executado); `qa-critic` continua como crítico adversarial — mas RRC pré-qa deve reduzir achados de coerência a zero (qa-critic foca em substância, não em sync básico).
 
 ## Implementação
 

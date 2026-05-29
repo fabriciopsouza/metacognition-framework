@@ -1,4 +1,4 @@
-# Discovery — Reforço sênior (método em 8 passos)
+# Discovery — Reforço sênior (método em 9 passos)
 
 > Companion do `discovery` (v1.8.0+). Progressive disclosure (ADR-003):
 > carregado SOB DEMANDA quando há **fonte canônica/normativa citada** no contexto.
@@ -17,7 +17,7 @@ Ativar este reforço **apenas** quando **algum** dos critérios abaixo se verifi
 
 Se nenhum se verifica → NÃO carregar. Voltar ao método universal do `SKILL.md`. Filtro permissivo demais derrota o progressive disclosure.
 
-## Os 8 passos auditáveis
+## Os 9 passos auditáveis (8 originais ADR-009 + passo 9 RRC ADR-010)
 
 ```
 1. MAPEAR fontes — internas (repo/docs/specs) + externas (autoridade,
