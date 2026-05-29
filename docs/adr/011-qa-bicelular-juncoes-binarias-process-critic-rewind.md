@@ -47,7 +47,7 @@ Escolha pela **Alternativa 1** por 5 razões:
 
 - **Coerência com prática observada**: v1.10.0 + v1.11.0 demonstraram qa-critic adversarial rodando 4 rounds no final, autor iterando, e rewind ocorrendo informalmente. ADR-011 codifica o padrão sem inventar nova mecânica.
 - **Coerência com convenção de ADR**: campos `Substitui:` e `Substituído por:` já existem em `docs/adr/000-template.md`. SUPLANTA usa convenção existente; sem novo template.
-- **Régua §0 (ADR-007)**: edits cirúrgicos em `/handoff` + `/checkpoint` + `qa-critic SKILL` + `pmo SKILL` + AGENT-FRAMEWORK §6 (1 princípio novo) + entry-points/CHANGELOG/web. **1 ADR novo + 1 validation.md release novo + 6 edits cirúrgicos.** Sem novo workflow; sem nova skill; sem novo papel.
+- **Régua §0 (ADR-007)**: edits cirúrgicos em `/handoff` + `/checkpoint` + `qa-critic SKILL` + `pmo SKILL` + AGENT-FRAMEWORK §6 (1 princípio novo) + entry-points (CLAUDE+AGENTS, README) + CHANGELOG + GUIA-EQUIPE + web/index.html + history.md. **2 novos + 11 edições cirúrgicas** (ver tabela detalhada em §Implementação). Sem novo workflow; sem nova skill; sem novo papel.
 - **Prevenção de loop eterno**: forward-only entre junções é o circuit-breaker que o dono apontou. Sem essa cláusula, oscilação entre junções não-finais é possível.
 - **Cascata por default**: Alternativa 2 (cirúrgico) é mais lean mas exige detector de impacto cross-artefato — complexidade que não pagamos hoje. **Cascata cobre 100% dos casos com simplicidade**; cirúrgico fica como pendência ativável se aparecer caso real.
 

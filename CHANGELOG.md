@@ -47,7 +47,7 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 - **Validation.md projeto × release** — templates podem convergir. Sem inflação por enquanto.
 
 ### Pipeline
-PMO/Discovery (inline 2026-05-29; Q1-Q5 + Antecipações + Backlog + Gaps registrados) → Architect (ADR-011 com 6 alternativas, escolha Alternativa 1 = bicelular cascata, prevenir loop eterno via forward-only entre junções) → Developer (formalização + adições mínimas em 9 arquivos + ADR + validation.md) → qa-critic adversarial em rounds até LIMPO.
+PMO/Discovery (inline 2026-05-29; Q1-Q5 + Antecipações + Backlog + Gaps registrados) → Architect (ADR-011 com 6 alternativas, escolha Alternativa 1 = bicelular cascata, prevenir loop eterno via forward-only entre junções) → Developer (formalização: 2 novos + 11 edições cirúrgicas — ver tabela em ADR-011 §Implementação) → qa-critic adversarial em rounds até LIMPO.
 
 [CONSOLIDADO] / [CONFIRMADO] (após qa-critic LIMPO + validação operacional).
 
