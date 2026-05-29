@@ -10,6 +10,29 @@
 - **Recorte:** <ano | regional | total | n/a>
 - **Confiança da tarefa:** ALTA | MÉDIA | BAIXA  → governa o roteamento (ver `rules/04`)
 
+## Escopo declarado pelo discovery (ADR-010 — obrigatório quando há sinal de contexto especializado)
+
+> Lote temático do passo 6 do `discovery/SKILL.md`. **Modo A (Transcribe-mode determinístico):** se briefing tem declaração nominal+ubíqua+stakeholder+sem-contradição → transcrever do briefing (citar trechos). **Modo B (Interview-mode, default):** preencher abaixo via elicitação com dono.
+
+### (a) Regulado?
+Este projeto opera sob alguma norma/convenção externa? Quais? Vigência?
+- `[CONFIRMADO|INFERIDO|DESCONHECIDO]` <norma> — <vigência> · fonte: <doc/dono>
+- **Origem:** [via briefing — citar trecho] | [via interview]
+
+### (b) Alto-risco?
+Decisão downstream irreversível, financeira material ou auditável?
+- Sim/Não + justificativa.
+
+### (c) Regras com semântica?
+Regra de negócio onde o "como" importa tanto quanto o "quê" (anti-fraude, audit trail, fairness, etc.)?
+- Sim/Não + lista concreta.
+
+### (d) Gaps não-bloqueantes?
+Dimensões/dados sabidos ausentes mas não impedem entrega?
+- <gap> · impacto se não tratado · decisão dono: manter gap / tratar follow-up.
+
+**Sem declaração afirmativa em (a)/(b)/(c) → defaults agnósticos.** Gates downstream (`high-stakes-gate`, reforço sênior `metodo-senior.md`, roteamento reflexivo) carregam SOB DECLARAÇÃO, não por sinal semântico (ADR-010 §Princípio 12).
+
 ## Escopo funcional (EARS — opcional, mas recomendado)
 - **Ubíquo:** "O sistema DEVE <comportamento>."
 - **WHEN:** "QUANDO <evento>, o sistema DEVE <resposta>."

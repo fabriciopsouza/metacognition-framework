@@ -136,7 +136,7 @@ Riscos ativos: nenhum bloqueante. Risco residual ADR-010 §Riscos (detector de v
 - *(nenhum item em aberto no FRAMEWORK; v1.11.0 fechada em 2026-05-29 — merge `bd64b08` + tag `v1.11.0`; v1.12.0 fechada em 2026-05-29 — merge `fb637ac` + tag `v1.12.0`)*.
 - **[2026-05-27/28 · fechado] AIVI fechamento** — PR #20 mergeado em master de `LIMITES-BATENTES-RECALC` (commit `10ecf0b`, 2026-05-28). REQ-001..011 implementadas + gate BABET 2025 = 0 (delta 0.000000) + 3 pendências runtime fechadas. Validação framework SSOT F0-F4 concluída.
 - **Backlog ativo (trigger-gated, NÃO WIP):**
-  - ADR-010 §Pendências: templates `_template-research/research-brief.md` + `_template/requirements.md` ganham seção `## Escopo declarado pelo discovery` — trigger: próximo discovery em case real.
+  - ~~ADR-010 §Pendências: templates `_template-research/research-brief.md` + `_template/requirements.md` ganham seção `## Escopo declarado pelo discovery`~~ **FECHADO em 2026-05-29 pós-merge v1.12.0** — ambos templates ganharam a seção em commit polish + diagrama Mermaid em ADR-011 §Topologia.
   - ADR-011 §Pendências: Alternativa 2 (rewind cirúrgico) — trigger: caso real onde cascata é custosa.
   - ADR-011 §Pendências: validation.md projeto × release convergir templates — trigger: ficar pesado manter separado.
   - Item D4 (cross-platform hooks Linux/macOS port) — trigger: user em PC não-Windows pedir.

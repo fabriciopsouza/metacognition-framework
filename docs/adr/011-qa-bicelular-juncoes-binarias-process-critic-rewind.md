@@ -59,6 +59,46 @@ Escolha pela **Alternativa 1** por 5 razões:
 
 ## Topologia das 6 junções (declaração obrigatória — §gate binário)
 
+### Diagrama do fluxo (Mermaid)
+
+```mermaid
+flowchart LR
+  PMO([PMO])
+  DIS([discovery])
+  ARC([architect])
+  DEV([developer])
+  QAC([qa-critic])
+  DOC([docops])
+  REL((RELEASE))
+  PC{{process-critic<br/>adversarial<br/>FINAL}}
+
+  PMO -->|J0 STATUS-line + UMA pergunta| DIS
+  DIS -->|J1 requirements/research-brief<br/>classificado + critério de aceite| ARC
+  ARC -->|J2 ADR Status: Aceito| DEV
+  DEV -->|J3 commits + testes + RRC| QAC
+  QAC -->|J4 APROVADO_LIMPO| DOC
+  DOC -->|J5 validation.md V1-Vn PASSA| REL
+
+  REL -.disparo a + opcional c.-> PC
+  PC -. rewind cascata .-> PMO
+  PC -. rewind cascata .-> DIS
+  PC -. rewind cascata .-> ARC
+  PC -. rewind cascata .-> DEV
+  PC -. rewind cascata .-> QAC
+  PC -. rewind cascata .-> DOC
+
+  classDef junction fill:#1f2730,stroke:#e8a13a,color:#d9e0e8
+  classDef critic fill:#11161f,stroke:#4fd1c5,color:#4fd1c5
+  classDef release fill:#1f2730,stroke:#4fd1c5,color:#d9e0e8,stroke-width:3px
+  class PMO,DIS,ARC,DEV,QAC,DOC junction
+  class PC critic
+  class REL release
+```
+
+**Legenda:** Setas sólidas = forward-only entre junções (PASS binário obrigatório). Setas tracejadas a partir do `process-critic` = rewind cascata para qualquer J_i; pós-rewind, J_i até J_5 re-passam binárias (iterações OK). Disparo do process-critic: **(a)** final de cada BLOCO APROVADO (mandatório), **(b)** on-demand do dono, **(c)** opcional em `/checkpoint` substantivo.
+
+### Tabela operacional
+
 | # | Junção | Artefato-gate | Critério binário | Quem aplica |
 |---|---|---|---|---|
 | **J0** | PMO → discovery | STATUS-line do PMO + (opcional) UMA pergunta de desambiguação | "natureza do trabalho nomeada + dimensão escolhida + ambiguidade resolvida (Sim/Não)" | PMO com mentalidade adversarial |

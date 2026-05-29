@@ -17,6 +17,35 @@ status: rascunho | revisado | fechado
 
 <Pergunta de fundo a responder. Concreta o suficiente para guiar a busca.>
 
+## 1.5 Escopo declarado pelo discovery (ADR-010 — obrigatório quando há sinal de contexto especializado)
+
+> Lote temático do passo 6 do `discovery/SKILL.md`. **Modo A (Transcribe-mode determinístico):** se briefing tem declaração nominal explícita + sustentada em ≥2 lugares + stakeholder nomeado + sem contradição → transcrever do briefing (citar trechos). **Modo B (Interview-mode, default):** preencher abaixo via elicitação com dono.
+
+### (a) Regulado?
+Este projeto opera sob alguma norma/convenção externa? Quais especificamente? Vigência?
+- `[CONFIRMADO|INFERIDO|DESCONHECIDO]` <norma 1> — <vigência> · fonte: <doc/dono>
+- ...
+- **Origem da declaração:** [via briefing — citar trecho] | [via interview com dono]
+
+### (b) Alto-risco?
+Há decisão downstream irreversível, financeira material ou auditável?
+- Sim/Não + justificativa: <...>
+
+### (c) Regras com semântica?
+Há regra de negócio onde o "como" importa tanto quanto o "quê" (anti-fraude, audit trail, fairness, etc.)?
+- Sim/Não + lista concreta: <...>
+
+### (d) Gaps não-bloqueantes?
+Dimensões/dados sabidos ausentes mas não impedem entrega?
+- <gap 1> · impacto se não tratado: <...> · decisão dono: manter gap / tratar follow-up
+- ...
+
+**Gates downstream disparados:**
+- (a) afirmativo com norma → `high-stakes-gate` + reforço sênior (`metodo-senior.md`)
+- (b) afirmativo → `high-stakes-gate` + roteamento reflexivo (`04-confidence-routing`)
+- (c) afirmativo → reforço sênior
+- Sem afirmativos → defaults agnósticos.
+
 ## 2. Decomposição (3-5 sub-perguntas multi-hop)
 
 1. <sub-pergunta 1>
