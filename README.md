@@ -1,7 +1,7 @@
 # Framework Metacognitivo Agêntico — Genérico e Escalável
 
 > **Versão:** 1.11.0 · **Base:** pesquisas A0–A3 · **PT-BR** · **CC BY 4.0**
-> **Princípio:** o framework é **estritamente agnóstico de domínio** (ADR-010 / Princípio 12). SAP, Tableau, GCP, normas setoriais, AIVI, ALCOA+/ANP/FDA/BACEN/GAMP etc. são **aplicações/contextos** — não fazem parte do núcleo, **não aparecem hardcoded em prompts/regras**. Domínio é **declarado pelo discovery** por projeto.
+> **Princípio:** o framework é **estritamente agnóstico de domínio** (ADR-010 / Princípio 12). Linguagens, ferramentas, normas setoriais, regulamentações, padrões técnicos, frameworks de validação, regras de negócio — **quaisquer** — são **aplicações/contextos**: não fazem parte do núcleo, **não aparecem hardcoded em prompts/regras/docs do framework** (nem como exemplo). Domínio é **declarado pelo discovery** por projeto. O que o núcleo oferece é **mecanismo genérico**: data integrity, audit trail, validação por risco, traceability, observabilidade — todos no `_shared/`.
 
 ## Camadas
 ```

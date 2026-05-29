@@ -50,10 +50,18 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 ### Pipeline
 PMO/Discovery (auto-observação — princípio 11 da v1.10.0 detectou contradição interna: framework "agnóstico" carregava listas de domínio) → Architect (ADR-010, 6 alternativas, escolha Alternativa 1 = purga estrita + discovery-declara-escopo + decouplagem HITL via ADR-005) → Developer (purga + adições mínimas em 11 arquivos + ADR + companion update) → qa-critic adversarial em rounds.
 
+### Emendas pós-feedback do dono (mesma sessão 2026-05-28, antes do qa-critic)
+- **Princípio 11 honestamente reescrito** em `AGENT-FRAMEWORK.md §6`: "Auto-observação" → "Observação meta-cognitiva (captura estruturada de feedback)". Reconhece que auto-detecção do agente é falível (case AIVI: 3 violações apontadas pelo dono, não auto-observadas). Não muda capacidade — muda representação honesta. Detalhe em ADR-010 §C-1.
+- **ADR-010 sub-princípio anexo ii-a NOVO** — briefing inequívoco + ubíquo = transcribe-mode determinístico. Discovery passo 6 ganha modo Transcribe (sem re-asking quando briefing tem declaração nominal explícita, sustentada em ≥2 lugares, com stakeholder nomeado, sem contradição) e modo Interview (default, 4 perguntas). Evita teatro burocrático em projetos com briefing maduro.
+- **ADR-010 sub-princípio anexo ii-b NOVO** — novas skills só via discovery + gate humano régua §0. Discovery PODE surfacear candidate-skill no `## Antecipações`; dono aplica gate (a)/(b)/(c) régua §0; falha → method-audit-note (firewall). Anti-skill-sprawl com canal estruturado.
+- **`docs/specs/v1.11.0-framework-agnostic/validation.md` NOVO** — gate binário V1-V7 do release (purga + versão sync + refs + substância + operacionalização + qa-critic + RRC). Backstop externo do auto-validation do agente.
+- **`README.md`** linha 4 — re-purgado meta-referência ("SAP, Tableau, GCP, ALCOA+/ANP/FDA/BACEN/GAMP") detectada pelo dono como RRC-bypass viés. Versão atual: agnóstica estrita, sem siglas didáticas.
+
 ### Pendências e follow-ups (fora desta v1.11.0)
 - **Templates `_template-research/research-brief.md` e `_template/requirements.md`** ganham seção `## Escopo declarado pelo discovery` no próximo ciclo.
 - **Validação operacional em case real** — próximo projeto que dispare discovery declara explicitamente o escopo? Method-audit no `/checkpoint` verifica.
 - **Exemplos `docs/specs/exemplos/H1-farma-*/`** ficam intencionalmente intocados — diretório rotulado como exemplo didático regulado-pharma. Quem clona entende que é exemplo, não regra do framework.
+- **ADR-011 candidato (v1.12.0)** — QA bicelular (junction-critic binário forward-only + process-critic rewindable global). Em `history.md ## Em aberto`. Caso natural para dogfooding end-to-end dos princípios v1.11.0.
 
 [CONSOLIDADO] / [CONFIRMADO] (após qa-critic LIMPO + validação em campo).
 

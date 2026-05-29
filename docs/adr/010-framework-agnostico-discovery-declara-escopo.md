@@ -53,6 +53,25 @@ Escolha pela **Alternativa 1** por 4 razões alinhadas com princípios já regis
 
 > Abordagem sênior de discovery: gaps detectados que NÃO bloqueiam entrega (ex.: cobertura parcial de fonte, dimensão sem dados mas dispensável) **ainda são apresentados explicitamente** no output (seção `## Gaps não-bloqueantes`) com (i) descrição, (ii) impacto se não tratado, (iii) decisão registrada do dono ("manter gap" / "tratar follow-up"). Silenciar gap não-bloqueante = perda de assertividade. Aplicação: `metodo-senior.md` (output esperado) + `_template-research/research-brief.md` (§7 Antecipações ganha sub-seção).
 
+### Sub-princípio anexo (ii-a) — Briefing inequívoco e ubíquo dispensa interview-mode
+
+> **Determinístico quando o input já é completo:** o passo 6 do discovery (lote temático "Escopo declarado") tem DOIS modos:
+>
+> 1. **Interview-mode (default):** 4 perguntas explícitas ao dono — quando briefing é silente, ambíguo ou parcial.
+> 2. **Transcribe-mode (determinístico):** quando briefing (`docs/briefing.md` ou doc fornecida) contém declaração nominal explícita, **sustentada em ≥2 lugares**, com **fonte/dono nomeado** ("declarado por <stakeholder> em <doc>") → discovery TRANSCREVE para `## Escopo declarado pelo discovery` marcando origem ("via briefing — citar trechos") **sem re-asking**.
+>
+> **Critério binário do transcribe-mode** (todos obrigatórios; falha em qualquer um → cair em interview-mode):
+> - (i) **Declaração nominal:** "este projeto opera sob norma X" / "alto-risco confirmado em Y" — não inferência por keyword.
+> - (ii) **Ubiquidade:** mencionado em ≥2 seções/documentos independentes (não 1 menção tangencial).
+> - (iii) **Autoria:** stakeholder/dono nomeado como fonte da declaração (não declaração anônima).
+> - (iv) **Sem contradição:** outras seções do briefing não negam ou enfraquecem a declaração.
+>
+> **Anti-vazamento mantido:** transcribe-mode lê só o briefing DESTE projeto. Não importa declaração de outro projeto/sessão. Sem essa válvula, framework vira teatro burocrático em projetos com briefing maduro; com ela, briefing inequívoco é honrado e dono não precisa re-declarar o que já declarou.
+
+### Sub-princípio anexo (ii-b) — Novas skills só via discovery + gate humano régua §0
+
+> **Flexibilidade SEM porta aberta:** discovery PODE surfacear "candidate-skill" como antecipação no `research-brief.md`/`requirements.md` quando o método sênior identificar gap recorrente que não cabe em edição cirúrgica. **O dono aplica gate binário régua §0 (ADR-007) sobre a proposta:** (a) funde/remove ≥ adiciona? (b) reduz tokens/latência? (c) destrava eval inalcançável editando existente? Falha em todas as 3 → vira `method-audit-note` (firewall ADR-007: inerte). Passa em ao menos uma → vira ADR proposta com qa-critic adversarial. **Não é autorização para agente criar skill** — é canal estruturado para PROPOR, com gate humano + ADR + qa-critic obrigatórios.
+
 ### Sub-princípio anexo (ii) — Read-and-Review-for-Coherence (RRC) obrigatório
 
 > **Comportamento sênior absorvido:** antes de declarar "pronto" qualquer mudança substantiva (release, bloco aprovado, ADR aceito, merge para main), o agente DEVE executar um pass **RRC** auditável:
@@ -134,6 +153,15 @@ Output vai para o `requirements.md`/`research-brief.md` em seção **`## Escopo 
 1. **Discovery pode esquecer de declarar escopo** — gate fica em default agnóstico quando deveria carregar high-stakes. Mitigação: lote temático no `SKILL.md` com filtro de entrada explícito ("se há QUALQUER citação de norma ou regra com semântica, este lote é obrigatório").
 2. **Declaração superficial do dono** — dono responde "sim, regulado" sem citar normas → gates carregam sem detalhe operacional. Mitigação: perguntas estruturadas exigem `[CONFIRMADO]`/`[DESCONHECIDO]` por item.
 3. **Memória do agente continua vazando entre sessões** — mesmo purgando `senior-discovery-method.md`, outras memórias podem trazer viés. Mitigação: princípio 12 explícito no `AGENT-FRAMEWORK.md` força o agente a perguntar antes de invocar.
+
+### Correção honesta §C-1 — princípio 11 reescrito
+
+Diagnóstico (case AIVI 2026-05-27): 3 violações file-first foram apontadas pelo dono, NÃO auto-observadas pelo agente. Chamar isso de "auto-observação" overstates a capability. O princípio 11 (ADR-009) foi reescrito em v1.11.0 para refletir realidade:
+
+- **Antes (ADR-009):** "Auto-observação do framework (método sênior)".
+- **Depois (v1.11.0):** "Observação meta-cognitiva (captura estruturada de feedback)" — agente registra notes proativamente quando consegue e via feedback do dono (fonte legítima). Auto-detecção é falível por design. Firewall ADR-007 mantido.
+
+**Por que essa correção é necessária:** sem ela, o framework promete capacidade que não tem. Crítica auto-aplicada da própria sessão v1.11.0: o RRC self-applied passou pelo `README.md:4` ("ALCOA+/ANP/FDA/BACEN/GAMP" como exemplo didático) sem flagar — exatamente o tipo de viés que feedback do dono captura e o agente sozinho não. **Renomear não muda capacidade; muda a representação honesta dela.** Princípio 11 continua valioso (registra structured feedback é melhor que perder); só não promete o que não entrega.
 
 ## Implementação (ponteiro após aceito)
 
