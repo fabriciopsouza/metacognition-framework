@@ -54,4 +54,4 @@ Em equipe pequena, a mesma pessoa veste o chapéu quando necessário — não cr
 - **governance-lead** — políticas, auditoria, compliance; aciona `_shared/high-stakes-gate`.
 
 ## 9. Núcleo × aplicação (regra de ouro — ADR-010 v1.11.0)
-O framework é **estritamente agnóstico**. Domínio (BI, regulado, contexto X, normas ANP/ANVISA/FDA/qualquer) nasce **declarado pelo discovery do projeto** + clonando `.agent/skills/_template` → vai para uma aplicação. **Nunca coloque domínio no núcleo nem em prompts distribuídos.** Anti-vazamento cross-projeto: agente não importa convenção/norma de outra sessão sem confirmação.
+O framework é **estritamente agnóstico**. Domínio (linguagens, ferramentas, normas regulatórias, padrões técnicos, regras de negócio com peso semântico — quaisquer) nasce **declarado pelo discovery do projeto** + clonando `.agent/skills/_template` → vai para uma aplicação. **Nunca coloque domínio no núcleo nem em prompts/guias distribuídos.** Anti-vazamento cross-projeto: agente não importa convenção/norma de outra sessão sem confirmação.

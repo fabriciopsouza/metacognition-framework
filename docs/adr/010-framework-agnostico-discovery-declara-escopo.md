@@ -94,7 +94,8 @@ Escopo: **1 novo + 11 edições cirúrgicas (mais purga em 1 prompt distribuído
 |---|---|---|
 | `docs/adr/010-framework-agnostico-discovery-declara-escopo.md` | **NOVO** (este arquivo) | Adição — critério (c) régua §0 |
 | `.agent/skills/discovery/metodo-senior.md` | Linha 13: remover lista (ANP/ANVISA/FDA/BACEN/...) → "norma regulatória/padrão técnico externo declarado pelo discovery". Linha 15: remover ALCOA+. Linha 56: remover ALCOA+. **+1 seção "Gaps não-bloqueantes"** no output esperado. | Subtração (3) + adição cirúrgica (1) |
-| `.agent/skills/discovery/SKILL.md` | Linha 58: remover ALCOA+ do banco de partida regulado. Linha 116: remover ALCOA+ do compliance. **+lote temático "Escopo de domínio do projeto"** ao método universal (passo 4 ou 5). | Subtração (2) + adição cirúrgica (1) |
+| `.agent/skills/discovery/SKILL.md` | Linha 58: remover ALCOA+ do banco de partida regulado. Linha 116: remover ALCOA+ do compliance. **+lote temático "Escopo declarado pelo discovery"** ao método universal (passo 6 — Modo Transcribe + Modo Interview + candidate-skill surface). | Subtração (2) + adição cirúrgica (1) |
+| `.agent/workflows/checkpoint.md` | **+1 seção "RRC — gate de saída obrigatório"** (5 itens binários, ADR-010 §ii) + Method-Audit ganha sinal "vazamento cross-projeto". | Adição cirúrgica (gate operacional) |
 | `.agent/skills/discovery/mapeamento-de-processo.md` | Linha 72: remover ALCOA+ do "fora de escopo". | Subtração (1) |
 | `.agent/rules/04-confidence-routing.md` | Linha 17: desacoplar HITL/regulado; HITL fica no eixo execution-modes (ADR-005); roteamento reflexivo carrega SOB DECLARAÇÃO do discovery. | Subtração + reframe |
 | `_shared/high-stakes-gate/SKILL.md` | Linha 32: substituir lista (GAMP 5/ANVISA/SOX/LGPD/ITIL) por placeholder agnóstico. Linha nova após §"Quando este gate é obrigatório": "carga é DECLARADA pelo discovery do projeto, não inferida por sinais semânticos do framework." | Subtração + reframe + 1 linha |
@@ -180,4 +181,14 @@ Diagnóstico (case AIVI 2026-05-27): 3 violações file-first foram apontadas pe
 
 - Memória-fonte: `[[senior-discovery-method]]` (purgada nesta v1.11.0), `[[framework-gaps-from-aivi-case-2026-05-27]]` (audit trail das 3 violações cross-projeto).
 - ADRs irmãs: ADR-005 (HITL via execution-modes), ADR-007 (régua §0), ADR-009 (método sênior + auto-observação que detectou este gap).
-- Workflows tocados: nenhum nesta v1.11.0 (purga é semântica, não estrutural).
+- Workflows tocados: `.agent/workflows/checkpoint.md` (+1 seção "RRC — gate de saída obrigatório"; Method-Audit ganha sinal "vazamento cross-projeto"). Demais workflows inalterados.
+
+### Nota sobre régua §0 — superfície semântica ≠ contagem bruta de linhas
+
+`git diff --stat` da v1.11.0 mostra +512 inserções vs −89 deleções. Leitura literal da régua §0 critério (a) (funde/remove ≥ adiciona) FALHARIA na contagem bruta. A justificativa real é critério (c): **adição registra decisão arquitetural inalcançável editando ADR existente, e a "subtração" é SEMÂNTICA (remoção de âncoras cognitivas — ALCOA+/ANP/FDA/BACEN/GAMP/COBIT — que pesavam mais que tokens)**. Cada âncora removida elimina um caminho de viés cross-projeto. Régua §0 é princípio de superfície semântica, não métrica de linhas — esta nota o explicita para evitar leitura literal enganosa.
+
+### Riscos residuais conhecidos (não bloqueiam release, registram limitação)
+
+- **Detector de vazamento cross-projeto ausente** (ADV-1 qa-critic round 1): princípio 12 instrui o agente a perguntar antes de invocar contexto de outra sessão, mas não há check automático. Mitigação: feedback do dono via method-audit notes captura post-hoc. Risco mitigado, não eliminado.
+- **Transcribe-mode pode aceitar briefing portado de outro projeto** (ADV-2 qa-critic round 1): se dono colar briefing maduro de outro projeto que satisfaça os 4 critérios binários, transcribe-mode aceita sem questionar a origem do briefing. Aceito como gap de superfície; documentar instrução de "briefing deve ser deste projeto" como check humano. Tratar formalmente em v1.12.0.
+- **Princípio 11 honesto NÃO endereça file-first** (ADV-3 qa-critic round 1): o rename de "auto-observação" → "observação meta-cognitiva" corrige a representação de capacidade, mas a causa-raiz das 3 violações no case AIVI foi violação da regra inviolável #3 (file-first), não auto-observação fracassada. As duas correções são independentes; enforcement de file-first segue regra inviolável existente e fica fora desta v1.11.0.

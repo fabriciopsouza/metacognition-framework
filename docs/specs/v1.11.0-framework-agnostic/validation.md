@@ -12,19 +12,34 @@ type: binary-validation
 
 ## V1 — Purga estrita de domain-anchors em prompts/regras/docs do núcleo
 
-**Comando:**
+**Comando V1-A — prompts/regras/skills/guias ATIVOS (ZERO refs obrigatório):**
 ```bash
 grep -rnE "ALCOA|ANVISA|\bANP\b|\bFDA\b|\bBACEN\b|\bGAMP\b|COBIT|CSV/CSA" \
   --include="*.md" \
-  _shared/ .agent/ AGENT-FRAMEWORK.md CLAUDE.md AGENTS.md README.md PROMPT-CHAT-WEB-v4.2.md \
+  _shared/ .agent/ guia/ \
+  AGENT-FRAMEWORK.md CLAUDE.md AGENTS.md README.md PROMPT-CHAT-WEB-v4.2.md \
   | grep -v "docs/specs/exemplos/"
 ```
 
-**Critério binário:** output **0 linhas** (saída vazia).
+**Critério binário V1-A:** output **0 linhas** (saída vazia). Estes são arquivos ATIVOS lidos pelo agente como autoridade.
+
+**V1-B — ADRs §Pendências ATIVAS (revisão manual + auto-check de ADR-009 conhecido):**
+
+ADRs PODEM citar siglas em §Contexto/§Diagnóstico/§Fonte/§Implementação (recontando o problema sendo resolvido ou descrevendo o edit feito). Cite apenas seria FALHA se um ADR ATIVO tem pendência ou regra ATIVA usando sigla hardcoded como gatilho operacional.
+
+**Auto-check específico do round 1 (ADR-009 §Pendências linha 143 — fix conhecido):**
+```bash
+# Linha 143 deve estar marcada com ~~strikethrough~~ + "absorvido pelo ADR-010"
+grep -n "absorvido pelo ADR-010" docs/adr/009-metodo-senior-discovery-auto-melhoria-framework.md
+```
+
+**Critério binário V1-B:** (i) auto-check acima retorna a linha; (ii) revisão humana confirma que nenhum outro ADR ativo tem §Pendência ou §Decisão usando ANP/FDA/BACEN/ALCOA+/GAMP/ANVISA/COBIT como gatilho operacional ATIVO (vs descrição meta-historical da purga).
 
 **Exceções explícitas (NÃO contam como falha):**
-- `CHANGELOG.md` — registro histórico do que foi purgado (meta-referência aceita).
+- `CHANGELOG.md` — registro histórico (meta-referência aceita).
 - `docs/specs/exemplos/H1-farma-*` — diretório rotulado como exemplo didático regulado-pharma; intenção explícita.
+- `history.md` — registro append-only de aprendizado/checkpoints.
+- `docs/adr/*` §Contexto/§Diagnóstico/§Fonte/§Alternativas — meta-referências ao problema sendo resolvido (NÃO §Pendências ATIVAS nem §Decisão ATIVA).
 
 **Status:** [ ] PASSA / [ ] FALHA
 
