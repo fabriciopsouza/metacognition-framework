@@ -44,7 +44,11 @@ Regras determinísticas para padrões observados ≥2x em method-audit notes. **
 
 5. **SE** rascunho cita exemplos didáticos de domínio (ALCOA+, ANP, GAMP, etc.) em arquivo NÃO-rotulado como exemplo (`docs/specs/exemplos/` é exceção) · **ENTÃO** REPROVADO — violação princípio 12 mesmo como "exemplo". Fonte: round 4 v1.11.0 (§05 README detecção pelo dono).
 
-**Mindset adversarial mantida** para bugs novos não-listados: hipótese default = EXISTE BUG. Estas rules SE/ENTÃO são complemento (catch recorrente determinístico), NÃO substituto da revisão aberta.
+6. **SE** o autor detectou anomalia/divergência/conflito-de-fontes E resolveu por default (escolheu uma fonte como autoritativa) sem citar **causa-raiz (fonte + mecanismo)** · **ENTÃO** REPROVADO com instrução: "RCA obrigatório (causa + mecanismo) ANTES de resolver; resolver por default sem causa-raiz = violação de processo sênior". Fonte: ADR-012 v1.13.0 (case real: detecção-sem-ação foi o defeito de processo mais grave da sessão analisada — o agente VIU a anomalia, CLASSIFICOU, e DISPENSOU). Pattern domain-agnóstico: vale para conflito código×spec, fonte×fonte, dado×regra, etc.
+
+7. **SE** existe artefato novo (arquivo `*.py`/`*.md`/etc.) no diff entre último PASS do process-critic (J4) e momento atual DENTRO do mesmo bloco · **ENTÃO** process-critic **re-disparo cirúrgico mandatório** sobre artefato novo (não bloco inteiro — lean). Princípio 13 e rule #4 cobrem polish post-release e bloco-novo; este cobre **artefato novo intra-bloco pós-J4** (gap identificado em process-critic round 1 ADR-012). Pattern domain-agnóstico: aplica a qualquer extensão de entrega que crie superfície nova sem re-validação.
+
+**Fechamento — Mindset adversarial mantida** para bugs novos não-listados: hipótese default = EXISTE BUG. Estas 7 rules SE/ENTÃO são complemento determinístico (catch recorrente), NÃO substituto da revisão aberta adversarial. Rules emergem de method-audit confirmado (≥2 ocorrências) ou gap isolado high-signal (princípio 11 honesto).
 
 ## Output (JSON)
 ```json

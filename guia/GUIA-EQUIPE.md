@@ -7,7 +7,7 @@
 - Projeto / >2 arquivos / >2 etapas / **regulado declarado pelo discovery** → **squad** (papéis + workflows).
 - Você pode forçar: "use o squad" ou "responde direto".
 
-> **v1.11.0 (ADR-010):** "regulado" NÃO é mais inferido por palavras-chave — o **discovery pergunta ao dono** (4 perguntas: regulado? quais normas? · alto-risco? · regra com semântica? · gaps não-bloqueantes?). Sem declaração afirmativa → defaults agnósticos. Anti-vazamento cross-projeto.
+> **v1.11.0 (ADR-010) + v1.13.0 (ADR-012):** "regulado" NÃO é mais inferido por palavras-chave — o **discovery pergunta ao dono** (5 perguntas: regulado? quais normas? · alto-risco? · regra com semântica? · gaps não-bloqueantes? · **alimenta outra sessão/agente?**). Sem declaração afirmativa → defaults agnósticos. Anti-vazamento cross-projeto.
 
 ## 2. As 4 regras que nunca caem (de `_shared/`)
 1. **Classificar** toda afirmação relevante: CONFIRMADO / INFERIDO / DESCONHECIDO.
@@ -58,3 +58,6 @@ O framework é **estritamente agnóstico**. Domínio (linguagens, ferramentas, n
 
 ## 10. Junções binárias forward-only (regra de ouro — ADR-011 v1.12.0)
 Fluxo squad tem **6 junções (J0-J5)** com gates binários declarados em `/handoff` + **process-critic adversarial final** (qa-critic em subagente isolado) com poder de **rewind cascata**. **DENTRO da junção:** iterações até PASS (binário). **ENTRE junções:** forward-only (uma vez passada, não volta sem ação do process-critic — circuit-breaker contra loop eterno). **TODO QA é adversarial** (hipótese default = bug). **Process-critic dispara em:** (a) final de cada BLOCO APROVADO; (b) on-demand; (c) opcional em `/checkpoint` substantivo. **SUPLANTA × EMENDA:** §Decisão/§Alternativas muda → novo ADR + `Substituído por:`; §Implementação/§Consequências → emenda in-place via STATUS-field.
+
+## 11. Handoff cross-sessão obrigatório quando declarado (ADR-012 v1.13.0)
+discovery passo 6(e) pergunta "alimenta outra sessão/agente?". Se SIM → **Pacote de handoff** (`metacognition-core` §Pacote) é entregável obrigatório via J5: artefato consumível com versão; localização (repo/URL/path + branch/commit/PR); acesso (visibilidade + permissões + o que não foi versionado); prompt pronto-para-colar; pendências herdadas. **Teste binário:** outra sessão começa **sem perguntar nada de volta**? Princípio 14 §6. +qa-critic ganha rule #6 (RCA gate: anomalia detectada exige causa-raiz antes de resolver) e rule #7 (cobertura temporal pós-J4: artefato novo intra-bloco re-disparo cirúrgico mandatório).

@@ -1,9 +1,9 @@
 ---
 name: metacognition-core
 description: "Núcleo SSoT do método metacognitivo reutilizável. Carregar quando precisar decompor um problema, validar antes de entregar, aplicar a cláusula anti-loop, resolver precedência de instruções, ou registrar checkpoint/transferência. O roteador (framework v2.3) decide QUANDO; este arquivo guarda o COMO. NÃO carregar para bate-papo casual."
-version: 1.0.0
-source: "metacognição v2.2 §0, §2.A, §4 + master v4.1 §0, §4.5, §17"
-last_review: 2026-05-23
+version: 1.1.0
+source: "metacognição v2.2 §0, §2.A, §4 + master v4.1 §0, §4.5, §17; v1.1.0 (2026-05-29) adiciona §Pacote de handoff cross-sessão (ADR-012)"
+last_review: 2026-05-29
 ---
 
 # Metacognição — Núcleo Reutilizável (fonte única)
@@ -53,3 +53,15 @@ Decisões permanentes: <decisão → razão>
 Próximo passo: <tarefa N+1 + critério de aceite>
 Artefatos a referenciar: <paths e versões>
 ```
+
+## Pacote de handoff cross-sessão (entregável OBRIGATÓRIO quando declarado — ADR-012 v1.13.0)
+
+Quando o `discovery` passo 6(e) declara que a entrega **alimenta outra sessão/agente** (relatório para análise downstream, insumo de pipeline, transferência de contexto), o pacote de handoff é **entregável obrigatório — não improviso**. Sem essa declaração (defaults agnósticos), não é exigido. Deve conter, de forma autossuficiente:
+
+- **Artefato consumível** — qual documento/dado a outra sessão lê, com **versão**.
+- **Localização** — repositório (URL) e/ou path absoluto; **estado** (branch/commit/PR).
+- **Acesso** — visibilidade (público/privado), permissões necessárias, e o que **não** foi versionado (com o porquê — ex.: dado sensível, compliance) e como obtê-lo.
+- **Prompt pronto-para-colar** — papel da outra sessão + objetivo + critério de aceite + o que ela deve **produzir/decidir**, citando o artefato consumível.
+- **Pendências e premissas herdadas** — o que fica aberto e o que ela deve assumir.
+
+**Regra binária:** um handoff que dependa de contexto que **só existe na sessão atual** está incompleto. **Teste:** a outra sessão consegue começar **sem** perguntar nada de volta? Detalhe: **ADR-012**.

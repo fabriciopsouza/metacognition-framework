@@ -47,11 +47,12 @@ perguntado. Este papel encarna esse método — não um catálogo de domínios, 
 
    **Modo A — Transcribe (determinístico, ADR-010 §ii-a):** quando o briefing tem declaração nominal explícita, **sustentada em ≥2 lugares**, com **stakeholder nomeado**, sem contradição interna → discovery TRANSCREVE para `## Escopo declarado pelo discovery` marcando origem ("via briefing — citar trechos"), **sem re-asking**. Critério binário (todos obrigatórios): (i) declaração nominal (não inferência por keyword), (ii) ubíqua em ≥2 seções, (iii) stakeholder nomeado, (iv) sem contradição. Falha em qualquer → modo B.
 
-   **Modo B — Interview (default):** 4 perguntas explícitas ao dono, registradas em `## Escopo declarado pelo discovery`:
+   **Modo B — Interview (default):** 5 perguntas explícitas ao dono, registradas em `## Escopo declarado pelo discovery`:
    - **(a) Regulado?** Este projeto opera sob alguma norma/convenção externa? Quais especificamente? Vigência? (Por norma, classificar `[CONFIRMADO]`/`[INFERIDO]`/`[DESCONHECIDO]`.)
    - **(b) Alto-risco?** Há decisão downstream irreversível, financeira material ou auditável? (Sim/Não + justificativa.)
    - **(c) Regras com semântica?** Há regra de negócio onde o "como" importa tanto quanto o "quê" (ex.: anti-fraude, audit trail, fairness — listar as concretas do projeto)? (Sim/Não + lista.)
    - **(d) Gaps não-bloqueantes?** Dimensões/dados sabidos ausentes mas não impedem entrega? (Lista + decisão "manter gap" / "tratar follow-up".)
+   - **(e) Alimenta outra sessão/agente? (ADR-012 v1.13.0)** A entrega é insumo para outra sessão (relatório de análise, pipeline downstream, transferência de contexto)? (Sim/Não.) Se SIM → dispara **Pacote de handoff cross-sessão** (`metacognition-core` §Pacote de handoff) como entregável OBRIGATÓRIO via J5 (docops → release). Princípio 14 do `AGENT-FRAMEWORK.md` §6.
 
    **Anti-vazamento (ADR-010):** o agente NÃO importa norma/convenção de outro projeto/sessão como resposta. Em modo A, lê só o briefing DESTE projeto. Em modo B, resposta vem do dono ou fica `[DESCONHECIDO]`. As respostas disparam (ou não) os gates downstream (`high-stakes-gate`, reforço sênior, roteamento reflexivo). Sem declaração afirmativa → defaults agnósticos.
 

@@ -69,7 +69,7 @@ Escolha pela **Alternativa 1** por 4 razões alinhadas com princípios já regis
 
 > **Determinístico quando o input já é completo:** o passo 6 do discovery (lote temático "Escopo declarado") tem DOIS modos:
 >
-> 1. **Interview-mode (default):** 4 perguntas explícitas ao dono — quando briefing é silente, ambíguo ou parcial.
+> 1. **Interview-mode (default):** 4 perguntas explícitas ao dono — quando briefing é silente, ambíguo ou parcial. **EMENDA v1.13.0 (ADR-012):** ganhou 5ª pergunta (e) "alimenta outra sessão/agente?" → dispara Pacote de handoff cross-sessão.
 > 2. **Transcribe-mode (determinístico):** quando briefing (`docs/briefing.md` ou doc fornecida) contém declaração nominal explícita, **sustentada em ≥2 lugares**, com **fonte/dono nomeado** ("declarado por <stakeholder> em <doc>") → discovery TRANSCREVE para `## Escopo declarado pelo discovery` marcando origem ("via briefing — citar trechos") **sem re-asking**.
 >
 > **Critério binário do transcribe-mode** (todos obrigatórios; falha em qualquer um → cair em interview-mode):
@@ -145,7 +145,7 @@ Output vai para o `requirements.md`/`research-brief.md` em seção **`## Escopo 
 
 ### Negativas
 
-1. **Discovery default ganha lote temático "escopo de domínio"** — 4 perguntas a mais quando há sinal. Mitigado: as 4 só disparam se há sinal; em projeto puramente operacional (sem norma citada), discovery universal permanece igual.
+1. **Discovery default ganha lote temático "escopo de domínio"** — 4 perguntas a mais quando há sinal (**EMENDA v1.13.0 (ADR-012):** 4 → 5 com adição de (e) "alimenta outra sessão?"). Mitigado: só disparam se há sinal; em projeto puramente operacional (sem norma citada), discovery universal permanece igual.
 2. **Exemplos didáticos perdidos** — `regulado:` no banco de partida (linha 58 da SKILL) vira "trilha de auditoria, validação, aprovação, rollback" sem âncora concreta. Mitigado: companion sênior (`metodo-senior.md`) ainda existe para casos confirmados; banco de partida não é exaustivo por design.
 3. **PROMPT-CHAT-WEB-v4.2.md perde "identidade personalizada"** distribuída — usuário precisa customizar §1 e §5 ao plugar no Claude.ai. Mitigado: template explícito com placeholders + instrução clara de customização.
 
