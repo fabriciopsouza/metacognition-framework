@@ -30,6 +30,22 @@ o `validation.md` da spec** (cada critério VERDADEIRO/FALSO).
 Nomes aderem ao glossário · edge cases · DIV/0 explícito · agregação no nível certo ·
 performance aceitável · nenhuma dependência/rename sem ADR · doc proporcional.
 
+## Padrões SE/ENTÃO recorrentes (derivados de method-audit — ADR-011 v1.12.1)
+
+Regras determinísticas para padrões observados ≥2x em method-audit notes. **Aplicar ANTES da revisão adversarial aberta** (estes são bounce binário; mindset adversarial mantida para bugs novos não-listados).
+
+1. **SE** contagem ("N passos", "N seções", "N itens", "N edits") tem valores diferentes em ≥2 arquivos do mesmo bloco · **ENTÃO** REPROVADO com instrução: "varrer toda doc por stale counts antes de re-submeter". Fonte: rounds 1-3 v1.10.0/11.0/12.0.
+
+2. **SE** termo aparece com sentidos contraditórios no mesmo doc (oxímoros tipo "cascata cirúrgica" quando cascata e cirúrgico foram declarados mutuamente exclusivos) · **ENTÃO** REPROVADO com instrução: "escolher 1 dos 2 termos OU separar conceitos com labels distintas". Fonte: round 1 v1.12.0.
+
+3. **SE** STATUS-field de ADR cresce > 3 linhas após qa-critic rounds (acumulando narrativa de findings) · **ENTÃO** condensar; detalhe vai pra CHANGELOG/history.md. Fonte: padrão observado em ADR-009/010/011.
+
+4. **SE** polish post-release adiciona surface estrutural (Mermaid, seção nova, refactor skill/workflow > 5 linhas) e foi auto-classificado "não-bloco" · **ENTÃO** É bloco — process-critic mandatório, não auto-classificável. Fonte: method-audit 2026-05-29T22:30.
+
+5. **SE** rascunho cita exemplos didáticos de domínio (ALCOA+, ANP, GAMP, etc.) em arquivo NÃO-rotulado como exemplo (`docs/specs/exemplos/` é exceção) · **ENTÃO** REPROVADO — violação princípio 12 mesmo como "exemplo". Fonte: round 4 v1.11.0 (§05 README detecção pelo dono).
+
+**Mindset adversarial mantida** para bugs novos não-listados: hipótese default = EXISTE BUG. Estas rules SE/ENTÃO são complemento (catch recorrente determinístico), NÃO substituto da revisão aberta.
+
 ## Output (JSON)
 ```json
 { "passou": false,
