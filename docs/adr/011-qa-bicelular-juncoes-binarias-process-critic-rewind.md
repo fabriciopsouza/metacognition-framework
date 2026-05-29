@@ -1,6 +1,6 @@
 # ADR 011 — Arquitetura de QA bicelular: junções binárias forward-only + process-critic adversarial com rewind
 
-- **Status:** Proposto (2026-05-29) — aguarda qa-critic rounds + aceite
+- **Status:** Aceito (2026-05-29) — qa-critic rounds 1-4 (REPROVADO × 3 → APROVADO_LIMPO) endereçados em commits `ff73d75` (round 1: 2 MEDIO + 1 BAIXO + 2 ADV — V1-V8 + cascata-oximoro + PROMPT-CHAT-WEB) + `9e08af6` (round 2: 1 MEDIO + 2 BAIXO — §151 oximoro residual + wording drift + 8→11 edições) + `00af0c7` (round 3: 2 MEDIO — §50 6→11 edits + CHANGELOG 9→11 arquivos). Round 4: zero findings ALTO/MEDIO.
 - **Data:** 2026-05-29 · **Decisores:** Fabricio (mantenedor) + Claude (papel `architect`)
 - **Substitui:** nenhum · **Substituído por:** nenhum
 - **Relaciona-se a:** ADR-007 (régua §0), ADR-009 (método sênior), ADR-010 (framework agnóstico + RRC + correção honesta princípio 11)

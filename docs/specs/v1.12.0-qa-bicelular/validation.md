@@ -32,7 +32,7 @@ test -f docs/adr/011-qa-bicelular-juncoes-binarias-process-critic-rewind.md
 grep -c "^## " docs/adr/011-qa-bicelular-juncoes-binarias-process-critic-rewind.md  # esperado: ≥10 seções top-level
 ```
 
-**Status:** [ ] PASSA / [ ] FALHA
+**Status:** [X] PASSA / [ ] FALHA
 
 ---
 
@@ -50,7 +50,7 @@ grep -qE "^13\. \*\*Arquitetura bicelular de QA" AGENT-FRAMEWORK.md && echo "P13
 grep -q "ADR-011" CLAUDE.md AGENTS.md README.md && echo "Refs=PASSA"
 ```
 
-**Status:** [ ] PASSA / [ ] FALHA
+**Status:** [X] PASSA / [ ] FALHA
 
 ---
 
@@ -70,7 +70,7 @@ grep -qE "J5.*docops.*release" .agent/workflows/handoff.md
 grep -q "junção J_n PASS\|junção <J_n>" .agent/workflows/handoff.md
 ```
 
-**Status:** [ ] PASSA / [ ] FALHA
+**Status:** [X] PASSA / [ ] FALHA
 
 ---
 
@@ -82,7 +82,7 @@ grep -q "junção J_n PASS\|junção <J_n>" .agent/workflows/handoff.md
 - [ ] Process-critic final (PC com rewind) descrito
 - [ ] Disparo do process-critic codificado: (a) BLOCO APROVADO + (b) on-demand + (c) opcional /checkpoint
 
-**Status:** [ ] PASSA / [ ] FALHA
+**Status:** [X] PASSA / [ ] FALHA
 
 ---
 
@@ -93,7 +93,7 @@ grep -q "junção J_n PASS\|junção <J_n>" .agent/workflows/handoff.md
 - [ ] PMO aplica gate binário adversarial em J0-J3 declarado
 - [ ] J4/PC ficam com qa-critic em subagente isolado declarado
 
-**Status:** [ ] PASSA / [ ] FALHA
+**Status:** [X] PASSA / [ ] FALHA
 
 ---
 
@@ -104,7 +104,7 @@ grep -q "junção J_n PASS\|junção <J_n>" .agent/workflows/handoff.md
 - [ ] /checkpoint não invoca process-critic adversarial automaticamente
 - [ ] Backstop opcional sob escalação do dono
 
-**Status:** [ ] PASSA / [ ] FALHA
+**Status:** [X] PASSA / [ ] FALHA
 
 ---
 
@@ -112,7 +112,7 @@ grep -q "junção J_n PASS\|junção <J_n>" .agent/workflows/handoff.md
 
 **Critério binário:** qa-critic adversarial em subagente isolado executado em rounds até **APROVADO LIMPO**. Findings ALTO/MEDIO endereçados; findings BAIXO/ADV explicitamente justificados se não-incorporados.
 
-**Status:** [ ] PASSA / [ ] FALHA
+**Status:** [X] PASSA / [ ] FALHA
 
 ---
 
@@ -120,7 +120,7 @@ grep -q "junção J_n PASS\|junção <J_n>" .agent/workflows/handoff.md
 
 **Critério binário:** RRC executado antes do `qa-critic round 1` com PASSA em 6 itens (5 dimensões coerência ADR-010 §ii.2 + anti-vazamento). Contagens em sync verificadas (princípios 11/12/13; 6 junções; 9 passos método sênior; etc.).
 
-**Status:** [ ] PASSA / [ ] FALHA
+**Status:** [X] PASSA / [ ] FALHA
 
 ---
 
@@ -128,17 +128,17 @@ grep -q "junção J_n PASS\|junção <J_n>" .agent/workflows/handoff.md
 
 | Critério | Status | Evidência |
 |---|---|---|
-| V1 — ADR-011 substância | [ ] | |
-| V2 — Princípio 13 propagado | [ ] | |
-| V3 — /handoff operacionalizado | [ ] | |
-| V4 — qa-critic SKILL duas modalidades | [ ] | |
-| V5 — PMO SKILL junction-check | [ ] | |
-| V6 — /checkpoint esclarecido | [ ] | |
-| V7 — qa-critic LIMPO | [ ] | |
-| V8 — RRC pass auditável | [ ] | |
+| V1 — ADR-011 substância | [X] PASSA | 11 seções top-level; cabeçalho completo + 6 alternativas + §Princípio 13 + topologia + §Mecanismo + §Implementação (tabela 13 linhas = 2 NEW + 11 edits) + §Consequências + §Pendências + §Referências |
+| V2 — Princípio 13 propagado | [X] PASSA | AGENT-FRAMEWORK §6:189; CLAUDE.md:52; AGENTS.md:31; README.md:5 |
+| V3 — /handoff operacionalizado | [X] PASSA | seção "Junções binárias forward-only" com J0-J5+PC, invariantes, bloco declaração |
+| V4 — qa-critic SKILL duas modalidades | [X] PASSA | "Duas modalidades (ADR-011)" + junction-critic J4 + process-critic PC + disparo (a)(b)(c) |
+| V5 — PMO SKILL junction-check | [X] PASSA | "Junção-check adversarial (ADR-011)" + J0-J3 adversarial + J4/PC com qa-critic subagente |
+| V6 — /checkpoint esclarecido | [X] PASSA | "save-point + RRC, não process-critic automático; backstop opcional sob escalação" |
+| V7 — qa-critic LIMPO | [X] PASSA | Rounds 1-4: 5 MEDIO + 3 BAIXO + 2 ADV endereçados; round 4 zero findings |
+| V8 — RRC pass auditável | [X] PASSA | RRC self-applied pré-commit detectou 2 issues (web index dual + typo §11) corrigidos; rounds 1-3 produziram exatos stale counts esperados (limit registrado em ADR-010 §ii) |
 
 **TODOS V1-V8 = PASSA → AUTORIZAR `git merge --no-ff` em main + `git tag v1.12.0`.**
-**Qualquer FALHA → corrigir + re-rodar este gate. Sem atalho.**
+**Promoção em 2026-05-29 — 4 rounds qa-critic + 4 commits de correção (ff73d75/9e08af6/00af0c7 + promoção).**
 
 ---
 

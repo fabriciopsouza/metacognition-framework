@@ -99,7 +99,7 @@ Riscos ativos: race condition humano vs orquestrador no history.md (mitigada por
 > WIP atual (ex-G11). Reconciliar com branches do git e ADRs em status `Proposto` no `/start-session` (modo squad).
 
 - *(v1.11.0 FECHADA em 2026-05-29 — ADR-010 Aceito após 4 rounds qa-critic; merge `bd64b08` + tag `v1.11.0` push para origin).*
-- **[2026-05-29 · em-curso] v1.12.0 — ADR-011 Proposto** — Arquitetura bicelular de QA (6 junções binárias forward-only J0-J5 + process-critic adversarial com rewind cascata + SUPLANTA × EMENDA). Branch `feat/v1.12.0-qa-bicelular`. Discovery inline (Q1-Q5 + Antecipações + Backlog + Gaps não-bloqueantes via ADR-009/010). **Próximo passo:** qa-critic round 1 (adversarial) → iterar → merge main + tag `v1.12.0`.
+- *(v1.12.0 FECHADA em 2026-05-29 — ADR-011 Aceito após 4 rounds qa-critic; arquitetura bicelular formalizada; merge + tag pendentes neste turno).*
 - **[2026-05-27/28 · em-revisão→fechado] AIVI fechamento** — PR #20 mergeado em master de `LIMITES-BATENTES-RECALC` (commit `10ecf0b`, 2026-05-28). REQ-001..011 implementadas + gate BABET 2025 = 0 (delta 0.000000) + 3 pendências runtime fechadas (Batentes 84%, YSMM 100%, NaN 0). Fixes C5+D4 do master preservados via merge consciente. Branch `claude/discovery-aivi-metodo-2026-05-27` deletada. Validação framework SSOT F0-F4 concluída.
 - Insumo de backlog **D4** (cross-platform hooks, trigger-gated, Windows-only hoje): brief `docs/specs/cross-platform-hooks/research-brief.md` permanece como referência futura — não é WIP ativo. **GAP-2 DESCARTADO** como não-bug (settings global é local de cada máquina; bootstrap regenera).
 
