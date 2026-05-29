@@ -56,8 +56,10 @@ Escolha pela **Alternativa 1** por 4 razões:
 | `CLAUDE.md` + `AGENTS.md` + `README.md` + `guia/GUIA-EQUIPE.md` + `guia/web/index.html` | Seções/cards v1.13.0 | Convenção |
 | `history.md` | Close v1.13.0 + method-audit notes (6 gaps remanescentes + isolation/model observação do dono) | Convenção |
 | `docs/specs/v1.13.0-aivi-method-fixes/validation.md` | **NOVO** — gate binário V1-Vn release | Adição — gate per release |
+| `.agent/workflows/start-session.md` | Passo 2.5: ref ADR-012 atualizada (era "futuro"; agora link válido) | Edit cirúrgico (1 linha) |
+| `docs/adr/010-framework-agnostico-discovery-declara-escopo.md` | **EMENDA in-place** §72 (Interview-mode 4 perguntas + nota) e §148 (Consequências negativas 4 perguntas + nota): "EMENDA v1.13.0: 4 → 5 com adição de (e) alimenta outra sessão?" — pattern SUPLANTA × EMENDA mantido | EMENDA conforme ADR-011 política |
 
-**Total:** 2 novos + 8 edições. Mais drift sync (3 arquivos já alinhados ao global). Sem nova pasta/workflow/skill/papel.
+**Total:** 2 novos + 10 edições. Mais drift sync (3 arquivos já alinhados ao global). Sem nova pasta/workflow/skill/papel.
 
 ## Consequências
 

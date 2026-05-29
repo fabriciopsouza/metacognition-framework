@@ -48,6 +48,8 @@ Regras determinísticas para padrões observados ≥2x em method-audit notes. **
 
 7. **SE** existe artefato novo (arquivo `*.py`/`*.md`/etc.) no diff entre último PASS do process-critic (J4) e momento atual DENTRO do mesmo bloco · **ENTÃO** process-critic **re-disparo cirúrgico mandatório** sobre artefato novo (não bloco inteiro — lean). Princípio 13 e rule #4 cobrem polish post-release e bloco-novo; este cobre **artefato novo intra-bloco pós-J4** (gap identificado em process-critic round 1 ADR-012). Pattern domain-agnóstico: aplica a qualquer extensão de entrega que crie superfície nova sem re-validação.
 
+**Fechamento — Mindset adversarial mantida** para bugs novos não-listados: hipótese default = EXISTE BUG. Estas 7 rules SE/ENTÃO são complemento determinístico (catch recorrente), NÃO substituto da revisão aberta adversarial. Rules emergem de method-audit confirmado (≥2 ocorrências) ou gap isolado high-signal (princípio 11 honesto).
+
 ## Output (JSON)
 ```json
 { "passou": false,
