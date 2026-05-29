@@ -69,7 +69,7 @@ Operador escolhe explicitamente no início (após filtro de entrada):
 
 #### Fora de escopo deste sub-modo
 
-- Compliance/audit trail/ALCOA+ → `high-stakes-gate`.
+- Compliance/audit trail → `high-stakes-gate` quando declarado pelo discovery (ADR-010).
 - Desenho do to-be → `architect` via ADR de processo.
 - Process simulation, RPA recommendation, change management, process mining industrial, KPI/OKR design.
 

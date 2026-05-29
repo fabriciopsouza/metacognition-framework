@@ -22,8 +22,11 @@ Após `bootstrap.ps1`, o squad acorda automaticamente em qualquer IDE/projeto cu
 ## Régua §0 — GANHO LÍQUIDO (v1.9.0 — ADR-007)
 Princípio 10 do `AGENT-FRAMEWORK.md` §6: adição pura é rejeitada. Aceitar só se (a) funde/remove ≥ adiciona, (b) reduz tokens/latência, ou (c) destrava eval inalcançável editando existente. Sub-modo `pesquisa-cascata` do discovery (sob demanda) é a primeira aplicação.
 
-## Método sênior de discovery — reforço transversal (v1.10.0 — ADR-009)
-Quando há **fonte canônica/normativa citada** (norma regulatória, spec oficial, padrão técnico, regra de negócio com peso semântico declarado), o discovery carrega `metodo-senior.md` (companion sob demanda) em adição ao sub-modo ativo. 8 passos: mapeamento + **vigência** + complementações + cross-domain + pertinência + elicitação + classificação + adversarial. Domain-agnóstico. Output ganha **Antecipações** + **Backlog de elicitação** (§7-8 obrigatórias do `research-brief.md`). Princípio 11 do `AGENT-FRAMEWORK.md` §6 + method-audit autônomo no `/checkpoint`.
+## Método sênior de discovery — reforço transversal (v1.10.0 — ADR-009; passo 9 RRC v1.11.0 — ADR-010)
+Quando há **fonte canônica/normativa citada**, o discovery carrega `metodo-senior.md` (companion sob demanda). **9 passos:** mapeamento + **vigência** + complementações + cross-domain + pertinência + elicitação + classificação + adversarial + **coherence pass (RRC)**. Domain-agnóstico. Output ganha **3 seções obrigatórias**: Antecipações + Backlog + **Gaps não-bloqueantes**. Princípio 11 reescrito em v1.11.0 (observação meta-cognitiva, não auto-observação dura) + method-audit autônomo no `/checkpoint`.
+
+## Framework agnóstico — discovery declara escopo (v1.11.0 — ADR-010)
+Núcleo NÃO carrega listas hardcoded de normas/convenções de domínio. Discovery pergunta explicitamente: (a) regulado? quais normas? (b) alto-risco? (c) regra com semântica? (d) gaps não-bloqueantes? Respostas vão para `## Escopo declarado pelo discovery` no output e disparam gates downstream (`high-stakes-gate`, reforço sênior, roteamento reflexivo). Sem declaração → defaults agnósticos. **Anti-vazamento cross-projeto**: não importar convenção/norma de outra sessão sem confirmação. **Gaps não-bloqueantes flagados, não silenciados** (abordagem sênior). HITL via `execution-modes` (ADR-005). Princípio 12 do §6.
 
 ## Aplicações
 Domínios específicos (BI, regulado, etc.) NÃO ficam no núcleo — são criados clonando

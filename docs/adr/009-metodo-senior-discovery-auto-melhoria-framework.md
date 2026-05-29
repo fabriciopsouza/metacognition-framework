@@ -140,7 +140,7 @@ Detalhado no companion. Em uma linha: 8 passos — mapear fontes / verificar VIG
 
 ## Pendências e follow-ups
 
-- **High-stakes-gate auto-load** por gatilhos contextuais (regulado, ANP, FDA, BACEN, ALCOA+, perda financeira, executive) — próximo ciclo.
+- ~~**High-stakes-gate auto-load** por gatilhos contextuais — próximo ciclo.~~ **ABSORVIDO PELO ADR-010 (v1.11.0):** carga é declarada pelo discovery do projeto (modo Transcribe se briefing inequívoco/ubíquo; modo Interview caso contrário). Sem listas hardcoded de gatilhos — framework agnóstico estrito.
 - **Template `docs/specs/_template/requirements.md` para caminho universal+sênior** — o template `_template-research/research-brief.md` cobre cascata+sênior (§7+§8); o universal+sênior (discovery universal com fonte canônica citada) usa `requirements.md` que ainda não tem seções equivalentes. Decisão consciente de adiar: cobertura cascata+sênior basta para o caso AIVI atual; estender o `requirements.md` quando surgir caso real universal+sênior. Levantado por qa-critic round 3 ADV-R2.
 - **Antecipações no template padrão de `output-format`** — propagar do companion para o output base. Próximo ciclo.
 - **External research handle no discovery pesquisa-cascata** — explorer EXTERNAL via WebSearch/WebFetch; gap conhecido (item J).

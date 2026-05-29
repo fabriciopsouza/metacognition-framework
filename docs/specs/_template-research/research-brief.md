@@ -70,6 +70,15 @@ Coisas pertinentes que o dono **não pediu** mas podem morder (premissas frágei
 - <antecipação 1>: <por que importa>
 - ...
 
+### 7.1 Gaps não-bloqueantes (sênior — ADR-010 §sub-princípio i)
+
+Gaps detectados que NÃO bloqueiam entrega mas existem (cobertura parcial de fonte, dimensão sem dados mas dispensável, etc.). **Silenciar gap não-bloqueante = perda de assertividade sênior.** Apresentar explicitamente:
+
+| Gap | Impacto se não tratado | Decisão registrada do dono |
+|---|---|---|
+| <descrição do gap> | <consequência prevista> | manter gap / tratar follow-up |
+| ... | | |
+
 ## 8. Backlog de elicitação (sênior — ADR-009)
 
 Fatos pertinentes **não-documentados** que precisam vir do dono — não calar gaps. **Seção obrigatória** quando o reforço transversal sênior está ativo.

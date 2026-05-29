@@ -17,11 +17,7 @@ gap_severity_max: medio    # baixo | medio | alto | bloqueador
 
 ## Sumário executivo (3-5 linhas)
 
-<O que o leitor precisa saber em 30 segundos. Ex.: "Processo de liberação de
-lote tem 4 gaps: 2 handoffs sem dono, 1 atividade declarada × observada
-divergente, ALCOA+ implícito mas não rastreado, owner do gateway de
-retrabalho indefinido. Sugestão arquitetural: ADR de processo to-be deve
-nomear owner único para retrabalho e formalizar trilha de auditoria.">
+<O que o leitor precisa saber em 30 segundos. Ex.: "Processo X tem 4 gaps: 2 handoffs sem dono, 1 atividade declarada × observada divergente, 1 trilha de auditoria implícita mas não rastreada (norma específica declarada pelo discovery do projeto), owner do gateway de retrabalho indefinido. Sugestão arquitetural: ADR de processo to-be deve nomear owner único para retrabalho e formalizar trilha de auditoria.">
 
 ## Gaps detectados
 

@@ -2,7 +2,7 @@
 name: discovery
 description: "Ativar ANTES de planejar/implementar quando o pedido é novo, vago, ou a spec pode estar rasa/limitada ao que o usuário já conhece. Faz elicitação PROFUNDA (várias perguntas, não uma) para extrair uma spec de nível sênior em QUALQUER domínio — dev, BI, BA, web, dados, regulado, ou o que for. Em v1.6.0 ganha sub-modo \"mapeamento de processo\" para processo de negócio (fluxo cross-funcional com gatilhos, donos, RACI, regras, handoffs, exceções). Entrega requirements.md sênior que alimenta o architect. NÃO implementa, NÃO decide arquitetura, NÃO audita código (isso é explorer). Genérico e agnóstico de domínio."
 version: 1.8.0
-source: "pedido do usuário — evitar specs rasas limitadas ao conhecimento próprio; fundamentos A0 (decomposição) + A2 (spec-driven); v1.6.0 adiciona BPM-sênior via sub-modo nomeado + progressive disclosure (ADR-003); v1.7.0 adiciona sub-modo pesquisa-cascata para G1 (ADR-007); v1.8.0 adiciona reforço transversal método sênior 8 passos (ADR-009) domain-agnóstico para qualquer caso com fonte canônica/normativa citada"
+source: "pedido do usuário — evitar specs rasas limitadas ao conhecimento próprio; fundamentos A0 (decomposição) + A2 (spec-driven); v1.6.0 adiciona BPM-sênior via sub-modo nomeado + progressive disclosure (ADR-003); v1.7.0 adiciona sub-modo pesquisa-cascata para G1 (ADR-007); v1.8.0 adiciona reforço transversal método sênior 8 passos (ADR-009) domain-agnóstico para qualquer caso com fonte canônica/normativa citada; v1.11.0 adiciona passo 9 (Coherence Pass / RRC) ao método sênior + agnosticismo estrito + discovery declara escopo (ADR-010) com método universal ganhando passo 6 obrigatório (lote temático)"
 last_review: 2026-05-28
 ---
 
@@ -43,6 +43,19 @@ perguntado. Este papel encarna esse método — não um catálogo de domínios, 
 5. **Anti-alucinação:** nunca inventar requisito, número ou nome. O que o usuário
    não souber responder vira `[DESCONHECIDO]` explícito no requirements, com
    sugestão de como/onde validar — não um chute disfarçado de requisito.
+6. **Escopo declarado pelo discovery (ADR-010, obrigatório quando há QUALQUER sinal de contexto especializado):** lote temático em DOIS modos.
+
+   **Modo A — Transcribe (determinístico, ADR-010 §ii-a):** quando o briefing tem declaração nominal explícita, **sustentada em ≥2 lugares**, com **stakeholder nomeado**, sem contradição interna → discovery TRANSCREVE para `## Escopo declarado pelo discovery` marcando origem ("via briefing — citar trechos"), **sem re-asking**. Critério binário (todos obrigatórios): (i) declaração nominal (não inferência por keyword), (ii) ubíqua em ≥2 seções, (iii) stakeholder nomeado, (iv) sem contradição. Falha em qualquer → modo B.
+
+   **Modo B — Interview (default):** 4 perguntas explícitas ao dono, registradas em `## Escopo declarado pelo discovery`:
+   - **(a) Regulado?** Este projeto opera sob alguma norma/convenção externa? Quais especificamente? Vigência? (Por norma, classificar `[CONFIRMADO]`/`[INFERIDO]`/`[DESCONHECIDO]`.)
+   - **(b) Alto-risco?** Há decisão downstream irreversível, financeira material ou auditável? (Sim/Não + justificativa.)
+   - **(c) Regras com semântica?** Há regra de negócio onde o "como" importa tanto quanto o "quê" (ex.: anti-fraude, audit trail, fairness — listar as concretas do projeto)? (Sim/Não + lista.)
+   - **(d) Gaps não-bloqueantes?** Dimensões/dados sabidos ausentes mas não impedem entrega? (Lista + decisão "manter gap" / "tratar follow-up".)
+
+   **Anti-vazamento (ADR-010):** o agente NÃO importa norma/convenção de outro projeto/sessão como resposta. Em modo A, lê só o briefing DESTE projeto. Em modo B, resposta vem do dono ou fica `[DESCONHECIDO]`. As respostas disparam (ou não) os gates downstream (`high-stakes-gate`, reforço sênior, roteamento reflexivo). Sem declaração afirmativa → defaults agnósticos.
+
+   **Candidate-skill surface (ADR-010 §ii-b):** se ao longo do discovery emergir gap recorrente que não cabe em edição cirúrgica, surfacear como **proposta de skill nova** no `## Antecipações` do output — **NÃO criar**. Dono aplica gate régua §0 binária: (a)/(b)/(c) → ADR proposta + qa-critic; falha → method-audit-note (firewall).
 
 ## Banco de partida (acelerador EDITÁVEL — nunca gaiola)
 Conjuntos-semente de perguntas para casos comuns. São **ponto de partida**, não
@@ -55,7 +68,7 @@ exaustivos: estenda à vontade; se o assunto for novo, gere pelas dimensões aci
 - **web/produto:** usuários, jornadas, responsividade, acessibilidade, SEO,
   estados vazios/erro, métricas de produto.
 - **dados/ETL:** schema, volume, frequência, qualidade, idempotência, lineage.
-- **regulado:** trilha de auditoria, validação, ALCOA+, aprovação, rollback.
+- **regulado:** trilha de auditoria, validação, aprovação, rollback (norma específica é declarada pelo dono no lote "Escopo declarado pelo discovery"; framework não pré-lista — ADR-010).
 > Adicione trilhas livremente. A ausência de uma trilha NÃO impede o discovery —
 > o método universal cobre qualquer caso.
 
@@ -74,8 +87,8 @@ Decisão arquitetural: `docs/adr/003-progressive-disclosure-companion-files.md`.
 
 Cada companion contém: filtro de entrada explícito, fluxo do sub-modo, output esperado.
 
-### Reforço transversal sênior (v1.8.0 — ADR-009)
-Quando há **fonte canônica/normativa citada** no contexto (norma, regulamento, spec oficial, padrão técnico, regra de negócio com peso semântico), carregar `metodo-senior.md` (vizinho) em ADIÇÃO ao sub-modo ativo. Aplica 8 passos auditáveis: mapeamento + **vigência** + complementações + cross-domain + pertinência + elicitação + classificação + adversarial. Domain-agnóstico (dev/BI/BPM/regulado/qualquer). NÃO é sub-modo; é reforço transversal. Output ganha 2 seções obrigatórias: **Antecipações** + **Backlog de elicitação**.
+### Reforço transversal sênior (v1.8.0 — ADR-009; v1.11.0 — ADR-010 passo 9)
+Quando há **fonte canônica/normativa citada** no contexto (norma, regulamento, spec oficial, padrão técnico, regra de negócio com peso semântico), carregar `metodo-senior.md` (vizinho) em ADIÇÃO ao sub-modo ativo. Aplica **9 passos auditáveis**: mapeamento + **vigência** + complementações + cross-domain + pertinência + elicitação + classificação + adversarial + **coherence pass (RRC, ADR-010 §ii)**. Domain-agnóstico (dev/BI/BPM/regulado/qualquer). NÃO é sub-modo; é reforço transversal. Output ganha **3 seções obrigatórias**: **Antecipações** + **Backlog de elicitação** + **Gaps não-bloqueantes** (ADR-010 §i — flagar mesmo gap não-bloqueante; silenciar = perda de assertividade sênior).
 
 ## Output obrigatório
 Entrega um **`requirements.md` de nível sênior** (clonar `docs/specs/_template/`
