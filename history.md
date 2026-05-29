@@ -94,14 +94,52 @@ Riscos ativos: race condition humano vs orquestrador no history.md (mitigada por
 
 ---
 
+## 2026-05-29T19:00 — Sessão: v1.11.0 + v1.12.0 mergeadas — agnosticismo estrito + RRC + arquitetura bicelular de QA (ADR-010 + ADR-011)
+
+Sessão de fôlego longo (~80 turnos) que entregou DOIS releases consecutivos:
+- **v1.11.0 (ADR-010)** — framework agnóstico estrito + discovery declara escopo + RRC obrigatório + princípio 11 honestamente reescrito ("auto-observação" → "observação meta-cognitiva — captura estruturada de feedback"). 4 rounds qa-critic (6 ALTO + 8 MEDIO + 5 BAIXO + 5 ADV endereçados). Merge `bd64b08` + tag `v1.11.0` push origin.
+- **v1.12.0 (ADR-011)** — arquitetura bicelular de QA: 6 junções binárias forward-only (J0-J5) + process-critic adversarial final com poder de rewind cascata + TODO QA adversarial + SUPLANTA × EMENDA. 4 rounds qa-critic (5 MEDIO + 3 BAIXO + 2 ADV endereçados). Merge `fb637ac` + tag `v1.12.0` push origin.
+
+Aprovado e funcionando:
+- ADR-009 promovido na sessão anterior (v1.10.0), validado em uso real nesta sessão.
+- ADR-010 + princípio 12 (framework agnóstico) Aceito. V1-A purga = 0 ocorrências em arquivos ativos do núcleo.
+- ADR-011 + princípio 13 (arquitetura bicelular) Aceito. 6 junções declaradas em `/handoff` com gates binários explícitos.
+- 9 passos método sênior (8 originais ADR-009 + passo 9 Coherence Pass / RRC ADR-010) — sync em CLAUDE/AGENTS/SKILL/companion.
+- 3 seções obrigatórias no output do reforço sênior (Antecipações + Backlog + Gaps não-bloqueantes) — sub-§7.1 propagada ao template research-brief.md.
+- HITL desacoplado de regulated: HITL via ADR-005 execution-modes; regulated declarado pelo discovery (ADR-010).
+- Anti-vazamento cross-projeto registrado como princípio 12 + memória `senior-discovery-method.md` purgada de ALCOA+/ANP/FDA/BACEN.
+
+Nomenclaturas estabelecidas:
+- **Observação meta-cognitiva** (captura estruturada de feedback) = nome honesto do princípio 11 (substitui "auto-observação").
+- **Escopo declarado pelo discovery** = seção obrigatória no `requirements.md`/`research-brief.md` quando há sinal de contexto especializado (passo 6 do `discovery/SKILL.md`).
+- **RRC** (Read-and-Review-for-Coherence) = passo 9 do método sênior + gate de saída no `/checkpoint` com 6 itens binários (5 dimensões coerência + anti-vazamento).
+- **Modo Transcribe vs Modo Interview** = passo 6 do discovery; transcribe é determinístico quando briefing tem declaração nominal+ubíqua+stakeholder+sem-contradição; interview é default.
+- **Junção binária forward-only** = transição entre papéis com gate explícito; iterações DENTRO até PASS; forward-only ENTRE junções (anti-loop).
+- **Process-critic** = qa-critic adversarial final em subagente isolado com poder de rewind cascata a qualquer J_i.
+- **SUPLANTA × EMENDA** = política binária: §Decisão/§Alternativas muda → SUPLANTA novo ADR + `Substituído por:`; §Implementação/§Consequências → EMENDA in-place via STATUS-field. Within-junction rounds = EMENDA.
+- **BLOCO APROVADO** = unidade de entrega que o autor declara "pronto" (release, ADR aceito, spec fechada, feature delivered) — gatilho mandatório do process-critic.
+
+Decisões permanentes:
+- ADR-010: framework agnóstico + discovery declara escopo + RRC + correção honesta princípio 11 (Aceito, mergeado `bd64b08`).
+- ADR-011: arquitetura bicelular de QA + 6 junções binárias forward-only + process-critic rewind cascata (Aceito, mergeado `fb637ac`).
+
+Próximo passo: aguardar trigger real (próximo projeto/case) para dogfood completo de J0-J5 via `/handoff` em fluxo real; ADR-010 follow-up (templates ganham `## Escopo declarado pelo discovery`) ativável quando próximo discovery rodar; ADR-011 follow-up (Alt 2 rewind cirúrgico) ativável se aparecer caso onde cascata é custosa.
+
+Riscos ativos: nenhum bloqueante. Risco residual ADR-010 §Riscos (detector de vazamento cross-projeto ausente — mitigado por feedback do dono via method-audit, não eliminado).
+
+---
+
 ## Em aberto
 
 > WIP atual (ex-G11). Reconciliar com branches do git e ADRs em status `Proposto` no `/start-session` (modo squad).
 
-- *(v1.11.0 FECHADA em 2026-05-29 — ADR-010 Aceito após 4 rounds qa-critic; merge `bd64b08` + tag `v1.11.0` push para origin).*
-- *(v1.12.0 FECHADA em 2026-05-29 — ADR-011 Aceito após 4 rounds qa-critic; arquitetura bicelular formalizada; merge + tag pendentes neste turno).*
-- **[2026-05-27/28 · em-revisão→fechado] AIVI fechamento** — PR #20 mergeado em master de `LIMITES-BATENTES-RECALC` (commit `10ecf0b`, 2026-05-28). REQ-001..011 implementadas + gate BABET 2025 = 0 (delta 0.000000) + 3 pendências runtime fechadas (Batentes 84%, YSMM 100%, NaN 0). Fixes C5+D4 do master preservados via merge consciente. Branch `claude/discovery-aivi-metodo-2026-05-27` deletada. Validação framework SSOT F0-F4 concluída.
-- Insumo de backlog **D4** (cross-platform hooks, trigger-gated, Windows-only hoje): brief `docs/specs/cross-platform-hooks/research-brief.md` permanece como referência futura — não é WIP ativo. **GAP-2 DESCARTADO** como não-bug (settings global é local de cada máquina; bootstrap regenera).
+- *(nenhum item em aberto no FRAMEWORK; v1.11.0 fechada em 2026-05-29 — merge `bd64b08` + tag `v1.11.0`; v1.12.0 fechada em 2026-05-29 — merge `fb637ac` + tag `v1.12.0`)*.
+- **[2026-05-27/28 · fechado] AIVI fechamento** — PR #20 mergeado em master de `LIMITES-BATENTES-RECALC` (commit `10ecf0b`, 2026-05-28). REQ-001..011 implementadas + gate BABET 2025 = 0 (delta 0.000000) + 3 pendências runtime fechadas. Validação framework SSOT F0-F4 concluída.
+- **Backlog ativo (trigger-gated, NÃO WIP):**
+  - ADR-010 §Pendências: templates `_template-research/research-brief.md` + `_template/requirements.md` ganham seção `## Escopo declarado pelo discovery` — trigger: próximo discovery em case real.
+  - ADR-011 §Pendências: Alternativa 2 (rewind cirúrgico) — trigger: caso real onde cascata é custosa.
+  - ADR-011 §Pendências: validation.md projeto × release convergir templates — trigger: ficar pesado manter separado.
+  - Item D4 (cross-platform hooks Linux/macOS port) — trigger: user em PC não-Windows pedir.
 
 ---
 
@@ -112,3 +150,6 @@ Riscos ativos: race condition humano vs orquestrador no history.md (mitigada por
 - **[2026-05-28T09:01] Method-audit (ADR-009 / princípio 11):** Stale counts ("4 edições" vs "9 edições") residuais em múltiplos arquivos atravessaram 3 dos 4 rounds qa-critic da v1.10.0. · **Causa-raiz:** scope cresceu por incorporação adversarial sem step de varredura de coerência interna antes de re-submeter — skill ausente: validation pre-commit de contagens/números/listas que possam ter ficado stale após scope-creep. · **Proposta (lean):** +1 linha em `_shared/docops` ou release checklist (`guia/GIT-VERSIONAMENTO.md`): "antes de re-submeter ADR/spec ao qa-critic após scope-creep, varrer documento por contagens stale (totais, listas, tabelas de implementação)".
 - **[2026-05-28T09:01] Method-audit (ADR-009 / princípio 11):** Meta-recursão do campo `Status` do ADR — sempre 1 round atrás do qa-critic em curso (cada round novo encontra Status descrevendo o round anterior). · **Causa-raiz:** Status descreve auto-referencialmente um processo que ainda está rodando — impossível fechar sem fork. · **Proposta (lean):** se padrão se repetir em próximo ADR, atualizar template `docs/adr/000-template.md` para que Status use metadado externo (último commit-hash de round qa-critic) em vez de descrever rounds pendentes. **Não-preemptivo** — decisão sob demanda.
 - **[2026-05-28T09:01] Method-audit (ADR-009 / princípio 11):** ADV-1 round 1 (localização do companion `metodo-senior.md` em `.agent/skills/discovery/` vs `_shared/`) foi marcado como follow-up sem decisão consciente. · **Causa-raiz:** framework não tem critério explícito para distinguir "transversal entre papéis" (vive em `_shared/`) de "companion-de-skill" (vive ao lado da skill dona). · **Proposta (lean):** se próximo ADR (architect/developer/qa-critic) precisar referenciar `metodo-senior.md`, decidir then — não criar regra preemptiva.
+- **[2026-05-29T19:00] Method-audit (ADR-009 / princípio 11 reescrito ADR-010 §C-1):** v1.11.0 absorção falhou no RRC self-applied — agente racionalizou `README.md:4` ("ALCOA+/ANP/FDA/BACEN/GAMP" como exemplo didático) como OK enquanto o gate dizia ZERO refs. **Foi o dono que detectou e corrigiu.** · **Causa-raiz:** agente que se auto-audita defende suas próprias escolhas (viés). Princípio 11 original ("auto-observação") supervalorizava capacidade que não existe. · **Proposta (executada):** princípio 11 reescrito como "observação meta-cognitiva (captura estruturada de feedback)" — agente registra notes proativamente quando consegue E via feedback do dono (fonte legítima). Limite documentado em ADR-010 §C-1.
+- **[2026-05-29T19:00] Method-audit (ADR-009 / princípio 11):** v1.11.0 + v1.12.0 cada uma teve 3-4 rounds qa-critic com **mesmo padrão de stale counts** ("8 passos" → "9 passos"; "5 itens" → "6 itens"; "6 edits" → "11 edits"). RRC self-applied pelo agente passou pelos contadores stale em múltiplos arquivos. **3 rounds com mesmo tipo de finding confirma empíricamente o limite previsto em ADR-010 §ii** — RRC tem como objetivo reduzir achados de coerência mas não promete eliminação total; gate humano externo (qa-critic adversarial em subagente isolado) é complemento NECESSÁRIO, não opcional. · **Causa-raiz:** scope-creep durante absorção de findings adversariais não dispara releitura completa cross-document. · **Proposta (executada em ADR-010 §ii.2):** RRC ganhou "contagens em sync" como 5ª dimensão de coerência obrigatória (`/checkpoint` RRC gate em 6 itens; `/checkpoint` workflow e validation.md V7 já refletem).
+- **[2026-05-29T19:00] Method-audit (ADR-009 / princípio 11):** v1.12.0 foi dogfood real do v1.11.0 — discovery inline aplicou passo 6 ADR-010 (Escopo declarado: regulado=NÃO, alto-risco=NÃO crítico, semântica=SIM anti-fraude, gaps=flagados) + método sênior 9 passos incluindo RRC + 3 seções obrigatórias. **Pipeline integral funcionou em projeto real, não sintético.** · **Validação positiva:** princípios 10-13 não regrediram à média entre releases consecutivas; ciclo de auto-melhoria do framework é sustentável quando case real está disponível. · **Sinal de saúde:** taxa de princípios novos por release deve cair com o tempo; v1.10.0 = +1, v1.11.0 = +1, v1.12.0 = +1. **Alvo v1.13.0 = ≤1 princípio novo**; se nada surgir natural, saúde confirma maturidade.
