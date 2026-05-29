@@ -1,8 +1,9 @@
 # Framework Metacognitivo Agêntico — Genérico e Escalável
 
-> **Versão:** 1.12.0 · **Base:** pesquisas A0–A3 · **PT-BR** · **CC BY 4.0**
+> **Versão:** 1.13.0 · **Base:** pesquisas A0–A3 · **PT-BR** · **CC BY 4.0**
 > **Princípio:** o framework é **estritamente agnóstico de domínio** (ADR-010 / Princípio 12). Linguagens, ferramentas, normas setoriais, regulamentações, padrões técnicos, frameworks de validação, regras de negócio — **quaisquer** — são **aplicações/contextos**: não fazem parte do núcleo, **não aparecem hardcoded em prompts/regras/docs do framework** (nem como exemplo). Domínio é **declarado pelo discovery** por projeto. O que o núcleo oferece é **mecanismo genérico**: data integrity, audit trail, validação por risco, traceability, observabilidade — todos no `_shared/`.
 > **QA bicelular (v1.12.0 / ADR-011 / Princípio 13):** fluxo do squad tem 6 junções binárias forward-only (J0-J5) com gates declarados em `/handoff` + process-critic adversarial final (qa-critic em subagente isolado) com poder de rewind cascata. TODO QA é adversarial. SUPLANTA × EMENDA política binária.
+> **Handoff cross-sessão (v1.13.0 / ADR-012 / Princípio 14):** discovery passo 6(e) declara "alimenta outra sessão?"; se SIM, Pacote de handoff obrigatório via J5 (artefato+versão, localização, acesso, prompt pronto-para-colar, pendências). +rules #6 (RCA gate) e #7 (cobertura temporal pós-J4) em qa-critic SKILL.
 
 ## Camadas
 ```
@@ -17,7 +18,7 @@ APLICAÇÕES   exemplos/README.md          COMO criar aplicações (clonando _te
 ```
 
 ## Tudo no núcleo é genérico (ADR-010 / Princípio 12)
-**Estritamente agnóstico:** nenhum arquivo de `_shared/`, `.agent/` ou `docs/` (excluindo CHANGELOG histórico e exemplos didáticos rotulados em `docs/specs/exemplos/`) carrega listas hardcoded de produto, norma, convenção ou regra de domínio. O framework sabe **orquestrar, classificar, validar, isolar, rastrear** — para qualquer domínio. Quando há sinal de contexto especializado, **o `discovery` pergunta ao dono** (4 perguntas obrigatórias: regulado/alto-risco/regra-com-semântica/gaps-não-bloqueantes); a resposta vai para o `requirements.md`/`research-brief.md` em `## Escopo declarado pelo discovery` e dispara os gates downstream. **Anti-vazamento cross-projeto:** o agente não importa convenção/norma de outra sessão/projeto sem confirmação.
+**Estritamente agnóstico:** nenhum arquivo de `_shared/`, `.agent/` ou `docs/` (excluindo CHANGELOG histórico e exemplos didáticos rotulados em `docs/specs/exemplos/`) carrega listas hardcoded de produto, norma, convenção ou regra de domínio. O framework sabe **orquestrar, classificar, validar, isolar, rastrear** — para qualquer domínio. Quando há sinal de contexto especializado, **o `discovery` pergunta ao dono** (5 perguntas obrigatórias: regulado/alto-risco/regra-com-semântica/gaps-não-bloqueantes/**alimenta-outra-sessão**); a resposta vai para o `requirements.md`/`research-brief.md` em `## Escopo declarado pelo discovery` e dispara os gates downstream (incluindo Pacote de handoff cross-sessão se item (e) afirmativo — ADR-012 v1.13.0). **Anti-vazamento cross-projeto:** o agente não importa convenção/norma de outra sessão/projeto sem confirmação.
 
 ## Como aplicar a um contexto (escala por clonagem)
 1. `cp -r .agent/skills/_template <aplicacao>` e preencher só o domínio.

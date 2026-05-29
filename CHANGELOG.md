@@ -15,6 +15,32 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.13.0] — 2026-05-29 — Handoff cross-sessão obrigatório (ADR-012) + drift sync + rules #6 RCA e #7 cobertura temporal pós-J4
+
+> MINOR feature. Derivado de **dogfood real do v1.12.x** em case regulado externo (repo paralelo `test-aivi-isolated`). Sessão paralela aplicou 2 edits globais sem sincronizar framework repo — drift confirmado. Process-critic round 1 desta v1.13.0 identificou: rule #4 SE/ENTÃO v1.12.1 cobre polish post-release, NÃO artefato novo intra-bloco pós-J4 (gap real, rule #7 nova). Princípio 11 honesto aplicado: 6 gaps remanescentes ficam method-audit (não preemptivo).
+
+### Added
+- **`docs/adr/012-handoff-cross-sessao.md`** — decisão arquitetural; 5 alternativas; relaciona ADR-010 (passo 6(e)) + ADR-011 (princípio 14 paridade com 13).
+- **`docs/specs/v1.13.0-aivi-method-fixes/validation.md`** — gate binário V1-Vn.
+- **Princípio 14** em `AGENT-FRAMEWORK.md §6`: Handoff cross-sessão obrigatório quando declarado.
+
+### Changed
+- **`_shared/metacognition-core/SKILL.md`** v1.0.0 → v1.1.0: +seção §Pacote de handoff cross-sessão (sync com global).
+- **`.agent/skills/discovery/SKILL.md`** passo 6 Modo B: 4 → 5 perguntas (item (e) "Alimenta outra sessão?"; sync com global).
+- **`.agent/skills/qa-critic/SKILL.md`** — +rule #6 SE/ENTÃO RCA gate + rule #7 SE/ENTÃO cobertura temporal pós-J4.
+- **`CLAUDE.md`** + **`AGENTS.md`** + **`README.md`** + **`guia/GUIA-EQUIPE.md`** + **`guia/web/index.html`** — seções/cards v1.13.0.
+
+### Pendências (princípio 11 honesto)
+- 6 gaps remanescentes do dogfood AIVI (Gaps 1/2/3/6/7/9) ficam method-audit aguardando 2ª ocorrência confirmatória.
+- Isolation/model selection per role (observação do dono): candidato v1.14.0.
+
+### Pipeline
+Dogfood AIVI (relatório externo) → Architect (ADR-012, 5 alt) → Developer (drift sync + 2 rules + ADR + princípio 14) → qa-critic adversarial.
+
+[CONSOLIDADO] / [CONFIRMADO] após merge.
+
+---
+
 ## [1.12.1] — 2026-05-29 — Process discipline refinements: retrospective gate + SE/ENTÃO recurrent QA rules + PC critica 4 dimensões (method-audit 2026-05-29)
 
 > PATCH refinements derivados de method-audit notes da sessão 2026-05-29 (não introduz novo princípio; refina aplicação do princípio 13). Régua §0 critério (c): codifica padrões recorrentes observados em ADR-009/010/011 absorptions (stale counts, polish auto-classificado, citações ADR não-rastreáveis) sem criar nova skill/workflow.

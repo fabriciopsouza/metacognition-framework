@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Framework Metacognitivo Agêntico — v1.12.0</title>
+<title>Framework Metacognitivo Agêntico — v1.13.0</title>
 <style>
   :root{
     --ink:#0d1117; --panel:#11161f; --line:#1f2730; --grid:#161c26;
@@ -115,6 +115,7 @@
       <div class="card"><h3>Estritamente agnóstico</h3><p>Núcleo NÃO carrega normas/convenções hardcoded (ADR-010). Discovery declara o escopo por projeto. Anti-vazamento cross-projeto.</p></div>
       <div class="card"><h3>Read-and-Review-for-Coherence</h3><p>Comportamento sênior: antes de "pronto", ler tudo afetado + verificar coerência (versões, refs, nomenclatura, contradições). Binário. ADR-010.</p></div>
       <div class="card"><h3>QA bicelular</h3><p>6 junções binárias forward-only (J0-J5, gates em <code>/handoff</code>) + process-critic adversarial com rewind cascata. Iterações DENTRO; forward-only ENTRE. Anti-loop. ADR-011.</p></div>
+      <div class="card"><h3>Handoff cross-sessão</h3><p>discovery passo 6(e) "alimenta outra sessão?" → Pacote de handoff obrigatório via J5: artefato+versão, localização, acesso, prompt pronto-para-colar, pendências. Teste: outra sessão começa sem perguntar? ADR-012.</p></div>
       <div class="card"><h3>Context é finito</h3><p>Compaction, note-taking, isolamento de subagente. Mitiga context rot.</p></div>
       <div class="card"><h3>Escala por clonagem</h3><p>Aplicação nova = clonar _template + eval-set. Núcleo não muda.</p></div>
       <div class="card"><h3>Validado</h3><p>Roteamento dos papéis testado 33/33. Toda aplicação entra só com eval passando.</p></div>
@@ -136,7 +137,7 @@
 
   <footer>
     <p>Para iniciar: abra a pasta no VS Code → o Claude Code lê <code><a href="../../CLAUDE.md">CLAUDE.md</a></code> → rode <code>/start-session</code>. Histórico: <a href="../../CHANGELOG.md">CHANGELOG</a>.</p>
-    <p style="margin-top:14px">Framework Metacognitivo Agêntico · v1.12.0 · PT-BR · CC BY 4.0 · base de evidência A0–A3.</p>
+    <p style="margin-top:14px">Framework Metacognitivo Agêntico · v1.13.0 · PT-BR · CC BY 4.0 · base de evidência A0–A3.</p>
   </footer>
 
 </div>
