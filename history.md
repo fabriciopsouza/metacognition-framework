@@ -133,7 +133,7 @@ Riscos ativos: nenhum bloqueante. Risco residual ADR-010 §Riscos (detector de v
 
 > WIP atual (ex-G11). Reconciliar com branches do git e ADRs em status `Proposto` no `/start-session` (modo squad).
 
-- *(v1.13.0 em-curso — ADR-012 Proposto; handoff cross-sessão + drift sync + qa-critic rules #6/#7; derivado de dogfood real test-aivi-isolated).*
+- *(v1.13.0 FECHADA em 2026-05-29 — ADR-012 Aceito após qa-critic round 1; handoff cross-sessão + drift sync + qa-critic rules #6/#7; merge + tag pendentes neste turno).*
 - *(nenhum item em aberto no FRAMEWORK; v1.11.0 fechada em 2026-05-29 — merge `bd64b08` + tag `v1.11.0`; v1.12.0 fechada em 2026-05-29 — merge `fb637ac` + tag `v1.12.0`; v1.12.1 fechada em 2026-05-29 — merge `8fb044f` + tag `v1.12.1`)*.
 - **[2026-05-27/28 · fechado] AIVI fechamento** — PR #20 mergeado em master de `LIMITES-BATENTES-RECALC` (commit `10ecf0b`, 2026-05-28). REQ-001..011 implementadas + gate BABET 2025 = 0 (delta 0.000000) + 3 pendências runtime fechadas. Validação framework SSOT F0-F4 concluída.
 - **Backlog ativo (trigger-gated, NÃO WIP):**

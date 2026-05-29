@@ -81,12 +81,12 @@ Esperado: 0 linhas.
 
 | Critério | Status | Evidência |
 |---|---|---|
-| V1 — ADR-012 substância | [X] PASSA | 11 seções; 5 alternativas; método-audit 6 gaps registrado |
-| V2 — Princípio 14 propagado | [X] PASSA | AGENT-FRAMEWORK §6:190; CLAUDE/AGENTS/README/GUIA |
-| V3 — Drift sync | [X] PASSA | metacognition-core v1.1.0; discovery passo 6 com 5 perguntas |
-| V4 — qa-critic rules #6+#7 | [X] PASSA | RCA gate + cobertura temporal pós-J4 |
-| V5 — Method-audit 6 gaps | [X] PASSA | history 23:55 entry |
-| V6 — qa-critic LIMPO | [ ] | aguarda round |
-| V7 — RRC + V1-A purga | [ ] | aguarda pre-commit |
+| V1 — ADR-012 substância | [X] PASSA | 12 seções (incluindo Mudanças por arquivo com 10 edits); 5 alternativas; method-audit 6 gaps |
+| V2 — Princípio 14 propagado | [X] PASSA | AGENT-FRAMEWORK §6:190; CLAUDE §50+§52 (inline + seção); AGENTS §29+§32; README §6; GUIA §11 |
+| V3 — Drift sync | [X] PASSA | metacognition-core v1.1.0 + §Pacote; discovery passo 6 com 5 perguntas (a/b/c/d/e) |
+| V4 — qa-critic rules #6+#7 + Mindset fechamento | [X] PASSA | RCA gate + cobertura temporal pós-J4 + Mindset adversarial como fechamento da seção SE/ENTÃO restaurado |
+| V5 — Method-audit 6 gaps | [X] PASSA | history.md 23:55 entry com 6 gaps + observação isolation/model |
+| V6 — qa-critic LIMPO | [X] PASSA | Round 1: 1 ALTO + 2 MEDIO + 2 BAIXO incorporados em pass único (commit 2efbf92); decisão anti-loop "lean e realista" |
+| V7 — RRC + V1-A purga | [X] PASSA | Self-check UPFRONT executado; 0 ocorrências de domain anchors em arquivos ativos; stale counts "4→5" corrigidos pre-commit (5 lugares) + post-qa-critic (CLAUDE/AGENTS inline) |
 
 **TODOS V1-V7 = PASSA → AUTORIZAR `git merge --no-ff` em main + `git tag v1.13.0`.**

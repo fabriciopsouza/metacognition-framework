@@ -1,6 +1,6 @@
 # ADR 012 — Handoff cross-sessão como entregável obrigatório quando declarado + RCA gate + cobertura temporal pós-J4
 
-- **Status:** Proposto (2026-05-29) — aguarda qa-critic rounds + aceite
+- **Status:** Aceito (2026-05-29) — qa-critic round 1 endereçado em commit `2efbf92` (1 ALTO listas inline CLAUDE/AGENTS + 2 MEDIO reorder GUIA + ADR-012 §Mudanças incompleto + 1 BAIXO mindset fechamento + 1 BAIXO metadados aceito como convenção). Decisão anti-loop: 1 round + fix em pass único (diretiva "lean e realista" do dono).
 - **Data:** 2026-05-29 · **Decisores:** Fabricio (mantenedor) + Claude (papel `architect`)
 - **Substitui:** nenhum · **Substituído por:** nenhum
 - **Relaciona-se a:** ADR-007 (régua §0), ADR-010 (discovery declara escopo passo 6), ADR-011 (junções binárias + process-critic)
