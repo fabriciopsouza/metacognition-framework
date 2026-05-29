@@ -15,6 +15,27 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.12.1] — 2026-05-29 — Process discipline refinements: retrospective gate + SE/ENTÃO recurrent QA rules + PC critica 4 dimensões (method-audit 2026-05-29)
+
+> PATCH refinements derivados de method-audit notes da sessão 2026-05-29 (não introduz novo princípio; refina aplicação do princípio 13). Régua §0 critério (c): codifica padrões recorrentes observados em ADR-009/010/011 absorptions (stale counts, polish auto-classificado, citações ADR não-rastreáveis) sem criar nova skill/workflow.
+
+### Changed
+- **`.agent/workflows/start-session.md`** — passo **2.5 NOVO**: retrospective gate light (PMO adversarial revisa último bloco entregue desde último PASS do process-critic; 4 itens binários: process/RRC/debt/polish-classification). Sem ADR dedicado (formalizar ADR-012 só se padrão persistir). Flexibilidade: dono pode escalar "skip retrospective" em contexto trivial — decisão consciente.
+- **`.agent/skills/qa-critic/SKILL.md`** — 2 mudanças:
+  - **Modalidade PC ganha 4 dimensões de crítica explícitas** (v1.12.1): (i) lógica/código, (ii) spec/validation cobertura, (iii) doc consistência (cross-refs + contagens em sync + nomenclatura), (iv) process compliance (J0-J5 evidência + RRC + citações rastreáveis). Antes era implícito; agora explícito.
+  - **Seção nova "Padrões SE/ENTÃO recorrentes"**: 5 rules derivadas de method-audit (stale counts com qualificador "mesma entidade nomeada"; oxímoros semânticos; STATUS-field inflado; polish auto-classificado; exemplos didáticos de domínio fora de `docs/specs/exemplos/`). Mindset adversarial mantida para novel bugs.
+
+### Pipeline
+PMO/Discovery (inline 2026-05-29; user propôs Q1 retrospective gate + Q2 SE/ENTÃO + spec/doc/process explicit) → Architect (sem ADR dedicado; refinamento operacional vincula a ADR-011 + method-audit como fonte) → Developer (3 edits cirúrgicos em 2 arquivos + CHANGELOG) → qa-critic round 1 adversarial (1 ALTO + 1 MEDIO + 2 BAIXO; ALTO=citação ADR não-rastreável corrigida; MEDIO=qualificador "mesma entidade nomeada" adicionado; BAIXOs absorvidos neste mesmo commit) → **decisão lean: 1 round + fixes em pass único + merge** (não iterar; aplica diretiva "lean e realista" do dono — replicar pattern v1.10/11/12 com 4 rounds seria inflação para PATCH).
+
+### Pendências e follow-ups (fora desta v1.12.1)
+- ADR-012 candidato: formalizar retrospective gate como decisão arquitetural SE padrão persistir em ≥3 sessões reais. Não preemptivo.
+- Eficiência measure: registrar se SE/ENTÃO rules reduzem rounds de qa-critic em próximos blocos (alvo: rule #1 elimina stale counts; rule #4 elimina polish auto-classificado).
+
+[CONSOLIDADO] / [CONFIRMADO] após merge.
+
+---
+
 ## [1.12.0] — 2026-05-29 — Arquitetura bicelular de QA: junções binárias forward-only + process-critic adversarial com rewind cascata (ADR-011)
 
 > MINOR feature. Formaliza modelo de QA tácito do framework. Diagnóstico: pipeline squad (PMO → discovery → architect → developer → qa-critic → docops → release) tem **N handoffs** entre papéis, mas **gates binários explícitos só existem em J4 (qa-critic LIMPO) e J5 (validation V1-Vn PASSA)**. J0, J1, J3 eram informais; sem cláusula forward-only entre junções, oscilação era possível em teoria. Risco de loop eterno apontado pelo dono em 2026-05-28. ADR-011 codifica 6 junções binárias (J0-J5) com gates declarados, forward-only entre junções (circuit-breaker), iterações DENTRO da junção até PASS, process-critic adversarial (qa-critic em subagente isolado) ao final de cada BLOCO APROVADO com poder de **rewind cascata** a qualquer junção anterior. **TODO QA é adversarial** (hipótese default = bug). **Política SUPLANTA × EMENDA** binária para rewind.
