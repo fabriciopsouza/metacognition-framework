@@ -5,7 +5,7 @@ Primeiro turno de cada sessão. Obrigatório.
 ## Sequência (PMO)
 1. Ler: AGENTS.md → .agent/rules/*.md → docs/briefing.md → history.md (últimas 30 + `## Em aberto` + `## Aprendizado`).
 2. **Reconciliar WIP** (ex-G11 / ADR-007 — modo squad apenas): cruzar `## Em aberto` do history.md com branches do git e ADRs em status `Proposto`. Apontar inconsistências (item em aberto sem branch; branch sem item; ADR `Proposto` sem decisão).
-2.5. **Retrospective gate (ADR-011 v1.12.1 — princípio 13 modalidade light):** revisar último bloco entregue desde último PASS do process-critic. Checklist binário adversarial (PMO assume há gap):
+2.5. **Retrospective gate (v1.12.1 — refinamento operacional do J0 adversarial ADR-011; method-audit 2026-05-29; sem ADR dedicado — formalizar via ADR-012 só se padrão persistir):** revisar último bloco entregue desde último PASS do process-critic. Checklist binário adversarial (PMO assume há gap):
    - Process seguido (J0-J5 com gates declarados em `/handoff`)? `[PASSA/FALHA]`
    - RRC executado no `/checkpoint` final do bloco anterior? `[PASSA/FALHA]`
    - Debt deferido registrado explicitamente em `## Em aberto` ou ADR §Pendências? `[PASSA/FALHA]`
