@@ -28,7 +28,7 @@ Diretrizes do dono nesta sessão (2026-05-29):
 
 ## Decisão (1 frase ativa)
 
-Formalizar **arquitetura bicelular de QA** com 6 junções binárias forward-only (J0-J5) — cada uma com artefato-gate e critério binário declarados, iterações ilimitadas DENTRO da junção até PASS, forward-only ENTRE junções após PASS — somando-se ao **process-critic adversarial final** (qa-critic em modo subagente isolado) que detém poder de **rewind cascata** (Alt 1; rewind cirúrgico = Alt 2 deferido) a qualquer junção anterior; pós-rewind, junções afetadas re-passam binárias (iterações OK).
+Formalizar **arquitetura bicelular de QA** com 6 junções binárias forward-only (J0-J5) — cada uma com artefato-gate e critério binário declarados, iterações ilimitadas DENTRO da junção até PASS, forward-only ENTRE junções após PASS — somando-se ao **process-critic adversarial final** (qa-critic em modo subagente isolado) que detém poder de **rewind cascata** (Alt 1 escolhida; rewind cirúrgico = Alt 2, deferido para v1.13.0) a qualquer junção anterior; pós-rewind, junções afetadas re-passam binárias (iterações OK).
 
 ## Alternativas consideradas
 
@@ -106,7 +106,7 @@ Quando process-critic dispara rewind, autor avalia o tipo de correção:
 
 ### Arquivos editados/criados na v1.12.0
 
-Escopo: **2 novos + 8 edições cirúrgicas (majoritariamente formalização do tácito)** — Alternativa 1 com régua §0 honrada por critério (c) (decisão arquitetural inalcançável editando ADR existente):
+Escopo: **2 novos + 11 edições cirúrgicas (majoritariamente formalização do tácito)** — Alternativa 1 com régua §0 honrada por critério (c) (decisão arquitetural inalcançável editando ADR existente):
 
 | Arquivo | Mudança | Tipo |
 |---|---|---|
@@ -124,7 +124,7 @@ Escopo: **2 novos + 8 edições cirúrgicas (majoritariamente formalização do 
 | `guia/web/index.html` | bump versão + 1 card "QA bicelular" | Convenção |
 | `history.md` | close v1.11.0 + open v1.12.0 + close ADR-011 candidato | Convenção |
 
-**Total efetivo:** 2 novos + 8 edits (1-3 linhas cada; mais 1 seção em handoff.md ~20 linhas; mais princípio 13 ~1 linha). Sem nova pasta, workflow, skill, ou papel.
+**Total efetivo:** 2 novos + 11 edits (1-3 linhas cada; mais 1 seção em handoff.md ~20 linhas; mais princípio 13 ~1 linha). Sem nova pasta, workflow, skill, ou papel.
 
 ## Consequências
 
@@ -148,7 +148,7 @@ Escopo: **2 novos + 8 edições cirúrgicas (majoritariamente formalização do 
 
 1. **Within-junction rounds podem inflar STATUS-field** — qa-critic 4 rounds (v1.11.0) levou Status a `"Aceito após rounds 1-4 com 16 findings"`. Não-bloqueante; documentação evolutiva. Mitigação: convenção limita STATUS a ~3 linhas; detalhe vai para CHANGELOG/history.
 2. **SUPLANTA × EMENDA pode ter casos cinzentos** — mudança que TOCA §Alternativas marginalmente sem mudar decisão final: emenda ou suplanta? Política sugerida: **SE a leitura externa da §Decisão muda em substância → SUPLANTA; SE só o caminho/contexto muda → EMENDA**.
-3. **Cascata cirúrgica deferida pode ser problema** — caso real onde cascata custosa apareça antes que pendência seja tratada. Aceito: trade-off documentado; ativar via ADR-012 emergencial se ocorrer.
+3. **Rewind cirúrgico (Alt 2) deferido pode ser problema** — caso real onde cascata custosa apareça antes que pendência seja tratada (Alt 2 deferida para v1.13.0). Aceito: trade-off documentado; ativar via ADR-012 emergencial se ocorrer.
 
 ## Pendências e follow-ups (fora desta v1.12.0)
 
