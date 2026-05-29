@@ -55,3 +55,6 @@ Em equipe pequena, a mesma pessoa veste o chapéu quando necessário — não cr
 
 ## 9. Núcleo × aplicação (regra de ouro — ADR-010 v1.11.0)
 O framework é **estritamente agnóstico**. Domínio (linguagens, ferramentas, normas regulatórias, padrões técnicos, regras de negócio com peso semântico — quaisquer) nasce **declarado pelo discovery do projeto** + clonando `.agent/skills/_template` → vai para uma aplicação. **Nunca coloque domínio no núcleo nem em prompts/guias distribuídos.** Anti-vazamento cross-projeto: agente não importa convenção/norma de outra sessão sem confirmação.
+
+## 10. Junções binárias forward-only (regra de ouro — ADR-011 v1.12.0)
+Fluxo squad tem **6 junções (J0-J5)** com gates binários declarados em `/handoff` + **process-critic adversarial final** (qa-critic em subagente isolado) com poder de **rewind cascata**. **DENTRO da junção:** iterações até PASS (binário). **ENTRE junções:** forward-only (uma vez passada, não volta sem ação do process-critic — circuit-breaker contra loop eterno). **TODO QA é adversarial** (hipótese default = bug). **Process-critic dispara em:** (a) final de cada BLOCO APROVADO; (b) on-demand; (c) opcional em `/checkpoint` substantivo. **SUPLANTA × EMENDA:** §Decisão/§Alternativas muda → novo ADR + `Substituído por:`; §Implementação/§Consequências → emenda in-place via STATUS-field.

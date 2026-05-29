@@ -15,6 +15,43 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.12.0] — 2026-05-29 — Arquitetura bicelular de QA: junções binárias forward-only + process-critic adversarial com rewind cascata (ADR-011)
+
+> MINOR feature. Formaliza modelo de QA tácito do framework. Diagnóstico: pipeline squad (PMO → discovery → architect → developer → qa-critic → docops → release) tem **N handoffs** entre papéis, mas **gates binários explícitos só existem em J4 (qa-critic LIMPO) e J5 (validation V1-Vn PASSA)**. J0, J1, J3 eram informais; sem cláusula forward-only entre junções, oscilação era possível em teoria. Risco de loop eterno apontado pelo dono em 2026-05-28. ADR-011 codifica 6 junções binárias (J0-J5) com gates declarados, forward-only entre junções (circuit-breaker), iterações DENTRO da junção até PASS, process-critic adversarial (qa-critic em subagente isolado) ao final de cada BLOCO APROVADO com poder de **rewind cascata** a qualquer junção anterior. **TODO QA é adversarial** (hipótese default = bug). **Política SUPLANTA × EMENDA** binária para rewind.
+
+### Added
+- **`docs/adr/011-qa-bicelular-juncoes-binarias-process-critic-rewind.md`** — decisão arquitetural; 6 alternativas avaliadas (bicelular cascata escolhida; cirúrgico fica pendência v1.13.0; forward-only sem rewind rejeitado por bug-órfão; rewind-em-qualquer-junção rejeitado por loop eterno). Discovery inline 2026-05-29 (Q1-Q5 + Antecipações + Backlog + Gaps não-bloqueantes ADR-009/010).
+- **`docs/specs/v1.12.0-qa-bicelular/validation.md`** — gate binário V1-V7 do release.
+
+### Changed
+- **`AGENT-FRAMEWORK.md §6` — princípio 13 NOVO:** Arquitetura bicelular de QA.
+- **`.agent/workflows/handoff.md`** — seção nova com tabela operacional dos 6 gates + invariantes + bloco de declaração antes de `/handoff B`.
+- **`.agent/workflows/checkpoint.md`** — esclarecimento: /checkpoint é save-point + RRC, NÃO process-critic automático; backstop opcional sob escalação.
+- **`.agent/skills/qa-critic/SKILL.md`** — seção nova "Duas modalidades" (junction-critic intermediate + process-critic final com rewind).
+- **`.agent/skills/pmo/SKILL.md`** — seção nova "Junção-check adversarial" (PMO aplica gate binário adversarial em J0-J3).
+- **`CLAUDE.md`** + **`AGENTS.md`** — seção v1.12.0 com resumo princípio 13 + topologia.
+- **`README.md`** — bump 1.11.0 → 1.12.0 + linha do princípio 13.
+- **`guia/GUIA-EQUIPE.md`** — nota "Junções binárias forward-only" no fluxo squad.
+- **`guia/web/index.html`** — bump versão + 1 card "QA bicelular".
+
+### Como usar
+- **Antes de `/handoff B`:** autor declara `junção J_n PASS` + artefato-gate + critério binário com evidência objetiva.
+- **Iterações DENTRO da junção:** emendas no mesmo artefato via STATUS-field. Within-junction rounds = EMENDA (não conta como rewind).
+- **Process-critic dispara em:** (a) final de cada BLOCO APROVADO — mandatório; (b) on-demand; (c) opcional em `/checkpoint` substantivo.
+- **Rewind do process-critic:** cascata default. Cirúrgico fica pendência v1.13.0.
+- **SUPLANTA × EMENDA pós-rewind:** §Decisão/§Alternativas → novo ADR + `Substituído por:`. §Implementação/§Consequências → emenda in-place via STATUS-field.
+
+### Pendências e follow-ups (fora desta v1.12.0)
+- **Alternativa 2 (rewind cirúrgico)** — ativável se aparecer caso onde cascata é custosa. v1.13.0 candidato.
+- **Validation.md projeto × release** — templates podem convergir. Sem inflação por enquanto.
+
+### Pipeline
+PMO/Discovery (inline 2026-05-29; Q1-Q5 + Antecipações + Backlog + Gaps registrados) → Architect (ADR-011 com 6 alternativas, escolha Alternativa 1 = bicelular cascata, prevenir loop eterno via forward-only entre junções) → Developer (formalização + adições mínimas em 9 arquivos + ADR + validation.md) → qa-critic adversarial em rounds até LIMPO.
+
+[CONSOLIDADO] / [CONFIRMADO] (após qa-critic LIMPO + validação operacional).
+
+---
+
 ## [1.11.0] — 2026-05-28 — Framework estritamente agnóstico de domínio + discovery declara escopo + anti-vazamento cross-projeto (ADR-010)
 
 > MINOR feature. Diagnóstico: a v1.10.0 declarava-se "domain-agnóstico" mas o próprio `metodo-senior.md`, a memória companheira, `04-confidence-routing.md`, `discovery/SKILL.md` (banco de partida), `mapeamento-de-processo.md`, `high-stakes-gate/SKILL.md`, `AGENT-FRAMEWORK.md` §1 e o `PROMPT-CHAT-WEB-v4.2.md` (raiz) carregavam **listas hardcoded** de normas (ANP, ANVISA, FDA, BACEN, ABNT, ISO, GAMP, ALCOA+, COBIT, CSV/CSA, etc.). Sintoma observado durante a tentativa de absorção do método sênior (mesma sessão 2026-05-28): vazamento cross-projeto materializado — convenções de projetos de outros domínios do mesmo dono entravam como gatilhos do framework para qualquer projeto. A v1.11.0 PURGA esses anchors + introduz princípio 12 (framework agnóstico — discovery declara o escopo).
