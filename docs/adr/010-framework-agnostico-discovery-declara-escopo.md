@@ -1,6 +1,6 @@
 # ADR 010 — Framework agnóstico de domínio: discovery declara o escopo
 
-- **Status:** Proposto (2026-05-28) — aguarda qa-critic rounds + aceite
+- **Status:** Aceito (2026-05-29) — qa-critic rounds 1-4 (REPROVADO → REPROVADO → REPROVADO → APROVADO_COM_RESSALVAS) com 6 ALTO + 8 MEDIO + 5 BAIXO + 5 ADV endereçados em commits `0ee8505` (round 1) + `f94d55b` (round 2) + `b4b5221`+`106c2b3` (round 3) + final BAIXO V7+princ-12 nesta promoção. Round 4 final: zero ALTO/MEDIO, 2 BAIXO triviais corrigidos, 1 ADV ambiental Windows registrado.
 - **Data:** 2026-05-28 · **Decisores:** Fabricio (mantenedor) + Claude (papel `architect`)
 - **Substitui:** nenhum · **Substituído por:** nenhum
 - **Relaciona-se a:** ADR-007 (régua §0), ADR-009 (método sênior + auto-observação), ADR-005 (modos de execução / HITL via execution-modes)
@@ -47,7 +47,7 @@ Escolha pela **Alternativa 1** por 4 razões alinhadas com princípios já regis
 
 ### Princípio 12 (`AGENT-FRAMEWORK.md` §6) — Framework agnóstico de domínio
 
-> **Domínio é declarado pelo projeto via discovery, não inferido por sinais semânticos no framework.** O núcleo (`_shared/`, `.agent/skills/`, `.agent/rules/`, ADRs ativos, prompt web distribuído) NÃO carrega listas hardcoded de normas, convenções ou regras de domínio. Quando há sinal de contexto especializado (regulado, alto-risco, regra de negócio com peso semântico), o **discovery** pergunta explicitamente ao dono: *(a) este projeto opera sob alguma norma/convenção externa? (b) há regra de negócio com semântica específica declarada? (c) há decisão downstream de alto impacto?*. As respostas vão para o `requirements.md`/`research-brief.md` do projeto e disparam os gates downstream (`high-stakes-gate`, reforço sênior, roteamento reflexivo). **Sem declaração explícita do projeto, os gates ficam em default agnóstico.** Anti-vazamento: o agente NÃO importa convenção/norma de outro projeto (mesmo do mesmo dono) sem confirmação. Detalhe: **ADR-010**.
+> **Domínio é declarado pelo projeto via discovery, não inferido por sinais semânticos no framework.** O núcleo (`_shared/`, `.agent/skills/`, `.agent/rules/`, ADRs ativos, prompt web distribuído) NÃO carrega listas hardcoded de normas, convenções ou regras de domínio. Quando há sinal de contexto especializado (regulado, alto-risco, regra de negócio com peso semântico), o **discovery** pergunta explicitamente ao dono: *(a) este projeto opera sob alguma norma/convenção externa? (b) há regra de negócio com semântica específica declarada? (c) há decisão downstream de alto impacto? (d) há gaps não-bloqueantes a serem flagados?*. As respostas vão para o `requirements.md`/`research-brief.md` do projeto e disparam os gates downstream (`high-stakes-gate`, reforço sênior, roteamento reflexivo). **Sem declaração explícita do projeto, os gates ficam em default agnóstico.** Anti-vazamento: o agente NÃO importa convenção/norma de outro projeto (mesmo do mesmo dono) sem confirmação. Detalhe: **ADR-010**.
 
 ### Sub-princípio anexo (i) — Gaps não-bloqueantes são flagados, não silenciados
 

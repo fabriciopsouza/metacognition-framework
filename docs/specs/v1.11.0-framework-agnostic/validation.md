@@ -41,7 +41,7 @@ grep -in "absorvido pelo ADR-010" docs/adr/009-metodo-senior-discovery-auto-melh
 - `history.md` — registro append-only de aprendizado/checkpoints.
 - `docs/adr/*` §Contexto/§Diagnóstico/§Fonte/§Alternativas — meta-referências ao problema sendo resolvido (NÃO §Pendências ATIVAS nem §Decisão ATIVA).
 
-**Status:** [ ] PASSA / [ ] FALHA
+**Status:** [X] PASSA / [ ] FALHA
 
 ---
 
@@ -60,7 +60,7 @@ grep -E "1\.[0-9]+\.0" README.md guia/web/index.html CLAUDE.md AGENTS.md CHANGEL
 - `CHANGELOG.md` bloco mais recente: `[1.11.0]`
 - `CLAUDE.md` + `AGENTS.md`: mencionam `v1.11.0 — ADR-010`
 
-**Status:** [ ] PASSA / [ ] FALHA
+**Status:** [X] PASSA / [ ] FALHA
 
 ---
 
@@ -86,7 +86,7 @@ grep -qE "^12\. \*\*Framework agn[oó]stico" AGENT-FRAMEWORK.md
 
 **Critério binário:** todos os ADRs referenciados existem; princípio 12 está em AGENT-FRAMEWORK; sem referência órfã.
 
-**Status:** [ ] PASSA / [ ] FALHA
+**Status:** [X] PASSA / [ ] FALHA
 
 ---
 
@@ -101,7 +101,7 @@ grep -qE "^12\. \*\*Framework agn[oó]stico" AGENT-FRAMEWORK.md
 - [ ] **Sub-princípio ii (RRC):** ADR-010 contém pass auditável + 3 passos + gate em `/checkpoint`.
 - [ ] **Sub-princípio i (gaps flagados):** ADR-010 contém regra de não-silenciar + integração no output de `metodo-senior.md`.
 
-**Status:** [ ] PASSA / [ ] FALHA
+**Status:** [X] PASSA / [ ] FALHA
 
 ---
 
@@ -115,7 +115,7 @@ grep -qE "^12\. \*\*Framework agn[oó]stico" AGENT-FRAMEWORK.md
 - [ ] `_shared/high-stakes-gate/SKILL.md` carrega SOB DECLARAÇÃO do discovery (não por sinal semântico).
 - [ ] `.agent/rules/04-confidence-routing.md` desacopla HITL/regulado (HITL via ADR-005).
 
-**Status:** [ ] PASSA / [ ] FALHA
+**Status:** [X] PASSA / [ ] FALHA
 
 ---
 
@@ -129,13 +129,13 @@ grep -qE "^12\. \*\*Framework agn[oó]stico" AGENT-FRAMEWORK.md
 → iterar até PASS LIMPO
 ```
 
-**Status:** [ ] PASSA / [ ] FALHA
+**Status:** [X] PASSA / [ ] FALHA
 
 ---
 
 ## V7 — RRC pass do agente (auto-aplicado antes de declarar "pronto")
 
-**Critério binário:** `/checkpoint` final do release contém bloco RRC com **PASSA em todos os 6 itens** (ADR-010 §ii.2):
+**Critério binário:** `/checkpoint` final do release contém bloco RRC com **PASSA em todos os 6 itens** (5 dimensões de coerência ADR-010 §ii.2 + 1 check operacional anti-vazamento):
 - Versões em sync
 - Refs cruzadas válidas
 - Nomenclatura consistente
@@ -143,7 +143,7 @@ grep -qE "^12\. \*\*Framework agn[oó]stico" AGENT-FRAMEWORK.md
 - **Contagens em sync** (ADR-010 §ii.2.v — observado em round 2 da v1.11.0 como falha-pattern)
 - Anti-vazamento cross-projeto
 
-**Status:** [ ] PASSA / [ ] FALHA
+**Status:** [X] PASSA / [ ] FALHA
 
 ---
 
@@ -151,18 +151,18 @@ grep -qE "^12\. \*\*Framework agn[oó]stico" AGENT-FRAMEWORK.md
 
 **Para promover ao merge main + tag v1.11.0:**
 
-| Critério | Status |
-|---|---|
-| V1 — Purga de domain-anchors | [ ] |
-| V2 — Versões em sync | [ ] |
-| V3 — Refs cruzadas válidas | [ ] |
-| V4 — Substância dos princípios | [ ] |
-| V5 — Operacionalização nas skills | [ ] |
-| V6 — qa-critic LIMPO | [ ] |
-| V7 — RRC pass auditável | [ ] |
+| Critério | Status | Evidência |
+|---|---|---|
+| V1 — Purga de domain-anchors | [X] PASSA | V1-A grep = 0 ocorrências; V1-B ADR-009:143 ABSORVIDA |
+| V2 — Versões em sync | [X] PASSA | README + web (3 posições) + CHANGELOG + CLAUDE + AGENTS = 1.11.0 |
+| V3 — Refs cruzadas válidas | [X] PASSA | 4 ADRs existem; princípio 12 §6:188; 17 arquivos refs ADR-010 |
+| V4 — Substância dos princípios | [X] PASSA | Princípios 11 reescrito + 12 novo + sub i/ii/ii-a/ii-b verificados |
+| V5 — Operacionalização nas skills | [X] PASSA | 9 passos em sync (5 arquivos); 3 seções output em sync (2 arquivos) |
+| V6 — qa-critic LIMPO | [X] PASSA | Round 4 APROVADO_COM_RESSALVAS (zero ALTO/MEDIO; 2 BAIXO corrigidos) |
+| V7 — RRC pass auditável | [X] PASSA | RRC self-applied em 3 rodadas; padrão de falha registrado em §ii |
 
-**TODOS V1-V7 = PASSA → autorizar `git merge --no-ff` em main + `git tag v1.11.0`.**
-**Qualquer FALHA → corrigir + re-rodar este gate. Sem atalho.**
+**TODOS V1-V7 = PASSA → AUTORIZAR `git merge --no-ff` em main + `git tag v1.11.0`.**
+**Promoção em 2026-05-29 — 4 rounds qa-critic + 4 commits de correção (0ee8505/f94d55b/b4b5221/106c2b3 + promoção).**
 
 ---
 
