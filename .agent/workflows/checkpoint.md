@@ -16,6 +16,8 @@ Riscos ativos: <risco + mitigação>
 ## Quando
 Fim de bloco aprovado · antes de encerrar · ao mudar direção · a cada ≥20 turnos.
 
+> **ADR-011 (v1.12.0):** `/checkpoint` é **save-point + gate RRC** (ADR-010 §ii) — NÃO invoca process-critic adversarial automaticamente. Process-critic (qa-critic adversarial em subagente isolado, com poder de rewind cascata) é mandatório no FINAL DE BLOCO APROVADO (release, ADR aceito, spec fechada, feature delivered) e on-demand sob escalação do dono. **Backstop opcional em /checkpoint** ativado explicitamente pelo dono ("rode process-critic agora") — não default.
+
 ## Aprendizado (ex-G9 / ADR-007)
 Se gatilho de fracasso disparou (anti-loop, qa-critic reprovou ≥2×, file-first violado, estouro de token, [CONFIRMADO] que se revelou falso) → anotar em `history.md` sob `## Aprendizado`. Single-writer (orquestrador), append-only com timestamp.
 

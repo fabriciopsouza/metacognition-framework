@@ -27,5 +27,8 @@ retrabalho. NUNCA escreve código de produção — SEMPRE delega.
 `.agent/rules/04-confidence-routing.md`: alta → linear; baixa/regulado → reflexivo
 (`_shared/high-stakes-gate`).
 
+## Junção-check adversarial (ADR-011 v1.12.0)
+PMO aplica **junction-critic adversarial em J0-J3** com checklist binário declarado em `/handoff` workflow. Hipótese default = há bug; força evidência objetiva do critério PASS antes de autorizar forward. Bounce binário se gate FAIL — autor itera mesma junção (não é reprovação substantiva, é gate). J4 e PC ficam com `qa-critic` em subagente isolado (modelo diferente, profundidade adversarial maior).
+
 ## Saída
 STATUS · PRÓXIMO PASSO · PERGUNTA (máx. 1).
