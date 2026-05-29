@@ -63,7 +63,7 @@ Escolha pela **Alternativa 1** por 4 razões alinhadas com princípios já regis
 >
 > **Atalhar este passo = comportamento não-sênior**. O case AIVI demonstrou: 4 rounds de qa-critic na v1.10.0 absorção surgiram porque a coerência cross-documentos não foi verificada antes do round 1. A própria v1.11.0 confirmou o padrão: round 2 do qa-critic encontrou 4 MEDIO de stale counts ("8 passos" em CLAUDE/AGENTS após método ganhar passo 9), expondo que RRC self-applied pelo agente tem **limites reais** — gate humano externo (qa-critic adversarial) é complemento necessário, não opcional.
 >
-> **Aplicação:** método sênior ganha **passo 9 (Coherence Pass)** em `.agent/skills/discovery/metodo-senior.md`; `/checkpoint` workflow ganha **gate de saída RRC** (não fecha checkpoint sem RRC executado); `qa-critic` continua como crítico adversarial — RRC pré-qa **tem como objetivo** reduzir achados de coerência (não promete eliminação total: ADV-3 round 2 confirmou limite).
+> **Aplicação:** método sênior ganha **passo 9 (Coherence Pass)** em `.agent/skills/discovery/metodo-senior.md`; `/checkpoint` workflow ganha **gate de saída RRC** (não fecha checkpoint sem RRC executado); `qa-critic` continua como crítico adversarial — RRC pré-qa **tem como objetivo** reduzir achados de coerência (não promete eliminação total: os 4 MEDIO de stale counts encontrados pelo round 2 da própria v1.11.0 confirmaram este limite empiricamente).
 
 ### Sub-princípio anexo (ii-a) — Briefing inequívoco e ubíquo dispensa interview-mode
 

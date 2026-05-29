@@ -30,7 +30,7 @@ Em sessão substantiva (≥10 turnos — critério inline; OU contexto **declara
 ```
 ## RRC (ADR-010) — coherence pass
 - Artefatos lidos: <lista nominal — não só editados; inclui ADRs vinculadas, CLAUDE/AGENTS/README, CHANGELOG, history "Em aberto", _shared/ dependências, web/index.html, PROMPT-CHAT-WEB se afetado>.
-- Verificações: versões em sync (README × CHANGELOG × web × tag): [PASSA/FALHA] · Refs cruzadas válidas (ADR-N existe, arquivo/linha citada existe): [PASSA/FALHA] · Nomenclatura consistente: [PASSA/FALHA] · Sem contradições semânticas entre documentos: [PASSA/FALHA] · Anti-vazamento cross-projeto (sem norma/convenção importada sem declaração no projeto): [PASSA/FALHA].
+- Verificações: versões em sync (README × CHANGELOG × web × tag): [PASSA/FALHA] · Refs cruzadas válidas (ADR-N existe, arquivo/linha citada existe): [PASSA/FALHA] · Nomenclatura consistente: [PASSA/FALHA] · Sem contradições semânticas entre documentos: [PASSA/FALHA] · **Contagens em sync** ("N passos", "N seções obrigatórias", N de qualquer enumeração igual em todos os arquivos que mencionam): [PASSA/FALHA] · Anti-vazamento cross-projeto (sem norma/convenção importada sem declaração no projeto): [PASSA/FALHA].
 - Inconsistências corrigidas neste checkpoint: <lista ou "nenhuma">.
 - Veredito: PASSA / FALHA → se FALHA, NÃO declarar "pronto"; corrigir e re-rodar RRC.
 ```

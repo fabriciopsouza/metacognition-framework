@@ -51,11 +51,14 @@ Se nenhum se verifica → NÃO carregar. Voltar ao método universal do `SKILL.m
    antes de declarar "pronto") — LER todos os artefatos potencialmente
    afetados (não só os editados): ADRs vinculadas, skills relacionadas,
    CLAUDE/AGENTS/README, CHANGELOG, history "Em aberto", _shared/,
-   PROMPT-CHAT-WEB, web/index.html. VERIFICAR coerência: versões em
-   sync, referências cruzadas válidas, nomenclatura consistente,
-   contradições semânticas entre documentos. REPORTAR em formato
-   auditável binário. Inconsistência detectada = corrigir ANTES de
-   declarar "pronto". Atalhar = não-sênior.
+   PROMPT-CHAT-WEB, web/index.html. VERIFICAR coerência em 5 dimensões:
+   (i) versões em sync, (ii) referências cruzadas válidas, (iii)
+   nomenclatura consistente, (iv) contradições semânticas entre
+   documentos, (v) **contagens em sync** (ex.: "N passos" igual em
+   SKILL.md, companion, CLAUDE.md, AGENTS.md — falha-pattern observado
+   no próprio round 2 da v1.11.0). REPORTAR em formato auditável
+   binário. Inconsistência detectada = corrigir ANTES de declarar
+   "pronto". Atalhar = não-sênior.
 ```
 
 ## Princípios anexos (parte do método sênior, não bônus)

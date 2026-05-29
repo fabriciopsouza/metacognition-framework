@@ -29,8 +29,8 @@ ADRs PODEM citar siglas em §Contexto/§Diagnóstico/§Fonte/§Implementação (
 
 **Auto-check específico do round 1 (ADR-009 §Pendências linha 143 — fix conhecido):**
 ```bash
-# Linha 143 deve estar marcada com ~~strikethrough~~ + "absorvido pelo ADR-010"
-grep -n "absorvido pelo ADR-010" docs/adr/009-metodo-senior-discovery-auto-melhoria-framework.md
+# Linha 143 deve estar marcada com ~~strikethrough~~ + "ABSORVIDO PELO ADR-010" (case-insensitive)
+grep -in "absorvido pelo ADR-010" docs/adr/009-metodo-senior-discovery-auto-melhoria-framework.md
 ```
 
 **Critério binário V1-B:** (i) auto-check acima retorna a linha; (ii) revisão humana confirma que nenhum outro ADR ativo tem §Pendência ou §Decisão usando ANP/FDA/BACEN/ALCOA+/GAMP/ANVISA/COBIT como gatilho operacional ATIVO (vs descrição meta-historical da purga).
@@ -80,7 +80,8 @@ test -f docs/adr/010-framework-agnostico-discovery-declara-escopo.md
 test -f docs/adr/009-metodo-senior-discovery-auto-melhoria-framework.md
 test -f docs/adr/007-regua-ganho-liquido-discovery-cascata-aprendizado-wip.md
 test -f docs/adr/005-niveis-de-execucao-framework.md
-grep -q "Princípio 12\|principio 12\|princípio 12" AGENT-FRAMEWORK.md
+# Princípio 12 enumerado como "12. **Framework agnóstico" no §6
+grep -qE "^12\. \*\*Framework agn[oó]stico" AGENT-FRAMEWORK.md
 ```
 
 **Critério binário:** todos os ADRs referenciados existem; princípio 12 está em AGENT-FRAMEWORK; sem referência órfã.
@@ -134,11 +135,12 @@ grep -q "Princípio 12\|principio 12\|princípio 12" AGENT-FRAMEWORK.md
 
 ## V7 — RRC pass do agente (auto-aplicado antes de declarar "pronto")
 
-**Critério binário:** `/checkpoint` final do release contém bloco RRC com **PASSA em todos os 5 itens**:
+**Critério binário:** `/checkpoint` final do release contém bloco RRC com **PASSA em todos os 6 itens** (ADR-010 §ii.2):
 - Versões em sync
 - Refs cruzadas válidas
 - Nomenclatura consistente
 - Sem contradições semânticas entre documentos
+- **Contagens em sync** (ADR-010 §ii.2.v — observado em round 2 da v1.11.0 como falha-pattern)
 - Anti-vazamento cross-projeto
 
 **Status:** [ ] PASSA / [ ] FALHA
