@@ -54,7 +54,7 @@ check("[3b] sentinela nao isenta linhas vizinhas", scan_text(two) == 1)
 
 # (4) cada padrão da denylist é detectável por um exemplar canônico
 SAMPLES = {
-    r"ALCOA\+?": "ALCOA+", r"\bANVISA\b": "ANVISA", r"\bANP\b": "ANP", r"\bFDA\b": "FDA",
+    r"\bALCOA(?:\+|\b)": "ALCOA+", r"\bANVISA\b": "ANVISA", r"\bANP\b": "ANP", r"\bFDA\b": "FDA",
     r"\bBACEN\b": "BACEN", r"\bGAMP\b": "GAMP", r"\bHIPAA\b": "HIPAA", r"\bLGPD\b": "LGPD",
     r"\bGDPR\b": "GDPR", r"\bGxP\b": "GxP", r"21\s*CFR": "21 CFR", r"\bPCI-?DSS\b": "PCI-DSS",
 }
@@ -69,6 +69,10 @@ for src in sources:
 # (5) texto agnóstico genuíno NÃO dispara falso-positivo
 clean = "Em dominios regulados, rastreabilidade e validacao costumam ser mandatorias.\n"
 check("[5] texto agnostico (sem norma nomeada) nao dispara falso-positivo", scan_text(clean) == 0)
+
+# (5b) regressão (qa-critic round 2): 'ALCOA' como subpalavra NÃO dispara; 'ALCOA' norma E 'ALCOA+' SIM
+check("[5b] 'alcoacorp' NAO e falso-positivo (boundary correto)", scan_text("empresa alcoacorp ltda\n") == 0)
+check("[5b] 'ALCOA' (norma, sem +) ainda detecta", scan_text("principio ALCOA aqui\n") >= 1)
 
 print("-" * 40)
 print("RESULTADO:", "FAIL" if fails else "PASS (linter de agnosticismo fura o que devia; nao trava agnostico)")

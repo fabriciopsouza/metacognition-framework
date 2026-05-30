@@ -30,8 +30,9 @@ contrato humano-legível (mesmo par contrato↔validador do ADR-013).
 ## Decisão (1 frase ativa)
 
 Adicionar um **linter executável de agnosticismo** — `tools/check_core_agnostic.py` — que varre o
-**núcleo operativo** (`_shared/**`, `.agent/skills/**`, `AGENT-FRAMEWORK.md`, `CLAUDE.md`, `AGENTS.md`,
-`README.md`) procurando identificadores de norma regulatória de domínio (denylist em
+**núcleo operativo** (`_shared/**`, `.agent/skills/**`, `.agent/rules/**`, `.agent/workflows/**`,
+`AGENT-FRAMEWORK.md`, `CLAUDE.md`, `AGENTS.md`, `README.md` — as pastas que o `CLAUDE.md` declara núcleo)
+procurando identificadores de norma regulatória de domínio (denylist em
 `tools/agnostic-denylist.txt`), falha (exit 1) ao achar vazamento, e roda como **hook SessionStart
 fail-soft** (`.claude/hooks/check-core-agnostic.ps1` + `.sh`) + canário de CI/pré-merge
 (`tools/test_core_agnostic.py`).
@@ -63,7 +64,8 @@ justamente atrás de "como exemplo" (lição v1.11.0).
 - (a) **Denylist não-exaustiva [DESCONHECIDO/por-design]** — surgem normas novas ("...podem existir OUTROS", dono 2026-05-30). O linter REDUZ, não ELIMINA; a regra #5 (semântica, qa-critic) continua como backstop. Mitigação: editar a denylist quando uma norma nova aparecer.
 - (b) **Sentinela é loophole potencial** (como `# noqa`): alguém pode silenciar um vazamento real. Mitigação: aparece no diff/review + a justificativa é obrigatória por convenção; qa-critic revisa adições de sentinela.
 - (c) **Paridade `.sh` [DESCONHECIDO]** — não testada em Linux/macOS (consistente com ADR-015/019 §Riscos). O `.ps1` é o caminho validado nesta versão.
-- (d) **Falso-positivo** se um token de norma for substring legítima em outro contexto — mitigado por `\b` word-boundaries na denylist; canário §5 prova que texto agnóstico não dispara.
+- (d) **Falso-positivo** se um token de norma for substring legítima em outro contexto — mitigado por `\b` word-boundaries na denylist (todos os padrões, inclusive `\bALCOA\+?` após qa-critic round 2); canário §5 prova que texto agnóstico não dispara.
+- (e) **Token dividido entre linhas** (ex.: `ALC\nOA+`) NÃO é detectado pelo scanner linha-a-linha [INFERIDO/intrínseco] — exige intenção adversarial, improvável em prosa real; backstop = regra #5 semântica do qa-critic. Documentado, não corrigido (custo > risco).
 
 ## Implementação (ponteiro após aceito)
 - Ponteiro: branch `chore/reconciliacao-divida-v1.14-v1.19` · data `2026-05-30` · grep `check_core_agnostic|agnostic-denylist|lint-agnostic:allow`

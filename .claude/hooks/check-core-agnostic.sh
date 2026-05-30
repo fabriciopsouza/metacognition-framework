@@ -17,4 +17,8 @@ out="$(cd "$cwd" && python3 tools/check_core_agnostic.py 2>&1)"; code=$?
 [ "$code" -eq 0 ] && exit 0                       # núcleo limpo -> silencioso
 
 leaks="$(printf '%s\n' "$out" | grep '^LEAK ' || true)"
+if [ -z "$leaks" ]; then
+  # exit!=0 SEM linhas LEAK = linter nao rodou (denylist ausente/vazia, erro). Aviso preciso, fail-soft.
+  printf '# AVISO (ADR-020): o linter de agnosticismo retornou erro (exit %s) sem achados de vazamento. Provavel config (tools/agnostic-denylist.txt ausente/vazia) ou ambiente. Rode: python3 tools/check_core_agnostic.py' "$code" | jstr | { read -r j; emit "$j"; }
+fi
 printf '# AVISO (ADR-020): vazamento de norma de dominio no NUCLEO\n\nO linter de agnosticismo detectou norma regulatoria de dominio no nucleo (viola Principio 12 / regra #5 do qa-critic):\n\n%s\n\nAcao: remova a mencao (norma de dominio vive em docs/, exemplos/ ou config de aplicacao) OU adicione o sentinela lint-agnostic:allow na linha com justificativa. Rode python tools/check_core_agnostic.py para reverificar.' "$leaks" | jstr | { read -r j; emit "$j"; }

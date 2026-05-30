@@ -44,6 +44,11 @@ try {
 
     if ($code -ne 0) {
         $leaks = ($out | Where-Object { $_ -match '^LEAK ' }) -join "`n"
+        if ([string]::IsNullOrWhiteSpace($leaks)) {
+            # exit!=0 SEM linhas LEAK = linter nao rodou (denylist ausente/vazia, erro de Python).
+            # Aviso PRECISO (nao mascarar como "vazamento"); fail-soft mantido.
+            Emit "# AVISO (ADR-020): o linter de agnosticismo retornou erro (exit $code) sem achados de vazamento. Provavel config (tools/agnostic-denylist.txt ausente/vazia) ou ambiente. Rode: python tools/check_core_agnostic.py"
+        }
         Emit (@"
 # AVISO (ADR-020): vazamento de norma de dominio no NUCLEO
 

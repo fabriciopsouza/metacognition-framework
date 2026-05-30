@@ -13,7 +13,7 @@
 #
 # Seed: normas que JÁ vazaram para o núcleo (history.md ## Aprendizado 2026-05-29/30) + comuns.
 
-ALCOA\+?
+\bALCOA(?:\+|\b)
 \bANVISA\b
 \bANP\b
 \bFDA\b

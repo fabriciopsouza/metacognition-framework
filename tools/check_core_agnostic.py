@@ -10,9 +10,10 @@ REGRA: nenhum identificador de norma/convenção regulatória de domínio (denyl
 no NÚCLEO OPERATIVO, EXCETO em linha portando o sentinela explícito `lint-agnostic:allow`
 (estilo `# noqa` — exige justificativa visível em diff; é a única exceção, auditável).
 
-ESCOPO (núcleo operativo agnóstico): _shared/**, .agent/skills/** (.md) + AGENT-FRAMEWORK.md,
-CLAUDE.md, AGENTS.md, README.md. FORA: docs/** (ADRs/specs/_intake discutem domínio como exemplo/
-decisão), exemplos/** (aplicações de domínio), tools/** (infra, inclui este linter e a denylist).
+ESCOPO (núcleo operativo agnóstico): _shared/**, .agent/skills/**, .agent/rules/**, .agent/workflows/**
+(.md) + AGENT-FRAMEWORK.md, CLAUDE.md, AGENTS.md, README.md. FORA: docs/** (ADRs/specs/_intake discutem
+domínio como exemplo/decisão), exemplos/** (aplicações de domínio), tools/** (infra, inclui este linter e
+a denylist). CLAUDE.md lista rules/ e workflows/ como núcleo (qa-critic round 2 ADR-020): incluídos.
 
 Uso:
     python tools/check_core_agnostic.py                 # varre o núcleo operativo
@@ -33,6 +34,8 @@ SENTINEL = "lint-agnostic:allow"
 CORE_GLOBS = [
     "_shared/**/*.md",
     ".agent/skills/**/*.md",
+    ".agent/rules/**/*.md",
+    ".agent/workflows/**/*.md",
 ]
 CORE_FILES = ["AGENT-FRAMEWORK.md", "CLAUDE.md", "AGENTS.md", "README.md"]
 
