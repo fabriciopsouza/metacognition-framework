@@ -15,6 +15,40 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.14.0] — 2026-05-30 — Contrato mínimo de skill (ADR-013) — Onda 0 da série v1.14.x "da prosa ao mecanismo"
+
+> MINOR feature. Primeira onda da série que importa o *runtime* do JARVIS para dentro do método,
+> filtrado pela régua §0 (ver `docs/specs/v1.14.x-digest-pesquisas.md`, lastro das pesquisas P1–P7).
+> **Da prosa ao mecanismo:** o contrato de interface das skills deixa de ser convenção "por boa
+> vontade" e vira gate verificável. EMENDA ao Princípio 5 (SSoT). Agnóstico de domínio.
+
+### Added
+- **`docs/adr/013-contrato-minimo-skill.md`** (Aceito) — contrato mínimo: 8 campos obrigatórios
+  (identidade + fronteira I/O + ganchos transversais) + 5 opcionais. Régua §0: otimização (funde
+  convenções dispersas em schema único), não adição pura. Baseado em P3.
+- **`tools/framework-schema.json`** + **`tools/validate_skills.py`** — gate de CI no IDE (Python
+  stdlib, sem deps). Enforça pattern, minimum, name=pasta, existência de `shared_refs`, sub-esquemas.
+  Espelha o auto-check de 1 linha do chat (mesma regra, mecanismo diferente — sem paridade).
+- **`docs/specs/v1.14.0-contrato-minimo/`** — requirements + validation (gate binário V1–V10).
+- **`docs/specs/v1.14.x-digest-pesquisas.md`** — destilação read-only das 7 pesquisas (fonte primária da série).
+
+### Changed
+- **7 skills de processo** + `_template` — frontmatter de contrato (additions-only no corpo).
+- `_shared/` permanece FORA do contrato (rule-holders, shape próprio) — anti-andaime (P3 §6).
+
+### Pipeline
+P3 → explorer (digest) → architect (ADR-013) → developer (schema + validador + 7 skills) →
+qa-critic adversarial isolado/heterogêneo round 1 (3 MÉDIO + 3 BAIXO, todos corrigidos com teste
+negativo executável) → docops.
+
+### Pendências (Princípio 11 honesto)
+- Aceitação regulatória do schema+CI como evidência ALCOA+ **[DESCONHECIDO]** (não-bloqueante fora de GxP).
+- Interop dos campos estendidos com clientes Agent Skills "puros" **[DESCONHECIDO]** (aditivos).
+
+[CONSOLIDADO] / [CONFIRMADO] após merge.
+
+---
+
 ## [1.13.0] — 2026-05-29 — Handoff cross-sessão obrigatório (ADR-012) + drift sync + rules #6 RCA e #7 cobertura temporal pós-J4
 
 > MINOR feature. Derivado de **dogfood real do v1.12.x** em case regulado externo (repo paralelo `test-aivi-isolated`). Sessão paralela aplicou 2 edits globais sem sincronizar framework repo — drift confirmado. Process-critic round 1 desta v1.13.0 identificou: rule #4 SE/ENTÃO v1.12.1 cobre polish post-release, NÃO artefato novo intra-bloco pós-J4 (gap real, rule #7 nova). Princípio 11 honesto aplicado: 6 gaps remanescentes ficam method-audit (não preemptivo).
