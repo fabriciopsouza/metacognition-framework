@@ -44,7 +44,7 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 > (hooks, threshold medido, allowlist, gate executável, telemetria) para dentro do método, **filtrado
 > pela régua §0** e **agnóstico de domínio**, rejeitando o andaime que derrubou o JARVIS. 6 ADRs
 > (013–018), 5 PRs stacked (#11–#15), cada onda com qa-critic adversarial isolado+heterogêneo.
-> Lastro: `docs/specs/v1.14.x-digest-pesquisas.md` (P1–P7). Os CHANGELOGs das ondas consolidam aqui
+> Lastro: `docs/_intake/v1.14.x-digest-pesquisas.md` (P1–P7; movido p/ _intake na reconciliação 2026-05-30). Os CHANGELOGs das ondas consolidam aqui
 > (a stack mergeia em ordem #11→#15).
 
 ## [1.18.0] — 2026-05-30 — QA adversarial de turno único + heterogeneidade de modelo (ADR-018) — Onda 4
