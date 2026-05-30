@@ -103,3 +103,9 @@ Regras determinísticas para padrões observados ≥2x em method-audit notes. **
   "recomendacao": "reverter|corrigir|aprovar_com_ressalvas|aprovar" }
 ```
 Critério FALSO → corrigir. Limite 3 reprovações → escalar, reabrir spec/ADR.
+
+> **Dois eixos, não três vereditos (reconcilia ADR-018 × ADR-011):** `passou` (bool) é o **veredito**
+> binário do protocolo de turno único; concretiza-se conforme a modalidade ativa (J4 → `APROVADO_LIMPO`
+> ou itera; PC → `APROVADO_LIMPO` ou `REPROVADO_REWIND J_i`). `recomendacao` é o **eixo de ação**
+> ortogonal (o que fazer com o resultado) e mantém os 4 valores ricos do PC. Não são enumerações
+> concorrentes: `passou:false` pode mapear a `corrigir` (J4/iteração) ou `reverter` (rewind PC).
