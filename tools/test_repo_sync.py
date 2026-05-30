@@ -25,10 +25,12 @@ def git(cwd, *args):
 
 def run_hook(pwsh, project_dir):
     env = dict(os.environ, CLAUDE_PROJECT_DIR=project_dir)
+    # encoding=utf-8 + errors=replace: o hook emite UTF-8 (emoji ⚠️/✅); sem isso o Python no
+    # Windows decodifica como cp1252 e crasha (UnicodeDecodeError -> stdout None). qa-critic ADR-019.
     p = subprocess.run([pwsh, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", HOOK],
-                       capture_output=True, text=True, env=env)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
     ctx = ""
-    out = p.stdout.strip()
+    out = (p.stdout or "").strip()
     if out:
         try:
             ctx = json.loads(out).get("hookSpecificOutput", {}).get("additionalContext", "")
@@ -88,8 +90,8 @@ def main():
         advance_origin(work)
         open(os.path.join(clone, "f.txt"), "a").write("dirty-local\n")  # suja o tree
         ctx = run_hook(pwsh, clone)
-        ok = ("NAO auto-atualizei" in ctx) and ("SUJO" in ctx)
-        print(("OK  " if ok else "FAIL") + " C2 sujo+atras -> avisa sem mexer  | ctx=" + repr(ctx[:70])); fails += 0 if ok else 1
+        ok = ("NAO auto-atualizei" in ctx) and ("RASTREADAS" in ctx)
+        print(("OK  " if ok else "FAIL") + " C2 modif-rastreada+atras -> avisa sem mexer  | ctx=" + repr(ctx[:70])); fails += 0 if ok else 1
         behind2 = git(clone, "rev-list", "--count", "HEAD..origin/main").stdout.strip()
         ok2 = (behind2 != "0")  # continua atrás (não mexeu)
         print(("OK  " if ok2 else "FAIL") + " C2 pós: clone NAO foi atualizado (behind>0)"); fails += 0 if ok2 else 1
