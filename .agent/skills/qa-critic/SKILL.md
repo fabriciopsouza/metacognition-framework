@@ -15,7 +15,11 @@ confidence_required: true
 shared_refs:
   - _shared/output-format
   - _shared/confidence-classification
+  - _shared/action-safety
 rewind_target: developer
+enforcement:
+  ide: "verifica que ações T3 do developer passaram por gate (ADR-015)"
+  chat: "self-declared: confirma rótulo de efeito e confirmação informada (sem gate real)"
 ---
 
 # QA-Critic — Validação Adversarial (genérico)

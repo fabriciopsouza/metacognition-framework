@@ -8,7 +8,8 @@
 | V4 | `_shared/action-safety/SKILL.md` passa o contrato? (N/A — _shared fora do gate; mas frontmatter bem-formado) | inspeção | — |
 | V5 | ADR-014 define E1–E6 + T1/T2/T3 + default-deny; ADR-015 define hook+managed+canary+enforcement | leitura | — |
 | V6 | Honestidade: nenhuma skill afirma paridade ide=chat em `enforcement` | grep enforcement | — |
-| V7 | managed-settings.template.json é JSON válido e contém os 4 toggles fail-closed + deny Bash(claude *) | parse + grep | — |
+| V7 | managed-settings.template.json é JSON válido com os 3 toggles booleanos + deny Bash(claude *) | parse + grep | — |
+| V11 | Canary cobre bypasses (rm -r -f /, --recursive --force, alvo entre aspas, /bin/rm) | grep CASES + V1 | — |
 | V8 | hook default = ALLOW (não classifica universo; erro interno não bloqueia) — P1 fail-open consciente | leitura do código | — |
 | V9 | Régua §0: EMENDA (absorve denylist ADR-005 como camada), agnóstico, sem papel novo | PC | — |
 | V10 | Contrato (Onda 0) ainda PASS após edição de skills com `enforcement` | `python tools/validate_skills.py` | — |

@@ -24,6 +24,12 @@ CASES = [
     ("rm -rf ~/", "Bash", "rm -rf ~/", True),
     ("rm -rf ~ (home)", "Bash", "sudo rm -rf ~", True),
     ("rm -fr /*", "Bash", "rm -fr /*", True),
+    # bypasses encontrados pelo qa-critic round 1 [ALTO] — DEVEM bloquear:
+    ("rm -r -f / (flags soltas)", "Bash", "rm -r -f /", True),
+    ("rm --recursive --force / (flags longas)", "Bash", "rm --recursive --force /", True),
+    ('rm -rf "/" (alvo entre aspas)', "Bash", 'rm -rf "/"', True),
+    ("rm -rf '/' (aspas simples)", "Bash", "rm -rf '/'", True),
+    ("/bin/rm -rf ~ (path absoluto)", "Bash", "/bin/rm -rf ~", True),
     ("mkfs.ext4", "Bash", "mkfs.ext4 /dev/sda1", True),
     ("Format-Volume", "PowerShell", "Format-Volume -DriveLetter D", True),
     ("dd of=/dev/sda", "Bash", "dd if=/dev/zero of=/dev/sda bs=1M", True),
@@ -38,6 +44,7 @@ CASES = [
     ("push --force-with-lease", "Bash", "git push --force-with-lease origin feat/x", False),
     ("rm arquivo local", "Bash", "rm build/tmp.txt", False),
     ("rm -rf node_modules", "Bash", "rm -rf node_modules", False),
+    ("rm -r -f ./build (local, flags soltas)", "Bash", "rm -r -f ./build", False),
     ("mkdir", "Bash", "mkdir -p docs/new", False),
     ("read tool nao-shell", "Read", "", False),
 ]

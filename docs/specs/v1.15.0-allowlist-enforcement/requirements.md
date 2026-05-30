@@ -23,7 +23,7 @@ que derrubou o JARVIS (governança autodeclarada segura, sem allowlist). Par de 
 - REQ-3: O hook falha de modo consciente: default=allow (backstop, não classificador); erro interno não bloqueia (managed-settings é o fail-closed) — documentado.
 - REQ-4: Nenhuma skill afirma paridade `ide == chat` no campo `enforcement` (honestidade P1 §4).
 - REQ-5: A política é agnóstica de domínio (classifica por efeito, não por nome/domínio).
-- REQ-6: managed-settings.template.json contém os 4 toggles fail-closed + deny `Bash(claude *)`.
+- REQ-6: managed-settings.template.json contém os 3 toggles booleanos fail-closed (`disableBypassPermissionsMode`, `allowManagedHooksOnly`, `allowManagedPermissionRulesOnly`) + lista `deny` com `Bash(claude *)`.
 - REQ-7: O contrato da Onda 0 continua PASS após adicionar `enforcement`/`action-safety` às skills.
 
 ## Bloqueadores honestos (P11 — documentar, não travar)

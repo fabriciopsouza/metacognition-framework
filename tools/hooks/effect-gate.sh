@@ -20,10 +20,18 @@ cmd="$(printf '%s' "$raw" | jq -r '.tool_input.command // empty')"
 [ -z "$cmd" ] && exit 0
 c="$(printf '%s' "$cmd" | tr '[:upper:]' '[:lower:]')"
 
-echo "$c" | grep -Eq 'rm +(-[a-z]* +)*-[a-z]*[rf]{1,2}[a-z]* +(/|~|\$home|/\*)' && deny 'rm recursivo-forcado em raiz/home/~ (E1+E2)'
+# rm: recursivo E forçado E alvo crítico, checados separadamente (paridade com PS1; qa-critic R1)
+if echo "$c" | grep -Eq '(^|[[:space:]])(/bin/)?rm([[:space:]]|$)'; then
+  if { echo "$c" | grep -Eq '(^|[[:space:]])-[a-z]*r[a-z]*([[:space:]]|$)' || echo "$c" | grep -q -- '--recursive'; } \
+  && { echo "$c" | grep -Eq '(^|[[:space:]])-[a-z]*f[a-z]*([[:space:]]|$)' || echo "$c" | grep -q -- '--force'; } \
+  && echo "$c" | grep -Eq '["'\'']?/["'\'']?([[:space:]]|$|\*)|~["/]?([[:space:]]|$|\*)|\$home|[[:space:]]/\*'; then
+    deny 'rm recursivo-forcado em raiz/home/~ (E1+E2)'
+  fi
+fi
 echo "$c" | grep -Eq '\bmkfs(\.[a-z0-9]+)?\b|dd +.*of=/dev/(sd|nvme|disk|hd)|format +[a-z]:' && deny 'format/mkfs/dd em device (E1+E2)'
-echo "$c" | grep -Eq 'git +push +.*(--force([^-]|$)|-f([^a-z]|$))' && ! echo "$c" | grep -q 'with-lease' && deny 'git push --force sem --force-with-lease (E2+E3)'
+{ echo "$c" | grep -Eq 'git +push' && ! echo "$c" | grep -q 'force-with-lease' && echo "$c" | grep -Eq '(--force|(^|[[:space:]])-f([[:space:]]|$))'; } && deny 'git push --force sem --force-with-lease (E2+E3)'
 printf '%s' "$cmd" | grep -Eq ':\(\) *\{ *:\|:& *\} *;:' && deny 'fork bomb (E2)'
+echo "$c" | grep -Eq '(chmod|chown) +-[a-z]*r[a-z]* +.*[[:space:]]/([[:space:]]|$)' && deny 'chmod/chown recursivo em raiz (E5)'
 echo "$c" | grep -Eq 'netsh +advfirewall +set +allprofiles +state +off|iptables +-f' && deny 'desligamento de firewall (E5)'
 
 exit 0

@@ -42,9 +42,16 @@ try {
     $c = $cmd.ToLower()
 
     # --- Padrões T3 inequívocos (E1∩E2 ∩ E3/E5). Conservador: só o que é claramente catastrófico. ---
-    # 1. rm recursivo-forçado de raiz, home ou ~ (lição JARVIS)
-    if ($c -match 'rm\s+(-[a-z]*\s+)*-[a-z]*r[a-z]*f|rm\s+(-[a-z]*\s+)*-[a-z]*f[a-z]*r') {
-        if ($c -match 'rm\s+.*\s+(/|~|\$home|/\*|\.\s*$|\*\s*$)' -or $c -match 'rm\s+-[rf]+\s+/(\s|$)' -or $c -match '~/?(\s|$|\*)') {
+    # 1. rm recursivo-forçado de raiz, home ou ~ (lição JARVIS).
+    #    qa-critic round 1 [ALTO]: checar recursivo E forçado E alvo SEPARADAMENTE — flags soltas
+    #    (rm -r -f /), longas (rm --recursive --force /) e alvo entre aspas (rm -rf "/") escapavam.
+    if ($c -match '(^|\s)rm(\s|$)' -or $c -match '/bin/rm(\s|$)') {
+        $hasRecursive = ($c -match '(^|\s)-[a-z]*r[a-z]*(\s|$)') -or ($c -match '--recursive')
+        $hasForce     = ($c -match '(^|\s)-[a-z]*f[a-z]*(\s|$)') -or ($c -match '--force')
+        # alvo crítico: raiz, home, ~ — com ou sem aspas, com ou sem glob
+        $hitsRoot = ($c -match "[`"']?/[`"']?(\s|$|\*)") -or ($c -match '~[`"/]?(\s|$|\*)') -or `
+                    ($c -match '\$home') -or ($c -match "(\s|=)[`"']?/[`"']?\s*$") -or ($c -match '\s/\*')
+        if ($hasRecursive -and $hasForce -and $hitsRoot) {
             Deny 'rm recursivo-forçado atingindo raiz/home/~ (E1+E2)'
         }
     }
@@ -52,10 +59,11 @@ try {
     if ($c -match '\bmkfs(\.\w+)?\b' -or $c -match 'format-volume' -or $c -match '\bformat\s+[a-z]:' -or $c -match 'dd\s+.*of=/dev/(sd|nvme|disk|hd)') {
         Deny 'format/mkfs/dd sobre device de bloco (E1+E2)'
     }
-    # 3. git push --force em branch protegida (main/master/release/*) — E2+E3
-    if ($c -match 'git\s+push' -and ($c -match '--force(?!-with-lease)' -or $c -match '\s-f(\s|$)')) {
-        if ($c -match '(origin\s+)?(main|master|release|prod)' -or $c -notmatch 'with-lease') {
-            Deny 'git push --force (sem --force-with-lease) potencialmente em branch protegida (E2+E3)'
+    # 3. git push --force/-f SEM --force-with-lease (escopo amplo e conservador — qa-critic round 1
+    #    [MÉDIO]: alinhado ao código, não só branch protegida; --force-with-lease é o caminho seguro).
+    if ($c -match 'git\s+push' -and $c -notmatch 'force-with-lease') {
+        if ($c -match '--force' -or $c -match '(^|\s)-f(\s|$)') {
+            Deny 'git push --force/-f sem --force-with-lease (E2+E3); use --force-with-lease ou gate humano'
         }
     }
     # 4. fork bomb
