@@ -36,6 +36,16 @@
         "hooks": [
           {
             "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude\\hooks\\check-core-agnostic.ps1\"",
+            "timeout": 20,
+            "statusMessage": "Verificando agnosticismo do nucleo (ADR-020)"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
             "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude\\hooks\\inject-start-session.ps1\"",
             "timeout": 10,
             "statusMessage": "Ativando auto-boot do squad (delete .claude/session.lock se nao quiser)"

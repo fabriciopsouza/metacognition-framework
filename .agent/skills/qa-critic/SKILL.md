@@ -88,7 +88,7 @@ Regras determinísticas para padrões observados ≥2x em method-audit notes. **
 
 4. **SE** polish post-release adiciona surface estrutural (Mermaid, seção nova, refactor skill/workflow > 5 linhas) e foi auto-classificado "não-bloco" · **ENTÃO** É bloco — process-critic mandatório, não auto-classificável. Fonte: method-audit 2026-05-29T22:30.
 
-5. **SE** rascunho cita exemplos didáticos de domínio (ALCOA+, ANP, GAMP, etc.) em arquivo NÃO-rotulado como exemplo (`docs/specs/exemplos/` é exceção) · **ENTÃO** REPROVADO — violação princípio 12 mesmo como "exemplo". Fonte: round 4 v1.11.0 (§05 README detecção pelo dono).
+5. **SE** rascunho cita exemplos didáticos de domínio (ALCOA+, ANP, GAMP, etc.) em arquivo NÃO-rotulado como exemplo (`docs/specs/exemplos/` é exceção) · **ENTÃO** REPROVADO — violação princípio 12 mesmo como "exemplo". Fonte: round 4 v1.11.0 (§05 README detecção pelo dono). Esta regra ganhou **enforcement executável**: `tools/check_core_agnostic.py` (ADR-020) varre o núcleo a cada boot/CI. <!-- lint-agnostic:allow esta linha É a definição da regra de detecção; cita normas para descrevê-las -->
 
 6. **SE** o autor detectou anomalia/divergência/conflito-de-fontes E resolveu por default (escolheu uma fonte como autoritativa) sem citar **causa-raiz (fonte + mecanismo)** · **ENTÃO** REPROVADO com instrução: "RCA obrigatório (causa + mecanismo) ANTES de resolver; resolver por default sem causa-raiz = violação de processo sênior". Fonte: ADR-012 v1.13.0 (case real: detecção-sem-ação foi o defeito de processo mais grave da sessão analisada — o agente VIU a anomalia, CLASSIFICOU, e DISPENSOU). Pattern domain-agnóstico: vale para conflito código×spec, fonte×fonte, dado×regra, etc.
 

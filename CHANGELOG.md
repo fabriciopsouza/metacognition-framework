@@ -15,6 +15,29 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.20.0] — 2026-05-30 — Linter de agnosticismo do núcleo (ADR-020) — último elo "prosa→mecanismo"
+
+> MINOR. Mecaniza o **Princípio 12** (núcleo agnóstico) e a **regra #5 do qa-critic**, que eram prosa e
+> falharam ≥2× (vazamentos de norma de domínio — ALCOA+/ANP/… — sempre pegos pelo DONO, nunca pela
+> auto-observação do agente; o último foi nesta sessão). EMENDA: mesmo padrão contrato↔validador do
+> ADR-013 e regra↔gate do ADR-015. Régua §0(c): destrava garantia inalcançável por prosa.
+
+### Added
+- **`docs/adr/020-linter-agnosticismo-nucleo.md`** (Aceito).
+- **`tools/check_core_agnostic.py`** — linter stdlib: varre o núcleo operativo, exit 1 + `LEAK arquivo:linha` por vazamento.
+- **`tools/agnostic-denylist.txt`** — ruleset (regex/linha) em `tools/` (infra, não-núcleo → não viola o P12); não-exaustivo por design.
+- **`tools/test_core_agnostic.py`** — canário 17/17 com efeito (limpo-passa · vazamento-pega · sentinela-isenta · cada padrão detectável · agnóstico-não-falso-positiva).
+- **`.claude/hooks/check-core-agnostic.ps1` (+ `.sh` paridade)** — hook SessionStart fail-soft: avisa no boot se o núcleo vazou; nunca bloqueia.
+
+### Changed
+- **`.claude/settings.json`** — +1 hook SessionStart (após `check-repo-sync`, antes do `inject-start-session`).
+- **`.claude/hooks/sync-global.ps1`** — espelha o novo hook para `~/.claude/hooks/` (padrão ADR-019).
+- **`.agent/skills/qa-critic/SKILL.md`** — regra #5 ganha ponteiro ao enforcement executável + sentinela `lint-agnostic:allow` (única menção legítima: a própria definição da regra).
+
+### Notes
+- Exceção auditável: sentinela `lint-agnostic:allow` + justificativa (estilo `# noqa`).
+- [DESCONHECIDO] honestos: denylist não-exaustiva (normas novas existem — backstop é a regra #5 semântica); paridade `.sh` não testada em Linux/macOS.
+
 ## [1.19.0] — 2026-05-30 — Sync de repo no boot via hook (ADR-019) — fecha a dívida da série
 
 > MINOR. Fecha como **mecanismo em runtime** o gap que a série v1.14.x deixara como prosa (method-audit):
