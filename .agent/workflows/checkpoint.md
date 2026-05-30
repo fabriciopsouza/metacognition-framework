@@ -37,6 +37,11 @@ Se gatilho de fracasso disparou (anti-loop, qa-critic reprovou ≥2×, file-firs
 ## Method-Audit autônomo (ADR-009)
 Em sessão substantiva (≥10 turnos — critério inline; OU contexto **declarado pelo discovery** como regulado/alto-risco — ADR-010), o PMO emite **0-3 method-audit notes** em `history.md ## Aprendizado` no formato: `Method-audit: <gap observado> · Causa-raiz: <skill/regra ausente ou fraca> · Proposta (lean): <artefato a editar ≥ criar>`. Sinais a captar: norma citada sem vigência, regra despriorizada sem semântica, correções repetidas do dono sobre mesmo padrão, violação régua §0, loops/retrabalho, vazamento cross-projeto (importação de norma/convenção de outra sessão sem declaração no projeto atual — ADR-010). Firewall preservado.
 
+## Telemetria mínima + poda (ADR-017 — coletor único)
+Ao fechar bloco substantivo, atualizar `history.md ## Telemetria` (coletor único — método em `_shared/observability` §Telemetria):
+- **Blame (17-A):** se houve rewind, anotar junção-origem (J0–J5) + rounds de qa-critic até PASS. **2 métricas, nada de dashboard.**
+- **Tally/poda (17-B):** regra-chave que disparou (S/N) + sua `classe` (salva-vidas/operacional/andaime). Poda só `andaime` após N=5–10 sessões sem disparo (portão pequeno: suspender→observar→remover); `salva-vidas` nunca poda por desuso (gera nota). Tally autorreportado é falível — cruzar com sinal externo quando possível.
+
 ## Read-and-Review-for-Coherence (RRC) — gate de saída obrigatório (ADR-010 v1.11.0)
 **Antes de declarar `/checkpoint` concluído**, o agente DEVE executar pass RRC e reportar em formato binário no próprio checkpoint:
 
