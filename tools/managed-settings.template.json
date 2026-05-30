@@ -1,0 +1,26 @@
+{
+  "_comment": "Template de defense-in-depth fail-closed (ADR-015, P1). Instalar como managed-settings (NÃO em settings.json de usuário/projeto, que o agente pode editar): Windows C:\\ProgramData\\ClaudeCode\\managed-settings.json · macOS /Library/Application Support/ClaudeCode/managed-settings.json · Linux /etc/claude-code/managed-settings.json. É a camada não-desativável por config de conveniência (anti-JARVIS). Bug #44642: pode não impedir bypass em macOS em versões antigas — por isso é UMA camada, somada ao hook effect-gate e ao deny Bash(claude *).",
+  "permissions": {
+    "disableBypassPermissionsMode": "disable",
+    "allowManagedHooksOnly": true,
+    "allowManagedPermissionRulesOnly": true,
+    "deny": [
+      "Bash(claude *)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~*)",
+      "Bash(mkfs*)",
+      "Bash(dd *of=/dev/*)",
+      "PowerShell(Format-Volume*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "pwsh -NoProfile -File ~/.claude/hooks/effect-gate.ps1" }
+        ]
+      }
+    ]
+  }
+}

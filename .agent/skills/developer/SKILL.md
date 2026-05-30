@@ -16,6 +16,10 @@ shared_refs:
   - _shared/traceability
   - _shared/output-format
   - _shared/confidence-classification
+  - _shared/action-safety
+enforcement:
+  ide: "hook:effect-gate deny T3 + managed-settings (ADR-015)"
+  chat: "self-declared: rotula efeito E1-E6 e exige confirmação T3 (sem gate real)"
 ---
 
 # Developer — Implementação (genérico)

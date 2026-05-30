@@ -131,8 +131,13 @@ Tratar o contexto como **recurso finito** (*attention budget*). Fonte conceitual
 A0 (*Effective Context Engineering for AI Agents*, Anthropic). Quatro alavancas,
 aplicadas pelo roteador e detalhadas em `_shared/metacognition-core`:
 
-1. **Compaction** — ao fim de bloco ou quando a sessão alonga, resumir o
-   histórico, preservando decisões e *whys*; descartar verborragia intermediária.
+1. **Compaction por faixa medida (ADR-016)** — disparar por **ocupação medida**, não por
+   "sensação de longo": a degradação é gradiente, não penhasco. 🟢<50% normal · 🟡50–69% anotar ·
+   🟠70–84% **digest+handoff** · 🔴≥85% compactar (% do espaço útil; cortes [INFERIDO] ajustáveis;
+   fronteira inclusiva à esquerda). Medida: IDE = % real (`/context`); chat = proxy `chars÷3`
+   (PT-BR técnico; ÷3 default conservador no intervalo ÷3–3,5 de P2; alarme de fumaça ±20–40%).
+   Preservar decisões/*whys*/nomes exatos; descartar verborragia. O **digest** (faixa 🟠/🔴) é o
+   Pacote de handoff (Princípio 14) + carimbo de faixa — mesmo artefato.
 2. **Structured note-taking** — gravar decisões/nomenclaturas/lições em arquivo
    persistente (`history.md`, `NOTES.md`, glossário). É o checkpoint formalizado.
 3. **Tool-result clearing** — limpar retornos volumosos de ferramenta que já
