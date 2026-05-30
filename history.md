@@ -149,7 +149,7 @@ Riscos ativos: nenhum bloqueante. Risco residual ADR-010 §Riscos (detector de v
 
 > WIP atual (ex-G11). Reconciliar com branches do git e ADRs em status `Proposto` no `/start-session` (modo squad).
 
-- **[2026-05-30 · WIP] Reconciliação pós-merge série v1.14.x→v1.19.0** — branch `chore/reconciliacao-divida-v1.14-v1.19`. Dívidas #1/#4/#6/#2/#5 commitadas; tags retroativas v1.14.0–v1.19.0 + ADR-020 (linter de agnosticismo) em andamento; PR único + merge ao fechar. 1 commit por item (reversível isolado).
+- **[2026-05-30 · FECHADA] Reconciliação pós-merge série v1.14.x→v1.19.0 + ADR-020** — PR #18 mergeado em `main` (`2a8947f`, `--merge` preserva commits atômicos). Dívidas #1/#2/#3/#4/#5/#6 fechadas + **v1.20.0** (ADR-020 linter de agnosticismo, prosa→mecanismo do Princípio 12) após qa-critic round 2 (1 MÉD + 3 BAIXO). **Tags v1.14.0→v1.20.0 todas no origin** (dívida de tags da série inteira fechada). 5/5 gates verdes no main mergeado. 1 commit por item (reversível isolado).
 - **[2026-05-30 · fechadas] v1.14.0→v1.19.0** — série "da prosa ao mecanismo" mergeada em `main` (ADR-013..019); gate humano das PRs empilhadas #11→#17 passado; `main`=`c866f95`. Tags retroativas sendo criadas na reconciliação (antes ausentes — Debt #3). CHANGELOG até `[1.19.0]`.
 - *(v1.13.0 FECHADA em 2026-05-29 — ADR-012 Aceito após qa-critic round 1; handoff cross-sessão + drift sync + qa-critic rules #6/#7).*
 - *(v1.11.0/v1.12.0/v1.12.1 fechadas em 2026-05-29 — merges `bd64b08`/`fb637ac`/`8fb044f` + tags `v1.11.0`/`v1.12.0`/`v1.12.1`).*
