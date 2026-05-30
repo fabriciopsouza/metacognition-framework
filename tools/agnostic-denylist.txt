@@ -1,0 +1,27 @@
+# tools/agnostic-denylist.txt — ruleset do linter de agnosticismo do núcleo (ADR-020).
+#
+# NÃO é conhecimento de domínio do núcleo: é a negativa (o que o NÚCLEO operativo não pode
+# carregar hardcoded). Vive em tools/ (infra, como o ruleset de um linter) — por isso este
+# arquivo NÃO é varrido por check_core_agnostic.py e não viola o Princípio 12.
+#
+# Formato: uma REGEX por linha (Python `re`, IGNORECASE). Linhas em branco / iniciadas por # são ignoradas.
+# Cada padrão deve casar um IDENTIFICADOR DE NORMA/CONVENÇÃO REGULATÓRIA DE DOMÍNIO específico.
+#
+# LIMITE HONESTO (ADR-020 §Riscos): esta lista é NÃO-EXAUSTIVA por design — surgem normas novas
+# (o dono lembrou: "...que são exemplos, podem existir OUTROS"). O linter REDUZ, não ELIMINA, o
+# vazamento; a regra #5 do qa-critic (semântica) continua sendo o backstop. Editar é esperado.
+#
+# Seed: normas que JÁ vazaram para o núcleo (history.md ## Aprendizado 2026-05-29/30) + comuns.
+
+\bALCOA(?:\+|\b)
+\bANVISA\b
+\bANP\b
+\bFDA\b
+\bBACEN\b
+\bGAMP\b
+\bHIPAA\b
+\bLGPD\b
+\bGDPR\b
+\bGxP\b
+21\s*CFR
+\bPCI-?DSS\b

@@ -118,6 +118,15 @@ try {
             if (Test-Path $repoSyncTarget) { $hookCount++ }
         }
 
+        # ADR-020 / v1.20.0 — espelha check-core-agnostic.ps1 (linter de agnosticismo do nucleo) para a
+        # instancia global. Fail-soft: em repos sem tools/check_core_agnostic.py o hook sai silencioso.
+        $agnosticSource = Join-Path $projectRoot '.claude\hooks\check-core-agnostic.ps1'
+        $agnosticTarget = Join-Path $hooksDest 'check-core-agnostic.ps1'
+        if (Test-Path $agnosticSource) {
+            Copy-Item -Path $agnosticSource -Destination $agnosticTarget -Force -ErrorAction SilentlyContinue
+            if (Test-Path $agnosticTarget) { $hookCount++ }
+        }
+
         # Espelha .agent/workflows/ — o hook global le start-session.md de ~/.claude/workflows/.
         $workflowsRoot = Join-Path $projectRoot '.agent\workflows'
         if (Test-Path $workflowsRoot) {

@@ -49,8 +49,10 @@ ganchos transversais) + 5 opcionais — descrito em `tools/framework-schema.json
 **Opcionais (5, declarar só quando usados):** `version` (SemVer), `allowed-tools`, `rewind_target`
 (P13), `enforcement` (`{ide, chat}` — P1/ADR-015), `classe` (`salva-vidas|operacional|andaime` — P7/ADR-017).
 
-> Os campos legados `source` e `last_review` permanecem **permitidos** (não quebram), mas não são
-> obrigatórios — evita rewrite gratuito das 7 skills (régua §0).
+> Os campos legados `source`, `last_review` e `metadata` permanecem **permitidos** (não quebram), mas
+> não são obrigatórios — evita rewrite gratuito das 7 skills e tolera o shape de `_shared/` (régua §0).
+> Total no schema: **5 opcionais de contrato + 3 legados permitidos = 8 propriedades opcionais**; só os
+> 5 de contrato contam como "opcionais do contrato" (cada um com gate que o consome).
 
 ### Verificação por ambiente (mesma regra, mecanismo diferente — sem prometer paridade)
 - **IDE/SDK:** `tools/validate_skills.py` lê `framework-schema.json`, valida frontmatter de toda
@@ -71,8 +73,8 @@ ganchos transversais) + 5 opcionais — descrito em `tools/framework-schema.json
 2. **Contrato gordo (estilo camadas JARVIS / CrewAI completo: `goal`+`backstory`+`tags`+`author`).**
    Prós: "completo". Contras: campos que nenhuma skill preenche de verdade = andaime morto; força
    preenchimento → induz alucinação (colide com P1). Rejeitada pela régua §0.
-3. **Contrato mínimo verificável (ESCOLHIDA).** 8 obrigatórios + 4 opcionais, cada um com gate que o
-   consome. Prós: otimiza, SSoT, automatizável. Contras: exige o validador (pago pelo ganho de CI).
+3. **Contrato mínimo verificável (ESCOLHIDA).** 8 obrigatórios + 5 opcionais de contrato, cada um com
+   gate que o consome. Prós: otimiza, SSoT, automatizável. Contras: exige o validador (pago pelo ganho de CI).
 
 ## Consequências
 

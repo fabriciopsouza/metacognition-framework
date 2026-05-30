@@ -25,7 +25,7 @@ ADR-017 + history.md ##Telemetria + checkpoint gancho + spec + commit + qa-criti
 v1.18.0 QA 1-turno steelman→ataque→veredito + heterogeneidade (ADR-018/P6) — só edita qa-critic
 SKILL + _shared; (4) method-audit notes (start-session git-fetch, buffer/pwsh — já em memory/); (5)
 REVERTER modo p/ avançado (editar ~/.claude/framework-mode.json mode=avancado, NÃO apagar branches);
-(6) crítica final + gaps vs plano. Fonte: docs/specs/v1.14.x-digest-pesquisas.md (lastro P1-P7).
+(6) crítica final + gaps vs plano. Fonte: docs/_intake/v1.14.x-digest-pesquisas.md (lastro P1-P7; movido de docs/specs/ em 2026-05-30).
 Régua §0, agnóstico, honestidade ide≠chat. qa-critic sempre isolado+heterogêneo (model:sonnet).
 AMBIENTE: pwsh NÃO no PATH bash (só via Python subprocess shutil.which); batch grande cancela em
 cascata → sequencial + commit cedo; buffer de tool-results atrasa (dump→Read)."
@@ -40,4 +40,4 @@ cascata → sequencial + commit cedo; buffer de tool-results atrasa (dump→Read
 - **Decisões:** 5 ondas = 5 MINOR (v1.14→v1.18), branches stacked, PRs sem merge — [CONFIRMADO, escolha do dono].
 - **Detalhes caros:** validador `tools/validate_skills.py` (stdlib, 7/7 PASS); canary `tools/test_effect_gate.py` (auto-guarda); hook `tools/hooks/effect-gate.ps1` (3 checks rm). ADR-017 = ADR-pai 2 decisões (17-A blame só 2 métricas / 17-B tally+classe+poda Chesterton N=5-10), coletor único = history.md ##Telemetria.
 - **Nomenclatura:** Onda0=contrato, Onda1=allowlist+enforcement, Onda2=compaction+digest, Onda3=telemetria+poda, Onda4=QA 1-turno. classe∈{salva-vidas,operacional,andaime}. E1-E6/T1-T3.
-- **5 arquivos recentes:** docs/adr/016, .agent/workflows/checkpoint.md, _shared/observability/SKILL.md, docs/specs/v1.14.x-digest-pesquisas.md, CHANGELOG.md.
+- **5 arquivos recentes:** docs/adr/016, .agent/workflows/checkpoint.md, _shared/observability/SKILL.md, docs/_intake/v1.14.x-digest-pesquisas.md, CHANGELOG.md.

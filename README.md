@@ -1,9 +1,10 @@
 # Framework Metacognitivo Agêntico — Genérico e Escalável
 
-> **Versão:** 1.13.0 · **Base:** pesquisas A0–A3 · **PT-BR** · **CC BY 4.0**
+> **Versão:** 1.20.0 · **Base:** pesquisas A0–A3 · **PT-BR** · **CC BY 4.0**
 > **Princípio:** o framework é **estritamente agnóstico de domínio** (ADR-010 / Princípio 12). Linguagens, ferramentas, normas setoriais, regulamentações, padrões técnicos, frameworks de validação, regras de negócio — **quaisquer** — são **aplicações/contextos**: não fazem parte do núcleo, **não aparecem hardcoded em prompts/regras/docs do framework** (nem como exemplo). Domínio é **declarado pelo discovery** por projeto. O que o núcleo oferece é **mecanismo genérico**: data integrity, audit trail, validação por risco, traceability, observabilidade — todos no `_shared/`.
 > **QA bicelular (v1.12.0 / ADR-011 / Princípio 13):** fluxo do squad tem 6 junções binárias forward-only (J0-J5) com gates declarados em `/handoff` + process-critic adversarial final (qa-critic em subagente isolado) com poder de rewind cascata. TODO QA é adversarial. SUPLANTA × EMENDA política binária.
 > **Handoff cross-sessão (v1.13.0 / ADR-012 / Princípio 14):** discovery passo 6(e) declara "alimenta outra sessão?"; se SIM, Pacote de handoff obrigatório via J5 (artefato+versão, localização, acesso, prompt pronto-para-colar, pendências). +rules #6 (RCA gate) e #7 (cobertura temporal pós-J4) em qa-critic SKILL.
+> **Série "da prosa ao mecanismo" (v1.14.x→v1.20.0 / ADR-013..020):** regras críticas que dependiam de boa-vontade do agente ganharam par executável — contrato de skill (`validate_skills.py`), allowlist por efeito (`effect-gate`), telemetria/poda, QA turno-único heterogêneo, sync de repo no boot (`check-repo-sync`) e **agnosticismo do núcleo** (`check_core_agnostic.py`, ADR-020: enforcement do Princípio 12 acima).
 
 ## Camadas
 ```
