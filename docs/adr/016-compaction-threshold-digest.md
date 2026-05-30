@@ -22,18 +22,20 @@ com carimbo de faixa — funde dois artefatos, não adiciona um.
 
 ## Decisão (1 frase ativa)
 
-Disparar compaction por **faixas de ocupação medida** (🟢<50% / 🟡50–70% / 🟠70–85% / 🔴>85% —
-defaults [INFERIDO] ajustáveis), com **proxy chars÷3 no chat** (PT-BR técnico, alarme de fumaça),
-produzindo um **digest persistente** que é o **Pacote de handoff (§P14) estendido** com campos de
-compaction + carimbo de faixa (superset, não artefato paralelo).
+Disparar compaction por **faixas de ocupação medida** (🟢<50% / 🟡50–69% / 🟠70–84% / 🔴≥85% —
+defaults [INFERIDO] ajustáveis, fronteira inclusiva à esquerda), com **proxy chars÷3 no chat**
+(PT-BR técnico, alarme de fumaça), produzindo um **digest persistente** que é o **Pacote de handoff
+(§P14) estendido** com campos de compaction + carimbo de faixa (superset, não artefato paralelo).
 
-### Faixas (% do espaço útil = janela nominal − custos fixos de tools/MCP)
+### Faixas (% do espaço útil = janela nominal − custos fixos de tools/MCP; fronteira inclusiva à esquerda)
 | Faixa | Estado | Ação |
 |---|---|---|
 | < 50% | 🟢 verde | operação normal |
-| 50–70% | 🟡 note-taking | gravar decisões/nomenclaturas em artefato persistente (`history.md`/digest) |
-| 70–85% | 🟠 digest+handoff | produzir o digest + avisar handoff iminente |
-| > 85% | 🔴 compactar | reiniciar janela a partir do digest + 5 arquivos mais recentes |
+| 50–69% | 🟡 note-taking | gravar decisões/nomenclaturas em artefato persistente (`history.md`/digest) |
+| 70–84% | 🟠 digest+handoff | produzir o digest + avisar handoff iminente |
+| ≥ 85% | 🔴 compactar | reiniciar janela a partir do digest + 5 arquivos mais recentes |
+
+> Fronteiras sem sobreposição (inclusiva à esquerda): 70% cai em 🟠, 85% cai em 🔴 — sem ambiguidade.
 
 > **Honestidade sobre os números (Princípio 11):** P2 recomenda *faixas crescentes disparando cedo*
 > — forma e direção [CONFIRMADO]. Os cortes **50/70/85 são escolha de engenharia nossa, não-calibrada**
@@ -51,8 +53,9 @@ O digest inclui os **5 campos canônicos** do §Pacote (`_shared/metacognition-c
 consumível+versão · localização repo/commit/PR · acesso/visibilidade · **prompt pronto-para-colar** ·
 pendências+premissas. **Extensões de compaction** somam: decisões+fonte+confiança · detalhes caros
 (nomes EXATOS) · nomenclatura · ponteiros JIT · 5 arquivos recentes · **carimbo** (versão+timestamp+
-faixa). Template: `docs/specs/_template-digest/digest.md`. Teste binário (herda ADR-012): a outra
-sessão começa **sem perguntar nada de volta**?
+faixa + **modo de execução**, para a próxima sessão retomar no regime certo). Template:
+`docs/specs/_template-digest/digest.md`. Teste binário (herda ADR-012): a outra sessão começa
+**sem perguntar nada de volta**?
 
 ## Alternativas consideradas
 1. **Manter gatilho qualitativo (status quo).** Prós: zero mudança. Contras: compacta cedo/tarde por

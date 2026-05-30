@@ -16,6 +16,17 @@ Riscos ativos: <risco + mitigação>
 ## Quando
 Fim de bloco aprovado · antes de encerrar · ao mudar direção · a cada ≥20 turnos.
 
+## Gatilho por faixa de ocupação (ADR-016 — v1.16.0)
+Além dos gatilhos acima, dispara por **faixa medida** (degradação é gradiente, não penhasco;
+fronteira inclusiva à esquerda): 🟢<50% normal · 🟡50–69% anotar · 🟠70–84% **produzir digest** ·
+🔴≥85% **compactar a partir do digest** + 5 arquivos recentes. Medida: IDE = % real (`/context`);
+chat = proxy `chars÷3` (alarme de fumaça, ±20–40%).
+
+**Digest (faixa 🟠/🔴)** = Pacote de handoff (`_shared/metacognition-core` §Pacote / Princípio 14)
+estendido com campos de compaction + carimbo de faixa — superset, não artefato paralelo.
+**Formato: `docs/specs/_template-digest/digest.md`** (fonte única; não relistar campos aqui).
+Teste binário (herda P14): a próxima sessão começa sem perguntar nada de volta?
+
 > **ADR-011 (v1.12.0):** `/checkpoint` é **save-point + gate RRC** (ADR-010 §ii) — NÃO invoca process-critic adversarial automaticamente. Process-critic (qa-critic adversarial em subagente isolado, com poder de rewind cascata) é mandatório no FINAL DE BLOCO APROVADO (release, ADR aceito, spec fechada, feature delivered) e on-demand sob escalação do dono. **Backstop opcional em /checkpoint** ativado explicitamente pelo dono ("rode process-critic agora") — não default.
 
 ## Aprendizado (ex-G9 / ADR-007)
