@@ -146,7 +146,8 @@ def _scalar(v):
 
 def validate_against_schema(data, schema):
     """Validador mínimo de JSON Schema (subset: required, type, pattern, maxLength,
-    minLength, enum, minItems, additionalProperties, properties)."""
+    minLength, minimum, maximum, enum, minItems, additionalProperties (raiz e sub-esquema),
+    properties, + extensões do contrato: noXmlTags, checkPathExists)."""
     errors = []
     props = schema.get("properties", {})
     required = schema.get("required", [])
@@ -183,9 +184,30 @@ def _check_value(key, val, spec):
             errs.append(f"'{key}': abaixo de minLength {spec['minLength']}")
         if "enum" in spec and val not in spec["enum"]:
             errs.append(f"'{key}': valor '{val}' fora do enum {spec['enum']}")
+        # regra do ADR-013: description sem tags XML (qa-critic round 1 BAIXO)
+        if spec.get("noXmlTags") and re.search(r"<[^>]+>", val):
+            errs.append(f"'{key}': contem tag XML (proibido pelo contrato)")
+    if isinstance(val, int) and not isinstance(val, bool):
+        # minimum/maximum (qa-critic round 1 MEDIO: role_order:-1 passava)
+        if "minimum" in spec and val < spec["minimum"]:
+            errs.append(f"'{key}': abaixo de minimum {spec['minimum']}")
+        if "maximum" in spec and val > spec["maximum"]:
+            errs.append(f"'{key}': acima de maximum {spec['maximum']}")
     if isinstance(val, list):
         if "minItems" in spec and len(val) < spec["minItems"]:
             errs.append(f"'{key}': lista com menos de minItems {spec['minItems']}")
+        # shared_refs deve apontar para dirs existentes (REQ-4; qa-critic round 1 BAIXO)
+        if spec.get("checkPathExists"):
+            for item in val:
+                if isinstance(item, str) and item and not os.path.isdir(os.path.join(ROOT, item)):
+                    errs.append(f"'{key}': caminho inexistente '{item}'")
+    if isinstance(val, dict):
+        # additionalProperties=false em sub-esquema (ex.: enforcement) — qa-critic round 1 BAIXO
+        subprops = spec.get("properties")
+        if subprops is not None and spec.get("additionalProperties") is False:
+            for k in val:
+                if k not in subprops:
+                    errs.append(f"'{key}.{k}': sub-campo nao permitido")
     return errs
 
 
@@ -240,6 +262,13 @@ def main(argv):
             any_fail = True
             continue
         errors = validate_against_schema(data, schema)
+        # name deve = nome da pasta (ADR-013) — só para skills sob .agent/skills/
+        # (qa-critic round 1 MEDIO: name divergente da pasta passava)
+        norm = path.replace("\\", "/")
+        if "/.agent/skills/" in norm:
+            folder = os.path.basename(os.path.dirname(os.path.abspath(path)))
+            if data.get("name") not in (folder, None) and folder != "_template":
+                errors.append(f"'name': '{data.get('name')}' difere do nome da pasta '{folder}'")
         if errors:
             any_fail = True
             print(f"FAIL {rel}:")

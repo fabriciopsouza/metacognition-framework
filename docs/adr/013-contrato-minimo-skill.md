@@ -28,9 +28,9 @@ morto) é o teto: **nenhum campo obrigatório sem verificação que o consuma**.
 ## Decisão (1 frase ativa)
 
 Formalizar um **contrato mínimo de skill** — 8 campos obrigatórios (identidade + fronteira I/O +
-ganchos transversais) + 4 opcionais — descrito em `tools/framework-schema.json`, verificado por
-`tools/validate_skills.py` (gate de CI no IDE) e por auto-check de 1 linha no chat, aplicado a todas
-as 7 skills + `_template`.
+ganchos transversais) + 5 opcionais — descrito em `tools/framework-schema.json`, verificado por
+`tools/validate_skills.py` (gate de CI no IDE) e por auto-check de 1 linha no chat, aplicado às
+7 skills de processo (`_template` é molde inerte, excluído do gate; não é um role ativo).
 
 ### Contrato (frontmatter)
 
@@ -46,7 +46,7 @@ as 7 skills + `_template`.
 | `confidence_required` | bool | a skill classifica confiança? (liga P1) |
 | `shared_refs` | lista | regras de `_shared/` que a skill carrega |
 
-**Opcionais (declarar só quando usados):** `version` (SemVer), `allowed-tools`, `rewind_target`
+**Opcionais (5, declarar só quando usados):** `version` (SemVer), `allowed-tools`, `rewind_target`
 (P13), `enforcement` (`{ide, chat}` — P1/ADR-015), `classe` (`salva-vidas|operacional|andaime` — P7/ADR-017).
 
 > Os campos legados `source` e `last_review` permanecem **permitidos** (não quebram), mas não são
@@ -59,6 +59,11 @@ as 7 skills + `_template`.
   declarados) — higiene declarada, **não** gate. Texto no `_shared/output-format`.
 
 ## Alternativas consideradas
+
+> Verificação efetiva (qa-critic round 1): o validador enforça `minimum` (role_order≥0),
+> `name`=nome da pasta, existência dos paths de `shared_refs`, ausência de tags XML em `description`,
+> e `additionalProperties:false` em sub-esquemas — fechando o gap "schema declara, gate não verifica"
+> (REQ-6). Sem isso, o contrato seria andaime parcial (lição JARVIS).
 
 1. **Não fazer (status quo).** Prós: zero esforço. Contras: convenções seguem não-verificáveis;
    P1/P6/P7 reespecificariam schema ad-hoc (retrabalho). Rejeitada — gatilho de ≥2 implementações já
