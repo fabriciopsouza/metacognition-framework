@@ -4,6 +4,17 @@ description: "Ativar para trabalho de leitura longo, ruidoso ou paralelizável: 
 version: 1.0.0
 source: "pesquisa A1/A2 (subagente de exploração read-only; paralelizar leitura, manter escrita single-thread)"
 last_review: 2026-05-23
+role_order: null
+consumes:
+  - "tarefa de leitura/auditoria + fragmentos de contexto"
+produces:
+  - "destilado read-only (achados, mapa, citações) ao orquestrador"
+pass_criteria: "PASS sse retorna só o destilado relevante (não o dump bruto), nada foi editado, e cada achado é rastreável à fonte."
+confidence_required: true
+shared_refs:
+  - _shared/anti-hallucination
+  - _shared/confidence-classification
+  - _shared/traceability
 ---
 
 # Explorer — Exploração/Auditoria Read-Only (genérico)

@@ -4,6 +4,17 @@ description: "Ponto de entrada padrão. Ativar quando o usuário traz pedido nov
 version: 1.2.0
 source: "SQUAD v1.1.0 (pmo) — enxuto, referenciando _shared/"
 last_review: 2026-05-23
+role_order: 0
+consumes: []
+produces:
+  - "STATUS + delegação ao papel correto"
+pass_criteria: "PASS sse pedido reformulado em 1 frase, afirmações classificadas, e próximo papel escolhido com critério explícito (sem ambiguidade pendente)."
+confidence_required: true
+shared_refs:
+  - _shared/metacognition-core
+  - _shared/confidence-classification
+  - _shared/anti-hallucination
+  - _shared/output-format
 ---
 
 # PMO — Orquestrador (genérico)

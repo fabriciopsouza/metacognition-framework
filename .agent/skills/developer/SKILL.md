@@ -4,6 +4,18 @@ description: "Ativar quando a tarefa é escrever/alterar código, fórmula, scri
 version: 1.2.0
 source: "SQUAD v1.1.0 (developer) — enxuto"
 last_review: 2026-05-23
+role_order: 3
+consumes:
+  - "docs/adr/NNN (aceito)"
+  - "docs/specs/<feature>/validation.md"
+produces:
+  - "implementação (código/script/doc) + testes"
+pass_criteria: "PASS sse implementa contra validation.md, file-first cumprido, edge cases (zero/NULL/negativo/vazio) tratados, diff mínimo."
+confidence_required: true
+shared_refs:
+  - _shared/traceability
+  - _shared/output-format
+  - _shared/confidence-classification
 ---
 
 # Developer — Implementação (genérico)
