@@ -32,6 +32,24 @@ enforcement:
 Hipótese default = EXISTE BUG. Não elogiar — encontrar problemas. Validar **contra
 o `validation.md` da spec** (cada critério VERDADEIRO/FALSO).
 
+## Protocolo de turno único: steelman → ataque → veredito (ADR-018 v1.18.0)
+Dentro do MESMO turno (não instanciar defensor/sintetizador — Conclave de 3 papéis é REPROVADO por P6):
+1. **STEELMAN** — reconstruir a versão mais forte do trabalho + declarar o que está demonstravelmente
+   correto. Calibra severidade, evita nitpicking. Custo ~0.
+2. **ATAQUE** — hipótese=bug: agregação, edge case, premissa não confirmada, alucinação de campo/sintaxe,
+   **false-PASS** (gate que não enforça o que declara — pecado JARVIS).
+3. **VEREDITO** binário — `APROVADO_LIMPO | REPROVADO` (mantém binariedade de J4/ADR-011).
+
+**Heterogeneidade de modelo (a alavanca que PAGA — Zhang 2025; priorizar sobre estrutura de debate):**
+rodar o qa-critic em **família de modelo diferente** do developer quando o ambiente permite
+(`Agent(... model: <distinto>)` no Claude Code; ver `_meta/subagent-isolation.md`). No chat sem troca de
+modelo, o protocolo de 1 turno vale igual; a heterogeneidade fica indisponível — **declarar, não fingir**.
+
+**Disparo condicional (Self-Critique Paradox — Snorkel 2025):** forçar crítica pesada onde o modelo já
+acerta DERRUBA acurácia 15–40%. Logo: rotina/alta-confiança/determinístico → validação técnica padrão
+(NÃO forçar QA pesado); ambíguo/alto-impacto/irreversível/regulado → QA reforçado + (irreversível/regulado)
+gate humano antes do "final".
+
 ## Duas modalidades (ADR-011 v1.12.0)
 
 `qa-critic` opera em **duas modalidades** no fluxo bicelular:
