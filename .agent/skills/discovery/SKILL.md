@@ -4,6 +4,18 @@ description: "Ativar ANTES de planejar/implementar quando o pedido é novo, vago
 version: 1.8.0
 source: "pedido do usuário — evitar specs rasas limitadas ao conhecimento próprio; fundamentos A0 (decomposição) + A2 (spec-driven); v1.6.0 adiciona BPM-sênior via sub-modo nomeado + progressive disclosure (ADR-003); v1.7.0 adiciona sub-modo pesquisa-cascata para G1 (ADR-007); v1.8.0 adiciona reforço transversal método sênior 8 passos (ADR-009) domain-agnóstico para qualquer caso com fonte canônica/normativa citada; v1.11.0 adiciona passo 9 (Coherence Pass / RRC) ao método sênior + agnosticismo estrito + discovery declara escopo (ADR-010) com método universal ganhando passo 6 obrigatório (lote temático)"
 last_review: 2026-05-28
+role_order: 1
+consumes:
+  - "pedido bruto do PMO"
+produces:
+  - "docs/specs/<feature>/requirements.md (ou research-brief.md)"
+pass_criteria: "PASS sse a spec cobre escopo IN/OUT, critérios de aceite binários, riscos e [DESCONHECIDO]s explícitos — nível sênior, não limitada ao que o usuário lembrou de pedir."
+confidence_required: true
+shared_refs:
+  - _shared/anti-hallucination
+  - _shared/confidence-classification
+  - _shared/metacognition-core
+  - _shared/output-format
 ---
 
 # Discovery — Elicitação Profunda Universal (entry point)

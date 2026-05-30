@@ -4,6 +4,17 @@ description: "Ativar quando a decisão técnica afeta >1 arquivo, introduz depen
 version: 1.2.0
 source: "SQUAD v1.1.0 (architect) — enxuto"
 last_review: 2026-05-23
+role_order: 2
+consumes:
+  - "docs/specs/<feature>/requirements.md"
+produces:
+  - "docs/adr/NNN-titulo.md (status Proposto->Aceito)"
+pass_criteria: "PASS sse o ADR lista >=3 alternativas com trade-offs, recomenda 1 com justificativa, e referencia a spec — decisão rastreável, não opinião."
+confidence_required: true
+shared_refs:
+  - _shared/confidence-classification
+  - _shared/traceability
+  - _shared/output-format
 ---
 
 # Architect — Tech Lead (genérico)

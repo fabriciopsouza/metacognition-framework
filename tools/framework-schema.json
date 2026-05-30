@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/fabriciopsouza/metacognition-framework/tools/framework-schema.json",
+  "title": "Contrato mínimo de skill (ADR-013, v1.14.0)",
+  "description": "Valida o frontmatter YAML das skills de processo (.agent/skills/*/SKILL.md). Módulos de _shared/ ficam fora (rule-holders, shape próprio). Régua §0: 8 obrigatórios + opcionais; nenhum campo obrigatório sem gate que o consuma.",
+  "type": "object",
+  "required": [
+    "name",
+    "description",
+    "role_order",
+    "consumes",
+    "produces",
+    "pass_criteria",
+    "confidence_required",
+    "shared_refs"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "maxLength": 64,
+      "description": "Identidade única, = nome da pasta."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "noXmlTags": true,
+      "description": "O que faz + QUANDO ativar (triggering). Sem tags XML."
+    },
+    "role_order": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Posição PMO(0)->release(6); null para skill não-sequencial (_shared, auxiliar)."
+    },
+    "consumes": {
+      "type": "array",
+      "description": "Pré-condição (DbC): artefatos/contexto de entrada. [] para entry-point.",
+      "items": { "type": "string" }
+    },
+    "produces": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Pós-condição (DbC): artefato-gate de saída.",
+      "items": { "type": "string" }
+    },
+    "pass_criteria": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Critério BINÁRIO de PASS, sem zona cinza."
+    },
+    "confidence_required": {
+      "type": "boolean",
+      "description": "A skill classifica confiança (liga P1)?"
+    },
+    "shared_refs": {
+      "type": "array",
+      "checkPathExists": true,
+      "description": "Regras de _shared/ que a skill carrega (paths devem existir).",
+      "items": { "type": "string" }
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Opcional — SemVer da skill."
+    },
+    "allowed-tools": {
+      "type": "string",
+      "description": "Opcional — restrição de ferramentas (ambiente com FS)."
+    },
+    "rewind_target": {
+      "type": "string",
+      "description": "Opcional — papel-alvo da cascata (P13)."
+    },
+    "enforcement": {
+      "type": "object",
+      "description": "Opcional (P1/ADR-015) — nível de garantia por ambiente. NUNCA afirma paridade ide=chat.",
+      "properties": {
+        "ide": { "type": "string" },
+        "chat": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "classe": {
+      "type": "string",
+      "enum": ["salva-vidas", "operacional", "andaime"],
+      "description": "Opcional (P7/ADR-017) — classe para poda Chesterton."
+    },
+    "source": {
+      "type": "string",
+      "description": "Legado permitido — proveniência histórica (não obrigatório)."
+    },
+    "last_review": {
+      "description": "Legado permitido — data da última revisão (não obrigatório)."
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Legado permitido — usado por skills de _shared/ (type/version/adr)."
+    }
+  },
+  "additionalProperties": false
+}

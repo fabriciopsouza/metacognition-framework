@@ -4,6 +4,18 @@ description: "Ativar SEMPRE após o developer, antes de qualquer aprovação. Va
 version: 1.2.0
 source: "SQUAD v1.1.0 (qa-critic) — enxuto"
 last_review: 2026-05-23
+role_order: 4
+consumes:
+  - "output do developer"
+  - "docs/specs/<feature>/validation.md"
+produces:
+  - "veredito adversarial (APROVADO_LIMPO | REPROVADO_REWIND J_i)"
+pass_criteria: "PASS sse cada critério do validation.md foi verificado VERDADEIRO/FALSO e nenhum [DESCONHECIDO] bloqueia decisão irreversível/regulada (APROVADO_LIMPO, sem ressalvas)."
+confidence_required: true
+shared_refs:
+  - _shared/output-format
+  - _shared/confidence-classification
+rewind_target: developer
 ---
 
 # QA-Critic — Validação Adversarial (genérico)

@@ -4,6 +4,13 @@ description: "NÃO ATIVAR — molde para criar uma APLICAÇÃO do framework (um 
 version: 1.0.0
 source: "padrão de aplicação derivado de A2"
 last_review: 2026-05-23
+role_order: null
+consumes: []
+produces:
+  - "<o que esta skill entrega — preencher ao clonar>"
+pass_criteria: "<critério BINÁRIO de PASS — preencher ao clonar>"
+confidence_required: false
+shared_refs: []
 ---
 
 # <nome-da-aplicação> — Molde

@@ -4,6 +4,16 @@ description: "Ativar ao fim de entrega aprovada pelo qa-critic, antes de fechar 
 version: 1.2.0
 source: "SQUAD v1.1.0 (docops) — enxuto"
 last_review: 2026-05-23
+role_order: 5
+consumes:
+  - "entrega aprovada (APROVADO_LIMPO) pelo qa-critic"
+produces:
+  - "CHANGELOG + ADR Aceito + docs sincronizadas"
+pass_criteria: "PASS sse CHANGELOG atualizado, ADR marcado Aceito com ponteiro, e specs/docs em sync (sem drift) — bloco não fecha sem doc proporcional."
+confidence_required: false
+shared_refs:
+  - _shared/metacognition-core
+  - _shared/traceability
 ---
 
 # DocOps — Documentação como Código (genérico)
