@@ -38,7 +38,8 @@ Dentro do MESMO turno (não instanciar defensor/sintetizador — Conclave de 3 p
    correto. Calibra severidade, evita nitpicking. Custo ~0.
 2. **ATAQUE** — hipótese=bug: agregação, edge case, premissa não confirmada, alucinação de campo/sintaxe,
    **false-PASS** (gate que não enforça o que declara — pecado JARVIS).
-3. **VEREDITO** binário — `APROVADO_LIMPO | REPROVADO` (mantém binariedade de J4/ADR-011).
+3. **VEREDITO** binário — aprovar ou não-aprovar; o termo concreto **herda a modalidade ativa**
+   (J4 → `APROVADO_LIMPO`/itera; PC → `APROVADO_LIMPO`/`REPROVADO_REWIND J_i`). Ver nota abaixo.
 
 **Heterogeneidade de modelo (a alavanca que PAGA — Zhang 2025; priorizar sobre estrutura de debate):**
 rodar o qa-critic em **família de modelo diferente** do developer quando o ambiente permite
@@ -49,6 +50,17 @@ modelo, o protocolo de 1 turno vale igual; a heterogeneidade fica indisponível 
 acerta DERRUBA acurácia 15–40%. Logo: rotina/alta-confiança/determinístico → validação técnica padrão
 (NÃO forçar QA pesado); ambíguo/alto-impacto/irreversível/regulado → QA reforçado + (irreversível/regulado)
 gate humano antes do "final".
+
+> **Não revoga "hipótese default = EXISTE BUG" (ADR-011 "TODO QA é adversarial").** O QA adversarial
+> **básico** (validar cada critério do `validation.md`, postura de bug-default) é **sempre** aplicado.
+> O que é condicional é o QA **reforçado** (steelman elaborado + múltiplos ângulos): em rotina de alta
+> confiança, o básico basta; forçar o reforçado onde o modelo já acerta é que derruba acurácia. Silenciar
+> o reforçado ≠ pular o adversarial — usar "disparo condicional" para dispensar QA legítimo é abuso da regra.
+
+> **Veredito herda o vocabulário da modalidade ativa** (não inventa termo novo): como **junction-critic J4**
+> → `APROVADO_LIMPO` (reprovar = mais uma iteração no mesmo artefato, sem REPROVADO terminal); como
+> **process-critic (PC)** → `APROVADO_LIMPO | REPROVADO_REWIND J_i`. "REPROVADO" do passo 3 é o gatilho
+> genérico de não-aprovação; concretiza-se conforme a modalidade.
 
 ## Duas modalidades (ADR-011 v1.12.0)
 

@@ -37,8 +37,13 @@ o QA reforçado **condicionalmente** (ambíguo/alto-impacto/regulado — silenci
    que está demonstravelmente correto. Calibra severidade, evita nitpicking. Custo ~0.
 2. **ATAQUE** adversarial: hipótese default = existe bug. Erro de agregação, edge case, premissa não
    confirmada, alucinação de campo/sintaxe, false-PASS (gate que não enforça o que declara).
-3. **VEREDITO** binário: `APROVADO_LIMPO | REPROVADO` (mantém a binariedade do J4/ADR-011), citando o
-   que sobrevive ao ataque e o que precisa de gate humano.
+3. **VEREDITO** binário (aprovar/não-aprovar), **herdando o vocabulário da modalidade ativa** (J4 →
+   `APROVADO_LIMPO`/itera; PC → `APROVADO_LIMPO`/`REPROVADO_REWIND J_i` — ADR-011), citando o que
+   sobrevive ao ataque e o que precisa de gate humano. **Não inventa um terceiro termo.**
+
+> **Reconciliação com "TODO QA é adversarial" (ADR-011):** o disparo condicional silencia o QA
+> **reforçado**, nunca o **básico** (bug-default + validation.md), que é sempre aplicado. Usar "disparo
+> condicional" para dispensar QA legítimo é abuso da regra (codificado na skill).
 
 ### Heterogeneidade de modelo (a alavanca que paga — Zhang 2025 Heter-MAD)
 - O qa-critic roda em **família de modelo diferente** do developer/gerador, quando o ambiente permite
