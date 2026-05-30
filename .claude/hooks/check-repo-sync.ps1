@@ -48,8 +48,10 @@ try {
 
     if ($behind -eq 0) { Emit '' }  # em dia -> silencioso (sem ruido).
 
-    # Esta atras. E seguro auto-atualizar (tree limpo + fast-forward)?
-    $dirty = (git -C $cwd status --porcelain 2>$null)
+    # Esta atras. Seguro auto-atualizar? Criterio: SEM modificacoes RASTREADAS (untracked NAO bloqueia
+    # -- qa-critic ADR-019: o caso comum "clone + nota local + main avancou" deve auto-atualizar; o
+    # --ff-only e a trava final, aborta com seguranca se um untracked fosse sobrescrito) + fast-forward.
+    $dirty = (git -C $cwd status --porcelain --untracked-files=no 2>$null)
     $isClean = [string]::IsNullOrWhiteSpace($dirty)
     $ffPossible = $false
     if ($isClean) {
@@ -59,16 +61,17 @@ try {
     }
 
     if ($isClean -and $ffPossible) {
-        $pullOut = (git -C $cwd pull --ff-only --quiet 2>&1)
+        git -C $cwd pull --ff-only --quiet 2>$null | Out-Null
+        $pullRc = $LASTEXITCODE   # exit code do pull e o sinal autoritativo (nao inferir so por behind)
         $newBehind = (git -C $cwd rev-list --count "HEAD..$upstream" 2>$null)
-        if ($newBehind -eq '0' -or $newBehind -eq 0) {
-            Emit "# Repo sync (ADR-019)`n✅ Repo estava $behind commit(s) atras de ``$upstream`` e foi AUTO-ATUALIZADO (fast-forward, tree limpo). Agora em dia. Reconcilie WIP sobre o estado novo."
+        if ($pullRc -eq 0 -and ($newBehind -eq '0' -or $newBehind -eq 0)) {
+            Emit "# Repo sync (ADR-019)`n✅ Repo estava $behind commit(s) atras de ``$upstream`` e foi AUTO-ATUALIZADO (fast-forward, sem modificacoes rastreadas). Agora em dia. Reconcilie WIP sobre o estado novo."
         } else {
-            Emit "# Repo sync (ADR-019)`n⚠️ Tentei auto-atualizar (estava $behind atras de ``$upstream``) mas pull --ff-only nao zerou (resto: $newBehind). Rode ``git pull`` manual e verifique ANTES de reconciliar WIP."
+            Emit "# Repo sync (ADR-019)`n⚠️ Tentei auto-atualizar (estava $behind atras de ``$upstream``) mas ``pull --ff-only`` NAO concluiu (rc=$pullRc; ex.: untracked colidiria, lock, ou pre-merge hook). Rode ``git pull`` manual e verifique ANTES de reconciliar WIP."
         }
     } else {
         if (-not $isClean) {
-            $motivo = 'working tree SUJO'
+            $motivo = 'working tree com modificacoes RASTREADAS'
             $acao   = 'commit ou stash, depois ``git pull``'
         } else {
             $motivo = 'historico DIVERGIU (nao-fast-forward)'

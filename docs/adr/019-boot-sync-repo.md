@@ -34,9 +34,10 @@ inclusive chat sem hook).
 | Situação | Ação do hook |
 |---|---|
 | Em dia (behind=0) | silencioso (sem ruído) |
-| Atrás + tree **limpo** + **fast-forward** | **AUTO-PULL `--ff-only`** → injeta "✅ auto-atualizado" |
-| Atrás + tree **sujo** | **NÃO mexe** → injeta "⚠️ commit/stash + `git pull` antes de reconciliar" |
+| Atrás + **sem modificações rastreadas** + **fast-forward** | **AUTO-PULL `--ff-only`** → injeta "✅ auto-atualizado". **Untracked NÃO bloqueia** (caso comum: clone + nota local; `--ff-only` aborta com segurança se um untracked fosse sobrescrito → vira aviso) |
+| Atrás + **modificações rastreadas** | **NÃO mexe** → injeta "⚠️ commit/stash + `git pull` antes de reconciliar" |
 | Atrás + **divergiu** (não-ff) | **NÃO mexe** → injeta "⚠️ rebase/merge manual antes de reconciliar" |
+| Auto-pull tentado mas falhou (rc≠0: untracked colidiria, lock, pre-merge hook) | injeta "⚠️ pull não concluiu, rode manual" (exit code do pull é o sinal autoritativo) |
 | Não é repo git / offline / erro | falha **soft** (warning stderr + exit 0) — nunca bloqueia |
 
 **Por que não auto-pull sempre:** pull em tree sujo ou não-ff pode gerar merge inesperado, conflito ou

@@ -38,11 +38,10 @@ def run_hook(pwsh, project_dir):
 
 
 def setup_pair(tmp):
-    origin = os.path.join(tmp, "origin.git")
+    os.makedirs(tmp, exist_ok=True)
     work = os.path.join(tmp, "work")
     clone = os.path.join(tmp, "clone")
-    # origin = repo de trabalho com um commit, depois servido como remoto
-    git(tmp, "init", "-q", work) if False else None
+    # work = repo de trabalho com um commit, servido como "origin" para o clone
     subprocess.run(["git", "init", "-q", work], capture_output=True)
     for k, v in (("user.email", "t@t"), ("user.name", "t")):
         git(work, "config", k, v)
@@ -94,6 +93,31 @@ def main():
         behind2 = git(clone, "rev-list", "--count", "HEAD..origin/main").stdout.strip()
         ok2 = (behind2 != "0")  # continua atrás (não mexeu)
         print(("OK  " if ok2 else "FAIL") + " C2 pós: clone NAO foi atualizado (behind>0)"); fails += 0 if ok2 else 1
+
+        # C4 DIVERGIU (não-ff): clone com commit local próprio + origin avança → deve AVISAR "DIVERGIU"
+        w4, c4 = setup_pair(os.path.join(tmp, "d4"))
+        open(os.path.join(c4, "local.txt"), "w").write("commit local\n")
+        git(c4, "add", "."); git(c4, "commit", "-q", "-m", "local-only")  # diverge
+        advance_origin(w4)  # origin tb avança → históricos divergem
+        ctx = run_hook(pwsh, c4)
+        ok = ("DIVERGIU" in ctx) and ("NAO auto-atualizei" in ctx)
+        print(("OK  " if ok else "FAIL") + " C4 divergiu(nao-ff) -> avisa DIVERGIU, sem pull  | ctx=" + repr(ctx[:70])); fails += 0 if ok else 1
+        behind4 = git(c4, "rev-list", "--count", "HEAD..origin/main").stdout.strip()
+        ok2 = (behind4 != "0")
+        print(("OK  " if ok2 else "FAIL") + " C4 pós: clone NAO foi tocado (behind>0)"); fails += 0 if ok2 else 1
+
+        # C5 só UNTRACKED (sem modificação rastreada) + atrás → deve AUTO-ATUALIZAR (fix do qa-critic)
+        w5, c5 = setup_pair(os.path.join(tmp, "u5"))
+        advance_origin(w5)
+        open(os.path.join(c5, "minha-nota.txt"), "w").write("nota local untracked\n")  # untracked apenas
+        ctx = run_hook(pwsh, c5)
+        ok = "AUTO-ATUALIZADO" in ctx
+        print(("OK  " if ok else "FAIL") + " C5 untracked-only+atras -> AUTO-ATUALIZA  | ctx=" + repr(ctx[:60])); fails += 0 if ok else 1
+        behind5 = git(c5, "rev-list", "--count", "HEAD..origin/main").stdout.strip()
+        ok2 = (behind5 == "0")
+        print(("OK  " if ok2 else "FAIL") + " C5 pós: atualizou (behind=0) e preservou untracked"); fails += 0 if ok2 else 1
+        ok3 = os.path.exists(os.path.join(c5, "minha-nota.txt"))
+        print(("OK  " if ok3 else "FAIL") + " C5 pós: untracked local preservado"); fails += 0 if ok3 else 1
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     print("-" * 40)
