@@ -15,6 +15,31 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.19.0] — 2026-05-30 — Sync de repo no boot via hook (ADR-019) — fecha a dívida da série
+
+> MINOR. Fecha como **mecanismo em runtime** o gap que a série v1.14.x deixara como prosa (method-audit):
+> o `/start-session` operava sobre clone local sem `git fetch` (caso real: 41 commits atrás de main).
+> Dívida cobrada pelo dono. EMENDA aos Princípios 8 e 11; estende a cadeia SessionStart (ADR-004/005/006).
+
+### Added
+- **`docs/adr/019-boot-sync-repo.md`** (Aceito) — política honesta: `git fetch` sempre; auto-`pull --ff-only`
+  só quando seguro (tree limpo + fast-forward); avisa sem tocar se sujo/divergiu; falha soft.
+- **`.claude/hooks/check-repo-sync.ps1`** (+ `.sh` paridade) — hook SessionStart de propósito único.
+- **`tools/test_repo_sync.py`** — canary 5/5: prova auto-update seguro, aviso-quando-sujo, silêncio-em-dia, com efeito verificado.
+
+### Changed
+- **`.claude/settings.json`** — registra check-repo-sync no SessionStart (antes do inject-start-session).
+- **`.claude/hooks/sync-global.ps1`** — espelha o hook para `~/.claude/hooks/`.
+- **`.agent/workflows/start-session.md`** — passo 1 manda `git fetch` + ahead/behind ANTES de reconciliar (superfície chat).
+
+### Pendências (Princípio 11 honesto)
+- Registro no SessionStart **global** (outros repos squad via bootstrap.ps1) — follow-up trigger-gated **[DESCONHECIDO]**.
+- Paridade `.sh` em Linux/macOS não testada **[DESCONHECIDO]**.
+
+[CONSOLIDADO] / [CONFIRMADO] após merge.
+
+---
+
 > **Série v1.14.x "da prosa ao mecanismo" (Ondas 0–4, 2026-05-30)** — importa o *runtime* do JARVIS
 > (hooks, threshold medido, allowlist, gate executável, telemetria) para dentro do método, **filtrado
 > pela régua §0** e **agnóstico de domínio**, rejeitando o andaime que derrubou o JARVIS. 6 ADRs

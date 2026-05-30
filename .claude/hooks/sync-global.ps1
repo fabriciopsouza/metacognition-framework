@@ -108,6 +108,16 @@ try {
             if (Test-Path $hookGlobalTarget) { $hookCount++ }
         }
 
+        # ADR-019 / v1.19.0 — espelha check-repo-sync.ps1 (sync de boot) para a instancia global,
+        # disponivel a outros repos squad. Registro no SessionStart global e follow-up (bootstrap.ps1);
+        # no repo-framework ja esta wired pelo .claude/settings.json do projeto.
+        $repoSyncSource = Join-Path $projectRoot '.claude\hooks\check-repo-sync.ps1'
+        $repoSyncTarget = Join-Path $hooksDest 'check-repo-sync.ps1'
+        if (Test-Path $repoSyncSource) {
+            Copy-Item -Path $repoSyncSource -Destination $repoSyncTarget -Force -ErrorAction SilentlyContinue
+            if (Test-Path $repoSyncTarget) { $hookCount++ }
+        }
+
         # Espelha .agent/workflows/ — o hook global le start-session.md de ~/.claude/workflows/.
         $workflowsRoot = Join-Path $projectRoot '.agent\workflows'
         if (Test-Path $workflowsRoot) {
