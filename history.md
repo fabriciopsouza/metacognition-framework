@@ -171,12 +171,12 @@ Riscos ativos: nenhum bloqueante. Risco residual ADR-010 §Riscos (detector de v
 ### 17-A Blame (fluxo entre junções, por execução)
 > Quando process-critic dispara rewind: registrar junção-origem (J0–J5) + rounds de qa-critic até PASS.
 
-- 2026-05-30 (run v1.14.x): rounds de qa-critic por onda — O0=1, O1=2, O2=1 (todos resolvidos como emenda DENTRO de J4 qa-critic→docops; **nenhum rewind cascata cross-junção** — forward-only preservado). Sinal: a montante (discovery/architect) não gerou spec rasa; os achados foram de implementação, corrigidos em 1–2 rounds.
+- 2026-05-30 (run v1.14.x): rounds de qa-critic por onda — O0=1, O1=2, O2=1, O3=1 (todos resolvidos como emenda DENTRO de J4 qa-critic→docops; **nenhum rewind cascata cross-junção** — forward-only preservado). Sinal: a montante (discovery/architect) não gerou spec rasa; achados foram de implementação, corrigidos em 1–2 rounds. **Nota honesta (P11):** a métrica 17-A "junção-origem do rewind" NÃO foi exercida nesta onda — nenhum rewind ocorreu; só o proxy `qa_rounds` rodou. Capacidade de blame-de-rewind = [INFERIDO/não-exercido] até um rewind real.
 
 ### 17-B Tally de regra + classe (uso ao longo de sessões)
-> `regra — classe(salva-vidas|operacional|andaime) — disparou S/N`. Poda só `andaime` após N=5–10 sem disparo.
+> `regra — classe(salva-vidas|operacional|andaime) — disparou S/N — sem-disparo:K`. Poda só `andaime` quando K≥N (5–10).
 
-- régua §0 (GANHO LÍQUIDO) — salva-vidas — S (rejeitou inflação/andaime em toda onda; ex.: _shared fora do contrato, matriz reprovada)
-- qa-critic adversarial isolado/heterogêneo — salva-vidas — S (pegou false-PASS real em O0, O1, O2)
-- contrato mínimo (validate_skills) — operacional — S (gate 7/7 em cada onda)
-- file-first — salva-vidas — S (violado no bootstrap → ver Aprendizado 2026-05-30)
+- régua §0 (GANHO LÍQUIDO) — salva-vidas — S — sem-disparo:0 (rejeitou inflação/andaime em toda onda; ex.: _shared fora do contrato, matriz reprovada)
+- qa-critic adversarial isolado/heterogêneo — salva-vidas — S — sem-disparo:0 (pegou false-PASS real em O0, O1, O2, O3)
+- contrato mínimo (validate_skills) — operacional — S — sem-disparo:0 (gate 7/7 em cada onda)
+- file-first — salva-vidas — S — sem-disparo:0 (violado no bootstrap → ver Aprendizado 2026-05-30)

@@ -50,9 +50,11 @@ Logar em `audit-log.jsonl` versionado, por chamada:
 - **NÃO** medir: dashboards, latência fina, throughput, "% verde", custo-por-junção (salvo circuit-breaker).
 
 **17-B Tally + classe + poda Chesterton (uso de regra ao longo de sessões):**
-- **Tally S/N** por regra-chave (agregado no fim do bloco/dia, **não** por turno).
+- **Tally S/N** por regra-chave (agregado no fim do bloco/dia, **não** por turno) + contador
+  `sem-disparo: K` (sessões consecutivas sem disparo; K+1 se não disparou, K=0 se disparou — derivável
+  da varredura append-only). É o `K` que torna a poda por N operacionalizável.
 - **Classe** (campo `classe` do contrato, ADR-013): `salva-vidas | operacional | andaime`.
-- **Poda só `andaime`** após N=5–10 sessões sem disparo (parâmetro [INFERIDO], não constante).
+- **Poda só `andaime`** quando `sem-disparo ≥ N` (N=5–10, parâmetro [INFERIDO], não constante).
   `salva-vidas` nunca poda por desuso → **nota de verificação**. `operacional` → consolidar, não remover.
   Sem classe → tratar como `salva-vidas` (conservador). **Portão pequeno:** suspender→observar→remover.
 - **Tally autorreportado é falível** [DESCONHECIDO]: cruzar com sinal externo (rastro no output?) quando possível.

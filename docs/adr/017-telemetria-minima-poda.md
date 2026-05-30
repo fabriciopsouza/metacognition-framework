@@ -37,7 +37,12 @@ Instrumentar **só 2 métricas que mudam decisão** (nenhuma outra):
   de sessões. Custo ~zero, roda no chat. **Confiabilidade [DESCONHECIDO]:** o agente pode alucinar uso
   → quando possível, cruzar com sinal externo (a regra deixou rastro verificável no output?).
 - **Classe da regra** (campo `classe` do contrato ADR-013): `salva-vidas | operacional | andaime`.
-- **Poda só na classe `andaime`** após **N = 5–10 sessões** sem disparo (**[INFERIDO]**, parâmetro do
+- **Contador de desuso (operacionaliza o N):** cada entrada de tally carrega `sem-disparo: K` — o nº
+  de sessões **consecutivas** em que a regra não disparou. O PMO, ao agregar no checkpoint, faz `K+1`
+  se a regra não disparou na sessão, ou zera (`K=0`) se disparou. Como o `history.md` é append-only,
+  `K` também é **derivável** por varredura das entradas anteriores da mesma regra (o campo é o cache
+  legível; a varredura é a fonte de verdade). Sem esse contador, "poda após N sessões" seria inaplicável.
+- **Poda só na classe `andaime`** quando `sem-disparo ≥ N` (**N = 5–10, [INFERIDO]**, parâmetro do
   ADR, não constante; calibrar por observação). `salva-vidas` (anti-alucinação, gate T3, audit trail,
   DIV/0) **NUNCA** poda por desuso → gera só **nota de verificação**. `operacional` → candidata a
   **consolidação** (não remoção). `unknown`/sem classe → tratada como `salva-vidas` (conservador) até classificar.
@@ -47,10 +52,12 @@ Instrumentar **só 2 métricas que mudam decisão** (nenhuma outra):
 ## Fronteira de coletor único (o que evita os dois sistemas)
 - **17-A mede:** fluxo *entre junções* nesta execução (onde a falha entrou agora).
 - **17-B mede:** uso de regra *ao longo de sessões* (o que é andaime no tempo).
-- **Mesmo artefato lógico:** seção `## Telemetria` do `history.md` (append-only, já é o registro
-  cross-sessão). O IDE pode *complementar* 17-A com atributo no span OTel já existente
-  (`framework.junction`) — **mesma métrica, não coletor novo**: o span é fonte de leitura para popular a
-  seção, não um segundo registro de verdade. A seção do `history.md` é a fonte canônica única.
+- **Mesmo artefato lógico + mecanismo de reconciliação (não só política):** a seção `## Telemetria`
+  do `history.md` (append-only) é a **fonte de verdade única**. No IDE, o span OTel (`framework.junction`)
+  é **efêmero e somente-leitura**; o passo concreto que evita dois coletores é: **no checkpoint, o
+  agente transcreve os atributos de span do bloco para a seção `## Telemetria`** — o span morre com a
+  sessão, o `history.md` perdura. No chat (sem span), o `history.md` é o único coletor desde o início.
+  Assim a "fonte única" é garantida por um passo (transcrição no checkpoint), não por aspiração.
 
 ## Mecanismo por ambiente
 - **IDE/SDK:** atributo no span OTel existente (`framework.junction=J2`, `framework.event=rewind`,
