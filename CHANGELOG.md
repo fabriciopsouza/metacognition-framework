@@ -15,6 +15,66 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+> **Série v1.14.x "da prosa ao mecanismo" (Ondas 0–4, 2026-05-30)** — importa o *runtime* do JARVIS
+> (hooks, threshold medido, allowlist, gate executável, telemetria) para dentro do método, **filtrado
+> pela régua §0** e **agnóstico de domínio**, rejeitando o andaime que derrubou o JARVIS. 6 ADRs
+> (013–018), 5 PRs stacked (#11–#15), cada onda com qa-critic adversarial isolado+heterogêneo.
+> Lastro: `docs/specs/v1.14.x-digest-pesquisas.md` (P1–P7). Os CHANGELOGs das ondas consolidam aqui
+> (a stack mergeia em ordem #11→#15).
+
+## [1.18.0] — 2026-05-30 — QA adversarial de turno único + heterogeneidade de modelo (ADR-018) — Onda 4
+
+> MINOR (P6). Captura o útil do "Conclave" de 3 papéis a custo ~zero no qa-critic existente e **rejeita**
+> a estrutura de 3 papéis (homogêneo reforça viés; MAD não supera self-consistency). EMENDA ao Princípio 13.
+
+### Added/Changed
+- **ADR-018** (Aceito) — protocolo **steelman→ataque→veredito** (1 turno); **heterogeneidade de modelo**
+  gerador↔crítico (Zhang 2025 Heter-MAD); **disparo condicional** (Self-Critique Paradox: forçar crítica
+  onde o modelo acerta derruba acurácia 15–40% — silencia QA *reforçado*, nunca o adversarial *básico*).
+- **`.agent/skills/qa-critic/SKILL.md`** +seção "Protocolo de turno único" + reconciliação de veredito
+  (2 eixos: `passou` binário herda modalidade; `recomendacao` = ação ortogonal). **`_meta/subagent-isolation.md`** +nota de heterogeneidade.
+- **Rejeitado:** Conclave de 3 papéis (régua §0). qa-critic 2 rounds: round 2 pegou false-PASS auto-gerado (validação empírica do ADR-018).
+
+## [1.17.0] — 2026-05-30 — Telemetria mínima de processo + poda temporal (ADR-017 pai) — Onda 3
+
+> MINOR (P5+P7). Auto-observação mínima: importa a medição do JARVIS, rejeita o andaime (11 coletores,
+> matriz instrumentada). EMENDA aos Princípios 10/11. **Coletor único** (DOSSIÊ §3).
+
+### Added/Changed
+- **ADR-017** (Aceito, ADR-pai): **17-A blame** (SÓ 2 métricas: junção-origem do rewind + qa_rounds);
+  **17-B poda** (tally S/N + `classe` + contador `sem-disparo:K` + poda só `andaime` quando K≥N=5–10;
+  `salva-vidas` nunca poda; Chesterton). Fronteira de coletor único com mecanismo (transcrição de span no checkpoint).
+- **`_shared/observability`** +§Telemetria; **`history.md`** +`## Telemetria`; **`checkpoint.md`** +gancho. `classe` reusa ADR-013.
+- **Rejeitado:** matriz de relevância instrumentada (P7). qa-critic round 1: 3 MÉDIO + 2 BAIXO, corrigidos.
+
+## [1.16.0] — 2026-05-30 — Compaction por threshold medido + digest persistente (ADR-016) — Onda 2
+
+> MINOR (P2). Troca o gatilho qualitativo por **faixas medidas** (degradação é gradiente). EMENDA ao Princípio 8; digest liga ao 14.
+
+### Added/Changed
+- **ADR-016** (Aceito) — faixas 🟢<50/🟡50–69/🟠70–84/🔴≥85 (fronteira inclusiva à esquerda); proxy
+  chat `chars÷3`; cortes = escolha de engenharia [INFERIDO]. **`§2.5`** + **`checkpoint.md`** faixas;
+  **`docs/specs/_template-digest/digest.md`** = Pacote de handoff (§P14) estendido (superset). qa-critic round 1: 1 ALTO + 3 MÉDIO + 3 BAIXO, corrigidos.
+
+## [1.15.0] — 2026-05-30 — Allowlist por efeito (ADR-014) + Enforcement fail-closed (ADR-015) — Onda 1
+
+> MINOR (P4+P1). Par de maior valor: da prosa ao mecanismo na **segurança**. EMENDA aos Princípios 1/13.
+
+### Added/Changed
+- **ADR-014** — classifica por **EFEITO** (E1–E6), tiers T1/T2/T3, default-deny, gate humano p/ T3.
+- **ADR-015** — gate executável no IDE + honestidade no chat (`enforcement:{ide,chat}` **nunca** afirma paridade).
+- **`_shared/action-safety`**, **`tools/hooks/effect-gate.ps1`/`.sh`** (deny-backstop T3), **`managed-settings.template.json`**, **`tools/test_effect_gate.py`** (canary fiel + auto-guarda). qa-critic 2 rounds: 3 ALTO (bypasses de `rm`) corrigidos → APROVADO_LIMPO.
+
+## [1.14.0] — 2026-05-30 — Contrato mínimo de skill (ADR-013) — Onda 0
+
+> MINOR (P3). Contrato de interface das skills vira gate verificável. EMENDA ao Princípio 5.
+
+### Added/Changed
+- **ADR-013** — 8 campos obrigatórios + 5 opcionais. **`tools/framework-schema.json`** + **`tools/validate_skills.py`** (stdlib, 7/7 PASS).
+- 7 skills + `_template` com frontmatter de contrato; `_shared/` fica fora (rule-holders). qa-critic round 1: 3 MÉDIO + 3 BAIXO, corrigidos.
+
+---
+
 ## [1.13.0] — 2026-05-29 — Handoff cross-sessão obrigatório (ADR-012) + drift sync + rules #6 RCA e #7 cobertura temporal pós-J4
 
 > MINOR feature. Derivado de **dogfood real do v1.12.x** em case regulado externo (repo paralelo `test-aivi-isolated`). Sessão paralela aplicou 2 edits globais sem sincronizar framework repo — drift confirmado. Process-critic round 1 desta v1.13.0 identificou: rule #4 SE/ENTÃO v1.12.1 cobre polish post-release, NÃO artefato novo intra-bloco pós-J4 (gap real, rule #7 nova). Princípio 11 honesto aplicado: 6 gaps remanescentes ficam method-audit (não preemptivo).

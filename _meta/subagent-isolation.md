@@ -29,6 +29,13 @@ são instâncias **efêmeras** — não herdam a memória da conversa do Orquest
 Candidatos naturais a subagente: **QA-Critic** (contexto fresh evita viés de
 auto-aprovação) e **explore read-only** (mapeia código/dados sem poluir o principal).
 
+## Heterogeneidade de modelo gerador↔crítico (ADR-018 v1.18.0)
+Isolar o qa-critic não basta: a alavanca que **paga** é rodá-lo em **família de modelo diferente** do
+developer/gerador — Zhang et al. 2025 (Heter-MAD) mostra que heterogeneidade > número de papéis, e que
+multi-agent debate homogêneo não supera self-consistency. No Claude Code: `Agent(..., model: <distinto
+do gerador>)`. **Priorizar isso sobre qualquer estrutura de debate/Conclave** (reprovado por P6). No
+chat sem troca de modelo, a heterogeneidade fica indisponível — **declarar, não fingir** independência.
+
 ## ⚠️ Ressalva de ambiente [CONFIRMADO]
 - **Claude Code / SDK:** isolamento **real** (subagente com contexto e tools próprios).
 - **Chat web (Claude.ai / Gemini):** **não há** subagente — degrada para *hats*
