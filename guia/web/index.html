@@ -256,13 +256,11 @@
       <div class="step-node"><span class="node">docops<span class="role">documenta</span></span><span class="arrow">→</span></div>
       <div class="step-node"><span class="node hi">/checkpoint<span class="role">salva o estado</span></span></div>
     </div>
-    <p class="loop"><b>Engenharia de gates binários:</b> cada seta é uma junção com critério <b>PASS/FAIL</b>
-      — não "parece ok". <b>QA entre todas as etapas</b> + QA adversarial final; o <b>rewind</b> (um revisor
-      com poder de voltar a qualquer etapa anterior) é a <b>única</b> via de retorno. <b>Sem loop infinito:</b>
-      iterações ilimitadas <em>dentro</em> de uma junção até PASS, mas <b>forward-only entre</b> elas; e, após um
-      <b>limite de rounds</b> no mesmo ponto, escala para <b>gate humano</b> ou registra como
-      <b>débito/backlog</b> — nunca itera <em>ad aeternum</em>. O <code>/checkpoint</code> grava o digest que a
-      próxima sessão lê.</p>
+    <p class="loop"><b>Gates binários:</b> cada junção é <b>PASS/FAIL</b> (não "parece ok") — QA entre as
+      etapas e QA adversarial final. Voltar, só por <b>rewind</b> (revisor que retorna a uma etapa anterior).
+      <b>Sem loop infinito:</b> itera <em>dentro</em> da junção até PASS, <b>forward-only entre</b> elas; após
+      um limite de rounds → <b>gate humano</b> ou <b>backlog</b>. O <code>/checkpoint</code> grava o digest
+      que a próxima sessão lê.</p>
   </section>
 
   <section id="principios">
