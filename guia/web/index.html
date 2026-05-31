@@ -132,6 +132,13 @@
   footer{padding:46px 0 80px;color:var(--muted);font-size:13px}
   footer a{color:var(--accent2)}
   footer p{margin-bottom:10px}
+  .share{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:22px}
+  .share .lbl{color:var(--muted)}
+  .sbtn{border:1px solid var(--line);color:var(--fg);background:var(--panel);padding:8px 14px;border-radius:3px;
+    font-size:13px;font-family:var(--mono);cursor:pointer}
+  .sbtn:hover{border-color:var(--accent2);color:var(--accent2)}
+  .sbtn.li{border-color:var(--accent);color:var(--accent);font-weight:600}
+  .sbtn.li:hover{background:var(--accent);color:var(--ink)}
   @keyframes rise{to{opacity:1;transform:translateY(0)}}
   .tag,h1,.lede,.btns{transform:translateY(14px)}
   @media(max-width:640px){
@@ -152,6 +159,7 @@
     <a href="#metodo">Método</a>
     <a href="#arquitetura">Arquitetura</a>
     <a href="#fluxo">Fluxo</a>
+    <a href="#seguranca">Segurança</a>
     <a href="#docs">Docs</a>
     <a href="#comece">Começar</a>
     <a href="https://github.com/fabriciopsouza/metacognition-framework">GitHub ↗</a>
@@ -282,8 +290,20 @@
       <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/CHANGELOG.md">CHANGELOG</a>.</p>
   </section>
 
+  <section id="seguranca">
+    <h2><span class="n">06</span>Segurança</h2>
+    <p class="sub">Postura honesta de defesa-em-profundidade. A tese: <b>não confiar no raciocínio do agente</b> — gatear por <b>efeito</b>, não por intenção.</p>
+    <div class="cards">
+      <div class="card"><h3>Gate por efeito (não por intenção)</h3><p>Mesmo um agente enganado por <b>prompt injection</b> não causa dano irreversível: o efeito (E1–E6) é barrado antes de executar <b>(gate ativo por default; camada não-bypassável via managed-settings)</b>. Cobertura forte de "Excessive Agency" (OWASP LLM06). <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/SECURITY.md">o que isso exige na prática →</a></p></div>
+      <div class="card"><h3>Guard-rails não-desativáveis</h3><p>managed-settings fail-closed: o agente <b>não pode</b> se conceder bypass. Ação destrutiva T3 (irreversível + alto impacto) exige gate humano.</p></div>
+      <div class="card"><h3>Mapeado ao OWASP LLM Top 10</h3><p>Cobertura declarada item a item — forte em Excessive Agency, parcial em Prompt Injection (consequência contida), honesto sobre o que fica fora de escopo.</p></div>
+      <div class="card"><h3>Auditável + revisado</h3><p>Trilha auditável (OTel / digest), QA adversarial por modelo heterogêneo, e isolamento cross-projeto (anti-vazamento de dados entre contextos).</p></div>
+    </div>
+    <p class="note" style="margin-top:18px">Detalhes, escopo e <b>o que não está coberto</b>: <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/SECURITY.md">SECURITY.md</a> — porque overclaim de segurança seria o oposto do que o framework prega.</p>
+  </section>
+
   <section id="docs">
-    <h2><span class="n">06</span>Documentação completa</h2>
+    <h2><span class="n">07</span>Documentação completa</h2>
     <p class="sub">Tudo que acompanha o repositório, organizado por intenção.</p>
     <p class="sub">Renderizada no GitHub — clicável e sempre na versão da branch <code>main</code>.</p>
     <div class="docgrid">
@@ -318,7 +338,7 @@
   </section>
 
   <section id="comece">
-    <h2><span class="n">07</span>Instalar e começar</h2>
+    <h2><span class="n">08</span>Instalar e começar</h2>
     <p class="sub">Open source no GitHub. Um script idempotente faz o setup — depois é abrir e rodar.</p>
     <div class="steps">
       <div class="step"><div class="num">1</div><div><div class="t">Clone o repositório</div><div class="d">Direto do GitHub (ou <a href="https://github.com/fabriciopsouza/metacognition-framework/archive/refs/tags/v1.21.0.zip">baixe a release v1.21.0 .zip</a>):<span class="cmd">git clone https://github.com/fabriciopsouza/metacognition-framework</span></div></div></div>
@@ -334,6 +354,12 @@
   </section>
 
   <footer>
+    <div class="share">
+      <span class="lbl">Compartilhe:</span>
+      <a class="sbtn li" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Ffabriciopsouza.github.io%2Fmetacognition-framework%2F" target="_blank" rel="noopener">in · LinkedIn</a>
+      <a class="sbtn" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Ffabriciopsouza.github.io%2Fmetacognition-framework%2F" target="_blank" rel="noopener">Facebook</a>
+      <button class="sbtn" type="button" title="Instagram não compartilha link pela web — copie e cole no story/bio" onclick="navigator.clipboard&&navigator.clipboard.writeText('https://fabriciopsouza.github.io/metacognition-framework/');this.textContent='link copiado ✓'">Instagram (copiar link)</button>
+    </div>
     <p><a href="https://github.com/fabriciopsouza/metacognition-framework">Repositório no GitHub ↗</a> ·
        <a href="https://github.com/fabriciopsouza/metacognition-framework/releases/tag/v1.21.0">Release v1.21.0 ↗</a> ·
        <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/CHANGELOG.md">CHANGELOG</a></p>
