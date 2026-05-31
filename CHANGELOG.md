@@ -15,6 +15,24 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.21.2] — 2026-05-31 — Polish pós-v1.21.1: site holístico, contador de tempo, OWASP regulado, higiene
+
+### Added
+- `tools/project_report.py`: **contador de tempo/interação** (duração por sessão + total + throughput
+  tokens/min) — proxy de custo p/ corporações; canário cobre a duração (`session_duration_min`). ADR-026 estendido.
+
+### Changed
+- `README.md`: **link do site no topo** + linha "Comece" + intro holística (sem remover conteúdo).
+- `SECURITY.md`: nota de enquadramento na tabela OWASP LLM — *por que 🟡 é o teto honesto de uma camada de
+  orquestração* + ponteiro "para ambiente regulado" (responsabilidade compartilhada + auditoria independente).
+  Cores honestas inalteradas; só contexto que evita o misread "amarelo = fraco".
+- Site: parágrafo de gates condensado; fluxo de instalação encurtado.
+- `docs/_intake/SUMARIO-NOTURNO-2026-05-27.md` movido da raiz (raiz só load-bearing).
+
+### Security / Autoria
+- Commits e tags do repositório agora **assinados (SSH) e Verified** no GitHub — concretiza a recomendação
+  do ADR-025 (proteção de autoria transparente); provê proveniência verificável da autoria do método.
+
 ## [1.21.1] — 2026-05-31 — Consolidação pós-v1.21.0 (site/docs/ergonomia/autoria + relatório de tokens)
 
 > Consolida o trabalho feito **após** a tag v1.21.0, em PRs separados (#22–#28), cada um parando no
