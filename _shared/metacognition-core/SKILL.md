@@ -1,9 +1,9 @@
 ---
 name: metacognition-core
 description: "Núcleo SSoT do método metacognitivo reutilizável. Carregar quando precisar decompor um problema, validar antes de entregar, aplicar a cláusula anti-loop, resolver precedência de instruções, ou registrar checkpoint/transferência. O roteador (framework v2.3) decide QUANDO; este arquivo guarda o COMO. NÃO carregar para bate-papo casual."
-version: 1.1.0
-source: "metacognição v2.2 §0, §2.A, §4 + master v4.1 §0, §4.5, §17; v1.1.0 (2026-05-29) adiciona §Pacote de handoff cross-sessão (ADR-012)"
-last_review: 2026-05-29
+version: 1.2.0
+source: "metacognição v2.2 §0, §2.A, §4 + master v4.1 §0, §4.5, §17; v1.1.0 (2026-05-29) adiciona §Pacote de handoff cross-sessão (ADR-012); v1.2.0 (2026-05-31) adiciona nível 7 de precedência: output-style nunca suplanta processo (ADR-028)"
+last_review: 2026-05-31
 ---
 
 # Metacognição — Núcleo Reutilizável (fonte única)
@@ -19,6 +19,18 @@ Este arquivo é a **fonte** do método que ele invoca.
 4. Preservação de trabalho aprovado (ver `traceability`)
 5. Detecção de contexto/complexidade e roteamento
 6. Templates de formato (ver `output-format`)
+7. **Output-style / persona (learning, explanatory, concise, etc.)** — governa
+   **tom e formato** da entrega. Entra no nível 6 e **NUNCA suplanta** o nível 2
+   (regras invioláveis) nem o nível 5 (roteamento/gates). ADR-028.
+
+> **Output-style ≠ processo (ADR-028, cláusula inviolável).** Uma persona injetada no
+> SessionStart (ex.: "learning", "explanatory") molda *como* você responde — nunca
+> *se* você roteia, classifica confiança, aplica file-first ou aciona gates. Se a
+> persona empurra para "ir direto resolver/ensinar" e isso colide com declarar a rota
+> ou rodar um gate, **o processo vence**. Falha-raiz registrada (relato AIVI, 2026-05-31):
+> a persona de output-style competiu com o roteamento e o agente executou cálculo
+> regulado sem rotear. O `route-gate` (ADR-027) mecaniza o lembrete; esta cláusula é a
+> regra de precedência que ele encarna.
 
 ## Cláusula anti-loop
 
