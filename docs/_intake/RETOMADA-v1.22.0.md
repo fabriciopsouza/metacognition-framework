@@ -35,7 +35,7 @@
 - [x] ADR-029 + skill doc-intake (_shared/) + tool doc_intake.py + canário (4 testes) + integração discovery.
 - [x] ADR-030 + consistency-gate.ps1 (6 dimensões: version-sync, adr-status, checkpoint, contagens-dup, unpushed, transients; UTF-8 BOM; validado por dogfood).
 - [x] guia/RESILIENCIA-ACESSO.md (recovery de conta > key local + push cedo + gate unpushed). Link no README pendente p/ item bump.
-- [ ] Housekeeping: flipar ADR-024/025/026 → Aceito; checkpoint v1.21.2 ausente.
+- [x] Housekeeping: ADR-024/025/026 → Aceito; checkpoint v1.21.1+1.21.2 no history (gate: adr-status/checkpoint verdes).
 - [ ] qa-critic adversarial (subagente Sonnet isolado).
 - [ ] Dogfood (ensure-global-wiring + route-gate disparando).
 - [ ] Version bump v1.22.0 + atualizar README/CHANGELOG/web/CLAUDE/AGENTS/history.

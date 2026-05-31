@@ -1,6 +1,6 @@
 # ADR 025 — Proteção de autoria TRANSPARENTE (e a refutação do mecanismo oculto)
 
-- Status: Proposto
+- Status: Aceito
 - Data: 2026-05-31 · Decisores: dono + squad (architect)
 - Onda: autoria/licença (pós-v1.21.0) · Tipo: novo (política + 3 artefatos)
 - Relaciona: `LICENSE`, `NOTICE`, `tools/check_attribution.py`, `SECURITY.md`, `[[feedback_framework_integral]]`.

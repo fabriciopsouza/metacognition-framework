@@ -9,6 +9,20 @@
 
 ---
 
+## 2026-05-31T01:00 — Sessão: v1.21.1 + v1.21.2 — consolidação pós-v1.21.0 (site/docs/autoria/tokens) [checkpoint retroativo]
+
+> Checkpoint adicionado retroativamente (catch do `consistency-gate` ADR-030, 2026-05-31: history pulava de v1.21.0 direto, sem registro de 1.21.1/1.21.2). Conteúdo reconstruído do CHANGELOG (fonte canônica). Append-only respeitado: entrada nova, nada reescrito.
+
+Consolidação do trabalho feito **após** a tag v1.21.0, em PRs separados (#22–#28), cada um parando no gate humano.
+
+Entregue:
+- **v1.21.1**: `tools/project_report.py` (**ADR-026** — relatório de tokens + história compactada dos transcripts, sem transmissão, canário 6/6); **LICENSE (CC BY 4.0)** + **NOTICE** (antes ausentes apesar de citados); **`tools/check_attribution.py`** (**ADR-025** — guarda transparente de autoria, quebra o build se LICENSE/NOTICE/crédito sumir; refuta mecanismo oculto); **`/start-session` registrado** (`.claude/commands/start-session.md`, **ADR-024**); reforma do site (`guia/web/`) → site-hub; chat-web v4.3; linha de atribuição no README.
+- **v1.21.2**: contador de **tempo/interação** no `project_report.py` (duração + throughput tokens/min; ADR-026 estendido); README com link do site + intro holística; nota OWASP-LLM em `SECURITY.md` (por que 🟡 é o teto honesto de orquestração); **commits/tags assinados (SSH) e Verified** no GitHub (concretiza ADR-025).
+
+Estado pós-bloco: `main` em **v1.21.2**; ADR-024/025/026 implementados (status flipado para **Aceito** na sessão v1.22.0).
+
+---
+
 ## 2026-05-30T21:30 — Sessão: v1.21.0 — runtime hooks (compaction/mission) + camada de entrega de produto
 
 Origem: revisão de uma pesquisa/SPEC externa (Perplexity) que **re-derivou contra fontes oficiais** (Anthropic/OpenAI/Google) o núcleo **já mecanizado** na série v1.14.x→v1.20.0 — validação externa, não refatoração. Filtrado o ganho real (lean, régua §0): só o que ainda era prosa virou mecanismo + correção do **viés processo-sobre-produto** (reorientação do dono: o framework culmina em PRODUTO de software/dados — sessão Perplexity l.421/427).
