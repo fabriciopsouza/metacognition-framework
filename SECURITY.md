@@ -58,6 +58,15 @@ Honesto sobre o grau de cobertura:
 > Fonte do referencial: OWASP Top 10 for LLM Applications (owasp.org). Mapeamento é `[INFERIDO]` —
 > auto-avaliação do mantenedor, não auditoria independente.
 
+> **Por que tanto 🟡 — e por que isso é o correto, não fraqueza.** "Parcial" é o **teto honesto de uma
+> camada de orquestração**: sanitização de input, DLP, RAG e treino vivem em **outras camadas**
+> (modelo/infra/aplicação); marcar 🟢 ali seria **falso** — e falha numa auditoria. 🟢 fica só onde o método
+> **é** a camada dona (LLM06 — Excessive Agency). **Para ambiente regulado:** o framework entrega a
+> governança do *agente* (excessive agency, HITL/T3, audit trail, rastreabilidade); os controles da norma
+> (DLP, validação formal, sanitização) são **responsabilidade da aplicação** — declarados pelo discovery +
+> `high-stakes-gate` (ver §Escopo e responsabilidade compartilhada). **Recomenda-se auditoria independente**
+> antes de tratar qualquer item como conforme: este mapa é ponto de partida, não certificado.
+
 ---
 
 ## Anti-prompt-injection — postura honesta
