@@ -61,3 +61,10 @@ Fluxo squad tem **6 junções (J0-J5)** com gates binários declarados em `/hand
 
 ## 11. Handoff cross-sessão obrigatório quando declarado (ADR-012 v1.13.0)
 discovery passo 6(e) pergunta "alimenta outra sessão/agente?". Se SIM → **Pacote de handoff** (`metacognition-core` §Pacote) é entregável obrigatório via J5: artefato consumível com versão; localização (repo/URL/path + branch/commit/PR); acesso (visibilidade + permissões + o que não foi versionado); prompt pronto-para-colar; pendências herdadas. **Teste binário:** outra sessão começa **sem perguntar nada de volta**? Princípio 14 §6. +qa-critic ganha rule #6 (RCA gate: anomalia detectada exige causa-raiz antes de resolver) e rule #7 (cobertura temporal pós-J4: artefato novo intra-bloco re-disparo cirúrgico mandatório).
+
+## 12. Enforcement mecanizado + entrega de produto (v1.14.x→v1.21.0 — ADR-013..023)
+"Da prosa ao mecanismo": regras que dependiam de boa-vontade ganharam **par executável** que roda sozinho no boot/runtime — você não precisa fazer nada, eles rodam:
+- **No boot (SessionStart):** `check-repo-sync` (git fetch + pull seguro, ADR-019) · `check-core-agnostic` (linter de agnosticismo do núcleo, ADR-020) · `check-execution-mode` (modo default/avançado/autosuficiente, ADR-005) · `mission-gate` (pede o **`product_type`** no briefing, ADR-022).
+- **Em runtime:** `effect-gate` (PreToolUse: bloqueia ação destrutiva T3 por efeito, ADR-015) · `compaction-gate` (PreCompact: não deixa compactar sem digest salvo, ADR-021).
+- **No CI/pré-merge:** `validate_skills.py` (contrato de 8 campos por skill, ADR-013).
+- **Entrega de produto (ADR-023):** o framework **culmina em produto** de software/dados. Declare o `product_type` no briefing; para produto com UI ou com dados/ML, a app `exemplos/dominio-software/` adiciona `ux-designer` + `evals-engineer`. `governance-lead`/`skill-librarian` não existem como papéis — já cobertos pelo `high-stakes-gate` e pelo campo `classe`.

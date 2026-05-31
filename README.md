@@ -63,7 +63,7 @@ skill-librarian · evals-engineer · governance-lead.
 - **Uso diário:** `guia/GUIA-EQUIPE.md` · **Revisar repo:** `guia/COMO-REVISAR-OUTRO-REPO.md`.
 - **Git/versão:** `guia/GIT-VERSIONAMENTO.md` · **Referências:** `guia/REFERENCIAS.md`.
 - **Versão web:** `guia/web/index.html` (abre no navegador).
-- **Prompt do chat web:** `PROMPT-CHAT-WEB-v4.2.md` (raiz) — encarnação do framework para
+- **Prompt do chat web:** `PROMPT-CHAT-WEB-v4.3.md` (raiz) — encarnação do framework para
   ambientes sem filesystem (Claude.ai, Gemini). Mesmos princípios, mesmos resultados,
   papéis e subagentes simulados. Par dos outros load-bearing da raiz (`CLAUDE.md`,
   `AGENTS.md`, `AGENT-FRAMEWORK.md`).
