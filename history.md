@@ -29,6 +29,8 @@ QA bicelular: process-critic adversarial Sonnet isolado/heterogêneo (ADR-018) �
 - Inconsistências corrigidas: dupla "ESCOLHIDA" no ADR-022 (alt 3 → "recorte SessionStart-only"); mensagem do canário mission-gate ("3 modos"→4 casos); discovery version/last_review stale.
 - Veredito RRC: **PASSA**.
 
+Addendum pós-qa (doc-work, conscientemente **não-bloco** — registrado p/ não pular silencioso, retrospective gate): cobertura de docs que faltou (catch do dono — "o web é mais que o index.html"): **PROMPT-CHAT-WEB v4.2→v4.3** (paridade de comportamento: product_type/escopo no briefing + papéis de entrega; fix ref morta), refs ao filename atualizadas (históricas ADR-010/specs preservadas), **GUIA-EQUIPE §12** catch-up. Depois, **reforma do `guia/web/index.html` em site-hub** (feedback do dono): flexível>genérico, evidência auto-explicativa (A0–A3 em linguagem clara), ADR explicado/jargão reduzido, fluxo corrigido (sem seta órfã + legenda do ciclo), índice de docs agrupado, copy de proposta de valor. 11/11 links resolvem; LF casado; sem novo vazamento (agnóstico PASS). Modo autosuficiente reconfirmado (HOOK_CHANGED do próprio sync).
+
 Próximo passo: abrir PR (gate humano do dono) → após merge, marcar Em aberto FECHADA + tag v1.21.0.
 
 ---
