@@ -256,10 +256,13 @@
       <div class="step-node"><span class="node">docops<span class="role">documenta</span></span><span class="arrow">→</span></div>
       <div class="step-node"><span class="node hi">/checkpoint<span class="role">salva o estado</span></span></div>
     </div>
-    <p class="loop">↻ <b>O ciclo fecha e reabre:</b> o <code>/checkpoint</code> grava o digest que a próxima
-      sessão lê — e um revisor adversarial pode dar <b>rewind</b> a qualquer etapa anterior se achar
-      um problema. Iterações ilimitadas <em>dentro</em> de cada junção; só avança <em>entre</em> elas
-      depois de passar (anti-loop eterno).</p>
+    <p class="loop"><b>Engenharia de gates binários:</b> cada seta é uma junção com critério <b>PASS/FAIL</b>
+      — não "parece ok". <b>QA entre todas as etapas</b> + QA adversarial final; o <b>rewind</b> (um revisor
+      com poder de voltar a qualquer etapa anterior) é a <b>única</b> via de retorno. <b>Sem loop infinito:</b>
+      iterações ilimitadas <em>dentro</em> de uma junção até PASS, mas <b>forward-only entre</b> elas; e, após um
+      <b>limite de rounds</b> no mesmo ponto, escala para <b>gate humano</b> ou registra como
+      <b>débito/backlog</b> — nunca itera <em>ad aeternum</em>. O <code>/checkpoint</code> grava o digest que a
+      próxima sessão lê.</p>
   </section>
 
   <section id="principios">
@@ -275,6 +278,9 @@
       <div class="card"><h3>Enforcement em runtime</h3><p>Regras críticas viram <b>hooks executáveis</b> com testes que tentam furá-las. Hook bugado falha-aberto; a trava real mora em camadas.</p></div>
       <div class="card"><h3>Culmina em produto</h3><p>O tipo de produto é declarado no início e ativa os papéis de entrega (design de UX, avaliação sistemática). Entrega, não prosa.</p></div>
       <div class="card"><h3>Validado</h3><p>Roteamento dos papéis operacionais testado <b>33/33</b> (papéis A–F; discovery em design-time). Toda aplicação nova só entra com seu conjunto de avaliação passando.</p></div>
+      <div class="card"><h3>Economia de contexto (tokens)</h3><p>Contexto é recurso finito e caro: compaction governada por faixas + digest + note-taking + <b>isolamento de subagente</b>. Menos context-rot, menos token desperdiçado — valor direto de custo.</p></div>
+      <div class="card"><h3>Telemetria que muda decisão</h3><p>Sem dashboard de vaidade: <b>2 métricas</b> só (junção-origem de rewind + rounds de QA) — as que mudam uma decisão de design. Sinal, não ruído (`_shared/observability`).</p></div>
+      <div class="card"><h3>Método + estrutura, não só prompt</h3><p>O diferencial: <b>andaime, contrato e método</b> auditáveis (papéis, junções, ADRs, hooks) — não um prompt esperto reescrito a cada vez. Reprodutível, rastreável, transferível entre times.</p></div>
     </div>
   </section>
 
@@ -371,7 +377,7 @@
       <b>Gemini e Copilot: em desenvolvimento</b> (ainda não validados). Em chat sem filesystem (Claude.ai, Gemini),
       apenas o <b>método</b> (não os hooks nem o enforcement — <b>exclusivos do Claude Code</b>) pode rodar via o
       <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/PROMPT-CHAT-WEB-v4.3.md">PROMPT-CHAT-WEB</a>.</div>
-    <p class="sub">Quatro passos, sem quebra:</p>
+    <p class="sub">Quatro passos, sem quebra. <b>Por projeto você preenche só 2 arquivos</b> (<code>docs/briefing.md</code> — objetivo/escopo/aceite — e <code>.agent/rules/00-glossario.md</code> — nomes/termos); o resto a IA usa, e <b>não é rígido</b>: ela elicita por perguntas/inspeção se faltar.</p>
     <div class="steps">
       <div class="step"><div class="num">1</div><div><div class="t">Instale o Claude Code</div><div class="d">O runtime onde o framework foi testado e desenhado (CLI + extensão de VS Code). Instalação na doc oficial: <a href="https://code.claude.com/docs">code.claude.com/docs</a>.</div></div></div>
       <div class="step"><div class="num">2</div><div><div class="t">Clone o repositório</div><div class="d">Ou <a href="https://github.com/fabriciopsouza/metacognition-framework/archive/refs/tags/v1.21.0.zip">baixe a release v1.21.0 (.zip)</a>:<span class="cmd">git clone https://github.com/fabriciopsouza/metacognition-framework</span></div></div></div>
