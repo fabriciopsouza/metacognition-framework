@@ -1,0 +1,84 @@
+# tools/anonymize-map.txt — regras determinísticas de anonimização para o EXPORT público.
+#
+# Usado por tools/anonymize.py no pipeline tools/export-clean.py (privado → público).
+# NÃO é distribuído (contém os nomes reais); é infra de limpeza, removido do export.
+#
+# Formato: `<regex>` <TAB> `<substituição>` (uma por linha; # e vazias ignoradas).
+#   - regex Python, aplicada com IGNORECASE sobre o texto inteiro do arquivo.
+#   - substituição vazia = remove o trecho. Pode usar grupos \1, \2.
+# ORDEM IMPORTA: frases específicas e tokens compostos PRIMEIRO; tokens nus por último
+#   (senão o fallback `\bAIVI\b` come o "aivi" de "aivi-indicator-analyst").
+#
+# Backstop: depois de aplicar, export-clean.py roda `check_core_agnostic.py --sensitive`.
+# Se sobrar QUALQUER token da sensitive-denylist, o build FALHA — adicione a regra aqui.
+
+# --- URLs do repo: fonte privada -> distribuição pública (links funcionam no público) ---
+fabriciopsouza\.github\.io/metacognition-framework/	fabriciopsouza.github.io/metacognition-framework-public/
+raw\.githubusercontent\.com/fabriciopsouza/metacognition-framework/	raw.githubusercontent.com/fabriciopsouza/metacognition-framework-public/
+github\.com/fabriciopsouza/metacognition-framework\b	github.com/fabriciopsouza/metacognition-framework-public
+
+# --- frases ALVO de correlação cliente/setor (cirúrgicas; ANTES de tudo) ---
+# (mantêm intactos exemplos genéricos de ensino como H1-farma; só limpam os trechos que
+#  enumeram os setores reais dos clientes do dono.)
+\(citar ANP 884 = varejo como se regulasse distribuição; tratar ALCOA\+ = pharma/GxP como âncora de combustível\)	(aplicar uma norma de um segmento como se regulasse outro; usar uma norma de um setor como âncora indevida em outro)
+\(Vibra/distribuição \+ Natulab/farmácia\)	(dois clientes de setores distintos do mesmo dono)
+\(ANP 884 = varejo\) como se regulasse distribuidor	(uma norma de um segmento) como se regulasse outro
+Tableau · distribuição de combustíveis · farmacêutico ANVISA/GAMP/COBIT · ALCOA\+ · KPIs combustíveis	conteúdo de domínio de um cliente (normas, KPIs e ferramentas específicas)
+Tableau · distribuição de combustíveis · farmacêutico ANVISA/GAMP/COBIT	conteúdo de domínio de um cliente
+
+# --- frases com gramática (caso/incidente) ---
+incidente AIVI	incidente real de roteamento
+relato AIVI	relato do incidente
+sessão AIVI	sessão do incidente
+case real AIVI	um caso real
+case AIVI	um caso real
+dogfood AIVI	dogfood em caso real
+audit AIVI	audit do caso real
+AIVI fechamento	o fechamento do caso real
+fechamento AIVI	fechamento do caso real
+
+# --- repos / branches / commits do caso de cliente ---
+github\.com/fabriciopsouza/LIMITES-BATENTES-RECALC	repo privado do mantenedor
+LIMITES-BATENTES-RECALC	repo privado do mantenedor (caso real)
+test-aivi-isolated	repo de teste isolado (caso real)
+claude/discovery-aivi-metodo-2026-05-27	branch do caso real
+discovery-aivi-metodo-2026-05-27	branch-do-caso
+discovery-aivi-metodo	branch-do-caso
+framework-gaps-from-aivi-case-2026-05-27	framework-gaps-from-case
+framework-gaps-from-aivi-case	framework-gaps-from-case
+\b74bd613\b	<commit>
+\b039fd6d\b	<commit>
+\b10ecf0[0-9a-f]*\b	<commit>
+
+# --- caminhos de exemplo/spec específicos do caso ---
+exemplos/aivi-indicator-analyst	exemplos/app-de-dominio
+roles/aivi-indicator-analyst	roles/app-de-dominio
+aivi-indicator-analyst	app-de-dominio
+v1\.13\.0-aivi-method-fixes	v1.13.0-method-fixes
+aivi-recalculo-limites	recalculo-de-limites
+aivi-method-fixes	method-fixes
+
+# --- orgs de cliente no allowlist (de-hardcode; mantém handles do autor) ---
+distribuição de combustíveis Vibra	um cliente regulado
+vibraenergia	SEU-USUARIO
+\bNatulab\b	SUA-ORG
+natulab	SUA-ORG
+
+# --- nomes nus de cliente / base / ferramenta (por último) ---
+\bVibra\b	um cliente regulado
+\bBABET\b	uma base
+\bBetim\b	uma base
+\bVIACOMP\b	uma fonte de dados
+\bTableau\b	uma ferramenta de BI
+
+# --- dicas de SETOR do cliente (genericizar; ordem específica → genérica) ---
+domínio combustíveis	domínio regulado
+KPIs combustíveis	KPIs do domínio
+distribuição de combustíveis	distribuição regulada
+\bcombustíveis\b	do setor regulado
+\bcombustível\b	do setor regulado
+ANP\s*884	uma norma setorial
+
+# --- fallback final: qualquer "AIVI"/"aivi" remanescente ---
+\bAIVI\b	o caso real
+\baivi\b	caso-real

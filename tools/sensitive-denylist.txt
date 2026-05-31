@@ -1,0 +1,51 @@
+# tools/sensitive-denylist.txt — ruleset do TIER SENSÍVEL do linter (ADR-020 EMENDA, v1.22.x).
+#
+# Diferença para agnostic-denylist.txt (tier "norma"):
+#   - tier NORMA: bloqueia IDENTIFICADOR DE NORMA REGULATÓRIA no NÚCLEO operativo
+#     (docs/ é EXCLUÍDO — ADRs podem citar uma norma como exemplo pedagógico).
+#   - tier SENSÍVEL (este): bloqueia IDENTIFICADOR DE CLIENTE / PROJETO / CASO / REPO
+#     no REPOSITÓRIO INTEIRO que distribui — dado de cliente NÃO pode aparecer em
+#     lugar NENHUM da distribuição, nem como "exemplo". Escopo = tudo menos .git/,
+#     docs/_private/ (cofre do dono, fora da distribuição), os denylists e binários.
+#
+# NÃO é conhecimento de domínio do núcleo: é a NEGATIVA (o que não pode vazar). Vive em
+# tools/ (infra do linter) — por isso este arquivo não é varrido por si mesmo.
+#
+# Formato: uma REGEX por linha (Python `re`, IGNORECASE). Linhas em branco / # ignoradas.
+#
+# AUTOR ≠ CLIENTE: o username/nome do MANTENEDOR (atribuição legal em LICENSE/NOTICE,
+# remote git, copyright) NÃO entra aqui — é intencional e legítimo. Só entram orgs de
+# CLIENTE, nomes de CASO/indicador e nomes de REPO de cliente.
+#
+# LIMITE HONESTO: lista NÃO-EXAUSTIVA por design (surgem clientes/casos novos). O linter
+# REDUZ, não ELIMINA; o dono adiciona o token de cada novo caso ANTES de dogfoodar nele.
+# Exceção auditável por linha: sentinela `lint-sensitive:allow` (meta-zero na distribuição).
+#
+# Seed: tokens que JÁ vazaram para o framework (incidente 2026-05-31; registro completo
+# com dados reais em docs/_private/, fora da distribuição).
+
+# --- Cliente / organização ---
+vibraenergia
+\bVibra\b
+\bNatulab\b
+
+# --- Caso / indicador / base de domínio ---
+\bAIVI\b
+\bBABET\b
+\bVIACOMP\b
+\bBetim\b
+
+# --- Repositórios / branches / commits de caso de cliente ---
+LIMITES-BATENTES-RECALC
+test-aivi-isolated
+discovery-aivi-metodo
+aivi-indicator-analyst
+aivi-recalculo-limites
+aivi-method-fixes
+\b74bd613\b
+\b039fd6d\b
+\b10ecf0[0-9a-f]*\b
+
+# --- dicas de setor do cliente (gate enforce; map genericiza) ---
+\bcombustíveis\b
+\bcombustível\b

@@ -71,3 +71,36 @@ justamente atrás de "como exemplo" (lição v1.11.0).
 - Ponteiro: branch `chore/reconciliacao-divida-v1.14-v1.19` · data `2026-05-30` · grep `check_core_agnostic|agnostic-denylist|lint-agnostic:allow`
 - Artefatos: `tools/check_core_agnostic.py`, `tools/agnostic-denylist.txt`, `tools/test_core_agnostic.py`, `.claude/hooks/check-core-agnostic.{ps1,sh}`, wiring em `.claude/settings.json` + `sync-global.ps1`, sentinela em `.agent/skills/qa-critic/SKILL.md` (regra #5).
 - Verificação: `python tools/check_core_agnostic.py` → PASS (núcleo limpo) **E** `python tools/test_core_agnostic.py` → PASS (canário com efeito).
+
+---
+
+## EMENDA v1.22.x — Tier SENSÍVEL (anti-vazamento de dado de cliente)
+
+- Status: **Emendado** (§Implementação estendida; decisão original intacta — política SUPLANTA×EMENDA do ADR-011)
+- Data: 2026-05-31 · Gatilho: **incidente de vazamento confirmado** — identificadores de cliente/caso/repo (de dogfood em casos reais) tinham vazado para o núcleo, ADRs, CHANGELOG, history e hooks num repositório que estava **público**. Registro completo (com dados reais): `docs/_private/INCIDENTE-VAZAMENTO-2026-05-31.md`.
+
+**Causa-raiz:** o linter original tinha **categoria e escopo errados** para este vazamento:
+1. A denylist (`agnostic-denylist.txt`) só listava **normas regulatórias** — nomes de cliente/caso/repo **não são normas**, então o linter nunca os procurou.
+2. O escopo excluía `docs/**` (correto p/ norma-como-exemplo; **errado** p/ identificador de cliente, que não pode vazar nem como exemplo).
+3. Falso-negativo institucionalizado: o linter "passava" porque não olhava para esses tokens.
+
+**Arquitetura escolhida — fonte privada full + distribuição limpa gerada (one-way):**
+A **fonte privada** (este repo) mantém TUDO em full: nomes reais visíveis, histórico, `docs/_private/`
+— é o cofre de **acesso total** do dono. A **distribuição pública** é um **artefato GERADO**
+(anonimizado, sem `docs/_private/`, sem história), nunca editado à mão. O link é um **flow
+automático** (GitHub Action) que regenera e publica a cada push.
+
+**Emenda (régua §0 — estende o existente, não cria mecanismo novo):**
+- **Tier SENSÍVEL** novo: `tools/sensitive-denylist.txt` (identificadores de CLIENTE/CASO/REPO),
+  escopo **repo inteiro** (exceto `.git/`, `docs/_private/`, os denylists/map e binários). Sentinela
+  `lint-sensitive:allow`. **AUTOR ≠ CLIENTE:** o nome do mantenedor (atribuição legal) NÃO entra.
+- **OPT-IN (`--sensitive`)** — o tier sensível é o **gate de EXPORT**, NÃO de boot: a fonte privada
+  carrega nomes por design, então rodá-lo no boot só geraria ruído. O boot (hooks `check-core-agnostic`)
+  segue só no tier **norma**; o canário cobre os dois mecanismos.
+- **Pipeline determinístico** (torna o "limpo" AUTOMÁTICO, não edição manual):
+  `tools/anonymize-map.txt` (regras regex→genérico ordenadas) → `tools/anonymize.py` (aplica) →
+  `tools/export-clean.py` (copia, strip `docs/_private`, anonimiza, **GATE `--sensitive`**, strip infra) →
+  `.github/workflows/publish-clean.yml` (force-push da árvore limpa ao repo público a cada push na main).
+  Se um caso novo traz um token não-mapeado, o **gate falha o build** — o dono adiciona 1 regra ao map.
+- **Risco (f) novo:** denylist/map são **não-exaustivos** — mas o gate `--sensitive` no export é o
+  backstop determinístico (nada publica sem passar). Regra #5 semântica do qa-critic continua de apoio.
