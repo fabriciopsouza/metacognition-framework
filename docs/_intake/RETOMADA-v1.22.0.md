@@ -32,7 +32,7 @@
 - [x] ensure-global-wiring.ps1 (self-heal hook-preserving) + sync-global mirror/heal + bootstrap DRY + project settings (UserPromptSubmit->route-gate).
 - [x] ADR-027 doc (docs/adr/027-*.md) + disable-com-memória (enriquecer session.lock c/ timestamp+motivo + reativação oferecida no inject hook). — commit 0310c22
 - [x] ADR-028 + cláusula precedência output-style×processo em metacognition-core (nível 7) + nota inviolável.
-- [ ] ADR-029 + skill doc-intake + tool de parse/chunk + integração discovery.
+- [x] ADR-029 + skill doc-intake (_shared/) + tool doc_intake.py + canário (4 testes) + integração discovery.
 - [ ] ADR-030 + consistency-gate.ps1 (version-sync + ADR-status-on-merge + checkpoint + contagens + unpushed).
 - [ ] guia/RESILIENCIA-ACESSO.md.
 - [ ] Housekeeping: flipar ADR-024/025/026 → Aceito; checkpoint v1.21.2 ausente.

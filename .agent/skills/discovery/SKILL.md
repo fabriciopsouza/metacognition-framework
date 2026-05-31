@@ -101,6 +101,14 @@ Decisão arquitetural: `docs/adr/003-progressive-disclosure-companion-files.md`.
 
 Cada companion contém: filtro de entrada explícito, fluxo do sub-modo, output esperado.
 
+### Capability transversal: ingestão de documentos (v1.22.0 — ADR-029)
+Quando a entrada inclui **arquivos/documentos como fonte** (PDF de norma, DOCX/XLSX/PPTX,
+MD/TXT), carregar `_shared/doc-intake` e rodar `tools/doc_intake.py <pasta> --out intake-manifest.json`
+ANTES de elicitar/decidir sobre o conteúdo: extrai texto **determinístico + chunks + manifesto**
+(offline, **sem embeddings** — decisão #4). Cada afirmação derivada de documento cita a
+**proveniência** (id do chunk + sha256) — sustenta file-first/anti-alucinação. `skipped/error/vazio`
+no manifesto vira **gap declarado** (não silêncio) nos "Gaps não-bloqueantes". NÃO é sub-modo; é capability.
+
 ### Reforço transversal sênior (v1.8.0 — ADR-009; v1.11.0 — ADR-010 passo 9)
 Quando há **fonte canônica/normativa citada** no contexto (norma, regulamento, spec oficial, padrão técnico, regra de negócio com peso semântico), carregar `metodo-senior.md` (vizinho) em ADIÇÃO ao sub-modo ativo. Aplica **9 passos auditáveis**: mapeamento + **vigência** + complementações + cross-domain + pertinência + elicitação + classificação + adversarial + **coherence pass (RRC, ADR-010 §ii)**. Domain-agnóstico (dev/BI/BPM/regulado/qualquer). NÃO é sub-modo; é reforço transversal. Output ganha **3 seções obrigatórias**: **Antecipações** + **Backlog de elicitação** + **Gaps não-bloqueantes** (ADR-010 §i — flagar mesmo gap não-bloqueante; silenciar = perda de assertividade sênior).
 
