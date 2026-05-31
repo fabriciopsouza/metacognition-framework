@@ -36,7 +36,16 @@ def test_textlike_and_chunking():
     # Cobertura contígua (com overlap): cada chunk começa <= fim do anterior.
     for i in range(1, len(pieces)):
         assert pieces[i][0] <= pieces[i - 1][1], "chunks devem ser contíguos/sobrepostos"
-    print("OK: chunking sem perda + contíguo")
+    # Reconstrução LITERAL sem perda: como os offsets cobrem [0, len) de forma contígua,
+    # concatenar text[prev_end:end] de cada chunk reconstrói o texto exato (testa o
+    # invariante declarado no docstring, não só um proxy — BAIXO-2 qa-critic).
+    recon = []
+    prev_end = 0
+    for (cstart, cend, _ptext) in pieces:
+        recon.append(text[prev_end:cend])
+        prev_end = cend
+    assert "".join(recon) == text, "reconstrução por offsets deve devolver o texto exato"
+    print("OK: chunking sem perda (reconstrução literal) + contíguo")
 
 
 def test_manifest_determinismo_e_skip():
@@ -58,6 +67,21 @@ def test_manifest_determinismo_e_skip():
             assert f["status"].startswith("ok"), f"esperado ok, veio {f['status']}"
             assert f["sha256"] and len(f["sha256"]) == 64
         print("OK: manifesto determinístico + arquivos suportados extraídos + embeddings=False")
+
+
+def test_chunk_ids_unicos_entre_subpastas():
+    # MÉDIO-1 qa-critic: dois arquivos de MESMO basename em subpastas distintas devem
+    # gerar chunk-ids DISTINTOS (id_base = path relativo, não basename).
+    with tempfile.TemporaryDirectory() as d:
+        os.makedirs(os.path.join(d, "sub1"))
+        os.makedirs(os.path.join(d, "sub2"))
+        _write(os.path.join(d, "sub1", "doc.md"), "conteudo A com texto suficiente\n")
+        _write(os.path.join(d, "sub2", "doc.md"), "conteudo B diferente do outro\n")
+        m = di.build_manifest(d, chunk_chars=1200, overlap=150, with_text=False)
+        ids = [c["id"] for f in m["files"] for c in f["chunks"]]
+        assert len(ids) == len(set(ids)), f"chunk-ids devem ser únicos, veio: {ids}"
+        assert any("sub1/doc.md#" in i for i in ids) and any("sub2/doc.md#" in i for i in ids)
+        print("OK: chunk-ids únicos entre subpastas com mesmo basename")
 
 
 def test_skip_graceful_para_binario_sem_parser():
@@ -90,6 +114,7 @@ def test_validacao_de_parametros():
 def main():
     test_textlike_and_chunking()
     test_manifest_determinismo_e_skip()
+    test_chunk_ids_unicos_entre_subpastas()
     test_skip_graceful_para_binario_sem_parser()
     test_validacao_de_parametros()
     print("\nTODOS OS CANÁRIOS PASSARAM (doc_intake).")

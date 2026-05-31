@@ -20,8 +20,8 @@ Este arquivo é a **fonte** do método que ele invoca.
 5. Detecção de contexto/complexidade e roteamento
 6. Templates de formato (ver `output-format`)
 7. **Output-style / persona (learning, explanatory, concise, etc.)** — governa
-   **tom e formato** da entrega. Entra no nível 6 e **NUNCA suplanta** o nível 2
-   (regras invioláveis) nem o nível 5 (roteamento/gates). ADR-028.
+   **tom e formato** da entrega. Opera **subordinado ao nível 6** (templates de formato)
+   e **NUNCA suplanta** o nível 2 (regras invioláveis) nem o nível 5 (roteamento/gates). ADR-028.
 
 > **Output-style ≠ processo (ADR-028, cláusula inviolável).** Uma persona injetada no
 > SessionStart (ex.: "learning", "explanatory") molda *como* você responde — nunca

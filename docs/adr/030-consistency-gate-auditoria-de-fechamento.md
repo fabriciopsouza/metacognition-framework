@@ -19,8 +19,9 @@ Criar `tools/hooks/consistency-gate.ps1`: auditoria **fail-soft** que lê o esta
 dimensões** — version-sync (README badge × CHANGELOG × tag) · adr-status (Proposto pendente) · checkpoint
 (`history.md` cita a versão corrente?) · contagens (duplicata de número de ADR; lacuna é normal, não
 flagada) · **unpushed** (commits à frente do upstream) · transients (`docs/_intake/` a remover) — com
-**exit code = nº de inconsistências** (0 = limpo) e modo `-Json`, **invocada no `/checkpoint`, no
-retrospective gate e no fechamento de release** (NÃO auto-wirada no SessionStart — régua §0: não somar custo a toda abertura).
+**exit code = nº de inconsistências** (0 = limpo) e modo `-Json`, **invocada no fechamento de release
+(docops — wirado neste ADR)** [CONFIRMADO]; integração com `/checkpoint` e o retrospective gate é
+**planejada** [INFERIDO não-bloqueante]. NÃO auto-wirada no SessionStart (régua §0: não somar custo a toda abertura).
 
 ## Alternativas consideradas (≥3)
 
@@ -34,7 +35,7 @@ retrospective gate e no fechamento de release** (NÃO auto-wirada no SessionStar
 **Positivas:** fechamento de release ganha um checklist mecânico; "commits não-pushados" deixa de ser
 ponto cego (alinha resiliência de acesso, decisão #5); ADRs `Proposto` órfãos e transientes esquecidos
 ficam visíveis. **Validado por dogfood** nesta própria branch (pegou 3 ADRs Proposto, checkpoint ausente,
-6 transientes). **Negativas:** caminhos (README/CHANGELOG/history/adr) são convenção DESTE repo — outro
+6 transientes) [CONFIRMADO — execução registrada]. **Negativas:** caminhos (README/CHANGELOG/history/adr) são convenção DESTE repo — outro
 projeto adapta os ponteiros (método é agnóstico, config não). **Riscos/aprendizado:** o script usa
 não-ASCII (acentos, `—`) e PS 5.1 lê fonte sem-BOM em ANSI → **gravado com UTF-8 BOM** (decode correto +
 saída limpa); leituras de arquivo usam `-Encoding UTF8` (senão `Versão`→`VersÃ£o` e o regex falha). [aprendizado registrado no ADR para os próximos hooks]
@@ -43,4 +44,4 @@ saída limpa); leituras de arquivo usam `-Encoding UTF8` (senão `Versão`→`Ve
 
 - Ponteiro: branch `feat/v1.22.0-entrada-deterministica` · `2026-05-31` · grep `consistency-gate`
 - Artefatos: `tools/hooks/consistency-gate.ps1` (UTF-8 BOM; `-RepoDir`, `-Json`; exit = nº de issues).
-  Canário = a própria execução contra o repo (gate repo-aware). Invocação: `/checkpoint`, retrospective gate (start-session §2.5), fechamento docops.
+  Canário = a própria execução contra o repo (gate repo-aware). Invocação wirada: `.agent/skills/docops/SKILL.md` §Encerramento. Planejado (não wirado): `/checkpoint`, retrospective gate (start-session §2.5).

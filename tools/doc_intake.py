@@ -181,17 +181,27 @@ def chunk_text(text: str, chunk_chars: int, overlap: int):
 
 # --- Manifesto -----------------------------------------------------------------
 
-def build_file_entry(path: str, chunk_chars: int, overlap: int, with_text: bool):
+def build_file_entry(path: str, chunk_chars: int, overlap: int, with_text: bool, id_base: str = None):
+    # id_base: prefixo do chunk-id. Default = path relativo (não basename) para garantir
+    # UNICIDADE entre arquivos de mesmo nome em subpastas distintas (MÉDIO-1 qa-critic).
+    if id_base is None:
+        id_base = path.replace("\\", "/")
     try:
         with open(path, "rb") as fh:
             raw = fh.read()
         size = len(raw)
         file_sha = sha256_bytes(raw)
     except OSError as exc:
+        # Ramo de erro mantém o MESMO schema dos entries normais (sentinelas), para o
+        # consumidor poder iterar sem KeyError (BAIXO-1 qa-critic).
         return {
             "path": path.replace("\\", "/"),
             "format": os.path.splitext(path)[1].lower(),
+            "bytes": 0,
+            "sha256": "",
+            "extractor": "",
             "status": f"error: {type(exc).__name__}: {exc}",
+            "n_chars": 0,
             "n_chunks": 0,
             "chunks": [],
         }
@@ -214,10 +224,9 @@ def build_file_entry(path: str, chunk_chars: int, overlap: int, with_text: bool)
         return entry
 
     pieces = chunk_text(text, chunk_chars, overlap)
-    base = os.path.basename(path)
     for ordinal, (cstart, cend, ptext) in enumerate(pieces):
         chunk = {
-            "id": f"{base}#{ordinal:04d}",
+            "id": f"{id_base}#{ordinal:04d}",
             "ordinal": ordinal,
             "char_start": cstart,
             "char_end": cend,
@@ -246,7 +255,18 @@ def collect_paths(target: str):
 
 def build_manifest(target: str, chunk_chars: int, overlap: int, with_text: bool):
     paths = collect_paths(target)
-    files = [build_file_entry(p, chunk_chars, overlap, with_text) for p in paths]
+    # id_base = path relativo ao target (pasta) -> chunk-ids únicos mesmo com basenames
+    # repetidos em subpastas. Para target arquivo único, usa o basename.
+    base_dir = target if os.path.isdir(target) else os.path.dirname(target)
+
+    def _id_base(p):
+        try:
+            rel = os.path.relpath(p, base_dir)
+        except ValueError:  # drives diferentes no Windows
+            rel = os.path.basename(p)
+        return rel.replace("\\", "/")
+
+    files = [build_file_entry(p, chunk_chars, overlap, with_text, _id_base(p)) for p in paths]
     return {
         "manifest_version": 1,
         "tool": "doc_intake.py",

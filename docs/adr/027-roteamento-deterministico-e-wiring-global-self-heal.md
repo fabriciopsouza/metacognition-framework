@@ -49,6 +49,11 @@ marker por `session_id`, triviais filtrados, fail-open silencioso). A cura do cl
 repo-framework é aberto (mitigado: é o repo que o dono mais abre; e o `sync-global` roda no SessionStart dele).
 **Riscos:** se o schema do `UserPromptSubmit`/`additionalContext` mudar no Claude Code, o route-gate degrada
 para no-op (fail-open) — re-validar em upgrade. [DESCONHECIDO não-bloqueante] estabilidade do contrato de hooks entre versões.
+**Escopo de plataforma [CONFIRMADO]:** o **auto-wiring** (`ensure-global-wiring.ps1`, chamado pelo `sync-global.ps1`)
+é **Windows/PowerShell** — como toda a camada de hooks deste repo (settings.json referencia `.ps1`). O `route-gate.sh`
+acompanha para **setup manual em Linux/Mac**, mas **não é wirado automaticamente** (não há equivalente `.sh` do
+ensure-global-wiring). Usuário Unix instala o hook à mão no seu `settings.json`. Fonte dos `.ps1` gravada com **UTF-8 BOM**
+(PS 5.1 lê fonte sem-BOM em ANSI e o não-ASCII vira mojibake no contexto injetado — lição compartilhada com ADR-030).
 
 ## §disable-com-memória (soberania do usuário)
 

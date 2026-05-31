@@ -1,4 +1,4 @@
-# ensure-global-wiring.ps1 — self-heal da wiring de hooks globais (ADR-027)
+﻿# ensure-global-wiring.ps1 — self-heal da wiring de hooks globais (ADR-027)
 #
 # PROBLEMA: o ~/.claude/settings.json global pode ficar SEM a chave `hooks` (clobber
 # do mode-apply autosuficiente — o algoritmo execution-modes §5 manda "preservar hooks",

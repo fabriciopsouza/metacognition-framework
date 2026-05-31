@@ -36,8 +36,8 @@
 - [x] ADR-030 + consistency-gate.ps1 (6 dimensões: version-sync, adr-status, checkpoint, contagens-dup, unpushed, transients; UTF-8 BOM; validado por dogfood).
 - [x] guia/RESILIENCIA-ACESSO.md (recovery de conta > key local + push cedo + gate unpushed). Link no README pendente p/ item bump.
 - [x] Housekeeping: ADR-024/025/026 → Aceito; checkpoint v1.21.1+1.21.2 no history (gate: adr-status/checkpoint verdes).
-- [ ] qa-critic adversarial (subagente Sonnet isolado).
-- [ ] Dogfood (ensure-global-wiring + route-gate disparando).
+- [x] qa-critic adversarial (Sonnet isolado): APROVADO_COM_RESSALVA → 3 MÉDIO + 5 BAIXO todos emendados (J4 EMENDA, forward-only).
+- [x] Dogfood: ensure-global-wiring exit 0 (idempotente); route-gate wirado+disparou nesta sessão; BOM curou mojibake; check_core_agnostic PASS.
 - [ ] Version bump v1.22.0 + atualizar README/CHANGELOG/web/CLAUDE/AGENTS/history.
 - [ ] Commit→PR→merge verificado→deletar branch→limpeza (remover este RETOMADA).
 

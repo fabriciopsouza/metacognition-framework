@@ -1,4 +1,4 @@
-# route-gate.ps1 — UserPromptSubmit hook: roteamento determinístico (ADR-027)
+﻿# route-gate.ps1 — UserPromptSubmit hook: roteamento determinístico (ADR-027)
 #
 # PROBLEMA QUE RESOLVE (relato AIVI 2026-05-31): o roteamento do framework era
 # instrução DECLARATIVA no CLAUDE.md — dependia do modelo "lembrar" de rotear.

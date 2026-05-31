@@ -1,4 +1,4 @@
-# inject-start-session-global.template.ps1
+﻿# inject-start-session-global.template.ps1
 # Hook SessionStart GLOBAL (ADR-006 v1.8.0) - ativacao condicional do squad
 # por allowlist de owners do remote OU marker no projeto.
 #
