@@ -34,6 +34,9 @@ discovery passo 6(e) "alimenta outra sessão?" → SE SIM, Pacote de handoff (`m
 ## QA bicelular — junções binárias + process-critic com rewind (v1.12.0 — ADR-011)
 6 junções no fluxo squad (J0-J5) com artefato-gate + critério binário declarados em `/handoff`. DENTRO da junção: iterações até PASS. ENTRE junções: forward-only (anti-loop). Process-critic adversarial (qa-critic subagente isolado) ao final de BLOCO APROVADO + on-demand + opcional /checkpoint; rewind cascata para qualquer J_i; downstream re-roda. **TODO QA é adversarial.** SUPLANTA (§Decisão/§Alternativas muda → novo ADR + Substituído por) × EMENDA (§Implementação/§Consequências muda → in-place STATUS-field). Within-junction rounds = EMENDA. Princípio 13 do §6.
 
+## Runtime hooks + entrega de produto (v1.21.0 — ADR-021/022/023)
+`compaction-gate` (PreCompact: bloqueia compaction sem digest, ADR-021) · `mission-gate` (SessionStart: product_type/escopo confirmado por modo de execução, ADR-022; taxonomia na aplicação) · app `exemplos/dominio-software/` (ux-designer + evals-engineer, ADR-023 — o framework culmina em PRODUTO; governance/poda já cobertos pelo núcleo). `_shared/` inalterado/agnóstico.
+
 ## Aplicações
 Domínios específicos (BI, regulado, etc.) NÃO ficam no núcleo — são criados clonando
 .agent/skills/_template e vivem FORA do núcleo (no seu repositório).

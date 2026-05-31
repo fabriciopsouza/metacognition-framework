@@ -15,6 +15,36 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.21.0] — 2026-05-30 — Hooks de runtime (compaction/mission) + camada de entrega de produto
+
+> MINOR. Origem: revisão de uma pesquisa/SPEC externa (Perplexity) que **re-derivou contra fontes
+> oficiais** o núcleo já mecanizado na série v1.14.x→v1.20.0 — validação externa. Filtrado o ganho real
+> (lean): mecanismos novos onde havia prosa + correção do **viés de processo-sobre-produto** (o framework
+> existe para **culminar em produto** de software/dados, reorientação do dono). Núcleo permanece agnóstico
+> (P12) e inalterado em `_shared/`. Bloco passou por qa-critic adversarial (Sonnet isolado): REPROVADO
+> round 1 (1 ALTO template↔hook + 2 MÉDIO + 2 BAIXO) → corrigido → re-verificado.
+
+### Added
+- **ADR-021 — `compaction-gate` (PreCompact hook):** bloqueia compaction quando `history.md` está ausente
+  ou sem checkpoint (caso catastrófico); fail-open; backstop conservador (filosofia do `effect-gate`).
+  Mecaniza a obrigatoriedade de digest do ADR-016. `tools/hooks/compaction-gate.{ps1,sh}` + canário.
+- **ADR-022 — `mission-gate` (SessionStart hook):** declara/confirma `product_type` + escopo (funde com
+  o escopo do discovery, ADR-010/012), com confirmação proporcional ao **modo de execução** (ADR-005);
+  3 modos BRIEFING/ADVANCE/STANDARD. Taxonomia de tipos é da **aplicação** (agnóstico, P12). PreToolUse
+  backstop deferido (fase 2). `tools/hooks/mission-gate.{ps1,sh}` + `docs/specs/_template/mission.md` +
+  canário + discovery passo 6(f).
+- **ADR-023 — app de entrega `exemplos/dominio-software/`:** distribuição especializada (demonstração
+  viva) com `ux-designer` + `evals-engineer` — os 2 papéis que melhoram o **produto** entregue; ativados
+  por `product_type` (`product-types.txt`). `governance-lead`/`skill-librarian` **não** criados (cobertos
+  por `high-stakes-gate`/`action-safety` e pelo campo `classe`). `validate_skills.py` passa a cobrir
+  `exemplos/*/*/SKILL.md`.
+
+### Changed
+- `guia/web/index.html` → v1.21.0: camada ENFORCEMENT (runtime hooks), `_shared` corrigido (9 regras,
+  +action-safety +execution-modes), cards de enforcement e entrega de produto, app `dominio-software`.
+- `tools/managed-settings.template.json`: caminho Windows oficial (`C:\Program Files\ClaudeCode\`) +
+  status atual do bug #44642 (aberto, "not planned"). `effect-gate.{ps1,sh}`: ressalva do bug #37210.
+
 ## [1.20.0] — 2026-05-30 — Linter de agnosticismo do núcleo (ADR-020) — último elo "prosa→mecanismo"
 
 > MINOR. Mecaniza o **Princípio 12** (núcleo agnóstico) e a **regra #5 do qa-critic**, que eram prosa e

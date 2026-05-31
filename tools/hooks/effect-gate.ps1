@@ -7,6 +7,9 @@
 #
 # Contrato Claude Code (P1): lê JSON do hook em stdin; para BLOQUEAR, exit 0 + JSON
 # {hookSpecificOutput:{permissionDecision:"deny"}} (mais expressivo que exit 2). Precedência deny>ask>allow.
+# Ressalva (bug GitHub #37210): o caminho permissionDecision:deny pode ser IGNORADO para Edit/MCP em
+# algumas versões. Este gate só inspeciona Bash/PowerShell (Allow p/ os demais tools), então NÃO é
+# afetado. Se um dia passar a gatear Edit/MCP, migrar para exit 2 (mais robusto). Decisão consciente.
 # Erro interno -> loga em stderr e NÃO bloqueia (exit 0): travar todo tool em bug do hook seria DoS;
 # a camada fail-closed real é o managed-settings (ADR-015). Falha-segura mora em camadas, não aqui.
 #
