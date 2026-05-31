@@ -52,5 +52,9 @@ jobs:
           git add -A
           git -c user.name="auto-publish" -c user.email="actions@users.noreply.github.com" \
               commit -q -m "publish: export limpo da fonte privada @ ${GITHUB_SHA::7}"
-          git push -f "https://x-access-token:${PUBLISH_TOKEN}@github.com/${PUBLIC_REPO}.git" main
+          # Token via http.extraheader (NÃO na URL) — assim mensagens de erro do git, que
+          # imprimem o remote, não vazam o token. base64 nunca é ecoado.
+          git remote add target "https://github.com/${PUBLIC_REPO}.git"
+          AUTH_B64=$(printf 'x-access-token:%s' "${PUBLISH_TOKEN}" | base64 -w0)
+          git -c http.extraheader="AUTHORIZATION: basic ${AUTH_B64}" push -f target main
           echo "Publicado em https://github.com/${PUBLIC_REPO}"

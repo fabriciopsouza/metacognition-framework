@@ -29,8 +29,18 @@ STRIP_AFTER_VERIFY = [                               # infra de limpeza: carrega
     "tools/anonymize-map.txt",
     "tools/anonymize.py",
     "tools/export-clean.py",
+    "tools/test_core_agnostic.py",                   # canário interno: tokens split + dep da denylist
     ".github/workflows/publish-clean.yml",
 ]
+
+
+def strip_pycache(root):
+    """Remove todo __pycache__ (bytecode cacheado vaza caminhos internos; nunca distribuir)."""
+    for dirpath, dirnames, _ in os.walk(root):
+        for d in list(dirnames):
+            if d == "__pycache__":
+                shutil.rmtree(os.path.join(dirpath, d))
+                dirnames.remove(d)
 
 
 def _rm(path):
@@ -57,7 +67,8 @@ def main(argv):
         shutil.rmtree(out)
 
     # 1. copia
-    shutil.copytree(SRC_ROOT, out, ignore=shutil.ignore_patterns(".git"))
+    shutil.copytree(SRC_ROOT, out, ignore=shutil.ignore_patterns(".git", "__pycache__"))
+    strip_pycache(out)
     # 2. strip cofre/história
     for rel in STRIP_BEFORE:
         _rm(os.path.join(out, *rel.split("/")))

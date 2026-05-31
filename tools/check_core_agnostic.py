@@ -179,16 +179,30 @@ def main(argv):
     # TIER SENSÍVEL — OPT-IN (--sensitive/--all). Varre o repo inteiro. Gate de EXPORT, não de boot:
     # a fonte privada full carrega nomes de cliente por design (cofre de acesso total do dono).
     if sensitive_on and not explicit:
-        sens_patterns = load_patterns(SENSITIVE_DENYLIST_PATH)
+        if not os.path.isfile(SENSITIVE_DENYLIST_PATH):
+            print("sensitive-denylist.txt ausente (export ja limpo?) — pulando tier sensivel", file=sys.stderr)
+            sens_patterns = []
+        else:
+            sens_patterns = load_patterns(SENSITIVE_DENYLIST_PATH)
         if not sens_patterns:
             print("nenhum padrao na denylist (sensivel) — pulando tier sensivel", file=sys.stderr)
         else:
             print("-" * 40)
-            leak_s, clean_s = _run_tier(sensitive_targets(), sens_patterns, SENSITIVE_SENTINEL,
+            sens_files = sensitive_targets()
+            leak_s, clean_s = _run_tier(sens_files, sens_patterns, SENSITIVE_SENTINEL,
                                         "sensivel", verbose=False)
+            # Path-check: token sensível NÃO pode aparecer no NOME do caminho (dir/arquivo) —
+            # o scan de conteúdo não vê nomes; este é o backstop do rename de path.
+            for p in sens_files:
+                rel = os.path.relpath(p, ROOT).replace(os.sep, "/")
+                for rx, src in sens_patterns:
+                    if rx.search(rel):
+                        print(f"LEAK [sensivel-path] {rel}: token '{rx.pattern}' no NOME do caminho")
+                        leak_s = True
+                        break
             any_leak = any_leak or leak_s
             if not leak_s:
-                print(f"OK   [sensivel] {clean_s} arquivos de texto varridos, zero vazamento")
+                print(f"OK   [sensivel] {clean_s} arquivos varridos (conteúdo + nome de caminho), zero vazamento")
 
     print("-" * 40)
     if any_leak:

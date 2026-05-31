@@ -5,6 +5,15 @@ description: Abre a sessão pelo PMO — sync + rules + briefing + history + rec
 Execute o **protocolo canônico de abertura de sessão** do framework, seguindo
 `.agent/workflows/start-session.md` (fonte única — não duplicar a lógica aqui):
 
+0. **ORIENTAR-PRIMEIRO (workspace virgem / framework recém-adotado):** se NÃO há
+   `docs/briefing.md` nem projeto em andamento (alguém clonou o framework para **usar**, ou
+   é pasta nova), a **1ª resposta ORIENTA — não interroga**. Diga, curto: (a) o que o framework
+   é em 1 linha; (b) como começar — rodar `bootstrap`, criar `docs/briefing.md` +
+   `.agent/rules/00-glossario.md`, escolher o modo de execução; (c) como aplicar a um domínio
+   (clonar `.agent/skills/_template`). **Nunca abrir perguntando "retomar qual projeto?" a quem
+   acabou de chegar.** Só quando JÁ existe briefing/projeto é que o protocolo de STATUS/retomada
+   (passos 1-5) se aplica.
+
 1. **Sincronizar ANTES de ler (ADR-019 — obrigatório, falha-soft):** `git fetch` + checar ahead/behind
    vs `@{upstream}`/`origin/main`. Atrás e seguro → `git pull --ff-only`; atrás e inseguro → avisar e
    **não afirmar estado** até resolver. *File-first sem fetch lê retrato congelado.*

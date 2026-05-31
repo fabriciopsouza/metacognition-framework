@@ -92,7 +92,22 @@ def main(argv):
             with open(path, "w", encoding="utf-8", newline="") as fh:
                 fh.write(new)
             changed += 1
-    print(f"anonymize: {changed} arquivo(s) reescrito(s) com {len(rules)} regra(s)")
+
+    # Rename de NOMES de caminho (dir/arquivo) cujo basename casa alguma regra — fecha o
+    # blind-spot: o scan de conteúdo não vê nomes de diretório (ex.: '...-aivi-method-fixes/').
+    # Só renomeia se o resultado for filesystem-safe (sem espaço/separador) — regras de prosa
+    # que injetariam espaço são puladas; o gate de path pega o que sobrar.
+    renamed = 0
+    for dirpath, dirnames, filenames in os.walk(root, topdown=False):
+        for name in list(filenames) + list(dirnames):
+            new = apply_rules(name, rules)
+            if new != name and new and " " not in new and os.sep not in new and "/" not in new:
+                src, dst = os.path.join(dirpath, name), os.path.join(dirpath, new)
+                if not os.path.exists(dst):
+                    os.rename(src, dst)
+                    renamed += 1
+    print(f"anonymize: {changed} arquivo(s) reescrito(s) + {renamed} path(s) renomeado(s) "
+          f"com {len(rules)} regra(s)")
     return 0
 
 

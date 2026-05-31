@@ -45,3 +45,7 @@ aivi-method-fixes
 \b74bd613\b
 \b039fd6d\b
 \b10ecf0[0-9a-f]*\b
+
+# --- dicas de setor do cliente (gate enforce; map genericiza) ---
+\bcombustíveis\b
+\bcombustível\b

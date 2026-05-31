@@ -12,6 +12,20 @@
 # Backstop: depois de aplicar, export-clean.py roda `check_core_agnostic.py --sensitive`.
 # Se sobrar QUALQUER token da sensitive-denylist, o build FALHA — adicione a regra aqui.
 
+# --- URLs do repo: fonte privada -> distribuição pública (links funcionam no público) ---
+fabriciopsouza\.github\.io/metacognition-framework/	fabriciopsouza.github.io/metacognition-framework-public/
+raw\.githubusercontent\.com/fabriciopsouza/metacognition-framework/	raw.githubusercontent.com/fabriciopsouza/metacognition-framework-public/
+github\.com/fabriciopsouza/metacognition-framework\b	github.com/fabriciopsouza/metacognition-framework-public
+
+# --- frases ALVO de correlação cliente/setor (cirúrgicas; ANTES de tudo) ---
+# (mantêm intactos exemplos genéricos de ensino como H1-farma; só limpam os trechos que
+#  enumeram os setores reais dos clientes do dono.)
+\(citar ANP 884 = varejo como se regulasse distribuição; tratar ALCOA\+ = pharma/GxP como âncora de combustível\)	(aplicar uma norma de um segmento como se regulasse outro; usar uma norma de um setor como âncora indevida em outro)
+\(Vibra/distribuição \+ Natulab/farmácia\)	(dois clientes de setores distintos do mesmo dono)
+\(ANP 884 = varejo\) como se regulasse distribuidor	(uma norma de um segmento) como se regulasse outro
+Tableau · distribuição de combustíveis · farmacêutico ANVISA/GAMP/COBIT · ALCOA\+ · KPIs combustíveis	conteúdo de domínio de um cliente (normas, KPIs e ferramentas específicas)
+Tableau · distribuição de combustíveis · farmacêutico ANVISA/GAMP/COBIT	conteúdo de domínio de um cliente
+
 # --- frases com gramática (caso/incidente) ---
 incidente AIVI	incidente real de roteamento
 relato AIVI	relato do incidente
@@ -56,6 +70,14 @@ natulab	SUA-ORG
 \bBetim\b	uma base
 \bVIACOMP\b	uma fonte de dados
 \bTableau\b	uma ferramenta de BI
+
+# --- dicas de SETOR do cliente (genericizar; ordem específica → genérica) ---
+domínio combustíveis	domínio regulado
+KPIs combustíveis	KPIs do domínio
+distribuição de combustíveis	distribuição regulada
+\bcombustíveis\b	do setor regulado
+\bcombustível\b	do setor regulado
+ANP\s*884	uma norma setorial
 
 # --- fallback final: qualquer "AIVI"/"aivi" remanescente ---
 \bAIVI\b	o caso real
