@@ -1,20 +1,19 @@
 #!/usr/bin/env bash
-# effect-gate.sh — paridade POSIX do deny-backstop T3 por EFEITO (ADR-015).
-# [DESCONHECIDO] não testado em Linux/macOS nesta onda — paridade documentada, não validada (ADR-015 §Riscos).
-# Contrato Claude Code (P1): lê JSON do hook em stdin; bloquear = stdout JSON permissionDecision:deny + exit 0.
-# Ressalva (bug GitHub #37210): permissionDecision:deny pode ser ignorado p/ Edit/MCP; este gate só
-# inspeciona Bash/PowerShell, então não é afetado (se gatear Edit/MCP no futuro, usar exit 2).
-# Erro interno -> exit 0 (não bloqueia; managed-settings é a camada fail-closed). Requer jq.
+# effect-gate.sh — paridade POSIX do motor de regras por EFEITO (ADR-039, estende ADR-015).
+# A POLITICA vive em tools/effect-rules.json; este hook INTERPRETA (mesmas regras do .ps1).
+# Contrato: le JSON do hook em stdin; deny = stdout JSON permissionDecision:deny; ask = :ask; exit 0.
+# So inspeciona Bash/PowerShell. Erro/sem jq/sem rules -> exit 0 (fail-open; managed-settings e a camada
+# fail-closed). Regex em subconjunto comum .NET ∩ POSIX-ERE (paridade com o .ps1). Requer jq.
 set -euo pipefail
 
-deny() {
-  printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"effect-gate (ADR-015) T3 negado: %s. Requer gate humano."}}\n' "$1"
+emit() { # $1=decision $2=reason
+  printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"%s","permissionDecisionReason":"effect-gate (ADR-039) [%s]: %s"}}\n' "$1" "$1" "$2"
   exit 0
 }
 
 raw="$(cat || true)"
 [ -z "$raw" ] && exit 0
-command -v jq >/dev/null 2>&1 || exit 0   # sem jq, não bloqueia (degrada para managed-settings)
+command -v jq >/dev/null 2>&1 || exit 0
 
 tool="$(printf '%s' "$raw" | jq -r '.tool_name // empty')"
 case "$tool" in Bash|PowerShell) : ;; *) exit 0 ;; esac
@@ -22,18 +21,36 @@ cmd="$(printf '%s' "$raw" | jq -r '.tool_input.command // empty')"
 [ -z "$cmd" ] && exit 0
 c="$(printf '%s' "$cmd" | tr '[:upper:]' '[:lower:]')"
 
-# rm: recursivo E forçado E alvo crítico, checados separadamente (paridade com PS1; qa-critic R1)
-if echo "$c" | grep -Eq '(^|[[:space:]])(/bin/)?rm([[:space:]]|$)'; then
-  if { echo "$c" | grep -Eq '(^|[[:space:]])-[a-z]*r[a-z]*([[:space:]]|$)' || echo "$c" | grep -q -- '--recursive'; } \
-  && { echo "$c" | grep -Eq '(^|[[:space:]])-[a-z]*f[a-z]*([[:space:]]|$)' || echo "$c" | grep -q -- '--force'; } \
-  && echo "$c" | grep -Eq '["'\'']?/["'\'']?([[:space:]]|$|\*)|~["/]?([[:space:]]|$|\*)|\$home|[[:space:]]/\*'; then
-    deny 'rm recursivo-forcado em raiz/home/~ (E1+E2)'
-  fi
-fi
-echo "$c" | grep -Eq '\bmkfs(\.[a-z0-9]+)?\b|dd +.*of=/dev/(sd|nvme|disk|hd)|format +[a-z]:' && deny 'format/mkfs/dd em device (E1+E2)'
-{ echo "$c" | grep -Eq 'git +push' && ! echo "$c" | grep -q 'force-with-lease' && echo "$c" | grep -Eq '(--force|(^|[[:space:]])-f([[:space:]]|$))'; } && deny 'git push --force sem --force-with-lease (E2+E3)'
-printf '%s' "$cmd" | grep -Eq ':\(\) *\{ *:\|:& *\} *;:' && deny 'fork bomb (E2)'
-echo "$c" | grep -Eq '(chmod|chown) +-[a-z]*r[a-z]* +.*[[:space:]]/([[:space:]]|$)' && deny 'chmod/chown recursivo em raiz (E5)'
-echo "$c" | grep -Eq 'netsh +advfirewall +set +allprofiles +state +off|iptables +-f' && deny 'desligamento de firewall (E5)'
+rules="$(dirname "$0")/../effect-rules.json"
+[ -f "$rules" ] || { echo "[effect-gate] effect-rules.json ausente — fail-open" >&2; exit 0; }
 
+ask_reason=""
+n="$(jq '.rules | length' "$rules")"
+i=0
+while [ "$i" -lt "$n" ]; do
+  decision="$(jq -r ".rules[$i].decision" "$rules")"
+  reason="$(jq -r ".rules[$i].reason" "$rules")"
+  allok=1
+  while IFS= read -r p; do
+    [ -z "$p" ] && continue
+    printf '%s' "$c" | grep -Eq -- "$p" || { allok=0; break; }
+  done < <(jq -r ".rules[$i].all[]? // empty" "$rules")
+  if [ "$allok" -eq 1 ]; then
+    blocked=0
+    while IFS= read -r p; do
+      [ -z "$p" ] && continue
+      if printf '%s' "$c" | grep -Eq -- "$p"; then blocked=1; break; fi
+    done < <(jq -r ".rules[$i].none[]? // empty" "$rules")
+    if [ "$blocked" -eq 0 ]; then
+      if [ "$decision" = "deny" ]; then
+        emit deny "$reason. Requer gate humano (four-eyes fora do canal)."
+      elif [ "$decision" = "ask" ] && [ -z "$ask_reason" ]; then
+        ask_reason="$reason"
+      fi
+    fi
+  fi
+  i=$((i + 1))
+done
+
+[ -n "$ask_reason" ] && emit ask "$ask_reason"
 exit 0

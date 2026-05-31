@@ -15,6 +15,23 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.28.0] — 2026-05-31 — Remediação v2 (marco 6/9): effect-gate vira motor de regras por efeito
+
+> Item 7: o effect-gate eram ~5 padrões grep no código; bypasses conhecidos passavam (find -delete,
+> reset --hard, clean -fdx, curl|bash, exfil). Agora a **política é dado** (`effect-rules.json`) e o hook
+> é o **interpretador** — adicionar família/regra não toca o hook.
+
+### Changed
+- **ADR-039** — effect-gate motor por efeito (refatora ADR-015):
+  - `tools/effect-rules.json`: 12 regras / 5 famílias (mass-destruction, history-rewrite,
+    escalation-persistence, exfiltration, resource-exhaustion); cada regra `all`[]+`none`[]+tier+decisão.
+  - `tools/hooks/effect-gate.ps1` (ASCII-only, dodge do BOM/cp1252) + `.sh` (jq + grep -E): interpretadores;
+    regex no subconjunto comum .NET ∩ POSIX-ERE para paridade. default-ALLOW; T3→deny, T2→ask.
+  - `tools/test_effect_gate.py`: agora decision-based (deny/ask/allow), ≥2 deny + ≥2 benignos por família +
+    fuzzing de flag/aspas/espaço. `tools/test_parity.py`: decisão idêntica .ps1↔.sh (validada local por
+    emulação grep -E; prova final na matriz CI).
+- OWASP LLM06 segue **🟡** até a matriz CI (3 SOs) + paridade 100% verdes (honestidade via LIMITS.md/ADR-044).
+
 ## [1.27.0] — 2026-05-31 — Remediação v2 (marco 5/9): segurança de escrita + governança (overwrite-guard + execution-report)
 
 > Itens 5 + 6 ⭐: o overwrite cego de artefato (E1) passava pelo effect-gate; e tokens/custo/placar nunca
