@@ -38,6 +38,7 @@ def main():
             ("cache_read soma", s["tokens"]["cache_read"], 10),
             ("msgs com usage", s["assistant_msgs"], 2),
             ("tool_uses", s["tool_uses"], 1),
+            ("duracao (10:00->10:05 = 5 min)", pr.session_duration_min(s["start"], s["end"]), 5.0),
         ]
         for name, got, exp in checks:
             ok = got == exp

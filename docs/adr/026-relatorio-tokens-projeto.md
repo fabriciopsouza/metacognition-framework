@@ -19,8 +19,9 @@ OTel) e *como* reconstruir (digest, ADR-016) — faltava o **executável** que l
 ## Decisão (1 frase ativa)
 
 Adicionar `tools/project_report.py` que **lê os transcripts locais** do Claude Code e emite um relatório
-Markdown com **tokens (total + média por sessão)** e **timeline compactada** (por sessão: período, #
-mensagens, # tool calls, tokens) — base auditável de documentação/reconstrução — **sem transmitir nada**
+Markdown com **tokens (total + média por sessão)**, **tempo (duração/interação por sessão + total +
+throughput tokens/min — proxy de custo p/ corporações)** e **timeline compactada** (por sessão: período,
+duração, # mensagens, # tool calls, tokens) — base auditável de documentação/reconstrução — **sem transmitir nada**
 (ADR-025) e degradando com segurança se um campo faltar.
 
 ## Alternativas consideradas (≥3)

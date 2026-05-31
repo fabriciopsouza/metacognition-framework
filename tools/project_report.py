@@ -15,6 +15,7 @@ Uso:
   (sem --dir: tenta `~/.claude/projects/<slug derivado do cwd>`)
 """
 import argparse
+from datetime import datetime
 import glob
 import json
 import os
@@ -75,15 +76,36 @@ def parse_session(path):
     }
 
 
+def _parse_iso(ts):
+    if not ts:
+        return None
+    try:
+        return datetime.fromisoformat(str(ts).replace("Z", "+00:00"))
+    except (ValueError, AttributeError):
+        return None
+
+
+def session_duration_min(start, end):
+    """Duração (min) da sessão = último − primeiro timestamp. None se indeterminável."""
+    a, b = _parse_iso(start), _parse_iso(end)
+    if a and b and b >= a:
+        return (b - a).total_seconds() / 60.0
+    return None
+
+
 def build_report(directory, sessions):
     g = {"input": 0, "output": 0, "cache_read": 0, "cache_creation": 0}
     for s in sessions:
         for k in g:
             g[k] += s["tokens"][k]
+        s["dur_min"] = session_duration_min(s["start"], s["end"])
     n = len(sessions) or 1
     billable = g["input"] + g["output"]
+    durs = [s["dur_min"] for s in sessions if s["dur_min"] is not None]
+    total_min = sum(durs)
+    nd = len(durs) or 1
     L = []
-    L.append("# Relatório do projeto — tokens + história compactada")
+    L.append("# Relatório do projeto — tokens + tempo + história compactada")
     L.append(f"> Fonte: transcripts do Claude Code em `{directory}` · {len(sessions)} sessões · "
              f"gerado por `tools/project_report.py` (ADR-026). Sem transmissão (ADR-025).")
     L.append("")
@@ -93,12 +115,22 @@ def build_report(directory, sessions):
     L.append(f"- **input+output (aprox. faturável): {billable:,}** · "
              f"**média por sessão: {billable // n:,}**")
     L.append("")
+    L.append("## Tempo (processamento + interação) — proxy de custo")
+    L.append(f"- **total: {total_min / 60:.1f} h** ({total_min:,.0f} min de interação somada, "
+             f"{len(durs)}/{len(sessions)} sessões com timestamp) · "
+             f"**média por sessão: {total_min / nd:,.0f} min**")
+    if total_min > 0:
+        L.append(f"- throughput: ~**{billable / total_min:,.0f} tokens/min** (input+output)")
+    L.append("> Tempo = janela 1º→último timestamp por sessão (inclui pausas humanas — é "
+             "tempo de **interação**, não só CPU). Útil para custo por projeto/processo em corporações.")
+    L.append("")
     L.append("## Timeline compactada (por sessão)")
-    L.append("| Sessão | Período (UTC) | Msgs(asst) | Tools | input | output |")
-    L.append("|---|---|---|---|---|---|")
+    L.append("| Sessão | Período (UTC) | Duração | Msgs(asst) | Tools | input | output |")
+    L.append("|---|---|---|---|---|---|---|")
     for s in sessions:
         per = f"{(s['start'] or '?')[:16]} → {(s['end'] or '?')[:16]}"
-        L.append(f"| `{s['file'][:8]}` | {per} | {s['assistant_msgs']} | {s['tool_uses']} "
+        dur = f"{s['dur_min']:,.0f} min" if s["dur_min"] is not None else "?"
+        L.append(f"| `{s['file'][:8]}` | {per} | {dur} | {s['assistant_msgs']} | {s['tool_uses']} "
                  f"| {s['tokens']['input']:,} | {s['tokens']['output']:,} |")
     L.append("")
     L.append("> **Base de documentação + reconstrução:** o quê/quanto/quando vem daqui; o digest "
