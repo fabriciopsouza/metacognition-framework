@@ -63,6 +63,18 @@
         ]
       }
     ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"tools\\hooks\\route-gate.ps1\"",
+            "timeout": 10,
+            "statusMessage": "Roteamento determinístico (route-gate ADR-027)"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash|PowerShell",

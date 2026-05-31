@@ -115,8 +115,6 @@ if ($MemoryRepo) {
 Write-Step "Configurando auto-boot global (ADR-006)"
 $globalDir      = Join-Path $env:USERPROFILE '.claude'
 $ownersFile     = Join-Path $globalDir 'squad-owners.txt'
-$globalSettings = Join-Path $globalDir 'settings.json'
-$globalHookPath = Join-Path $globalDir 'hooks\inject-start-session-global.ps1'
 if (-not (Test-Path $globalDir)) { New-Item -ItemType Directory -Path $globalDir -Force | Out-Null }
 
 # squad-owners.txt: nao sobrescrever se ja existe (respeita customizacao do usuario)
@@ -139,70 +137,22 @@ if (-not (Test-Path $ownersFile)) {
     Write-Ok "squad-owners.txt ja existe; preservando customizacao"
 }
 
-# Merge nao-destrutivo de hooks.SessionStart no ~/.claude/settings.json
-# Backup antes de qualquer escrita; restaura se JSON ficar invalido.
-$utf8NoBom = New-Object System.Text.UTF8Encoding $false
-# Path literal expandido por este PC: evita dependencia de expansao %USERPROFILE% em
-# shell desconhecido (CMD vs PowerShell vs futura versao do Claude Code).
-$globalHookCmd = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$globalHookPath`""
-
-if (Test-Path $globalSettings) {
-    $backupPath = "$globalSettings.modeswap.bak"
-    Copy-Item $globalSettings $backupPath -Force
-    try {
-        $cfg = Get-Content $globalSettings -Raw | ConvertFrom-Json
-        $needsHook = $true
-        if ($cfg.hooks -and $cfg.hooks.SessionStart) {
-            $existing = $cfg.hooks.SessionStart | ConvertTo-Json -Depth 10 -Compress
-            if ($existing -like '*inject-start-session-global*') { $needsHook = $false }
-        }
-        if ($needsHook) {
-            if (-not $cfg.hooks) { $cfg | Add-Member -NotePropertyName hooks -NotePropertyValue ([pscustomobject]@{}) -Force }
-            $newGroup = [ordered]@{
-                hooks = @(
-                    [ordered]@{
-                        type    = 'command'
-                        command = $globalHookCmd
-                        timeout = 10
-                        statusMessage = 'Auto-boot global (ADR-006)'
-                    }
-                )
-            }
-            if ($cfg.hooks.SessionStart) {
-                $cfg.hooks.SessionStart = @($cfg.hooks.SessionStart) + $newGroup
-            } else {
-                $cfg.hooks | Add-Member -NotePropertyName SessionStart -NotePropertyValue @($newGroup) -Force
-            }
-            $newJson = $cfg | ConvertTo-Json -Depth 10
-            $null = $newJson | ConvertFrom-Json -ErrorAction Stop
-            [System.IO.File]::WriteAllText($globalSettings, $newJson, $utf8NoBom)
-            Write-Ok "hooks.SessionStart adicionado a $globalSettings (backup: .modeswap.bak)"
-        } else {
-            Write-Ok "hooks.SessionStart ja contem auto-boot global; preservando"
-        }
-    } catch {
-        Move-Item -Path $backupPath -Destination $globalSettings -Force
-        Write-Warn "Merge falhou ($($_.Exception.Message)); restaurado do backup"
+# Wiring de hooks globais via ensure-global-wiring (ADR-027). Garante:
+#   hooks.SessionStart     -> inject-start-session-global (auto-boot, ADR-006)
+#   hooks.UserPromptSubmit -> route-gate                  (roteamento determinístico)
+# Hook-preserving, idempotente, com backup/validação. MESMA rotina que o sync-global
+# invoca a cada abertura do repo (self-heal) — derrota o clobber do mode-apply
+# (execution-modes §5 manda "preservar hooks", mas isso é prosa; aqui vira mecanismo).
+$ensureWiring = Join-Path $ProjectDir 'tools\hooks\ensure-global-wiring.ps1'
+if (Test-Path $ensureWiring) {
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $ensureWiring -RepoDir $ProjectDir 2>$null
+    switch ($LASTEXITCODE) {
+        10      { Write-Ok "hooks globais wirados: SessionStart inject-global + UserPromptSubmit route-gate (ADR-027)" }
+        0       { Write-Ok "hooks globais ja wirados; preservando" }
+        default { Write-Warn "ensure-global-wiring codigo $LASTEXITCODE; ver ~/.claude/settings.json.heal.bak" }
     }
 } else {
-    $initial = [ordered]@{
-        hooks = [ordered]@{
-            SessionStart = @(
-                [ordered]@{
-                    hooks = @(
-                        [ordered]@{
-                            type = 'command'
-                            command = $globalHookCmd
-                            timeout = 10
-                            statusMessage = 'Auto-boot global (ADR-006)'
-                        }
-                    )
-                }
-            )
-        }
-    }
-    [System.IO.File]::WriteAllText($globalSettings, ($initial | ConvertTo-Json -Depth 10), $utf8NoBom)
-    Write-Ok "$globalSettings criado com hooks.SessionStart"
+    Write-Warn "tools/hooks/ensure-global-wiring.ps1 ausente; wiring global pulado (abra o repo-framework p/ sync)"
 }
 
 # Rodada inicial do sync-global para popular ~/.claude/hooks/ + workflows/
