@@ -63,6 +63,19 @@
         ]
       }
     ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"tools\\hooks\\effect-gate.ps1\"",
+            "timeout": 10,
+            "statusMessage": "Gate de acoes destrutivas por efeito (effect-gate ADR-015)"
+          }
+        ]
+      }
+    ],
     "PreCompact": [
       {
         "hooks": [
