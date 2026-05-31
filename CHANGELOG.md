@@ -15,6 +15,22 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.23.0] — 2026-05-31 — Remediação v2 (marco 1/9): CI cross-platform + paridade `.sh`↔`.ps1` provada
+
+> Onda **remediação v2** — consolida crítica adversarial sobre v1.22.0 + evidência de campo (incidente
+> registrado em `docs/_private/`, fora da distribuição). Princípio reitor: **tudo vira hook/linter/teste**;
+> prosa só onde não-mecanizável, e então declarada em `LIMITS.md`. Este marco é a BASE que prova todo o resto.
+
+### Added
+- **ADR-040** — paridade cross-platform real + CI matriz 3 SOs:
+  - `tools/run_canaries.py`: runner único que descobre e roda cada `test_*.py` como subprocesso (exit = nº
+    de falhas). Os canários são scripts standalone (não pytest-collectáveis); este é o entrypoint canônico.
+  - `tools/test_parity.py`: exige veredito `deny`/`allow` **idêntico** entre `effect-gate.ps1` e `.sh` para
+    cada payload (fonte única: importa `CASES` do `test_effect_gate`); SKIP se faltar pwsh/bash/jq.
+  - `.github/workflows/ci.yml`: matriz `ubuntu+macos+windows`, roda o runner + o tier norma do
+    `check_core_agnostic` em todo push/PR (o tier --sensitive é gate de export, não roda no source privado).
+  - `tools/requirements-dev.txt`: parsers opcionais (openpyxl, python-docx); núcleo segue sem dep de runtime.
+
 ## [1.22.0] — 2026-05-31 — Entrada determinística: roteamento mecânico + wiring self-heal + doc-intake + consistency-gate
 
 > Onda **prosa→mecanismo da ENTRADA**, motivada por incidente confirmado (relato AIVI): um agente executou

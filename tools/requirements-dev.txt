@@ -1,0 +1,7 @@
+# Dependências de desenvolvimento/CI dos canários do framework (ADR-040).
+# O NÚCLEO não tem dependência de runtime: os hooks são .ps1/.sh e os linters usam só
+# a stdlib do Python. Estas libs habilitam os parsers OPCIONAIS do doc-intake (ADR-029)
+# e a verificação de ambiente limpo (ADR-036). Sem elas, os canários degradam para SKIP,
+# nunca FAIL (princípio: ambiente não reprova build).
+openpyxl>=3.1
+python-docx>=1.1
