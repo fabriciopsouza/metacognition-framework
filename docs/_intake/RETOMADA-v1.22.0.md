@@ -34,7 +34,7 @@
 - [x] ADR-028 + cláusula precedência output-style×processo em metacognition-core (nível 7) + nota inviolável.
 - [x] ADR-029 + skill doc-intake (_shared/) + tool doc_intake.py + canário (4 testes) + integração discovery.
 - [x] ADR-030 + consistency-gate.ps1 (6 dimensões: version-sync, adr-status, checkpoint, contagens-dup, unpushed, transients; UTF-8 BOM; validado por dogfood).
-- [ ] guia/RESILIENCIA-ACESSO.md.
+- [x] guia/RESILIENCIA-ACESSO.md (recovery de conta > key local + push cedo + gate unpushed). Link no README pendente p/ item bump.
 - [ ] Housekeeping: flipar ADR-024/025/026 → Aceito; checkpoint v1.21.2 ausente.
 - [ ] qa-critic adversarial (subagente Sonnet isolado).
 - [ ] Dogfood (ensure-global-wiring + route-gate disparando).
