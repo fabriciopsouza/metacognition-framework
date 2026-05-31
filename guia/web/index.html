@@ -122,6 +122,9 @@
   .ev .code{color:var(--accent);font-size:12px;letter-spacing:.08em}
   .ev .desc{color:var(--muted);font-size:13px;margin-top:6px}
   .note{color:var(--muted);font-size:13px}
+  .stacknote{border:1px solid var(--accent2);background:rgba(79,209,197,.07);padding:14px 16px;
+    border-radius:3px;margin-bottom:22px;font-size:13.5px;color:var(--fg);line-height:1.55}
+  .stacknote b{color:var(--accent2)}
 
   a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent;transition:.2s}
   a:hover{border-bottom-color:var(--accent)}
@@ -160,6 +163,7 @@
     <a href="#arquitetura">Arquitetura</a>
     <a href="#fluxo">Fluxo</a>
     <a href="#seguranca">Segurança</a>
+    <a href="#construcao">Construção</a>
     <a href="#docs">Docs</a>
     <a href="#comece">Começar</a>
     <a href="https://github.com/fabriciopsouza/metacognition-framework">GitHub ↗</a>
@@ -171,7 +175,7 @@
   <header>
     <a class="ver" href="https://github.com/fabriciopsouza/metacognition-framework/releases/tag/v1.21.0">v<b>1.21.0</b> · release ↗</a>
     <div class="tag">Orquestração de agentes · Claude Code · open source</div>
-    <h1>Um núcleo <em>flexível</em><br>para orquestrar agentes.</h1>
+    <h1>Um núcleo <em>adaptável</em><br>para orquestrar agentes.</h1>
     <p class="lede">Agentes de IA que <b>classificam o que sabem</b> e não inventam o que não sabem,
       <b>lembram entre sessões</b>, recusam-se a inflar, e <b>culminam em produto</b> — software ou
       dados entregáveis, não mais uma parede de texto. Um método, não um framework rígido: adapta-se
@@ -231,7 +235,7 @@
     <div class="layers">
       <div class="layer"><div class="k">ROTEADOR</div><div class="v">decide o modo de trabalho<small>tarefa pontual (metacognição) × projeto multi-etapa (squad de papéis)</small></div></div>
       <div class="layer"><div class="k">NÚCLEO (regras)</div><div class="v">9 regras transversais em fonte única<small>anti-alucinação · confiança · formato · rastreabilidade · metacognição · observabilidade · gate de alto risco · ação-segura (efeito) · modos de execução</small></div></div>
-      <div class="layer"><div class="k">PAPÉIS</div><div class="v">o squad genérico<small>pmo · architect · developer · qa-critic · docops · explorer (e um molde para clonar)</small></div></div>
+      <div class="layer"><div class="k">PAPÉIS</div><div class="v">o squad adaptável<small>pmo · architect · developer · qa-critic · docops · explorer (e um molde para clonar)</small></div></div>
       <div class="layer"><div class="k">CONTRATO</div><div class="v">o que cada papel promete<small>8 campos por papel + um validador automático + critério binário de "pronto"</small></div></div>
       <div class="layer"><div class="k">ENFORCEMENT</div><div class="v">hooks que rodam sozinhos<small>gate de ações destrutivas · digest antes de compactar · declaração de produto · sync do repo no boot · linter de agnosticismo</small></div></div>
       <div class="layer"><div class="k">PRODUTO</div><div class="v">a entrega ao usuário final<small>app de software/dados com design de UX + avaliação sistemática — ativados pelo tipo de produto</small></div></div>
@@ -244,7 +248,7 @@
     <p class="sub">Da abertura ao fechamento — incremental, validado e rastreável. Cada seta é uma
       junção com um critério binário de passagem.</p>
     <div class="pipe">
-      <div class="step-node"><span class="node hi">/start-session<span class="role">abre a sessão</span></span><span class="arrow">→</span></div>
+      <div class="step-node"><span class="node hi">"iniciar"<span class="role">abre a sessão</span></span><span class="arrow">→</span></div>
       <div class="step-node"><span class="node">pmo<span class="role">orquestra</span></span><span class="arrow">→</span></div>
       <div class="step-node"><span class="node">spec<span class="role">requisitos + aceite</span></span><span class="arrow">→</span></div>
       <div class="step-node"><span class="node">developer<span class="role">implementa</span></span><span class="arrow">→</span></div>
@@ -270,7 +274,7 @@
       <div class="card"><h3>Memória cross-sessão</h3><p>Contexto é finito: digest + note-taking antes de compactar. A próxima sessão <b>começa sem perguntar nada</b>.</p></div>
       <div class="card"><h3>Enforcement em runtime</h3><p>Regras críticas viram <b>hooks executáveis</b> com testes que tentam furá-las. Hook bugado falha-aberto; a trava real mora em camadas.</p></div>
       <div class="card"><h3>Culmina em produto</h3><p>O tipo de produto é declarado no início e ativa os papéis de entrega (design de UX, avaliação sistemática). Entrega, não prosa.</p></div>
-      <div class="card"><h3>Validado</h3><p>Roteamento dos papéis testado <b>33/33</b>. Toda aplicação nova só entra com seu conjunto de avaliação passando.</p></div>
+      <div class="card"><h3>Validado</h3><p>Roteamento dos papéis operacionais testado <b>33/33</b> (papéis A–F; discovery em design-time). Toda aplicação nova só entra com seu conjunto de avaliação passando.</p></div>
     </div>
   </section>
 
@@ -302,15 +306,39 @@
     <p class="note" style="margin-top:18px">Detalhes, escopo e <b>o que não está coberto</b>: <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/SECURITY.md">SECURITY.md</a> — porque overclaim de segurança seria o oposto do que o framework prega.</p>
   </section>
 
+  <section id="riscos">
+    <h2><span class="n">07</span>Operar código por IA — riscos e revisão humana</h2>
+    <p class="sub">Os gates <b>reduzem</b> o risco — não o eliminam. Operar código ou dados por IA exige julgamento humano. Sem maquiar:</p>
+    <div class="cards">
+      <div class="card"><h3>O que os gates NÃO resolvem</h3><p>Alucinação residual; ações <b>dentro do allowlist</b> (não-destrutivas, mas erradas); injeção via conteúdo externo; não-determinismo do modelo. O gate por efeito barra o catastrófico — não o "sutilmente errado".</p></div>
+      <div class="card"><h3>Revisão humana é necessária</h3><p>Obrigatória em: ação <b>irreversível</b> (T3), número que vai a decisão, ambiente regulado, código que vai a produção. O framework <b>sinaliza e exige gate humano</b> em T3 — mas o julgamento final é seu.</p></div>
+      <div class="card"><h3>Não use como caixa-preta</h3><p>Leia o que a IA classifica como <b>CONFIRMADO</b>, confirme as premissas, e teste. "Confio na IA" é o mesmo erro de "confio no shell".</p></div>
+      <div class="card"><h3>Garantia ≠ default</h3><p>Os hooks vêm ativos por default como <b>defesa</b>; a <b>garantia</b> dura (não-bypassável) exige instalar o managed-settings. Avalie no seu contexto antes de produção crítica.</p></div>
+    </div>
+    <p class="note" style="margin-top:18px">Postura completa, mapeada ao OWASP LLM Top 10: <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/SECURITY.md">SECURITY.md</a>.</p>
+  </section>
+
+  <section id="construcao">
+    <h2><span class="n">08</span>Como o método foi construído</h2>
+    <p class="sub">Sem exagero, sem megalomania. Destilado de pesquisa, construído por dogfooding, endurecido por falhas reais — inclusive as que o QA <b>não</b> pegou (e o humano pegou).</p>
+    <div class="cards">
+      <div class="card"><h3>Fundamento</h3><p>Publicações de engenharia da Anthropic + padrões abertos (ADR, OWASP LLM, OpenTelemetry) + 4 estudos internos (A0–A3). Fonte, não achismo.</p></div>
+      <div class="card"><h3>Validação medida</h3><p>Roteamento dos papéis operacionais <b>33/33</b> (A–F; discovery em design-time); hooks com testes-canário que tentam furá-los; QA por modelo heterogêneo. Um caso real regulado validado com <b>delta 0.000000</b> contra o baseline.</p></div>
+      <div class="card"><h3>As falhas (sem maquiar)</h3><p>O QA pegou bugs de contrato e um overclaim de segurança. O <b>humano</b> pegou o que o QA não viu: vazamento de domínio e viés "processo sobre produto". A defesa real é dupla — humano + modelo diferente.</p></div>
+      <div class="card"><h3>A lição: prosa → mecanismo</h3><p>Toda regra que falhou como texto ganhou um <b>par executável com teste</b>. As falhas viram mecanismos, não desculpas — por isso o método melhora.</p></div>
+    </div>
+    <p class="note" style="margin-top:18px">A história honesta, com as falhas e as soluções: <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/guia/COMO-FOI-CONSTRUIDO.md">Como o método foi construído</a> · <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/history.md">history.md (## Aprendizado)</a>.</p>
+  </section>
+
   <section id="docs">
-    <h2><span class="n">07</span>Documentação completa</h2>
+    <h2><span class="n">09</span>Documentação completa</h2>
     <p class="sub">Tudo que acompanha o repositório, organizado por intenção.</p>
     <p class="sub">Renderizada no GitHub — clicável e sempre na versão da branch <code>main</code>.</p>
     <div class="docgrid">
       <div class="docgroup">
         <h3>Começar</h3>
         <ul class="clean">
-          <li><b><a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/guia/INSTALAR-NO-VSCODE.md">Instalar no VS Code</a></b><small>passo a passo, do clone ao /start-session</small></li>
+          <li><b><a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/guia/INSTALAR-NO-VSCODE.md">Instalar no VS Code</a></b><small>passo a passo, do clone ao "iniciar"</small></li>
           <li><b><a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/guia/SETUP.md">3 modos de uso</a></b><small>novo projeto · revisar · migrar</small></li>
           <li><b><a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/guia/GUIA-EQUIPE.md">Uso diário (equipe)</a></b><small>o essencial em 5 minutos</small></li>
         </ul>
@@ -338,13 +366,18 @@
   </section>
 
   <section id="comece">
-    <h2><span class="n">08</span>Instalar e começar</h2>
-    <p class="sub">Open source no GitHub. Um script idempotente faz o setup — depois é abrir e rodar.</p>
+    <h2><span class="n">10</span>Instalar e começar</h2>
+    <div class="stacknote"><b>✓ Testado e desenhado para o Claude Code</b> — é o runtime onde o framework foi validado.
+      <b>Gemini e Copilot: em desenvolvimento</b> (ainda não validados). Em chat sem filesystem (Claude.ai, Gemini),
+      apenas o <b>método</b> (não os hooks nem o enforcement — <b>exclusivos do Claude Code</b>) pode rodar via o
+      <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/PROMPT-CHAT-WEB-v4.3.md">PROMPT-CHAT-WEB</a>.</div>
+    <p class="sub">Quatro passos, sem quebra:</p>
     <div class="steps">
-      <div class="step"><div class="num">1</div><div><div class="t">Clone o repositório</div><div class="d">Direto do GitHub (ou <a href="https://github.com/fabriciopsouza/metacognition-framework/archive/refs/tags/v1.21.0.zip">baixe a release v1.21.0 .zip</a>):<span class="cmd">git clone https://github.com/fabriciopsouza/metacognition-framework</span></div></div></div>
-      <div class="step"><div class="num">2</div><div><div class="t">Rode o bootstrap — o "instalador"</div><div class="d">Idempotente (roda 2× sem quebrar): configura git, garante o <code>gh</code> CLI, espelha o framework. Veja <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/bootstrap.ps1">bootstrap.ps1</a> · <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/bootstrap.sh">bootstrap.sh</a>:<span class="cmd">pwsh ./bootstrap.ps1        # Windows
+      <div class="step"><div class="num">1</div><div><div class="t">Instale o Claude Code</div><div class="d">O runtime onde o framework foi testado e desenhado (CLI + extensão de VS Code). Instalação na doc oficial: <a href="https://code.claude.com/docs">code.claude.com/docs</a>.</div></div></div>
+      <div class="step"><div class="num">2</div><div><div class="t">Clone o repositório</div><div class="d">Ou <a href="https://github.com/fabriciopsouza/metacognition-framework/archive/refs/tags/v1.21.0.zip">baixe a release v1.21.0 (.zip)</a>:<span class="cmd">git clone https://github.com/fabriciopsouza/metacognition-framework</span></div></div></div>
+      <div class="step"><div class="num">3</div><div><div class="t">Rode o bootstrap — o "instalador"</div><div class="d">Idempotente (roda 2× sem quebrar): configura git, garante o <code>gh</code> CLI, espelha o framework. <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/bootstrap.ps1">bootstrap.ps1</a> · <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/bootstrap.sh">bootstrap.sh</a>:<span class="cmd">pwsh ./bootstrap.ps1        # Windows
 ./bootstrap.sh             # macOS / Linux</span></div></div></div>
-      <div class="step"><div class="num">3</div><div><div class="t">Abra no VS Code e rode <code>/start-session</code></div><div class="d">O Claude Code lê o <code>CLAUDE.md</code> nativamente; o squad acorda, sincroniza, lê o histórico e abre a sessão. Traga seu pedido — o discovery conduz até a entrega validada.</div></div></div>
+      <div class="step"><div class="num">4</div><div><div class="t">Abra a pasta no VS Code e diga <b>"iniciar"</b></div><div class="d">O Claude Code lê o <code>CLAUDE.md</code> nativamente e o squad <b>acorda sozinho</b> (hooks de SessionStart: sincroniza o repo, confere o modo, lê o histórico). Diga <b>"iniciar"</b> para abrir a sessão pelo PMO — e traga seu pedido. O discovery conduz até a entrega validada.</div></div></div>
     </div>
     <div class="btns">
       <a class="btn" href="https://github.com/fabriciopsouza/metacognition-framework">Ver no GitHub ↗</a>
@@ -364,7 +397,7 @@
        <a href="https://github.com/fabriciopsouza/metacognition-framework/releases/tag/v1.21.0">Release v1.21.0 ↗</a> ·
        <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/CHANGELOG.md">CHANGELOG</a></p>
     <p>Framework Metacognitivo Agêntico · <b>v1.21.0</b> · PT-BR · CC BY 4.0 (livre para usar, adaptar e distribuir, com atribuição).</p>
-    <p>Flexível no método, especializado por clonagem. A bibliografia (A0–A3) e todo o histórico de decisões acompanham o repositório.</p>
+    <p>Adaptável no método, especializado por clonagem. A bibliografia (A0–A3) e todo o histórico de decisões acompanham o repositório.</p>
   </footer>
 
 </div>
