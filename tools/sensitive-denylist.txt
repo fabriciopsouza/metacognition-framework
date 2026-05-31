@@ -49,3 +49,8 @@ aivi-method-fixes
 # --- dicas de setor do cliente (gate enforce; map genericiza) ---
 \bcombustíveis\b
 \bcombustível\b
+
+# --- artefatos de dados do caso real (gate enforce; map genericiza) ---
+\bdados_mestre\b
+\b2026_VAR_INT_CSV\b
+\bVAR_INT\b

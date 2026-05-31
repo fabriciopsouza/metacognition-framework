@@ -12,10 +12,13 @@
 # Backstop: depois de aplicar, export-clean.py roda `check_core_agnostic.py --sensitive`.
 # Se sobrar QUALQUER token da sensitive-denylist, o build FALHA — adicione a regra aqui.
 
-# --- URLs do repo: fonte privada -> distribuição pública (links funcionam no público) ---
+# --- URLs/refs do repo: fonte privada -> distribuição pública (links funcionam no público) ---
+# Pages usa github.io (forma distinta); o resto (github.com/, raw e a forma CURTA do
+# `gh repo clone fabriciopsouza/metacognition-framework`) é coberto por UMA regra com
+# lookahead `(?!-public)` que evita duplo-sufixo. Também genericiza o path local do dono.
 fabriciopsouza\.github\.io/metacognition-framework/	fabriciopsouza.github.io/metacognition-framework-public/
-raw\.githubusercontent\.com/fabriciopsouza/metacognition-framework/	raw.githubusercontent.com/fabriciopsouza/metacognition-framework-public/
-github\.com/fabriciopsouza/metacognition-framework\b	github.com/fabriciopsouza/metacognition-framework-public
+fabriciopsouza/metacognition-framework(?!-public)	fabriciopsouza/metacognition-framework-public
+c--Users-fabriciosouza-metacognition-framework	<seu-projeto>
 
 # --- frases ALVO de correlação cliente/setor (cirúrgicas; ANTES de tudo) ---
 # (mantêm intactos exemplos genéricos de ensino como H1-farma; só limpam os trechos que
@@ -49,6 +52,12 @@ framework-gaps-from-aivi-case	framework-gaps-from-case
 \b74bd613\b	<commit>
 \b039fd6d\b	<commit>
 \b10ecf0[0-9a-f]*\b	<commit>
+dados_mestre/2026_VAR_INT_CSV\.csv	o CSV de dados
+\bdados_mestre\b	dados
+\b2026_VAR_INT_CSV\b	dados
+CA-1\.\.CA-6	os critérios de aceite
+CA-1\.\.6	os critérios de aceite
+run CSV 2026	rodar os dados de teste
 
 # --- caminhos de exemplo/spec específicos do caso ---
 exemplos/aivi-indicator-analyst	exemplos/app-de-dominio
