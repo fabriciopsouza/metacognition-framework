@@ -38,7 +38,7 @@
 - [x] Housekeeping: ADR-024/025/026 → Aceito; checkpoint v1.21.1+1.21.2 no history (gate: adr-status/checkpoint verdes).
 - [x] qa-critic adversarial (Sonnet isolado): APROVADO_COM_RESSALVA → 3 MÉDIO + 5 BAIXO todos emendados (J4 EMENDA, forward-only).
 - [x] Dogfood: ensure-global-wiring exit 0 (idempotente); route-gate wirado+disparou nesta sessão; BOM curou mojibake; check_core_agnostic PASS.
-- [ ] Version bump v1.22.0 + atualizar README/CHANGELOG/web/CLAUDE/AGENTS/history.
+- [x] Version bump v1.22.0: CHANGELOG [1.22.0], README badge+link guia, web (todas refs), CLAUDE+AGENTS (seção nova), history (checkpoint). Gate: version-sync + checkpoint verdes.
 - [ ] Commit→PR→merge verificado→deletar branch→limpeza (remover este RETOMADA).
 
 ## ATIVAÇÃO (reload) — por que e como (vale p/ QUALQUER usuário)

@@ -6,7 +6,7 @@
 
 **Comece:** [Instalar no VS Code](guia/INSTALAR-NO-VSCODE.md) · [Site](https://fabriciopsouza.github.io/metacognition-framework/) · [Releases](https://github.com/fabriciopsouza/metacognition-framework/releases) · [Segurança](SECURITY.md) · [Como foi construído](guia/COMO-FOI-CONSTRUIDO.md)
 
-> **Versão:** 1.21.2 · **Autor:** Fabricio Souza (github.com/fabriciopsouza/metacognition-framework) · **Base:** pesquisas A0–A3 · **PT-BR** · **CC BY 4.0** (ver [`LICENSE`](LICENSE) · [`NOTICE`](NOTICE))
+> **Versão:** 1.22.0 · **Autor:** Fabricio Souza (github.com/fabriciopsouza/metacognition-framework) · **Base:** pesquisas A0–A3 · **PT-BR** · **CC BY 4.0** (ver [`LICENSE`](LICENSE) · [`NOTICE`](NOTICE))
 > **Princípio:** o framework é **estritamente agnóstico de domínio** (ADR-010 / Princípio 12). Linguagens, ferramentas, normas setoriais, regulamentações, padrões técnicos, frameworks de validação, regras de negócio — **quaisquer** — são **aplicações/contextos**: não fazem parte do núcleo, **não aparecem hardcoded em prompts/regras/docs do framework** (nem como exemplo). Domínio é **declarado pelo discovery** por projeto. O que o núcleo oferece é **mecanismo genérico**: data integrity, audit trail, validação por risco, traceability, observabilidade — todos no `_shared/`.
 > **QA bicelular (v1.12.0 / ADR-011 / Princípio 13):** fluxo do squad tem 6 junções binárias forward-only (J0-J5) com gates declarados em `/handoff` + process-critic adversarial final (qa-critic em subagente isolado) com poder de rewind cascata. TODO QA é adversarial. SUPLANTA × EMENDA política binária.
 > **Handoff cross-sessão (v1.13.0 / ADR-012 / Princípio 14):** discovery passo 6(e) declara "alimenta outra sessão?"; se SIM, Pacote de handoff obrigatório via J5 (artefato+versão, localização, acesso, prompt pronto-para-colar, pendências). +rules #6 (RCA gate) e #7 (cobertura temporal pós-J4) em qa-critic SKILL.
@@ -68,6 +68,7 @@ skill-librarian · evals-engineer · governance-lead.
 - **Quem lê o quê:** `guia/ORIENTACAO.md` (humano × IA).
 - **Uso diário:** `guia/GUIA-EQUIPE.md` · **Revisar repo:** `guia/COMO-REVISAR-OUTRO-REPO.md`.
 - **Git/versão:** `guia/GIT-VERSIONAMENTO.md` · **Referências:** `guia/REFERENCIAS.md`.
+- **Resiliência de acesso:** `guia/RESILIENCIA-ACESSO.md` (recovery de conta > chave local + push cedo).
 - **Versão web:** `guia/web/index.html` (abre no navegador).
 - **Prompt do chat web:** `PROMPT-CHAT-WEB-v4.3.md` (raiz) — encarnação do framework para
   ambientes sem filesystem (Claude.ai, Gemini). Mesmos princípios, mesmos resultados,
