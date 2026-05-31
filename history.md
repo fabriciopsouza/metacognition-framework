@@ -9,6 +9,30 @@
 
 ---
 
+## 2026-05-30T21:30 — Sessão: v1.21.0 — runtime hooks (compaction/mission) + camada de entrega de produto
+
+Origem: revisão de uma pesquisa/SPEC externa (Perplexity) que **re-derivou contra fontes oficiais** (Anthropic/OpenAI/Google) o núcleo **já mecanizado** na série v1.14.x→v1.20.0 — validação externa, não refatoração. Filtrado o ganho real (lean, régua §0): só o que ainda era prosa virou mecanismo + correção do **viés processo-sobre-produto** (reorientação do dono: o framework culmina em PRODUTO de software/dados — sessão Perplexity l.421/427).
+
+Modo: **autosuficiente** reconfirmado (entrada MANUAL no audit trail; `~/.claude/settings.json` global já tinha `bypassPermissions`; caveat de reload-na-próxima-sessão documentado ao dono — ADR-005).
+
+Entregue (branch `feat/v1.21.0-runtime-hooks-web`, 1 commit/item reversível):
+- **ADR-021** `compaction-gate` (PreCompact: bloqueia compaction sem digest persistido; fail-open; backstop conservador) — mecaniza a obrigatoriedade de digest do ADR-016. PreCompact-pode-bloquear = [CONFIRMADO] (doc oficial, via claude-code-guide).
+- **ADR-022** `mission-gate` (SessionStart: `product_type`/escopo confirmado por modo de execução; taxonomia na **aplicação**, não no núcleo; PreToolUse backstop deferido — fase 2). Funde com discovery passo 6(f).
+- **ADR-023** app `exemplos/dominio-software/` (ux-designer + evals-engineer = os 2 papéis que melhoram o PRODUTO; governance-lead/skill-librarian **não** criados — cobertos por high-stakes-gate/action-safety e pelo campo `classe`). Núcleo `_shared/` **inalterado/agnóstico**.
+- Web→v1.21.0 (camada ENFORCEMENT + `_shared` 9 regras + app); refinos de doc (caminho Windows managed-settings → `C:\Program Files\ClaudeCode\`, bug #44642 status, ressalva #37210); 3 canários novos.
+
+QA bicelular: process-critic adversarial Sonnet isolado/heterogêneo (ADR-018) — **R1 REPROVADO** (1 ALTO template↔hook = STANDARD inalcançável + 2 MÉDIO [ADR↔settings; path hardcoded] + 2 BAIXO) → fixes → **R2 APROVADO_COM_RESSALVA** (1 BAIXO cosmético, corrigido). **Forward-only**: nenhum rewind cross-junção; tudo resolvido DENTRO de J4 (EMENDA).
+
+### RRC (ADR-010) — coherence pass
+- Artefatos lidos: 3 ADRs novos · ADR-016/015/005/010/012 (vinculadas) · README · CHANGELOG · CLAUDE.md · AGENTS.md · web/index.html · `_shared/` (action-safety, execution-modes) · discovery/SKILL.md · framework-schema.json · validate_skills.py · effect-gate · sync-global · settings.json · exemplos/README.
+- Verificações: versões em sync (README 1.21.0 × CHANGELOG [1.21.0] × web v1.21.0 × CLAUDE/AGENTS): **PASSA** · Refs cruzadas (ADR-021/022/023 existem; paths citados existem): **PASSA** · Nomenclatura consistente (product_type, mission-gate, compaction-gate): **PASSA** · Sem contradição semântica (ADR↔código: PreToolUse deferido reconciliado; uma só ESCOLHIDA): **PASSA** · **Contagens em sync** ("9 regras" web = 9 dirs _shared; "3 modos" = BRIEFING/ADVANCE/STANDARD; "8 campos" schema): **PASSA** · Anti-vazamento cross-projeto (check_core_agnostic 37/37 PASS; taxonomia product_type só na app): **PASSA**.
+- Inconsistências corrigidas: dupla "ESCOLHIDA" no ADR-022 (alt 3 → "recorte SessionStart-only"); mensagem do canário mission-gate ("3 modos"→4 casos); discovery version/last_review stale.
+- Veredito RRC: **PASSA**.
+
+Próximo passo: abrir PR (gate humano do dono) → após merge, marcar Em aberto FECHADA + tag v1.21.0.
+
+---
+
 ## 2026-05-30T14:30 — Sessão: reconciliação de dívida pós-merge série v1.14.x→v1.19.0 + process-critic adversarial
 
 Abertura via `/start-session` com `git fetch` (disciplina do method-audit 2026-05-30, já mecanizada por ADR-019/`check-repo-sync`): `main` em **v1.19.0** (`c866f95`), sync 0/0, tree limpo. **Process-critic adversarial pós-merge** (qa-critic isolado em **Sonnet**, heterogêneo ao Opus gerador — ADR-018) sobre a série consolidada: veredito **SÓLIDO-COM-DÍVIDA** (dimensões A–E; A/B/E PASS-com-ressalva, C/D PASS). **J4 (PMO) pegou false-PASS do próprio crítico** (Achado #1: o crítico disse "schema=5 opcionais"; o schema real tem 8 = 5 contrato + 3 legado) — arquitetura bicelular (ADR-011×018) auto-validada.
@@ -149,6 +173,7 @@ Riscos ativos: nenhum bloqueante. Risco residual ADR-010 §Riscos (detector de v
 
 > WIP atual (ex-G11). Reconciliar com branches do git e ADRs em status `Proposto` no `/start-session` (modo squad).
 
+- **[2026-05-30 · PR ABERTO] v1.21.0 — runtime hooks + entrega de produto (ADR-021/022/023)** — branch `feat/v1.21.0-runtime-hooks-web`. `compaction-gate` (PreCompact) + `mission-gate` (SessionStart/product_type) + app `dominio-software` (ux-designer+evals-engineer) + web v1.21.0 + refinos de doc. qa-critic Sonnet isolado R1 REPROVADO→R2 APROVADO. 5 canários + validate_skills + agnóstico todos verdes. Aguardando gate humano (PR) → após merge: FECHADA + tag v1.21.0.
 - **[2026-05-30 · FECHADA] Reconciliação pós-merge série v1.14.x→v1.19.0 + ADR-020** — PR #18 mergeado em `main` (`2a8947f`, `--merge` preserva commits atômicos). Dívidas #1/#2/#3/#4/#5/#6 fechadas + **v1.20.0** (ADR-020 linter de agnosticismo, prosa→mecanismo do Princípio 12) após qa-critic round 2 (1 MÉD + 3 BAIXO). **Tags v1.14.0→v1.20.0 todas no origin** (dívida de tags da série inteira fechada). 5/5 gates verdes no main mergeado. 1 commit por item (reversível isolado).
 - **[2026-05-30 · fechadas] v1.14.0→v1.19.0** — série "da prosa ao mecanismo" mergeada em `main` (ADR-013..019); gate humano das PRs empilhadas #11→#17 passado; `main`=`c866f95`. Tags retroativas sendo criadas na reconciliação (antes ausentes — Debt #3). CHANGELOG até `[1.19.0]`.
 - *(v1.13.0 FECHADA em 2026-05-29 — ADR-012 Aceito após qa-critic round 1; handoff cross-sessão + drift sync + qa-critic rules #6/#7).*
@@ -165,6 +190,9 @@ Riscos ativos: nenhum bloqueante. Risco residual ADR-010 §Riscos (detector de v
 ## Aprendizado
 
 > Notas de fracassos capturadas via `/checkpoint` (ex-G9). **Firewall:** notas são **inertes** — só viram comportamento via skill/regra destilada, aprovada via ADR e mergeada. Nota errada não propaga.
+
+- **[2026-05-30T21:30] Method-audit (princípio 11 / viés processo-sobre-produto):** meu veredito inicial sobre os 4 papéis SW da SPEC Perplexity foi "vazamento de domínio → fora do núcleo → refutar". **O dono corrigiu** ("reanalise sob a ótica de que fornecemos ao final um produto de dados/software"). · **Causa-raiz:** ao avaliar adição ao núcleo, otimizei a *pureza do agnosticismo* e subponderei o *propósito declarado* (entregar produto) — exatamente o "viés de processo sobre produto" que a própria pesquisa Perplexity nomeou. Agente não auto-detectou; foi feedback do dono (fonte legítima, P11 honesto). · **Proposta (executada):** ADR-023 reconcilia via app bundlada (distribuição especializada, `exemplos/dominio-software/`) — núcleo intacto/agnóstico, produto ganha 2 papéis (ux+evals). Firewall preservado.
+- **[2026-05-30T21:30] Method-audit (ADR-018 / teste do gerador herda o ponto-cego do gerador):** o canário `test_mission_gate.py` passava 3/3 **escondendo um bug ALTO** — eu (gerador) escrevi o teste no mesmo formato inline que o hook espera, enquanto o *template* que o usuário segue usava heading markdown; STANDARD era inalcançável pelo caminho documentado. **Pego pelo qa-critic Sonnet heterogêneo** (ADR-018), que leu template×hook×teste como contratos independentes. · **Causa-raiz:** teste autoral do gerador compartilha o viés do gerador — não substitui crítico independente. **Confirma empiricamente o valor do modelo heterogêneo** (ADR-018): R1 reprovou um ALTO que 3 testes verdes não viam. · **Proposta:** sem regra nova (régua §0 — já coberto por "qa-critic heterogêneo obrigatório"). Vigilância: "tests verdes do gerador" ≠ verificação; o crítico independente é necessário, não opcional.
 
 - **[2026-05-28T09:01] Method-audit (ADR-009 / princípio 11):** Stale counts ("4 edições" vs "9 edições") residuais em múltiplos arquivos atravessaram 3 dos 4 rounds qa-critic da v1.10.0. · **Causa-raiz:** scope cresceu por incorporação adversarial sem step de varredura de coerência interna antes de re-submeter — skill ausente: validation pre-commit de contagens/números/listas que possam ter ficado stale após scope-creep. · **Proposta (lean):** +1 linha em `_shared/docops` ou release checklist (`guia/GIT-VERSIONAMENTO.md`): "antes de re-submeter ADR/spec ao qa-critic após scope-creep, varrer documento por contagens stale (totais, listas, tabelas de implementação)".
 - **[2026-05-28T09:01] Method-audit (ADR-009 / princípio 11):** Meta-recursão do campo `Status` do ADR — sempre 1 round atrás do qa-critic em curso (cada round novo encontra Status descrevendo o round anterior). · **Causa-raiz:** Status descreve auto-referencialmente um processo que ainda está rodando — impossível fechar sem fork. · **Proposta (lean):** se padrão se repetir em próximo ADR, atualizar template `docs/adr/000-template.md` para que Status use metadado externo (último commit-hash de round qa-critic) em vez de descrever rounds pendentes. **Não-preemptivo** — decisão sob demanda.
@@ -192,11 +220,12 @@ Riscos ativos: nenhum bloqueante. Risco residual ADR-010 §Riscos (detector de v
 
 - 2026-05-30 (run v1.14.x): rounds de qa-critic por onda — O0=1, O1=2, O2=1, O3=1 (todos resolvidos como emenda DENTRO de J4 qa-critic→docops; **nenhum rewind cascata cross-junção** — forward-only preservado). Sinal: a montante (discovery/architect) não gerou spec rasa; achados foram de implementação, corrigidos em 1–2 rounds. **Nota honesta (P11):** a métrica 17-A "junção-origem do rewind" NÃO foi exercida nesta onda — nenhum rewind ocorreu; só o proxy `qa_rounds` rodou. Capacidade de blame-de-rewind = [INFERIDO/não-exercido] até um rewind real.
 - 2026-05-30T14:30 (reconciliação pós-merge + ADR-020): process-critic adversarial (Sonnet isolado) sobre série mergeada — 6 achados (1 ALTO J4-corrigido, 2 ALTO confirmados, 2 MÉDIO, 2 BAIXO). **J4 do PMO refutou 1 achado do próprio crítico** (count errado) — 1ª evidência empírica de que a célula PMO-verifica-crítico pega false-PASS do crítico, não só do gerador. Bloco ADR-020 (mecanismo agnosticismo): rounds qa-critic registrar ao fechar.
+- 2026-05-30T21:30 (v1.21.0 runtime hooks + entrega de produto): qa_rounds = **R1 REPROVADO** (1 ALTO + 2 MÉDIO + 2 BAIXO) → R2 **APROVADO_COM_RESSALVA** (1 BAIXO). **Nenhum rewind cross-junção** — os 5 achados foram resolvidos DENTRO de J4 (qa-critic→fix→re-qa = EMENDA), forward-only preservado. Sinal: o ALTO foi de **implementação** (template↔hook), não de decisão a montante — discovery/architect/ADRs não geraram spec rasa. Capacidade de blame-de-rewind segue [INFERIDO/não-exercido] (nenhum rewind real até hoje).
 
 ### 17-B Tally de regra + classe (uso ao longo de sessões)
 > `regra — classe(salva-vidas|operacional|andaime) — disparou S/N — sem-disparo:K`. Poda só `andaime` quando K≥N (5–10).
 
 - régua §0 (GANHO LÍQUIDO) — salva-vidas — S — sem-disparo:0 (rejeitou inflação/andaime em toda onda; ex.: _shared fora do contrato, matriz reprovada)
-- qa-critic adversarial isolado/heterogêneo — salva-vidas — S — sem-disparo:0 (pegou false-PASS real em O0, O1, O2, O3)
+- qa-critic adversarial isolado/heterogêneo — salva-vidas — S — sem-disparo:0 (pegou false-PASS real em O0, O1, O2, O3; em v1.21.0 pegou ALTO template↔hook que 3 testes verdes do gerador escondiam)
 - contrato mínimo (validate_skills) — operacional — S — sem-disparo:0 (gate 7/7 em cada onda)
 - file-first — salva-vidas — S — sem-disparo:0 (violado no bootstrap → ver Aprendizado 2026-05-30)

@@ -55,6 +55,12 @@ Quando `discovery` passo 6(e) declara que entrega **alimenta outra sessão/agent
 ## Arquitetura bicelular de QA — junções binárias + process-critic com rewind (v1.12.0 — ADR-011)
 O fluxo do squad (PMO → discovery → architect → developer → qa-critic → docops → release) tem **6 junções (J0-J5)** com artefato-gate + critério binário declarados em `/handoff` workflow. **DENTRO da junção**: iterações ilimitadas até PASS binário (emendas no mesmo artefato via STATUS-field). **ENTRE junções**: forward-only após PASS (circuit-breaker contra loop eterno). **Process-critic adversarial** (qa-critic em subagente isolado) roda ao final de cada **BLOCO APROVADO** + on-demand + opcional em `/checkpoint` substantivo; detém poder de **rewind cascata** a qualquer junção anterior. **TODO QA é adversarial** (hipótese default = bug). **Política SUPLANTA × EMENDA**: §Decisão/§Alternativas muda → SUPLANTA novo ADR + `Substituído por:`; §Implementação/§Consequências muda → EMENDA in-place via STATUS-field. Within-junction rounds = EMENDA (não conta como rewind). Princípio 13 do `AGENT-FRAMEWORK.md` §6.
 
+## Runtime hooks + entrega de produto (v1.21.0 — ADR-021/022/023)
+Mecanismos de runtime (prosa→mecanismo) e a camada de entrega de produto, **sem refatorar o núcleo agnóstico**:
+- **`compaction-gate`** (PreCompact, ADR-021): bloqueia compaction sem digest persistido (`history.md` sem checkpoint); fail-open; mecaniza o ADR-016.
+- **`mission-gate`** (SessionStart, ADR-022): declara/confirma `product_type` + escopo (funde com discovery passo 6(f)), confirmação proporcional ao **modo de execução** (ADR-005: autosuficiente confirma 1× no briefing). Taxonomia de tipos é da **aplicação** (agnóstico). `mission.md` é o lar do escopo declarado.
+- **App `exemplos/dominio-software/`** (ADR-023): distribuição especializada (demonstração viva) com `ux-designer` + `evals-engineer` — o framework **culmina em produto** de software/dados. `governance-lead`/`skill-librarian` NÃO criados (cobertos por `high-stakes-gate`/`action-safety` e pelo campo `classe`). Núcleo `_shared/` inalterado.
+
 ## Como ler skills
 As skills de processo vivem em `.agent/skills/<nome>/SKILL.md` e o núcleo em
 `_shared/<nome>/SKILL.md`. Carregue o SKILL.md relevante antes de agir. Para
