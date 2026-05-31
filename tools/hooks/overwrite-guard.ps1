@@ -1,7 +1,7 @@
-# overwrite-guard.ps1 — protege contra sobrescrita CEGA de artefato (ADR-037)
+# overwrite-guard.ps1 - protege contra sobrescrita CEGA de artefato (ADR-037)
 #
 # GAP de campo: o agente sobrescreveu um relato que JA TINHA conteudo, sem ler nem avisar.
-# action-safety classifica por efeito, mas o effect-gate so inspeciona Bash/PowerShell —
+# action-safety classifica por efeito, mas o effect-gate so inspeciona Bash/PowerShell -
 # overwrite via tool Write/Edit sobre arquivo com conteudo nao-criado/nao-lido nesta sessao
 # (efeito E1 destrutivo) passava.
 #

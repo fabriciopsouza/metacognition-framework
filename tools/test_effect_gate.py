@@ -48,6 +48,7 @@ CASES = [
     ("push normal", "Bash", "git push origin feat/x", "allow"),
     ("git reset --hard", "Bash", "git reset --hard HEAD", "ask"),
     ("git clean -fdx", "Bash", "git clean -fdx", "ask"),
+    ("git clean -f -d (flags separadas)", "Bash", "git clean -f -d", "ask"),
     ("git filter-branch (history-rewrite T2)", "Bash", "git filter-branch --tree-filter cleanup HEAD", "ask"),
     ("git reset --soft (benigno)", "Bash", "git reset --soft HEAD~1", "allow"),
     ("git clean -n (dry-run benigno)", "Bash", "git clean -n", "allow"),

@@ -60,6 +60,17 @@ Dimensões/dados sabidos ausentes mas não impedem entrega?
 
 - <termo> -> <coluna escolhida> | confirmação: [CONFIRMADO] pelo dono | porque: <justificativa, idealmente com prova numérica> | irmãs descartadas: <colunas candidatas e por que não>
 
+## Cobertura exigida pelo pedido (ADR-034)
+
+> Liste cada **quantificador de escopo** do pedido ("cada X", "por X", "mês a mês"/mensal, "acumulado",
+> "ano inteiro"/anual, "intervalo", "todos"). `tools/check_completeness.py` cruza cada um com um critério
+> binário do `validation.md` — quantificador do pedido sem critério = FAIL antes do PASS (J4). Remover
+> esta seção se o pedido não tem quantificadores de escopo.
+
+- <quantificador 1 — ex.: por unidade / cada entidade>
+- <quantificador 2 — ex.: mês a mês ao longo do intervalo>
+- <quantificador 3 — ex.: acumulado além do realizado>
+
 ## Escopo funcional (EARS — opcional, mas recomendado)
 - **Ubíquo:** "O sistema DEVE <comportamento>."
 - **WHEN:** "QUANDO <evento>, o sistema DEVE <resposta>."

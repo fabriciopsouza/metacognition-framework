@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Linter de PROFUNDIDADE de spec — barra J2 se a elicitação não cobrir as dimensões (ADR-033).
+"""Linter de PROFUNDIDADE de spec — barra J1 se a elicitação não cobrir as dimensões (ADR-033).
 
 GAP de campo (causa-raiz nº1): o agente fez perguntas de "coletor de requisitos" (escopo,
 entrada, stack, oráculo) e NÃO endereçou produto — quem opera, interface, escopo acumulado,
@@ -9,7 +9,7 @@ cada dimensão obrigatória do banco agnóstico (`_shared/discovery/elicitation-
 
 Verifica **cobertura de dimensão** (a dimensão foi endereçada), NÃO a qualidade da decisão
 (isso é domínio/julgamento adversarial — declarado em LIMITS.md). É o equivalente do
-`validate_skills.py` para completude de elicitação, wirado como gate antes de J2 (discovery→architect).
+`validate_skills.py` para completude de elicitação, wirado como gate antes de J1 (discovery→architect).
 
 Uso:
     python tools/check_spec_depth.py <requirements.md> [...]   # checa specs dadas (uso do gate)
@@ -129,7 +129,9 @@ def check_spec(path, dims):
         if not is_addressed(decision):
             continue
         for d in dims:
-            if label in d["aliases"] or any(a in label or label in a for a in d["aliases"] if a):
+            # casamento EXATO label↔alias (substring causava falso-PASS: 'ui'⊂'req(ui)sitos',
+            # 'saida'⊂'recortes-saida' creditavam dimensões erradas — process-critic ADR-011)
+            if label in d["aliases"]:
                 covered.add(d["key"])
     faltando_obr = [d["key"] for d in dims if d["obr"] and d["key"] not in covered]
     avisos_rec = [d["key"] for d in dims if not d["obr"] and d["key"] not in covered]
@@ -160,14 +162,14 @@ def main(argv):
             rel = path
         ok, faltando, avisos = check_spec(path, dims)
         if ok:
-            print(f"PASS {rel}  ({obr_total - 0}/{obr_total} dimensões obrigatórias decididas)"
+            print(f"PASS {rel}  ({obr_total}/{obr_total} dimensões obrigatórias decididas)"
                   + (f" · recomendadas pendentes: {', '.join(avisos)}" if avisos else ""))
         else:
             any_fail = True
             print(f"FAIL {rel}  — dimensões obrigatórias SEM decisão registrada: {', '.join(faltando)}")
             print("      (registre cada uma na seção '## Dimensões de elicitação' do requirements.md)")
     print("-" * 50)
-    print("RESULTADO:", "FAIL (gate barra J2: spec rasa)" if any_fail
+    print("RESULTADO:", "FAIL (gate barra J1: spec rasa)" if any_fail
           else "PASS (toda spec cobre as dimensões obrigatórias)")
     return 1 if any_fail else 0
 

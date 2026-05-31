@@ -81,8 +81,24 @@ SPEC_ALIASES = """# Requirements — Indicador X
 - saida: relatório exportável
 """
 
+# Regressão do falso-PASS por substring (process-critic ADR-011): usa 'ui' e 'saida', que ANTES
+# casavam por substring 'req(ui)sitos' (ambiente-execucao) e 'recortes-(saida)' — creditando dimensões
+# que a spec NÃO endereçou. Faltam de fato recortes-saida e ambiente-execucao -> DEVE falhar.
+SPEC_SUBSTRING_TRAP = """# Requirements — Indicador X
+
+## Dimensões de elicitação
+- operador: leigo
+- ui: app com GUI
+- entrada-validacao: valida schema
+- escopo-temporal: intervalo + acumulado
+- persistencia: histórico
+- auditoria-log: trilha completa
+- saida: relatório exportável
+"""
+
 CASES = [
     ("spec completa decide as 9 dimensões", SPEC_COMPLETA, True),
+    ("regressão falso-PASS substring (ui/saida não cobrem ambiente/recortes)", SPEC_SUBSTRING_TRAP, False),
     ("spec rasa (só 'calcular X', sem dimensões) — regressão de campo", SPEC_RASA, False),
     ("spec faltando operador + auditoria-log", SPEC_FALTANDO, False),
     ("spec com placeholder '<preencher>' não conta como decisão", SPEC_PLACEHOLDER, False),

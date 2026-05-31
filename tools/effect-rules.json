@@ -45,9 +45,9 @@
     },
     {
       "id": "git-clean-fd", "family": "history-rewrite", "tier": "T2", "decision": "ask",
-      "all": ["git +clean +-[a-z]*f", "git +clean +-[a-z]*d"],
-      "none": ["(^| )-[a-z]*n"],
-      "reason": "git clean -fd remove arquivos não-rastreados de forma irreversível; confirme (ou use -n)"
+      "all": ["git +clean", "((^| )-[a-z]*f|--force)", "((^| )-[a-z]*d|--directories)"],
+      "none": ["(^| )-[a-z]*n( |$)|--dry-run"],
+      "reason": "git clean -f -d remove arquivos/dirs não-rastreados de forma irreversível; confirme (ou use -n)"
     },
     {
       "id": "git-history-rewrite", "family": "history-rewrite", "tier": "T2", "decision": "ask",
