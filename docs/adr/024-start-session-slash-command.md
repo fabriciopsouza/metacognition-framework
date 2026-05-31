@@ -1,6 +1,6 @@
 # ADR 024 — `/start-session` como comando registrado (prosa→mecanismo)
 
-- Status: Proposto
+- Status: Aceito
 - Data: 2026-05-31 · Decisores: dono (feedback) + squad (architect)
 - Onda: ergonomia (pós-v1.21.0) · Tipo: **EMENDA** (expõe workflow existente; não muda a lógica)
 - Relaciona: `.agent/workflows/start-session.md` (SSoT do protocolo), `inject-start-session.ps1` (hook SessionStart), ADR-004/006.

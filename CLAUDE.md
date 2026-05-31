@@ -61,6 +61,13 @@ Mecanismos de runtime (prosa→mecanismo) e a camada de entrega de produto, **se
 - **`mission-gate`** (SessionStart, ADR-022): declara/confirma `product_type` + escopo (funde com discovery passo 6(f)), confirmação proporcional ao **modo de execução** (ADR-005: autosuficiente confirma 1× no briefing). Taxonomia de tipos é da **aplicação** (agnóstico). `mission.md` é o lar do escopo declarado.
 - **App `exemplos/dominio-software/`** (ADR-023): distribuição especializada (demonstração viva) com `ux-designer` + `evals-engineer` — o framework **culmina em produto** de software/dados. `governance-lead`/`skill-librarian` NÃO criados (cobertos por `high-stakes-gate`/`action-safety` e pelo campo `classe`). Núcleo `_shared/` inalterado.
 
+## Entrada determinística (v1.22.0 — ADR-027/028/029/030)
+Mecaniza a ENTRADA (motivação: incidente AIVI — agente executou tarefa regulada **sem rotear**; roteamento era prosa + auto-boot global desligado por clobber):
+- **`route-gate`** (UserPromptSubmit universal, ADR-027): injeta lembrete de rota 1×/sessão, fail-open. + **`ensure-global-wiring`**: self-heal hook-preserving (ponto de Arquimedes no settings de PROJETO) que re-afirma a wiring global a cada abertura, derrotando o clobber. + **§disable-com-memória** (session.lock com data/motivo + reativação oferecida no boot).
+- **Output-style ≠ processo** (ADR-028): `metacognition-core` §Precedência nível 7 — persona governa tom/formato, **subordinada ao nível 6**, **nunca suplanta** regras invioláveis nem roteamento/gates. O route-gate encarna a norma.
+- **`doc-intake`** (ADR-029): `_shared/doc-intake` + `tools/doc_intake.py` — parse determinístico (pdf/docx/xlsx/pptx/md/txt) → chunk → manifesto com sha256, **offline, sem embeddings**; discovery cita proveniência por chunk+sha. RAG-vetorial = ADR futuro com dep declarada.
+- **`consistency-gate`** (ADR-030): auditoria de fechamento fail-soft (version-sync, adr-status, checkpoint, contagens, **unpushed**, transientes); wirada no docops §Encerramento. + `guia/RESILIENCIA-ACESSO.md` (recovery de conta > chave local).
+
 ## Como ler skills
 As skills de processo vivem em `.agent/skills/<nome>/SKILL.md` e o núcleo em
 `_shared/<nome>/SKILL.md`. Carregue o SKILL.md relevante antes de agir. Para

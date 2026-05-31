@@ -37,6 +37,9 @@ discovery passo 6(e) "alimenta outra sessão?" → SE SIM, Pacote de handoff (`m
 ## Runtime hooks + entrega de produto (v1.21.0 — ADR-021/022/023)
 `compaction-gate` (PreCompact: bloqueia compaction sem digest, ADR-021) · `mission-gate` (SessionStart: product_type/escopo confirmado por modo de execução, ADR-022; taxonomia na aplicação) · app `exemplos/dominio-software/` (ux-designer + evals-engineer, ADR-023 — o framework culmina em PRODUTO; governance/poda já cobertos pelo núcleo). `_shared/` inalterado/agnóstico.
 
+## Entrada determinística (v1.22.0 — ADR-027/028/029/030)
+Mecaniza a ENTRADA (incidente AIVI: agente executou tarefa regulada sem rotear). `route-gate` (UserPromptSubmit universal, fail-open, ADR-027) + `ensure-global-wiring` (self-heal hook-preserving que cura o clobber do settings global a cada abertura do repo) + §disable-com-memória (session.lock com data/motivo + reativação). **Output-style ≠ processo** (ADR-028: precedência nível 7 — persona nunca suplanta regras/roteamento). `doc-intake` (ADR-029: parse determinístico pdf/docx/xlsx/pptx/md/txt → chunk → manifesto sha256, offline/sem-embeddings; discovery cita proveniência). `consistency-gate` (ADR-030: auditoria de fechamento fail-soft — version-sync/adr-status/checkpoint/unpushed/transientes; wirada no docops) + `guia/RESILIENCIA-ACESSO.md`. `_shared/` agnóstico (check_core_agnostic PASS).
+
 ## Aplicações
 Domínios específicos (BI, regulado, etc.) NÃO ficam no núcleo — são criados clonando
 .agent/skills/_template e vivem FORA do núcleo (no seu repositório).

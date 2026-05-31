@@ -1,6 +1,6 @@
 # ADR 026 — Relatório de tokens + história compactada por projeto (prosa→mecanismo da observabilidade)
 
-- Status: Proposto
+- Status: Aceito
 - Data: 2026-05-31 · Decisores: dono + squad (architect)
 - Onda: observabilidade aplicada (pós-v1.21.0) · Tipo: novo (1 script + teste)
 - Relaciona: `_shared/observability` (ADR-017, OTel GenAI + 2 métricas), ADR-016 (digest/reconstrução), `tools/project_report.py`.

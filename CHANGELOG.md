@@ -15,6 +15,39 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.22.0] — 2026-05-31 — Entrada determinística: roteamento mecânico + wiring self-heal + doc-intake + consistency-gate
+
+> Onda **prosa→mecanismo da ENTRADA**, motivada por incidente confirmado (relato AIVI): um agente executou
+> tarefa regulada/financeira **sem rotear** — o roteamento era prosa (CLAUDE.md) e o auto-boot global estava
+> desligado (clobber do mode-apply no settings global). "Nada importante em prosa → tudo vira ferramenta."
+
+### Added
+- **ADR-027** — `route-gate` (`tools/hooks/route-gate.ps1`/`.sh`): hook `UserPromptSubmit` **universal**
+  (independe de git/owner/marker) que injeta lembrete de rota 1×/sessão, **fail-open**. + `ensure-global-wiring.ps1`:
+  **self-heal hook-preserving** chamado pelo `sync-global` (ponto de Arquimedes no settings de PROJETO) que
+  re-afirma a wiring global a cada abertura — derrota o clobber mecanicamente. + **§disable-com-memória**
+  (session.lock lê CreationTime + `reason:` e oferece reativação no boot).
+- **ADR-029** — **doc-intake** (`_shared/doc-intake` + `tools/doc_intake.py` + canário): parse determinístico
+  pdf/docx/xlsx/pptx/md/txt → chunk (overlap, fronteira de parágrafo) → **manifesto JSON** com sha256 por
+  arquivo/chunk, **offline e SEM embeddings**, degrada com segurança. Integrado ao discovery (proveniência por chunk+sha).
+- **ADR-030** — `consistency-gate` (`tools/hooks/consistency-gate.ps1`): auditoria de fechamento **fail-soft**,
+  6 dimensões (version-sync, adr-status, checkpoint, contagens, **unpushed**, transientes), exit = nº de
+  inconsistências, `-Json`. Wirado no docops §Encerramento. Validado por dogfood.
+- **`guia/RESILIENCIA-ACESSO.md`** — recovery de CONTA GitHub > chave local + push cedo (decisão de resiliência).
+
+### Changed
+- **ADR-028** — `_shared/metacognition-core` §Precedência ganha **nível 7**: output-style/persona governa
+  tom/formato, **subordinado ao nível 6** e **nunca suplanta** regras invioláveis (2) nem roteamento/gates (5).
+  O `route-gate` encarna a norma; a cláusula é o lar normativo (corrige a 2ª metade da falha-raiz AIVI).
+- **Hooks PS gravados com UTF-8 BOM** (route-gate, ensure-global-wiring, inject-global): PS 5.1 lê fonte
+  sem-BOM em ANSI e o não-ASCII vira mojibake no contexto injetado — BOM corrige decode + saída.
+- **Housekeeping**: ADR-024/025/026 → **Aceito** (features mergeados); checkpoint retroativo v1.21.1+1.21.2 no `history.md`.
+
+### QA
+- Process-critic adversarial isolado (Sonnet, heterogêneo ao Opus — ADR-018): **APROVADO_COM_RESSALVA** →
+  3 MÉDIO + 5 BAIXO **todos emendados** dentro da J4 (forward-only): chunk-id único entre subpastas, schema
+  no ramo de erro, teste de reconstrução literal, precedência sem ambiguidade, claim de integração honesto, BOM nos hooks.
+
 ## [1.21.2] — 2026-05-31 — Polish pós-v1.21.1: site holístico, contador de tempo, OWASP regulado, higiene
 
 ### Added

@@ -1,4 +1,4 @@
-# inject-start-session-global.template.ps1
+﻿# inject-start-session-global.template.ps1
 # Hook SessionStart GLOBAL (ADR-006 v1.8.0) - ativacao condicional do squad
 # por allowlist de owners do remote OU marker no projeto.
 #
@@ -47,8 +47,30 @@ function Emit-Result {
 try {
     $globalLock  = Join-Path $env:USERPROFILE '.claude\session.lock'
     $projectLock = Join-Path $cwd '.claude\session.lock'
+    # Global-lock: opt-out amplo e consciente -> silencioso (oferecer em todo projeto seria ruido).
     if (Test-Path $globalLock)  { Emit-Result '' 'skipped (global-lock)' }
-    if (Test-Path $projectLock) { Emit-Result '' 'skipped (project-lock)' }
+    # Project-lock: desativacao COM MEMORIA (ADR-027 §disable-com-memoria). Le quando (CreationTime,
+    # read-only) + por que (linha `reason:` opcional no lock) e OFERECE reativacao. Nao faz boot completo
+    # (respeita o opt-out); apenas lembra que o squad esta desligado AQUI e como religar.
+    if (Test-Path $projectLock) {
+        $since  = 'data desconhecida'
+        $reason = ''
+        try { $since = (Get-Item $projectLock).CreationTime.ToString('yyyy-MM-dd HH:mm') } catch { }
+        try {
+            $rLine = Get-Content $projectLock -ErrorAction SilentlyContinue |
+                Where-Object { $_ -match '^\s*reason\s*:' } | Select-Object -First 1
+            if ($rLine) { $reason = ($rLine -replace '^\s*reason\s*:\s*', '').Trim() }
+        } catch { }
+        $motivo = if ($reason) { " (motivo: $reason)" } else { '' }
+        $offer = @"
+# Squad desativado NESTE projeto (session.lock) — ADR-027
+
+O auto-boot do squad esta silenciado aqui desde $since$motivo.
+Para REATIVAR em sessoes futuras: delete ``.claude/session.lock`` (ou rode ``Remove-Item .claude/session.lock``).
+Esta sessao segue sem boot automatico (voce assume o controle).
+"@
+        Emit-Result $offer "skipped (project-lock; desde $since) — reativacao oferecida"
+    }
 
     # Extrair owner do remote origin (HTTPS + SSH)
     $owner = $null

@@ -9,6 +9,39 @@
 
 ---
 
+## 2026-05-31T03:00 — Sessão: v1.22.0 — entrada determinística (route-gate + wiring self-heal + doc-intake + consistency-gate)
+
+Origem: incidente confirmado (relato AIVI) — agente executou tarefa **regulada/financeira sem rotear**. Causa-raiz dupla por inspeção: (1) roteamento era **prosa** (CLAUDE.md), não mecanismo; (2) auto-boot global **desligado** (settings global sem `hooks` — clobber do mode-apply autosuficiente). Diretiva do dono: "nada importante em prosa → tudo vira ferramenta; ISSO NÃO PODE FALHAR (divulgando)". Execução **autônoma noturna** em modo autosuficiente, autorizada até **merge + limpeza** (override do "parar no PR", só nesta sessão).
+
+Modo: **autosuficiente**. Atrito observado: o IDE (extensão VS Code) **não aplica `bypassPermissions` do settings.json** — é estado de sessão escolhido na UI (modo "Edit automatically"); diferente da CLB que honra o arquivo. Diagnóstico só fechou após **file-first** (inspeção dos settings) — lição: ler doc de retomada ≠ verificar estado da máquina.
+
+Entregue (branch `feat/v1.22.0-entrada-deterministica`, 1 commit/item, pushado a cada passo — resiliência):
+- **ADR-027** route-gate (UserPromptSubmit universal, fail-open) + ensure-global-wiring (self-heal hook-preserving; Arquimedes no settings de PROJETO) + §disable-com-memória (session.lock data/motivo + reativação no boot). Escopo de auto-wiring: Windows/PS (.sh = setup manual Unix).
+- **ADR-028** output-style ≠ processo: `metacognition-core` §Precedência nível 7 (persona subordinada ao nível 6, nunca suplanta regras/roteamento). Edição de existente (régua §0).
+- **ADR-029** doc-intake: `_shared/doc-intake` + `tools/doc_intake.py` + canário (5 testes) — parse determinístico → chunk → manifesto sha256, offline/sem-embeddings; integrado ao discovery.
+- **ADR-030** consistency-gate: auditoria fechamento fail-soft (6 dimensões: version-sync, adr-status, checkpoint, contagens, **unpushed**, transientes); wirado no docops. Validado por dogfood (pegou 3 ADRs Proposto, checkpoint ausente, 6 transientes).
+- `guia/RESILIENCIA-ACESSO.md` (recovery de conta > chave local). Housekeeping: ADR-024/025/026 → Aceito; checkpoint retroativo v1.21.1+1.21.2. Hooks PS → UTF-8 BOM (cura mojibake observado no route-gate).
+
+QA bicelular: process-critic adversarial **Sonnet isolado** (ADR-018) — **APROVADO_COM_RESSALVA** → 3 MÉDIO + 5 BAIXO **todos emendados** dentro da J4 (forward-only, EMENDA): chunk-id único entre subpastas (+teste), schema no ramo de erro, teste de reconstrução literal, precedência sem ambiguidade, claim de integração honesto (docops wirado + ADR qualificado [INFERIDO]), BOM nos 3 hooks. Linters: check_core_agnostic PASS (núcleo agnóstico preservado), validate_skills PASS, canário doc_intake 5/5.
+
+Próximo passo: PR → merge verificado (`gh pr view --json mergedAt` ANTES de deletar branch — incidente #25) → tag v1.22.0 → remover RETOMADA (transiente). Débito sinalizado (não-bloco): 5 transientes antigos em `docs/_intake/` (sessões maio/v1.14.x) — deixados para revisão do dono (não criados nesta sessão).
+
+---
+
+## 2026-05-31T01:00 — Sessão: v1.21.1 + v1.21.2 — consolidação pós-v1.21.0 (site/docs/autoria/tokens) [checkpoint retroativo]
+
+> Checkpoint adicionado retroativamente (catch do `consistency-gate` ADR-030, 2026-05-31: history pulava de v1.21.0 direto, sem registro de 1.21.1/1.21.2). Conteúdo reconstruído do CHANGELOG (fonte canônica). Append-only respeitado: entrada nova, nada reescrito.
+
+Consolidação do trabalho feito **após** a tag v1.21.0, em PRs separados (#22–#28), cada um parando no gate humano.
+
+Entregue:
+- **v1.21.1**: `tools/project_report.py` (**ADR-026** — relatório de tokens + história compactada dos transcripts, sem transmissão, canário 6/6); **LICENSE (CC BY 4.0)** + **NOTICE** (antes ausentes apesar de citados); **`tools/check_attribution.py`** (**ADR-025** — guarda transparente de autoria, quebra o build se LICENSE/NOTICE/crédito sumir; refuta mecanismo oculto); **`/start-session` registrado** (`.claude/commands/start-session.md`, **ADR-024**); reforma do site (`guia/web/`) → site-hub; chat-web v4.3; linha de atribuição no README.
+- **v1.21.2**: contador de **tempo/interação** no `project_report.py` (duração + throughput tokens/min; ADR-026 estendido); README com link do site + intro holística; nota OWASP-LLM em `SECURITY.md` (por que 🟡 é o teto honesto de orquestração); **commits/tags assinados (SSH) e Verified** no GitHub (concretiza ADR-025).
+
+Estado pós-bloco: `main` em **v1.21.2**; ADR-024/025/026 implementados (status flipado para **Aceito** na sessão v1.22.0).
+
+---
+
 ## 2026-05-30T21:30 — Sessão: v1.21.0 — runtime hooks (compaction/mission) + camada de entrega de produto
 
 Origem: revisão de uma pesquisa/SPEC externa (Perplexity) que **re-derivou contra fontes oficiais** (Anthropic/OpenAI/Google) o núcleo **já mecanizado** na série v1.14.x→v1.20.0 — validação externa, não refatoração. Filtrado o ganho real (lean, régua §0): só o que ainda era prosa virou mecanismo + correção do **viés processo-sobre-produto** (reorientação do dono: o framework culmina em PRODUTO de software/dados — sessão Perplexity l.421/427).

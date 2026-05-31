@@ -31,4 +31,8 @@ shared_refs:
 
 ## Encerramento
 Sem CHANGELOG + dicionário (se aplicável) + ADR aceito (se havia) → não fecha.
+Rodar o **consistency-gate** (ADR-030) antes de fechar release:
+`powershell -NoProfile -ExecutionPolicy Bypass -File tools/hooks/consistency-gate.ps1`
+— version-sync, ADR-status, checkpoint no history, unpushed, transientes em `docs/_intake/`.
+Tratar as inconsistências (ou registrá-las como débito declarado) antes do PR de release.
 Perguntar: "Salvar como Knowledge Item?"
