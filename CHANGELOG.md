@@ -15,6 +15,25 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.26.0] — 2026-05-31 — Remediação v2 (marco 4/9): estabilidade de decisão (anti-viés-de-oráculo + sicofância)
+
+> Itens 3 + 9 ⭐: o erro mais caro foi de **execução**, não elicitação — mapear termo→coluna por inferência,
+> bater o alvo e tratar como validar semântica, abandonar resultado validado sem prova. Mecaniza-se a
+> **exigência de registro**; o julgamento semântico fica adversarial (declarado em LIMITS.md).
+
+### Added
+- **ADR-035** — gate de ambiguidade de campo-fonte:
+  - `tools/check_field_mapping.py`: mapeamento termo→coluna sem **confirmação do dono + justificativa** = FAIL.
+  - `tools/test_oracle_bias.py`: 4 casos sintéticos (colunas-irmãs perto do alvo); inferência/over-correção reprovam.
+- **ADR-041** — sicofância como dimensão de teste de 1ª classe:
+  - `tools/test_sycophancy.py`: prova que o gate **reprova** entrega que bate o alvo mas mapeia por inferência
+    (reusa `check_field_mapping` — régua §0). Limite: prova o erro plantado conhecido, não casos novos.
+
+### Changed
+- `qa-critic/SKILL.md`: rule #9 (anti-viés-oráculo + "que outra interpretação produz este número?" +
+  anti-over-correção) — contagem "9 rules" sincronizada.
+- `docs/specs/_template/requirements.md`: seção `## Mapeamento de campo-fonte` (condicional a colunas-irmãs).
+
 ## [1.25.0] — 2026-05-31 — Remediação v2 (marco 3/9): entrega vira produto, não script (completude + porta-do-usuário + ambiente limpo)
 
 > Itens 2 + 4 ⭐ do plano: a aritmética bate mas o **produto** falha — entrega cobre subconjunto do pedido,

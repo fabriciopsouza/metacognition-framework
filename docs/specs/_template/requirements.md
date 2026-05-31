@@ -51,6 +51,15 @@ Dimensões/dados sabidos ausentes mas não impedem entrega?
 - ambiente-execucao: <instala/roda em máquina limpa? entry-point não-interativo?>
 - formato-saida: <relatório/export; faixas/metas visíveis; rastreável à fonte?>
 
+## Mapeamento de campo-fonte (ADR-035 — obrigatório quando há colunas-irmãs ambíguas)
+
+> Quando um termo do pedido pode casar com mais de um campo/coluna de nome parecido (um componente vs.
+> o total, "interna" vs. "manual" vs. soma), o mapeamento termo→coluna é **decisão registrada do dono**,
+> não inferência. `tools/check_field_mapping.py` exige, por linha: **confirmação do dono** +
+> **justificativa (`porque:`)**. Remover esta seção se não houver ambiguidade de campo-fonte.
+
+- <termo> -> <coluna escolhida> | confirmação: [CONFIRMADO] pelo dono | porque: <justificativa, idealmente com prova numérica> | irmãs descartadas: <colunas candidatas e por que não>
+
 ## Escopo funcional (EARS — opcional, mas recomendado)
 - **Ubíquo:** "O sistema DEVE <comportamento>."
 - **WHEN:** "QUANDO <evento>, o sistema DEVE <resposta>."
