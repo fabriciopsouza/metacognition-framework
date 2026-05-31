@@ -270,18 +270,16 @@
     <p class="sub">O que o framework recusa abrir mão — mesmo sob pressão de "só dessa vez".</p>
     <div class="cards">
       <div class="card"><h3>Anti-alucinação</h3><p>Classifica tudo; diz <b>NÃO SEI</b> quando for; jamais inventa nome, número ou sintaxe.</p></div>
-      <div class="card"><h3>Fonte única</h3><p>Cada regra em um arquivo só. Papéis <b>referenciam</b>, não copiam — nada de regra duplicada divergindo.</p></div>
       <div class="card"><h3>Ganho líquido</h3><p>Adição pura é rejeitada por padrão. Só entra o que <b>funde, remove ou destrava</b> — o framework não incha.</p></div>
-      <div class="card"><h3>Estritamente flexível</h3><p>O núcleo não carrega normas nem convenções de domínio. O <b>discovery declara o escopo</b> por projeto; nada vaza de um projeto para outro.</p></div>
+      <div class="card"><h3>Estritamente flexível</h3><p>O núcleo não carrega normas de domínio. O <b>discovery declara o escopo</b> por projeto; nada vaza entre projetos.</p></div>
       <div class="card"><h3>QA bicelular</h3><p>Revisor <b>adversarial e independente</b> (modelo diferente) com poder de rewind. Todo QA assume que há bug.</p></div>
       <div class="card"><h3>Memória cross-sessão</h3><p>Contexto é finito: digest + note-taking antes de compactar. A próxima sessão <b>começa sem perguntar nada</b>.</p></div>
-      <div class="card"><h3>Enforcement em runtime</h3><p>Regras críticas viram <b>hooks executáveis</b> com testes que tentam furá-las. Hook bugado falha-aberto; a trava real mora em camadas.</p></div>
-      <div class="card"><h3>Culmina em produto</h3><p>O tipo de produto é declarado no início e ativa os papéis de entrega (design de UX, avaliação sistemática). Entrega, não prosa.</p></div>
-      <div class="card"><h3>Validado</h3><p>Roteamento dos papéis operacionais testado <b>33/33</b> (papéis A–F; discovery em design-time). Toda aplicação nova só entra com seu conjunto de avaliação passando.</p></div>
-      <div class="card"><h3>Economia de contexto (tokens)</h3><p>Contexto é recurso finito e caro: compaction governada por faixas + digest + note-taking + <b>isolamento de subagente</b>. Menos context-rot, menos token desperdiçado — valor direto de custo.</p></div>
-      <div class="card"><h3>Telemetria que muda decisão</h3><p>Sem dashboard de vaidade: <b>2 métricas</b> só (junção-origem de rewind + rounds de QA) — as que mudam uma decisão de design. Sinal, não ruído (`_shared/observability`).</p></div>
-      <div class="card"><h3>Método + estrutura, não só prompt</h3><p>O diferencial: <b>andaime, contrato e método</b> auditáveis (papéis, junções, ADRs, hooks) — não um prompt esperto reescrito a cada vez. Reprodutível, rastreável, transferível entre times.</p></div>
+      <div class="card"><h3>Enforcement em runtime</h3><p>Regras críticas viram <b>hooks executáveis</b> com testes que tentam furá-las. A trava real mora em camadas.</p></div>
+      <div class="card"><h3>Economia de contexto (tokens)</h3><p>Compaction por faixas + digest + isolamento de subagente. Menos context-rot, menos token desperdiçado — valor direto de custo.</p></div>
+      <div class="card"><h3>Telemetria que muda decisão</h3><p>Sem dashboard de vaidade: <b>2 métricas</b> só (junção-origem de rewind + rounds de QA). Sinal, não ruído.</p></div>
+      <div class="card"><h3>Método + estrutura, não só prompt</h3><p>O diferencial: <b>andaime, contrato e método</b> auditáveis (papéis, junções, ADRs, hooks) — reprodutível e transferível entre times.</p></div>
     </div>
+    <p class="note" style="margin-top:14px">Os 14 princípios completos e o roteador no <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/AGENT-FRAMEWORK.md">AGENT-FRAMEWORK.md §6</a>.</p>
   </section>
 
   <section id="evidencia">
@@ -304,10 +302,8 @@
     <h2><span class="n">06</span>Segurança</h2>
     <p class="sub">Postura honesta de defesa-em-profundidade. A tese: <b>não confiar no raciocínio do agente</b> — gatear por <b>efeito</b>, não por intenção.</p>
     <div class="cards">
-      <div class="card"><h3>Gate por efeito (não por intenção)</h3><p>Mesmo um agente enganado por <b>prompt injection</b> não causa dano irreversível: o efeito (E1–E6) é barrado antes de executar <b>(gate ativo por default; camada não-bypassável via managed-settings)</b>. Cobertura forte de "Excessive Agency" (OWASP LLM06). <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/SECURITY.md">o que isso exige na prática →</a></p></div>
-      <div class="card"><h3>Guard-rails não-desativáveis</h3><p>managed-settings fail-closed: o agente <b>não pode</b> se conceder bypass. Ação destrutiva T3 (irreversível + alto impacto) exige gate humano.</p></div>
-      <div class="card"><h3>Mapeado ao OWASP LLM Top 10</h3><p>Cobertura declarada item a item — forte em Excessive Agency, parcial em Prompt Injection (consequência contida), honesto sobre o que fica fora de escopo.</p></div>
-      <div class="card"><h3>Auditável + revisado</h3><p>Trilha auditável (OTel / digest), QA adversarial por modelo heterogêneo, e isolamento cross-projeto (anti-vazamento de dados entre contextos).</p></div>
+      <div class="card"><h3>Gate por efeito (não por intenção)</h3><p>Mesmo um agente enganado por <b>prompt injection</b> não causa dano irreversível: o efeito (E1–E6) é barrado antes de executar <b>(gate ativo por default; camada não-bypassável via managed-settings)</b>. Cobertura forte de "Excessive Agency" (OWASP LLM06).</p></div>
+      <div class="card"><h3>Mapeado ao OWASP LLM Top 10</h3><p>Cobertura declarada item a item — forte em Excessive Agency, parcial em Prompt Injection, honesta sobre o que fica fora de escopo. Guard-rails não-desativáveis + trilha auditável + isolamento cross-projeto.</p></div>
     </div>
     <p class="note" style="margin-top:18px">Detalhes, escopo e <b>o que não está coberto</b>: <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/SECURITY.md">SECURITY.md</a> — porque overclaim de segurança seria o oposto do que o framework prega.</p>
   </section>
@@ -316,10 +312,8 @@
     <h2><span class="n">07</span>Operar código por IA — riscos e revisão humana</h2>
     <p class="sub">Os gates <b>reduzem</b> o risco — não o eliminam. Operar código ou dados por IA exige julgamento humano. Sem maquiar:</p>
     <div class="cards">
-      <div class="card"><h3>O que os gates NÃO resolvem</h3><p>Alucinação residual; ações <b>dentro do allowlist</b> (não-destrutivas, mas erradas); injeção via conteúdo externo; não-determinismo do modelo. O gate por efeito barra o catastrófico — não o "sutilmente errado".</p></div>
-      <div class="card"><h3>Revisão humana é necessária</h3><p>Obrigatória em: ação <b>irreversível</b> (T3), número que vai a decisão, ambiente regulado, código que vai a produção. O framework <b>sinaliza e exige gate humano</b> em T3 — mas o julgamento final é seu.</p></div>
-      <div class="card"><h3>Não use como caixa-preta</h3><p>Leia o que a IA classifica como <b>CONFIRMADO</b>, confirme as premissas, e teste. "Confio na IA" é o mesmo erro de "confio no shell".</p></div>
-      <div class="card"><h3>Garantia ≠ default</h3><p>Os hooks vêm ativos por default como <b>defesa</b>; a <b>garantia</b> dura (não-bypassável) exige instalar o managed-settings. Avalie no seu contexto antes de produção crítica.</p></div>
+      <div class="card"><h3>O que os gates NÃO resolvem</h3><p>Alucinação residual; ações <b>dentro do allowlist</b> (não-destrutivas, mas erradas); injeção via conteúdo externo; não-determinismo. O gate barra o catastrófico — não o "sutilmente errado". Garantia ≠ default (a dura exige managed-settings).</p></div>
+      <div class="card"><h3>Revisão humana é necessária</h3><p>Obrigatória em ação <b>irreversível</b> (T3), número que vai a decisão, ambiente regulado, produção. O framework sinaliza e exige gate humano — o julgamento final é seu. Não use como caixa-preta.</p></div>
     </div>
     <p class="note" style="margin-top:18px">Postura completa, mapeada ao OWASP LLM Top 10: <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/SECURITY.md">SECURITY.md</a>.</p>
   </section>
@@ -328,18 +322,15 @@
     <h2><span class="n">08</span>Como o método foi construído</h2>
     <p class="sub">Sem exagero, sem megalomania. Destilado de pesquisa, construído por dogfooding, endurecido por falhas reais — inclusive as que o QA <b>não</b> pegou (e o humano pegou).</p>
     <div class="cards">
-      <div class="card"><h3>Fundamento</h3><p>Publicações de engenharia da Anthropic + padrões abertos (ADR, OWASP LLM, OpenTelemetry) + 4 estudos internos (A0–A3). Fonte, não achismo.</p></div>
       <div class="card"><h3>Validação medida</h3><p>Roteamento dos papéis operacionais <b>33/33</b> (A–F; discovery em design-time); hooks com testes-canário que tentam furá-los; QA por modelo heterogêneo. Um caso real regulado validado com <b>delta 0.000000</b> contra o baseline.</p></div>
-      <div class="card"><h3>As falhas (sem maquiar)</h3><p>O QA pegou bugs de contrato e um overclaim de segurança. O <b>humano</b> pegou o que o QA não viu: vazamento de domínio e viés "processo sobre produto". A defesa real é dupla — humano + modelo diferente.</p></div>
-      <div class="card"><h3>A lição: prosa → mecanismo</h3><p>Toda regra que falhou como texto ganhou um <b>par executável com teste</b>. As falhas viram mecanismos, não desculpas — por isso o método melhora.</p></div>
+      <div class="card"><h3>As falhas (sem maquiar)</h3><p>O QA pegou bugs de contrato e um overclaim de segurança; o <b>humano</b> pegou o que o QA não viu (vazamento de domínio; viés processo-sobre-produto). Cada falha virou mecanismo — <b>prosa→mecanismo</b>. Fundamento: A0–A3 + padrões abertos.</p></div>
     </div>
     <p class="note" style="margin-top:18px">A história honesta, com as falhas e as soluções: <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/guia/COMO-FOI-CONSTRUIDO.md">Como o método foi construído</a> · <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/history.md">history.md (## Aprendizado)</a>.</p>
   </section>
 
   <section id="docs">
     <h2><span class="n">09</span>Documentação completa</h2>
-    <p class="sub">Tudo que acompanha o repositório, organizado por intenção.</p>
-    <p class="sub">Renderizada no GitHub — clicável e sempre na versão da branch <code>main</code>.</p>
+    <p class="sub">Tudo que acompanha o repositório, organizado por intenção — renderizado no GitHub (sempre na <code>main</code>).</p>
     <div class="docgrid">
       <div class="docgroup">
         <h3>Começar</h3>
