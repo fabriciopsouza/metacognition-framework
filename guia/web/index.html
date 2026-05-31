@@ -126,7 +126,11 @@
   a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent;transition:.2s}
   a:hover{border-bottom-color:var(--accent)}
   code{color:var(--accent2);background:var(--panel);padding:1px 6px;border:1px solid var(--line);border-radius:2px;font-size:13px}
+  .cmd{display:block;margin-top:10px;background:#0a0e14;border:1px solid var(--line);border-left:3px solid var(--accent2);
+    padding:10px 14px;border-radius:3px;color:var(--good);font-size:13px;overflow-x:auto;white-space:pre-wrap}
+  a.ver:hover{border-color:var(--accent);color:var(--fg)}
   footer{padding:46px 0 80px;color:var(--muted);font-size:13px}
+  footer a{color:var(--accent2)}
   footer p{margin-bottom:10px}
   @keyframes rise{to{opacity:1;transform:translateY(0)}}
   .tag,h1,.lede,.btns{transform:translateY(14px)}
@@ -150,21 +154,23 @@
     <a href="#fluxo">Fluxo</a>
     <a href="#docs">Docs</a>
     <a href="#comece">Começar</a>
+    <a href="https://github.com/fabriciopsouza/metacognition-framework">GitHub ↗</a>
   </div>
 </nav>
 
 <div class="wrap">
 
   <header>
-    <div class="ver">v<b>1.21.0</b></div>
-    <div class="tag">Orquestração de agentes · Claude Code</div>
+    <a class="ver" href="https://github.com/fabriciopsouza/metacognition-framework/releases/tag/v1.21.0">v<b>1.21.0</b> · release ↗</a>
+    <div class="tag">Orquestração de agentes · Claude Code · open source</div>
     <h1>Um núcleo <em>flexível</em><br>para orquestrar agentes.</h1>
     <p class="lede">Agentes de IA que <b>classificam o que sabem</b> e não inventam o que não sabem,
       <b>lembram entre sessões</b>, recusam-se a inflar, e <b>culminam em produto</b> — software ou
       dados entregáveis, não mais uma parede de texto. Um método, não um framework rígido: adapta-se
       ao seu contexto e ao seu código existente, sem forçar refatoração.</p>
     <div class="btns">
-      <a class="btn" href="#comece">Começar em 3 passos</a>
+      <a class="btn" href="https://github.com/fabriciopsouza/metacognition-framework">Ver no GitHub ↗</a>
+      <a class="btn ghost" href="#comece">Como instalar</a>
       <a class="btn ghost" href="#metodo">Ver o método</a>
     </div>
   </header>
@@ -271,60 +277,68 @@
       <div class="ev"><div class="code">A2 · A3</div><div class="desc">Desenvolvimento com agentes (spec-driven, "manter simplicidade"); governança de IA não-determinística em ambiente regulado.</div></div>
     </div>
     <p class="note">A bibliografia completa, com as URLs e a classificação de cada fonte, <b>acompanha o
-      repositório</b> em <a href="../REFERENCIAS.md">guia/REFERENCIAS.md</a> — e cada release vincula a
-      mudança à fonte que a sustenta no <a href="../../CHANGELOG.md">CHANGELOG</a>.</p>
+      repositório</b> em <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/guia/REFERENCIAS.md">guia/REFERENCIAS.md</a>
+      — e cada release vincula a mudança à fonte que a sustenta no
+      <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/CHANGELOG.md">CHANGELOG</a>.</p>
   </section>
 
   <section id="docs">
     <h2><span class="n">06</span>Documentação completa</h2>
     <p class="sub">Tudo que acompanha o repositório, organizado por intenção.</p>
+    <p class="sub">Renderizada no GitHub — clicável e sempre na versão da branch <code>main</code>.</p>
     <div class="docgrid">
       <div class="docgroup">
         <h3>Começar</h3>
         <ul class="clean">
-          <li><b><a href="../INSTALAR-NO-VSCODE.md">Instalar no VS Code</a></b><small>passo a passo, do zip ao /start-session</small></li>
-          <li><b><a href="../SETUP.md">3 modos de uso</a></b><small>novo projeto · revisar · migrar</small></li>
-          <li><b><a href="../GUIA-EQUIPE.md">Uso diário (equipe)</a></b><small>o essencial em 5 minutos</small></li>
+          <li><b><a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/guia/INSTALAR-NO-VSCODE.md">Instalar no VS Code</a></b><small>passo a passo, do clone ao /start-session</small></li>
+          <li><b><a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/guia/SETUP.md">3 modos de uso</a></b><small>novo projeto · revisar · migrar</small></li>
+          <li><b><a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/guia/GUIA-EQUIPE.md">Uso diário (equipe)</a></b><small>o essencial em 5 minutos</small></li>
         </ul>
       </div>
       <div class="docgroup">
         <h3>Operar</h3>
         <ul class="clean">
-          <li><b><a href="../COMO-REVISAR-OUTRO-REPO.md">Revisar outro repo</a></b><small>auditoria read-only</small></li>
-          <li><b><a href="../GIT-VERSIONAMENTO.md">Versionamento git</a></b><small>SemVer + Conventional Commits</small></li>
-          <li><b><a href="../ORIENTACAO.md">Quem lê o quê</a></b><small>humano × IA</small></li>
-          <li><b><a href="../../PROMPT-CHAT-WEB-v4.3.md">Prompt do chat web (v4.3)</a></b><small>o framework no Claude.ai / sem filesystem</small></li>
+          <li><b><a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/guia/COMO-REVISAR-OUTRO-REPO.md">Revisar outro repo</a></b><small>auditoria read-only</small></li>
+          <li><b><a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/guia/GIT-VERSIONAMENTO.md">Versionamento git</a></b><small>SemVer + Conventional Commits</small></li>
+          <li><b><a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/guia/ORIENTACAO.md">Quem lê o quê</a></b><small>humano × IA</small></li>
+          <li><b><a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/PROMPT-CHAT-WEB-v4.3.md">Prompt do chat web (v4.3)</a></b><small>o framework no Claude.ai / sem filesystem</small></li>
         </ul>
       </div>
       <div class="docgroup">
         <h3>Aprofundar</h3>
         <ul class="clean">
-          <li><b><a href="../../CLAUDE.md">CLAUDE.md</a></b><small>ponto de entrada que o Claude Code lê</small></li>
-          <li><b><a href="../../docs/adr/">Histórico de decisões</a></b><small>todo "porquê" registrado (formato ADR)</small></li>
-          <li><b><a href="../../CHANGELOG.md">CHANGELOG</a></b><small>cada mudança → a fonte que a sustenta</small></li>
-          <li><b><a href="../REFERENCIAS.md">Referências &amp; pesquisas</a></b><small>a base de evidência (A0–A3)</small></li>
-          <li><b><a href="../PITCH.md">Pitch &amp; divulgação</a></b><small>textos prontos para apresentar o framework</small></li>
+          <li><b><a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/CLAUDE.md">CLAUDE.md</a></b><small>ponto de entrada que o Claude Code lê</small></li>
+          <li><b><a href="https://github.com/fabriciopsouza/metacognition-framework/tree/main/docs/adr">Histórico de decisões</a></b><small>todo "porquê" registrado (formato ADR)</small></li>
+          <li><b><a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/CHANGELOG.md">CHANGELOG</a></b><small>cada mudança → a fonte que a sustenta</small></li>
+          <li><b><a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/guia/REFERENCIAS.md">Referências &amp; pesquisas</a></b><small>a base de evidência (A0–A3)</small></li>
+          <li><b><a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/guia/PITCH.md">Pitch &amp; divulgação</a></b><small>textos prontos para apresentar o framework</small></li>
         </ul>
       </div>
     </div>
   </section>
 
   <section id="comece">
-    <h2><span class="n">07</span>Comece em 3 passos</h2>
+    <h2><span class="n">07</span>Instalar e começar</h2>
+    <p class="sub">Open source no GitHub. Um script idempotente faz o setup — depois é abrir e rodar.</p>
     <div class="steps">
-      <div class="step"><div class="num">1</div><div><div class="t">Abra a pasta no VS Code</div><div class="d">O Claude Code lê o <code>CLAUDE.md</code> nativamente — é o ponto de entrada do framework.</div></div></div>
-      <div class="step"><div class="num">2</div><div><div class="t">Rode <code>/start-session</code></div><div class="d">O squad acorda: sincroniza o repo, confere o modo de execução, lê o briefing e o histórico, e abre a sessão.</div></div></div>
-      <div class="step"><div class="num">3</div><div><div class="t">Traga seu pedido</div><div class="d">Novo, vago ou complexo: o discovery elicita, declara o tipo de produto, e o fluxo conduz até a entrega validada.</div></div></div>
+      <div class="step"><div class="num">1</div><div><div class="t">Clone o repositório</div><div class="d">Direto do GitHub (ou <a href="https://github.com/fabriciopsouza/metacognition-framework/archive/refs/tags/v1.21.0.zip">baixe a release v1.21.0 .zip</a>):<span class="cmd">git clone https://github.com/fabriciopsouza/metacognition-framework</span></div></div></div>
+      <div class="step"><div class="num">2</div><div><div class="t">Rode o bootstrap — o "instalador"</div><div class="d">Idempotente (roda 2× sem quebrar): configura git, garante o <code>gh</code> CLI, espelha o framework. Veja <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/bootstrap.ps1">bootstrap.ps1</a> · <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/bootstrap.sh">bootstrap.sh</a>:<span class="cmd">pwsh ./bootstrap.ps1        # Windows
+./bootstrap.sh             # macOS / Linux</span></div></div></div>
+      <div class="step"><div class="num">3</div><div><div class="t">Abra no VS Code e rode <code>/start-session</code></div><div class="d">O Claude Code lê o <code>CLAUDE.md</code> nativamente; o squad acorda, sincroniza, lê o histórico e abre a sessão. Traga seu pedido — o discovery conduz até a entrega validada.</div></div></div>
     </div>
     <div class="btns">
-      <a class="btn" href="../INSTALAR-NO-VSCODE.md">Instalar agora</a>
-      <a class="btn ghost" href="../../CLAUDE.md">Ler o CLAUDE.md</a>
+      <a class="btn" href="https://github.com/fabriciopsouza/metacognition-framework">Ver no GitHub ↗</a>
+      <a class="btn ghost" href="https://github.com/fabriciopsouza/metacognition-framework/archive/refs/tags/v1.21.0.zip">Baixar v1.21.0 (.zip)</a>
+      <a class="btn ghost" href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/guia/INSTALAR-NO-VSCODE.md">Guia de instalação</a>
     </div>
   </section>
 
   <footer>
+    <p><a href="https://github.com/fabriciopsouza/metacognition-framework">Repositório no GitHub ↗</a> ·
+       <a href="https://github.com/fabriciopsouza/metacognition-framework/releases/tag/v1.21.0">Release v1.21.0 ↗</a> ·
+       <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/CHANGELOG.md">CHANGELOG</a></p>
     <p>Framework Metacognitivo Agêntico · <b>v1.21.0</b> · PT-BR · CC BY 4.0 (livre para usar, adaptar e distribuir, com atribuição).</p>
-    <p>Genérico no método, especializado por clonagem. A bibliografia (A0–A3) e todo o histórico de decisões acompanham o repositório.</p>
+    <p>Flexível no método, especializado por clonagem. A bibliografia (A0–A3) e todo o histórico de decisões acompanham o repositório.</p>
   </footer>
 
 </div>
