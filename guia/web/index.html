@@ -205,7 +205,7 @@
       <div class="step"><div class="num">2</div><div><div class="t">Lê antes de afirmar (file-first)</div><div class="d">Inspeciona o arquivo, o campo, a versão — antes de assumir. O nome aprovado não é renomeado sem decisão registrada.</div></div></div>
       <div class="step"><div class="num">3</div><div><div class="t">QA adversarial</div><div class="d">Um revisor independente (idealmente outro modelo) assume que <b>existe um bug</b> e tenta prová-lo, antes de qualquer aprovação. Reconstrói a versão mais forte do trabalho, ataca, e dá veredito binário.</div></div></div>
       <div class="step"><div class="num">4</div><div><div class="t">Da prosa ao mecanismo</div><div class="d">Regra crítica não fica só no texto: ganha um <b>par executável</b> (um hook que roda sozinho) com teste que tenta furá-la. Disciplina que não depende de boa-vontade.</div></div></div>
-      <div class="step"><div class="num">5</div><div><div class="t">Decisões registradas</div><div class="d">Toda escolha de arquitetura vira um registro curto e rastreável (um <b>ADR</b> — <em>Architecture Decision Record</em>): a pergunta, as alternativas, o porquê. Você sempre sabe como se chegou ali.</div></div></div>
+      <div class="step"><div class="num">5</div><div><div class="t">Decisões que ficam escritas</div><div class="d">Toda escolha importante fica registrada num documento curto: <b>a pergunta, as alternativas consideradas e o porquê</b>. Você — ou quem pegar o projeto depois — nunca precisa adivinhar como se chegou ali. <small style="color:var(--muted)">(esse tipo de registro tem um nome técnico, "ADR"; mas você não precisa conhecer o termo para usar.)</small></div></div></div>
       <div class="step"><div class="num">6</div><div><div class="t">Culmina em produto</div><div class="d">O processo não termina na decisão — termina num artefato entregável conforme o briefing: o tipo de produto é declarado no início e ativa os papéis certos (ex.: design de UX, avaliação sistemática).</div></div></div>
     </div>
   </section>
@@ -266,7 +266,7 @@
       e em padrões abertos, destiladas em quatro estudos internos (A0–A3).</p>
     <div class="evidence">
       <div class="ev"><div class="code">Anthropic Engineering</div><div class="desc">"Building effective agents", "Effective context engineering", multi-agente e Agent Skills — os padrões oficiais de orquestração e de contexto.</div></div>
-      <div class="ev"><div class="code">Padrões abertos</div><div class="desc">SemVer (versão), Keep a Changelog, ADR/MADR (decisões), OpenTelemetry GenAI (observabilidade) — convenções consolidadas, não inventadas aqui.</div></div>
+      <div class="ev"><div class="code">Padrões abertos</div><div class="desc">Convenções consolidadas (não inventadas aqui) para versão, registro de mudanças, registro de decisões e observabilidade — SemVer, Keep a Changelog, ADR, OpenTelemetry.</div></div>
       <div class="ev"><div class="code">A0 · A1</div><div class="desc">Fundamentos de prompt &amp; context engineering; arquitetura RAG multiagente em produção (isolamento de subagente).</div></div>
       <div class="ev"><div class="code">A2 · A3</div><div class="desc">Desenvolvimento com agentes (spec-driven, "manter simplicidade"); governança de IA não-determinística em ambiente regulado.</div></div>
     </div>
@@ -300,9 +300,10 @@
         <h3>Aprofundar</h3>
         <ul class="clean">
           <li><b><a href="../../CLAUDE.md">CLAUDE.md</a></b><small>ponto de entrada que o Claude Code lê</small></li>
-          <li><b><a href="../../docs/adr/">Decisões (ADRs)</a></b><small>todo "porquê" registrado</small></li>
+          <li><b><a href="../../docs/adr/">Histórico de decisões</a></b><small>todo "porquê" registrado (formato ADR)</small></li>
           <li><b><a href="../../CHANGELOG.md">CHANGELOG</a></b><small>cada mudança → a fonte que a sustenta</small></li>
           <li><b><a href="../REFERENCIAS.md">Referências &amp; pesquisas</a></b><small>a base de evidência (A0–A3)</small></li>
+          <li><b><a href="../PITCH.md">Pitch &amp; divulgação</a></b><small>textos prontos para apresentar o framework</small></li>
         </ul>
       </div>
     </div>
