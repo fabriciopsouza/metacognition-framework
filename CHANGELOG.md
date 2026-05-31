@@ -15,6 +15,21 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.29.0] — 2026-05-31 — Remediação v2 (marco 7/9): discovery sai de DESIGN-TIME (eval G/H executado)
+
+> Item 10: os evals dos papéis `discovery` (G) e `mapeamento de processo` (H) estavam não-executados —
+> a senioridade central era promessa não-medida. Agora EXECUTADO + reproduzível.
+
+### Added
+- **ADR-042** — discovery eval executado:
+  - `tools/test_discovery_eval.py`: eval funcional EXECUTADO contra 3 briefings sintéticos agnósticos
+    (app de indicador / pipeline / relatório), medindo cobertura das dimensões (ADR-033) + controle raso
+    que discrimina. Reproduzível na matriz CI.
+  - `_meta/eval-results-discovery.md`: roteamento G/H (should-trigger/should-NOT) + eval funcional.
+
+### Changed
+- `_meta/eval-results-papeis.md`: status G/H DESIGN-TIME → **EXECUTADO** (ponteiro para o novo arquivo).
+
 ## [1.28.0] — 2026-05-31 — Remediação v2 (marco 6/9): effect-gate vira motor de regras por efeito
 
 > Item 7: o effect-gate eram ~5 padrões grep no código; bypasses conhecidos passavam (find -delete,
