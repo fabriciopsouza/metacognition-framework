@@ -15,6 +15,24 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.30.0] — 2026-05-31 — Remediação v2 (marco 8/9): abrangência regulada (denylist + perfis clonáveis)
+
+> Item 11: a denylist era seed não-exaustiva (ITIL/COBIT/SOX/ISO/SOC 2/CLIA passavam) e o caso regulado
+> não tinha andaime de partida. Expande-se a denylist + meta-linter de cobertura + perfis opt-in — núcleo agnóstico intacto.
+
+### Added
+- **ADR-043** — denylist expandida + catálogo de perfis regulados:
+  - `tools/agnostic-denylist.txt`: +11 padrões (SOX, ISO-13485/27001/9001, COBIT, ITIL, Basel, SOC 2, NIST,
+    CLIA, Sarbanes-Oxley). NIST/OWASP fundacionais (REFERENCIAS) seguem permitidos via sentinela na citação.
+  - `tools/check_regulatory_coverage.py` (+ canário): meta-linter advisory que avisa famílias sem
+    representante, mantendo "não-exaustiva".
+  - `exemplos/dominio-regulado/`: README + 3 perfis clonáveis (`compliance-profile-*.json`: saúde-dispositivo,
+    financeiro, infosec) — andaime de partida, oferecidos pelo discovery quando regulado=sim.
+
+### Changed
+- `_shared/action-safety/SKILL.md`: sentinela `lint-agnostic:allow` na citação fundacional de NIST/OWASP.
+- `discovery/SKILL.md` 6(a): oferece o perfil regulado clonável. `test_core_agnostic.py`: samples dos novos padrões.
+
 ## [1.29.0] — 2026-05-31 — Remediação v2 (marco 7/9): discovery sai de DESIGN-TIME (eval G/H executado)
 
 > Item 10: os evals dos papéis `discovery` (G) e `mapeamento de processo` (H) estavam não-executados —

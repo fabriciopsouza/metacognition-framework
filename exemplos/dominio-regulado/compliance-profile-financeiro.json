@@ -1,0 +1,15 @@
+{
+  "profile": "financeiro-contabil",
+  "_doc": "Arquetipo GENERICO (nao-cliente) p/ produto cujo numero alimenta relato financeiro/decisao executiva auditavel. Seed editavel; norma concreta declarada pelo dono (ADR-010). Andaime, nao certificacao.",
+  "norms_typical": ["SOX (Sarbanes-Oxley)", "Basel", "controles internos"],
+  "controls": {
+    "audit_trail": {"required": true, "fields": ["quem", "quando", "insumos", "versao-da-regra", "rastro-do-calculo"], "immutable": true},
+    "hitl": {"sufficient_when": "numero que vai a decisao executiva/relato externo passa por four-eyes (revisao humana independente) antes de publicar"},
+    "retention": {"min_period": "definir-por-norma", "default_hint": "anos; confirmar"},
+    "segregation_of_duties": {"required": true, "hint": "quem calcula != quem aprova != quem publica"},
+    "reproducibility": {"required": true, "evidence": ["entrada versionada", "regra versionada", "resultado rastreavel a fonte"]},
+    "change_control": {"required": true, "hint": "mudanca na regra do indicador exige ADR + aprovacao registrada"}
+  },
+  "wires_to": ["high-stakes-gate", "observability", "qa-critic (anti-vies-oraculo ADR-035)"],
+  "note": "O anti-vies-de-oraculo (ADR-035) e especialmente relevante aqui: mapeamento de campo-fonte = decisao registrada, nao inferencia."
+}

@@ -57,6 +57,11 @@ SAMPLES = {
     r"\bALCOA(?:\+|\b)": "ALCOA+", r"\bANVISA\b": "ANVISA", r"\bANP\b": "ANP", r"\bFDA\b": "FDA",
     r"\bBACEN\b": "BACEN", r"\bGAMP\b": "GAMP", r"\bHIPAA\b": "HIPAA", r"\bLGPD\b": "LGPD",
     r"\bGDPR\b": "GDPR", r"\bGxP\b": "GxP", r"21\s*CFR": "21 CFR", r"\bPCI-?DSS\b": "PCI-DSS",
+    # Expansão v1.30.0 (ADR-043) — famílias reguladas comuns:
+    r"\bSOX\b": "SOX", r"\bISO[ -]?13485\b": "ISO 13485", r"\bISO[ -]?27001\b": "ISO 27001",
+    r"\bISO[ -]?9001\b": "ISO 9001", r"\bCOBIT\b": "COBIT", r"\bITIL\b": "ITIL",
+    r"\bBasel\s?(I{1,3}|IV)\b": "Basel III", r"\bSOC ?2\b": "SOC 2", r"\bNIST\b": "NIST",
+    r"\bCLIA\b": "CLIA", r"\bSarbanes-?Oxley\b": "Sarbanes-Oxley",
 }
 sources = {src for _, src in PATTERNS}
 for src in sources:
