@@ -15,12 +15,15 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
-## [Não lançado] — pós-v1.21.0 (a consolidar em tag v1.21.1)
+## [1.21.1] — 2026-05-31 — Consolidação pós-v1.21.0 (site/docs/ergonomia/autoria + relatório de tokens)
 
-> Trabalho acumulado **após** a tag v1.21.0 (site/docs/ergonomia/autoria). A tag de release sai ao
-> consolidar os PRs abertos desta leva (site, autoria, relatório de tokens).
+> Consolida o trabalho feito **após** a tag v1.21.0, em PRs separados (#22–#28), cada um parando no
+> gate humano. Mecanismos novos (prosa→mecanismo) + reestruturação do site + blindagem de autoria.
 
 ### Added
+- **`tools/project_report.py`** (**ADR-026**) — relatório de **tokens** (total/média por sessão) +
+  **história compactada** lida dos transcripts do Claude Code → base de documentação + reconstrução.
+  Sem transmissão (ADR-025); parse tolerante; canário 6/6.
 - **`LICENSE`** (CC BY 4.0) — antes **ausente** apesar de citada no README; torna a atribuição ao autor
   obrigatória e a remoção uma violação (recurso legal). + **`NOTICE`** (proveniência).
 - **`tools/check_attribution.py`** — guarda **transparente** de autoria (quebra o build se LICENSE/NOTICE/
