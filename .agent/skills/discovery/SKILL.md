@@ -1,9 +1,9 @@
 ---
 name: discovery
 description: "Ativar ANTES de planejar/implementar quando o pedido é novo, vago, ou a spec pode estar rasa/limitada ao que o usuário já conhece. Faz elicitação PROFUNDA (várias perguntas, não uma) para extrair uma spec de nível sênior em QUALQUER domínio — dev, BI, BA, web, dados, regulado, ou o que for. Em v1.6.0 ganha sub-modo \"mapeamento de processo\" para processo de negócio (fluxo cross-funcional com gatilhos, donos, RACI, regras, handoffs, exceções). Entrega requirements.md sênior que alimenta o architect. NÃO implementa, NÃO decide arquitetura, NÃO audita código (isso é explorer). Genérico e agnóstico de domínio."
-version: 1.8.0
-source: "pedido do usuário — evitar specs rasas limitadas ao conhecimento próprio; fundamentos A0 (decomposição) + A2 (spec-driven); v1.6.0 adiciona BPM-sênior via sub-modo nomeado + progressive disclosure (ADR-003); v1.7.0 adiciona sub-modo pesquisa-cascata para G1 (ADR-007); v1.8.0 adiciona reforço transversal método sênior 8 passos (ADR-009) domain-agnóstico para qualquer caso com fonte canônica/normativa citada; v1.11.0 adiciona passo 9 (Coherence Pass / RRC) ao método sênior + agnosticismo estrito + discovery declara escopo (ADR-010) com método universal ganhando passo 6 obrigatório (lote temático)"
-last_review: 2026-05-28
+version: 1.9.0
+source: "pedido do usuário — evitar specs rasas limitadas ao conhecimento próprio; fundamentos A0 (decomposição) + A2 (spec-driven); v1.6.0 adiciona BPM-sênior via sub-modo nomeado + progressive disclosure (ADR-003); v1.7.0 adiciona sub-modo pesquisa-cascata para G1 (ADR-007); v1.8.0 adiciona reforço transversal método sênior 8 passos (ADR-009) domain-agnóstico para qualquer caso com fonte canônica/normativa citada; v1.11.0 adiciona passo 9 (Coherence Pass / RRC) ao método sênior + agnosticismo estrito + discovery declara escopo (ADR-010) com método universal ganhando passo 6 obrigatório (lote temático); v1.21.0 adiciona passo 6(f) product_type → mission.md (ADR-022)"
+last_review: 2026-05-30
 role_order: 1
 consumes:
   - "pedido bruto do PMO"
@@ -65,6 +65,7 @@ perguntado. Este papel encarna esse método — não um catálogo de domínios, 
    - **(c) Regras com semântica?** Há regra de negócio onde o "como" importa tanto quanto o "quê" (ex.: anti-fraude, audit trail, fairness — listar as concretas do projeto)? (Sim/Não + lista.)
    - **(d) Gaps não-bloqueantes?** Dimensões/dados sabidos ausentes mas não impedem entrega? (Lista + decisão "manter gap" / "tratar follow-up".)
    - **(e) Alimenta outra sessão/agente? (ADR-012 v1.13.0)** A entrega é insumo para outra sessão (relatório de análise, pipeline downstream, transferência de contexto)? (Sim/Não.) Se SIM → dispara **Pacote de handoff cross-sessão** (`metacognition-core` §Pacote de handoff) como entregável OBRIGATÓRIO via J5 (docops → release). Princípio 14 do `AGENT-FRAMEWORK.md` §6.
+   - **(f) Qual o `product_type` da entrega? (ADR-022 v1.21.0)** Que produto culmina deste trabalho (ex., app SW/dados: ide-code, executable, gui-app, data-notebook, data-pipeline, research-code, report, spec, regulated)? Grava em `mission.md` (template `docs/specs/_template/mission.md`) — **lar do escopo declarado**, lido pelo hook `mission-gate`, que ativa os papéis especializados da aplicação (ADR-023) e exige confirmação proporcional ao modo de execução (ADR-005). Sem aplicação de domínio → declarar livremente o formato de entrega. Sem declaração → defaults agnósticos.
 
    **Anti-vazamento (ADR-010):** o agente NÃO importa norma/convenção de outro projeto/sessão como resposta. Em modo A, lê só o briefing DESTE projeto. Em modo B, resposta vem do dono ou fica `[DESCONHECIDO]`. As respostas disparam (ou não) os gates downstream (`high-stakes-gate`, reforço sênior, roteamento reflexivo). Sem declaração afirmativa → defaults agnósticos.
 

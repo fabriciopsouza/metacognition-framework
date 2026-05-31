@@ -51,6 +51,28 @@
             "statusMessage": "Ativando auto-boot do squad (delete .claude/session.lock se nao quiser)"
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"tools\\hooks\\mission-gate.ps1\"",
+            "timeout": 10,
+            "statusMessage": "Verificando product_type/escopo (mission-gate ADR-022)"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"tools\\hooks\\compaction-gate.ps1\"",
+            "timeout": 10,
+            "statusMessage": "Verificando digest antes de compactar (ADR-021)"
+          }
+        ]
       }
     ]
   }
