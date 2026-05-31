@@ -3,7 +3,7 @@
 - Status: Aceito
 - Data: 2026-05-31 · Decisores: dono + squad (architect)
 - Onda: remediação v2 (marco v1.26.0) · Tipo: **novo** (1 canário) — net-gain por destravar verificação inalcançável: hoje a heterogeneidade do QA (ADR-018) é processo sem teste que a prove.
-- Origem no plano: item 9 (`[GEMINI]` contribuição válida + `[AIVI]` o agente concordou consigo ao validar a coluna errada por bater o alvo). Relaciona: ADR-035 (anti-viés-oráculo), ADR-018 (QA heterogêneo turno único), ADR-040 (CI).
+- Origem no plano: item 9 (`[GEMINI]` contribuição válida + `[campo]` o agente concordou consigo ao validar a coluna errada por bater o alvo). Relaciona: ADR-035 (anti-viés-oráculo), ADR-018 (QA heterogêneo turno único), ADR-040 (CI).
 
 ## Contexto
 

@@ -3,7 +3,7 @@
 - Status: Aceito
 - Data: 2026-05-31 · Decisores: dono + squad (architect)
 - Onda: remediação v2 (marco v1.27.0) · Tipo: **novo** (1 hook .ps1/.sh + 1 canário) — net-gain por fechar um efeito destrutivo (E1) que passava pelo effect-gate.
-- Origem no plano: item 5 ⭐ (`[AIVI]` #13 — agente sobrescreveu um relato com conteúdo anterior sem ler nem avisar). Relaciona: `_shared/action-safety` (efeito), ADR-015 (effect-gate só vê Bash/PowerShell), ADR-040 (paridade), bug GitHub #37210.
+- Origem no plano: item 5 ⭐ (`[campo]` #13 — agente sobrescreveu um relato com conteúdo anterior sem ler nem avisar). Relaciona: `_shared/action-safety` (efeito), ADR-015 (effect-gate só vê Bash/PowerShell), ADR-040 (paridade), bug GitHub #37210.
 
 ## Contexto
 

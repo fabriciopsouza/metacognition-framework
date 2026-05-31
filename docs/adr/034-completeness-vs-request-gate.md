@@ -3,7 +3,7 @@
 - Status: Aceito
 - Data: 2026-05-31 · Decisores: dono + squad (architect)
 - Onda: remediação v2 (marco v1.25.0) · Tipo: **novo** (1 linter + 1 canário) — net-gain por destravar verificação inalcançável (régua §0 c): nenhum gate cruza pedido × entrega hoje.
-- Origem no plano: item 2 ⭐ (`[AIVI]`: calculou 1 mês quando o pedido dizia "mês a mês" e "cada unidade"). Relaciona: ADR-033 (profundidade de spec, J1), qa-critic (J4), ADR-040 (CI).
+- Origem no plano: item 2 ⭐ (`[campo]`: calculou 1 mês quando o pedido dizia "mês a mês" e "cada unidade"). Relaciona: ADR-033 (profundidade de spec, J1), qa-critic (J4), ADR-040 (CI).
 
 ## Contexto
 

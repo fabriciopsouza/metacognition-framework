@@ -3,7 +3,7 @@
 - Status: Aceito
 - Data: 2026-05-31 · Decisores: dono + squad (architect)
 - Onda: remediação v2 (marco v1.24.0) · Tipo: **novo** (1 banco agnóstico + 1 linter + 1 canário) — net-gain por **destravar verificação inalcançável** (régua §0 cláusula c): hoje nenhum gate mede se a spec endereçou o produto.
-- Origem no plano: item 1 ⭐ (causa-raiz nº1: `[AIVI]` elicitação rasa + `[GEMINI]` discovery→spec executável). Relaciona: ADR-010/012 (escopo declarado), ADR-020 (gate de agnosticismo), ADR-022 (mission-gate/product_type), ADR-040 (CI que roda o canário).
+- Origem no plano: item 1 ⭐ (causa-raiz nº1: `[campo]` elicitação rasa + `[GEMINI]` discovery→spec executável). Relaciona: ADR-010/012 (escopo declarado), ADR-020 (gate de agnosticismo), ADR-022 (mission-gate/product_type), ADR-040 (CI que roda o canário).
 
 ## Contexto
 

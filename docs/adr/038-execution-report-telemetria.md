@@ -3,7 +3,7 @@
 - Status: Aceito
 - Data: 2026-05-31 · Decisores: dono + squad (architect)
 - Onda: remediação v2 (marco v1.27.0) · Tipo: **EMENDA** (estende `project_report.py`/ADR-026) — net-gain por destravar aprendizado de processo inalcançável.
-- Origem no plano: item 6 ⭐ (`[AIVI]` meta-gap nº1: tokens/custo/tempo NÃO MEDIDOS; placar "quem pegou o quê" só existiu porque o dono cobrou). Relaciona: ADR-026 (project_report), ADR-030 (consistency-gate), docops §Encerramento.
+- Origem no plano: item 6 ⭐ (`[campo]` meta-gap nº1: tokens/custo/tempo NÃO MEDIDOS; placar "quem pegou o quê" só existiu porque o dono cobrou). Relaciona: ADR-026 (project_report), ADR-030 (consistency-gate), docops §Encerramento.
 
 ## Contexto
 

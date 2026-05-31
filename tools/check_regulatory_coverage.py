@@ -31,7 +31,7 @@ FAMILIES = {
     "governança-de-TI/serviço": ["COBIT", "ITIL"],
     "qualidade-geral": ["9001"],
     "pagamentos": ["PCI"],
-    "setorial-energia/combustível-etc": ["ANP"],
+    "setorial-energia-etc": ["ANP"],
 }
 
 DISCLAIMER = ("AVISO: esta verificação é advisory e a denylist é NÃO-EXAUSTIVA por design — "

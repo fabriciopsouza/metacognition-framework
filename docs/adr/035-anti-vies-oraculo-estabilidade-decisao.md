@@ -3,7 +3,7 @@
 - Status: Aceito
 - Data: 2026-05-31 · Decisores: dono + squad (architect)
 - Onda: remediação v2 (marco v1.26.0) · Tipo: **novo** (1 linter + 1 canário + rule no qa-critic) — net-gain por destravar verificação inalcançável.
-- Origem no plano: item 3 ⭐ (`[AIVI]` item #2 do placar — o erro mais caro). Relaciona: ADR-018 (QA turno único heterogêneo), ADR-041 (sicofância), qa-critic rule #9, ADR-040 (CI).
+- Origem no plano: item 3 ⭐ (`[campo]` item #2 do placar — o erro mais caro). Relaciona: ADR-018 (QA turno único heterogêneo), ADR-041 (sicofância), qa-critic rule #9, ADR-040 (CI).
 
 ## Contexto
 

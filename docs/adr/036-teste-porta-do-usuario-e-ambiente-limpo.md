@@ -3,7 +3,7 @@
 - Status: Aceito
 - Data: 2026-05-31 · Decisores: dono + squad (architect)
 - Onda: remediação v2 (marco v1.25.0) · Tipo: **novo** (2 linters + 2 canários) — net-gain por destravar verificação inalcançável: hoje ninguém roda o entry-point como o usuário nem testa ambiente limpo.
-- Origem no plano: item 4 ⭐ (`[AIVI]`: entry-point quebra com `KeyboardInterrupt` no terminal; `requirements` nunca instalado em ambiente limpo). Relaciona: ADR-023 (app SW/dados), ADR-034 (completude), ADR-040 (CI).
+- Origem no plano: item 4 ⭐ (`[campo]`: entry-point quebra com `KeyboardInterrupt` no terminal; `requirements` nunca instalado em ambiente limpo). Relaciona: ADR-023 (app SW/dados), ADR-034 (completude), ADR-040 (CI).
 
 ## Contexto
 
