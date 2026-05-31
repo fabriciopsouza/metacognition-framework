@@ -127,6 +127,20 @@ try {
             if (Test-Path $agnosticTarget) { $hookCount++ }
         }
 
+        # ADR-027 / v1.22.0 — espelha route-gate (roteamento determinístico, UserPromptSubmit)
+        # e ensure-global-wiring (self-heal) para a instância global. Pares fonte/binário.
+        foreach ($pair in @(
+            @{ src = 'tools\hooks\route-gate.ps1';           dst = 'route-gate.ps1' },
+            @{ src = 'tools\hooks\ensure-global-wiring.ps1';  dst = 'ensure-global-wiring.ps1' }
+        )) {
+            $s = Join-Path $projectRoot $pair.src
+            $d = Join-Path $hooksDest   $pair.dst
+            if (Test-Path $s) {
+                Copy-Item -Path $s -Destination $d -Force -ErrorAction SilentlyContinue
+                if (Test-Path $d) { $hookCount++ }
+            }
+        }
+
         # Espelha .agent/workflows/ — o hook global le start-session.md de ~/.claude/workflows/.
         $workflowsRoot = Join-Path $projectRoot '.agent\workflows'
         if (Test-Path $workflowsRoot) {
@@ -137,7 +151,22 @@ try {
         }
     }
 
-    $msg  = "Framework sync: $skillCount skills + $agentCount agents + $hookCount hooks + $workflowCount workflows -> ~/.claude/"
+    # ADR-027 / v1.22.0 — SELF-HEAL: re-afirma a wiring de hooks GLOBAIS no ~/.claude/settings.json.
+    # Roda do settings de PROJETO (estável) -> cura o GLOBAL (volátil), derrotando o clobber do
+    # mode-apply. Processo separado: o `exit` do ensure não mata este script. Stderr suprimido;
+    # decisão vem do exit code (10 = mudou). Fail-soft.
+    $healNote = ''
+    if ($projectRoot) {
+        $ensureScript = Join-Path $hooksDest 'ensure-global-wiring.ps1'
+        if (Test-Path $ensureScript) {
+            try {
+                & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $ensureScript -RepoDir $projectRoot 2>$null
+                if ($LASTEXITCODE -eq 10) { $healNote = ' | auto-heal: hooks globais re-wirados (ADR-027)' }
+            } catch { }
+        }
+    }
+
+    $msg  = "Framework sync: $skillCount skills + $agentCount agents + $hookCount hooks + $workflowCount workflows -> ~/.claude/$healNote"
     $json = @{ systemMessage = $msg } | ConvertTo-Json -Compress
     Write-Output $json
 }
