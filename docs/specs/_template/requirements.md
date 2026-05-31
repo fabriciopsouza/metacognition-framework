@@ -33,6 +33,24 @@ Dimensões/dados sabidos ausentes mas não impedem entrega?
 
 **Sem declaração afirmativa em (a)/(b)/(c) → defaults agnósticos.** Gates downstream (`high-stakes-gate`, reforço sênior `metodo-senior.md`, roteamento reflexivo) carregam SOB DECLARAÇÃO, não por sinal semântico (ADR-010 §Princípio 12).
 
+## Dimensões de elicitação (banco agnóstico — ADR-033)
+
+> Obrigatório para **produto recorrente** (software/dado/pipeline/relatório-ferramenta). Para cada
+> dimensão, registrar a **decisão** (não a pergunta). O discovery recomenda um default sênior com o
+> trade-off; aqui fica a decisão confirmada/alterada. `tools/check_spec_depth.py` **barra J1**
+> (discovery→architect) se alguma dimensão obrigatória ficar sem decisão. Banco e aliases:
+> `_shared/discovery/elicitation-dimensions.md` (aliases permitem usar o vocabulário do domínio).
+
+- operador: <quem opera — técnico/leigo → consequência na interface>
+- interface: <CLI | GUI | web | planilha — proporcional ao operador>
+- entrada-validacao: <como entram os dados; lista/valida/orienta a fonte?>
+- escopo-temporal: <ponto único | intervalo | total | realizado+acumulado>
+- recortes-saida: <por quais cortes a saída é vista; "todos"?>
+- persistencia: <memória entre execuções? histórico? reprocesso?>
+- auditoria-log: <registra quem rodou/quando/insumos/versão da regra?>
+- ambiente-execucao: <instala/roda em máquina limpa? entry-point não-interativo?>
+- formato-saida: <relatório/export; faixas/metas visíveis; rastreável à fonte?>
+
 ## Escopo funcional (EARS — opcional, mas recomendado)
 - **Ubíquo:** "O sistema DEVE <comportamento>."
 - **WHEN:** "QUANDO <evento>, o sistema DEVE <resposta>."

@@ -21,7 +21,7 @@ pmo | architect | developer | qa-critic | docops | explorer
 | # | Junção | Artefato-gate | Critério binário | Quem aplica |
 |---|---|---|---|---|
 | **J0** | PMO → discovery | STATUS-line PMO + (opcional) UMA pergunta de desambiguação | natureza nomeada + dimensão escolhida + ambiguidade resolvida (Sim/Não) | PMO adversarial |
-| **J1** | discovery → architect | `requirements.md` OU `research-brief.md` | requisitos classificados + critério de aceite binário + (se reforço sênior) §7+§8+§7.1 ADR-009/010 preenchidas | PMO adversarial |
+| **J1** | discovery → architect | `requirements.md` OU `research-brief.md` | requisitos classificados + critério de aceite binário + (se reforço sênior) §7+§8+§7.1 ADR-009/010 preenchidas + **(produto recorrente) `check_spec_depth.py` PASS — dimensões de elicitação decididas (ADR-033)** | PMO adversarial |
 | **J2** | architect → developer | ADR `Status: Aceito` | Aceito + ponteiro + alternativas + consequências | PMO adversarial |
 | **J3** | developer → qa-critic | commits + diff + testes (se aplicável) | cobre TODOS REQ + sem regressão + RRC self-applied (ADR-010 §ii) | PMO adversarial |
 | **J4** | qa-critic → docops | resultado adversarial subagente | `APROVADO_LIMPO` (não `_COM_RESSALVAS` nem `REPROVADO`) | qa-critic subagente isolado |

@@ -15,6 +15,28 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.24.0] — 2026-05-31 — Remediação v2 (marco 2/9): elicitação-consultiva mecanizada (causa-raiz nº1)
+
+> Item 1 ⭐ do plano: o gap mais caro do incidente de campo foi a **antecipação**, não a segurança de
+> ação. A elicitação era "de coletor", não "de consultor", e a instrução em prosa foi ignorada. Correção
+> mecânica: banco agnóstico de dimensões + linter que **barra J1** se a spec não decidir o produto.
+
+### Added
+- **ADR-033** — elicitação-consultiva + linter de profundidade de spec:
+  - `_shared/discovery/elicitation-dimensions.md`: banco agnóstico das 9 dimensões universais (operador,
+    interface, entrada-validação, escopo-temporal, recortes-saída, persistência, auditoria-log,
+    ambiente-execução, formato-saída), tabela machine-readable com aliases. Só **meta-perguntas** (agnósticas);
+    perguntas de domínio nunca entram (barradas por `check_core_agnostic`).
+  - `tools/check_spec_depth.py`: gate exit 1 se o `requirements.md` não registra **decisão** (não placeholder)
+    para cada dimensão obrigatória. Verifica cobertura, não qualidade (limite → `LIMITS.md`).
+  - `tools/test_spec_depth.py`: 5 casos sintéticos agnósticos — spec rasa "calcular X" FALHA; spec que decide
+    as 9 dimensões PASSA; placeholder `<...>` não conta.
+
+### Changed
+- `discovery/SKILL.md`: §Elicitação-consultiva (postura de default sênior + trade-off, não pergunta em aberto).
+- `handoff.md` J1: gate `check_spec_depth.py` PASS para produto recorrente.
+- `docs/specs/_template/requirements.md`: seção `## Dimensões de elicitação`.
+
 ## [1.23.0] — 2026-05-31 — Remediação v2 (marco 1/9): CI cross-platform + paridade `.sh`↔`.ps1` provada
 
 > Onda **remediação v2** — consolida crítica adversarial sobre v1.22.0 + evidência de campo (incidente
