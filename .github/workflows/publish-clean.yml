@@ -4,12 +4,10 @@
 # (anonimizada, sem docs/_private, com gate --sensitive) e force-push para o repo PÚBLICO.
 # Sentido único: o público é ARTEFATO GERADO — nunca editar à mão lá.
 #
-# === SETUP (1 passo manual, único) ===
-# 1. Criar um Personal Access Token (fine-grained) com permissão de CONTEÚDO (read+write)
-#    SOMENTE no repo público de distribuição.
-# 2. Guardá-lo como secret do repo privado:  Settings > Secrets and variables > Actions
-#    > New repository secret  ->  nome: PUBLISH_TOKEN
-# Sem o secret, o job roda export+gate (CI) e PULA o publish (mensagem explícita no log).
+# AUTENTICAÇÃO (já configurada): deploy key SSH com escopo SÓ do repo público (write-only,
+# não expira). Chave privada no secret `PUBLISH_DEPLOY_KEY` (repo privado); chave pública
+# registrada como deploy key (read-write) no repo público. Sem o secret, o job roda
+# export+gate (CI) e PULA o publish.
 
 name: publish-clean
 
@@ -43,22 +41,24 @@ jobs:
       - name: Export limpo (anonimiza + gate --sensitive)
         run: python tools/export-clean.py "${RUNNER_TEMP}/clean"
 
-      - name: Publicar no repo público
+      - name: Publicar no repo público (SSH deploy key)
         env:
-          PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+          PUBLISH_DEPLOY_KEY: ${{ secrets.PUBLISH_DEPLOY_KEY }}
         run: |
-          if [ -z "${PUBLISH_TOKEN}" ]; then
-            echo "PUBLISH_TOKEN ausente — export+gate validados; publish PULADO (configure o secret p/ ativar o flow)."
+          if [ -z "${PUBLISH_DEPLOY_KEY}" ]; then
+            echo "PUBLISH_DEPLOY_KEY ausente — export+gate validados; publish PULADO (configure o secret p/ ativar o flow)."
             exit 0
           fi
+          mkdir -p ~/.ssh
+          printf '%s\n' "${PUBLISH_DEPLOY_KEY}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
           cd "${RUNNER_TEMP}/clean"
           git init -q
           git checkout -q -b main
           git add -A
           git -c user.name="auto-publish" -c user.email="actions@users.noreply.github.com" \
               commit -q -m "publish: export limpo da fonte privada @ ${GITHUB_SHA::7}"
-          # Token via http.extraheader (NÃO na URL) — mensagens de erro do git não vazam o token.
-          git remote add target "https://github.com/${PUBLIC_REPO}.git"
-          AUTH_B64=$(printf 'x-access-token:%s' "${PUBLISH_TOKEN}" | base64 -w0)
-          git -c http.extraheader="AUTHORIZATION: basic ${AUTH_B64}" push -f target main
+          git remote add target "git@github.com:${PUBLIC_REPO}.git"
+          GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes" git push -f target main
           echo "Publicado em https://github.com/${PUBLIC_REPO}"
