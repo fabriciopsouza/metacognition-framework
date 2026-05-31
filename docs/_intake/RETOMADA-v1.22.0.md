@@ -29,7 +29,8 @@
 
 ## Plano (4 ADRs) e ESTADO
 - [x] route-gate.ps1 + route-gate.sh (tools/hooks/) — hook UserPromptSubmit, fail-open, 1x/sessão.
-- [ ] ADR-027 + ensure-global-wiring.ps1 (self-heal) + wiring em bootstrap/sync-global/settings + disable-com-memória.
+- [x] ensure-global-wiring.ps1 (self-heal hook-preserving) + sync-global mirror/heal + bootstrap DRY + project settings (UserPromptSubmit->route-gate).
+- [ ] ADR-027 doc (docs/adr/027-*.md) + disable-com-memória (enriquecer session.lock c/ timestamp+motivo + reativação oferecida no inject hook).
 - [ ] ADR-028 + cláusula precedência output-style×processo em metacognition-core + disciplina de orientação no boot.
 - [ ] ADR-029 + skill doc-intake + tool de parse/chunk + integração discovery.
 - [ ] ADR-030 + consistency-gate.ps1 (version-sync + ADR-status-on-merge + checkpoint + contagens + unpushed).
@@ -39,6 +40,17 @@
 - [ ] Dogfood (ensure-global-wiring + route-gate disparando).
 - [ ] Version bump v1.22.0 + atualizar README/CHANGELOG/web/CLAUDE/AGENTS/history.
 - [ ] Commit→PR→merge verificado→deletar branch→limpeza (remover este RETOMADA).
+
+## ATIVAÇÃO (reload) — por que e como (vale p/ QUALQUER usuário)
+O `defaultMode: bypassPermissions` (modo autosuficiente) só entra em efeito na **próxima
+abertura** do Claude Code (limitação documentada — execution-modes §8). Numa sessão já
+aberta, o Claude Code pede confirmação ("Make this edit? Yes/No") a cada escrita — isso é
+a camada de permissão do harness, não o agente perguntando. Para rodar sem prompts:
+1. Salve (já está tudo committed+pushed) e abra **uma nova sessão** do Claude Code
+   ("+ New session"). Se os prompts persistirem, faça **reload do VS Code**
+   (Ctrl+Shift+P → "Developer: Reload Window") ou feche/reabra o VS Code.
+2. Na sessão nova, o SessionStart roda o sync-global → ensure-global-wiring (auto-heal) e
+   o bypass fica ativo. Confirme: a primeira escrita NÃO deve mais pedir Yes/No.
 
 ## PROMPT DE RETOMADA (colar numa sessão nova, repo aberto)
 ```
