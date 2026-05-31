@@ -10,7 +10,7 @@ pmo · architect · developer · qa-critic · docops · explorer (read-only) · 
 Ver .agent/rules/ (todas referenciam _shared/).
 
 ## Primeira ação obrigatória
-/start-session
+/start-session (ou diga "iniciar") — comando em `.claude/commands/start-session.md` (ADR-024). Não é rígido: o agente também elicita por prosa/perguntas/inspeção.
 
 ## Modos de execução (v1.7.0 — ADR-005)
 3 níveis registrados em `~/.claude/framework-mode.json` com ratchet forward-only:

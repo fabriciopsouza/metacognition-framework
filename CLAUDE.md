@@ -14,7 +14,7 @@
 - Aplicações de domínio: vivem FORA do núcleo (clonar `.agent/skills/_template`); ver `exemplos/README.md`.
 
 ## Primeira ação obrigatória em toda sessão
-/start-session   (abre a sessão pelo PMO; lê rules + briefing + history)
+/start-session  **(ou diga "iniciar")** — abre a sessão pelo PMO (lê rules + briefing + history). Comando registrado em `.claude/commands/start-session.md` (ADR-024). **Não é rígido:** o agente também elicita por prosa/perguntas/inspeção de pastas. Por projeto você preenche só 2 arquivos: `docs/briefing.md` + `.agent/rules/00-glossario.md`.
 
 ## Regras invioláveis (de _shared/, não redefinir)
 1. Classificar afirmação relevante: CONFIRMADO | INFERIDO | DESCONHECIDO.
