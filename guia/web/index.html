@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Framework Metacognitivo Agêntico — v1.13.0</title>
+<title>Framework Metacognitivo Agêntico — v1.21.0</title>
 <style>
   :root{
     --ink:#0d1117; --panel:#11161f; --line:#1f2730; --grid:#161c26;
@@ -73,7 +73,7 @@
 <div class="wrap">
 
   <header>
-    <div class="ver">v<b>1.12.0</b></div>
+    <div class="ver">v<b>1.21.0</b></div>
     <div class="tag">Framework Metacognitivo</div>
     <h1>Um núcleo <em>genérico</em><br>para orquestrar agentes.</h1>
     <p class="lede">Roteador por contexto e complexidade, papéis de processo, regras transversais em fonte única, e isolamento de subagente — agnóstico de domínio, escalável por clonagem. Fundamentado em evidência (pesquisas A0–A3).</p>
@@ -84,11 +84,12 @@
     <p class="sub">Cada regra mora em um lugar só. O domínio nunca entra no núcleo.</p>
     <div class="layers">
       <div class="layer"><div class="k">ROTEADOR</div><div class="v">AGENT-FRAMEWORK.md (v2.3)<small>decide o modo: metacognição pontual × squad multi-etapa</small></div></div>
-      <div class="layer"><div class="k">NÚCLEO _shared/</div><div class="v">7 regras transversais (fonte única / SSoT)<small>anti-alucinação · confiança · formato · rastreabilidade · metacognição · observabilidade · high-stakes-gate</small></div></div>
+      <div class="layer"><div class="k">NÚCLEO _shared/</div><div class="v">9 regras transversais (fonte única / SSoT)<small>anti-alucinação · confiança · formato · rastreabilidade · metacognição · observabilidade · high-stakes-gate · ação-segura (E1–E6) · modos-de-execução</small></div></div>
       <div class="layer"><div class="k">PROCESSO</div><div class="v">papéis genéricos<small>pmo · architect · developer · qa-critic · docops · explorer · _template</small></div></div>
-      <div class="layer"><div class="k">CONTRATO</div><div class="v">docs/specs/<small>requirements.md + validation.md (critério binário de "pronto")</small></div></div>
+      <div class="layer"><div class="k">CONTRATO</div><div class="v">tools/framework-schema.json<small>8 campos obrigatórios por skill · validate_skills.py (linter CI) · critério binário em validation.md</small></div></div>
+      <div class="layer"><div class="k">ENFORCEMENT (runtime)</div><div class="v">hooks executáveis — prosa→mecanismo<small>effect-gate (E1–E6, ADR-015) · managed-settings fail-closed · compaction-gate (ADR-021) · mission-gate / product_type (ADR-022) · check-repo-sync (ADR-019) · check-core-agnostic (ADR-020)</small></div></div>
       <div class="layer"><div class="k">INFRA</div><div class="v">_meta/<small>isolamento de subagente · external-access (MCP) · eval-sets</small></div></div>
-      <div class="layer"><div class="k">APLICAÇÕES</div><div class="v">exemplos/README.md<small>guia de como criar aplicações (clonando _template) — vivem FORA do núcleo</small></div></div>
+      <div class="layer"><div class="k">APLICAÇÕES</div><div class="v">exemplos/<small>dominio-software (ux-designer + evals-engineer, ADR-023) como demonstração viva — domínio vive FORA do núcleo (clonar _template)</small></div></div>
     </div>
   </section>
 
@@ -119,6 +120,8 @@
       <div class="card"><h3>Context é finito</h3><p>Compaction, note-taking, isolamento de subagente. Mitiga context rot.</p></div>
       <div class="card"><h3>Escala por clonagem</h3><p>Aplicação nova = clonar _template + eval-set. Núcleo não muda.</p></div>
       <div class="card"><h3>Validado</h3><p>Roteamento dos papéis testado 33/33. Toda aplicação entra só com eval passando.</p></div>
+      <div class="card"><h3>Enforcement em runtime</h3><p>Da prosa ao mecanismo: hooks executáveis com testes-canário. <b>effect-gate</b> (E1–E6, ADR-015), <b>compaction-gate</b> (digest antes de compactar, ADR-021), <b>mission-gate</b> (product_type, ADR-022), managed-settings fail-closed. Hook bugado falha-aberto; a trava real mora em camadas.</p></div>
+      <div class="card"><h3>Entrega de produto</h3><p>O framework culmina em <b>produto de software/dados</b>. App <code>dominio-software</code> (ADR-023) adiciona ux-designer + evals-engineer, ativados por <code>product_type</code>. Núcleo segue agnóstico; governance/poda já cobertos por high-stakes-gate e pelo campo <code>classe</code>.</p></div>
     </div>
   </section>
 
@@ -137,7 +140,7 @@
 
   <footer>
     <p>Para iniciar: abra a pasta no VS Code → o Claude Code lê <code><a href="../../CLAUDE.md">CLAUDE.md</a></code> → rode <code>/start-session</code>. Histórico: <a href="../../CHANGELOG.md">CHANGELOG</a>.</p>
-    <p style="margin-top:14px">Framework Metacognitivo Agêntico · v1.13.0 · PT-BR · CC BY 4.0 · base de evidência A0–A3.</p>
+    <p style="margin-top:14px">Framework Metacognitivo Agêntico · v1.21.0 · PT-BR · CC BY 4.0 · base de evidência A0–A3.</p>
   </footer>
 
 </div>

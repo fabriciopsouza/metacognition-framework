@@ -2,6 +2,8 @@
 # effect-gate.sh — paridade POSIX do deny-backstop T3 por EFEITO (ADR-015).
 # [DESCONHECIDO] não testado em Linux/macOS nesta onda — paridade documentada, não validada (ADR-015 §Riscos).
 # Contrato Claude Code (P1): lê JSON do hook em stdin; bloquear = stdout JSON permissionDecision:deny + exit 0.
+# Ressalva (bug GitHub #37210): permissionDecision:deny pode ser ignorado p/ Edit/MCP; este gate só
+# inspeciona Bash/PowerShell, então não é afetado (se gatear Edit/MCP no futuro, usar exit 2).
 # Erro interno -> exit 0 (não bloqueia; managed-settings é a camada fail-closed). Requer jq.
 set -euo pipefail
 
