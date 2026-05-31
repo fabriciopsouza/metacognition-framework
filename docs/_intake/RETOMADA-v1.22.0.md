@@ -33,7 +33,7 @@
 - [x] ADR-027 doc (docs/adr/027-*.md) + disable-com-memória (enriquecer session.lock c/ timestamp+motivo + reativação oferecida no inject hook). — commit 0310c22
 - [x] ADR-028 + cláusula precedência output-style×processo em metacognition-core (nível 7) + nota inviolável.
 - [x] ADR-029 + skill doc-intake (_shared/) + tool doc_intake.py + canário (4 testes) + integração discovery.
-- [ ] ADR-030 + consistency-gate.ps1 (version-sync + ADR-status-on-merge + checkpoint + contagens + unpushed).
+- [x] ADR-030 + consistency-gate.ps1 (6 dimensões: version-sync, adr-status, checkpoint, contagens-dup, unpushed, transients; UTF-8 BOM; validado por dogfood).
 - [ ] guia/RESILIENCIA-ACESSO.md.
 - [ ] Housekeeping: flipar ADR-024/025/026 → Aceito; checkpoint v1.21.2 ausente.
 - [ ] qa-critic adversarial (subagente Sonnet isolado).
