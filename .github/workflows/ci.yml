@@ -48,6 +48,9 @@ jobs:
       - name: Rodar todos os canários
         run: python tools/run_canaries.py -v
 
+      - name: LIMITS.md em sync com os canários (ADR-044 — o doc não pode mentir)
+        run: python tools/build_limits.py --check
+
       - name: Gate de agnosticismo do núcleo (ADR-020, tier norma)
         # Só o tier NORMA roda aqui: a FONTE PRIVADA carrega nomes do incidente de campo por
         # design (cofre do dono). O tier --sensitive é o gate de EXPORT (publish-clean.yml),

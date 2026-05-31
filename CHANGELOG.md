@@ -15,6 +15,26 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.31.0] — 2026-05-31 — Remediação v2 (marco 9/9): LIMITS.md mecanizado + marketing ancorado
+
+> Item 13 (último): a transparência estava dispersa em prosa. Agora é um índice único, gerado do estado
+> real dos canários, com trava de CI — o doc **não pode mentir**, e o marketing não promete além da prova.
+
+### Added
+- **ADR-044** — LIMITS.md mecanizado + marketing ancorado:
+  - `tools/build_limits.py`: gera `LIMITS.md` (13 capacidades) com status ✅ PROVADO / 🟡 PARCIAL /
+    ⏳ EM DESENVOLVIMENTO derivado do canário; `--check` falha o CI se divergir.
+  - `LIMITS.md`: "o que entrega hoje" (cada linha: mecanizado × NÃO-mecanizado) + "o que NÃO fazemos".
+  - `tools/test_marketing_claims.py`: reprova claim ✅ PROVADO órfão em README/PITCH; exige README linkar LIMITS.
+  - `.github/workflows/ci.yml`: step `build_limits.py --check`.
+
+### Changed
+- `README.md`: pointer para `LIMITS.md` no topo (status ancorado em evidência).
+
+> **Remediação v2 COMPLETA** (9 marcos, 13 itens, ADR-033..044). 19 canários (18 PASS + 1 SKIP local de
+> paridade — provada na matriz CI). Princípio reitor honrado: cada item entrega par executável; prosa só
+> onde não-mecanizável, declarada em `LIMITS.md`.
+
 ## [1.30.0] — 2026-05-31 — Remediação v2 (marco 8/9): abrangência regulada (denylist + perfis clonáveis)
 
 > Item 11: a denylist era seed não-exaustiva (ITIL/COBIT/SOX/ISO/SOC 2/CLIA passavam) e o caso regulado
