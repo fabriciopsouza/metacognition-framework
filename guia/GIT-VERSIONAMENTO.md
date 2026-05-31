@@ -51,7 +51,7 @@ A tag deve casar com a versão do `README.md` e a entrada do `CHANGELOG.md`.
 - [ ] Nome do .zip (se distribuir) = vX.Y.Z
 - [ ] Revisar e, se necessário, atualizar `PROMPT-CHAT-WEB-v4.x.md` na raiz — ele
       parte dos mesmos princípios e busca os mesmos resultados do núcleo. Bump
-      da versão do prompt (v4.2→v4.3…) quando mudar.
+      da versão do prompt (v4.3→v4.4…) quando mudar.
 - [ ] Revisar `## Aprendizado` do `history.md` (ADR-007 / ex-G9): se um mesmo
       padrão de fracasso aparece ≥ 3 vezes, propor ADR que destile a lição em
       skill/regra — antes de fechar o release.

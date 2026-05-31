@@ -44,6 +44,11 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   +action-safety +execution-modes), cards de enforcement e entrega de produto, app `dominio-software`.
 - `tools/managed-settings.template.json`: caminho Windows oficial (`C:\Program Files\ClaudeCode\`) +
   status atual do bug #44642 (aberto, "not planned"). `effect-gate.{ps1,sh}`: ressalva do bug #37210.
+- **Sincronia PROMPT-CHAT-WEB:** `PROMPT-CHAT-WEB-v4.2.md` → **v4.3** (paridade de comportamento: declarar
+  `product_type`/escopo no briefing + papéis de entrega ux/evals simulados p/ produto SW/dados — sem
+  prometer paridade de hook; corrige ref morta `§17`). Refs ao filename atualizadas (README, INSTALAR,
+  ORIENTACAO, GIT-VERSIONAMENTO). `GUIA-EQUIPE.md` ganha §12 (catch-up v1.14.x→v1.21.0: enforcement
+  mecanizado + entrega de produto). ADRs históricos (010) e specs antigas preservam a ref v4.2 (imutável).
 
 ## [1.20.0] — 2026-05-30 — Linter de agnosticismo do núcleo (ADR-020) — último elo "prosa→mecanismo"
 

@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Framework Metacognitivo Agêntico — v1.21.0</title>
+<title>Framework Metacognitivo Agêntico — orquestre agentes que não alucinam</title>
+<meta name="description" content="Um núcleo flexível para orquestrar agentes de IA: classificam o que sabem, não inventam, lembram entre sessões e culminam em produto — não em prosa.">
 <style>
   :root{
-    --ink:#0d1117; --panel:#11161f; --line:#1f2730; --grid:#161c26;
-    --fg:#d9e0e8; --muted:#8a97a6; --accent:#e8a13a; --accent2:#4fd1c5;
+    --ink:#0d1117; --panel:#11161f; --panel2:#0f141d; --line:#1f2730; --grid:#161c26;
+    --fg:#d9e0e8; --muted:#8a97a6; --accent:#e8a13a; --accent2:#4fd1c5; --good:#7ee787;
     --mono:ui-monospace,'SF Mono','JetBrains Mono','Cascadia Code',Menlo,monospace;
     --serif:Georgia,'Times New Roman',serif;
   }
@@ -21,126 +22,309 @@
       linear-gradient(90deg,var(--grid) 1px,transparent 1px);
     background-size:42px 42px;
   }
-  .wrap{max-width:920px;margin:0 auto;padding:0 24px}
-  header{padding:90px 0 50px;border-bottom:1px solid var(--line);position:relative}
+  .wrap{max-width:940px;margin:0 auto;padding:0 24px}
+
+  /* nav */
+  nav{position:sticky;top:0;z-index:10;background:rgba(13,17,23,.82);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;gap:20px;padding:12px 24px;flex-wrap:wrap}
+  nav .brand{color:var(--accent);font-size:13px;letter-spacing:.08em}
+  nav a{color:var(--muted);font-size:13px;border:none}
+  nav a:hover{color:var(--accent2)}
+  nav .spacer{flex:1}
+
+  header{padding:80px 0 56px;border-bottom:1px solid var(--line);position:relative}
   .tag{font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:var(--accent2);
     opacity:0;animation:rise .7s .05s forwards}
   h1{font-family:var(--serif);font-weight:400;font-size:clamp(34px,6vw,64px);
     line-height:1.05;margin:18px 0;letter-spacing:-.01em;
     opacity:0;animation:rise .7s .15s forwards}
   h1 em{font-style:italic;color:var(--accent)}
-  .lede{color:var(--muted);max-width:620px;font-size:16px;
+  .lede{color:var(--fg);max-width:660px;font-size:17px;line-height:1.55;
     opacity:0;animation:rise .7s .3s forwards}
-  .ver{position:absolute;top:90px;right:24px;font-size:12px;color:var(--muted);
+  .lede b{color:var(--accent2)}
+  .ver{position:absolute;top:80px;right:24px;font-size:12px;color:var(--muted);
     border:1px solid var(--line);padding:6px 12px;border-radius:2px}
   .ver b{color:var(--accent)}
+  .btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px;opacity:0;animation:rise .7s .45s forwards}
+  .btn{border:1px solid var(--accent);color:var(--accent);padding:11px 20px;border-radius:3px;
+    font-size:14px;transition:.2s}
+  .btn:hover{background:var(--accent);color:var(--ink);border-bottom-color:var(--accent)}
+  .btn.ghost{border-color:var(--line);color:var(--fg)}
+  .btn.ghost:hover{border-color:var(--accent2);background:transparent;color:var(--accent2)}
+
   section{padding:54px 0;border-bottom:1px solid var(--line)}
   h2{font-family:var(--serif);font-weight:400;font-size:26px;margin-bottom:8px}
   h2 .n{font-family:var(--mono);font-size:13px;color:var(--accent2);margin-right:12px}
-  .sub{color:var(--muted);margin-bottom:26px;font-size:14px}
+  .sub{color:var(--muted);margin-bottom:26px;font-size:14px;max-width:680px}
+
+  /* problema -> solução */
+  .story{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .story .col{border:1px solid var(--line);background:var(--panel);padding:22px;border-radius:3px}
+  .story .col.bad{border-left:3px solid #f0883e}
+  .story .col.good{border-left:3px solid var(--good)}
+  .story h3{font-size:13px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px}
+  .story .bad h3{color:#f0883e}.story .good h3{color:var(--good)}
+  .story ul{list-style:none}
+  .story li{padding:7px 0;font-size:14px;color:var(--muted);border-bottom:1px dashed var(--line)}
+  .story li:last-child{border-bottom:none}
+  .story li b{color:var(--fg);font-weight:400}
+
+  /* método numerado */
+  .steps{display:grid;gap:12px}
+  .step{display:grid;grid-template-columns:38px 1fr;gap:16px;border:1px solid var(--line);
+    background:var(--panel);padding:16px 18px;border-radius:3px;transition:.2s}
+  .step:hover{border-left:3px solid var(--accent2);transform:translateX(3px)}
+  .step .num{font-family:var(--serif);font-size:24px;color:var(--accent)}
+  .step .t{font-size:14px;color:var(--fg);margin-bottom:3px}
+  .step .d{font-size:13px;color:var(--muted)}
+
   .layers{display:grid;gap:10px}
   .layer{border:1px solid var(--line);background:var(--panel);padding:16px 18px;
-    border-left:3px solid var(--accent);display:grid;grid-template-columns:150px 1fr;gap:18px;
+    border-left:3px solid var(--accent);display:grid;grid-template-columns:170px 1fr;gap:18px;
     transition:.2s}
   .layer:hover{border-left-color:var(--accent2);transform:translateX(4px)}
   .layer .k{color:var(--accent);font-size:13px;letter-spacing:.05em}
   .layer .v{color:var(--fg);font-size:14px}
   .layer .v small{color:var(--muted);display:block;margin-top:3px}
+
   .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
-  .card{border:1px solid var(--line);background:var(--panel);padding:20px}
+  .card{border:1px solid var(--line);background:var(--panel);padding:20px;border-radius:3px}
   .card h3{font-size:14px;color:var(--accent2);margin-bottom:8px;letter-spacing:.03em}
   .card p{color:var(--muted);font-size:13px}
-  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px}
-  .node{border:1px solid var(--line);padding:8px 14px;background:var(--panel);border-radius:2px}
+  .card p b{color:var(--fg);font-weight:400}
+
+  /* fluxo — pipeline em grade, fecha o ciclo sem orfão */
+  .pipe{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch}
+  .step-node{display:flex;align-items:center;gap:10px}
+  .node{border:1px solid var(--line);padding:9px 14px;background:var(--panel);border-radius:3px;
+    font-size:13px;white-space:nowrap}
   .node.hi{border-color:var(--accent);color:var(--accent)}
-  .arrow{color:var(--muted)}
+  .node .role{color:var(--muted);display:block;font-size:11px;margin-top:2px}
+  .step-node .arrow{color:var(--accent2);font-size:14px}
+  .loop{margin-top:14px;font-size:13px;color:var(--muted);border-left:2px solid var(--accent2);padding-left:12px}
+  .loop b{color:var(--accent2);font-weight:400}
+
+  /* índice de docs agrupado */
+  .docgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+  .docgroup{border:1px solid var(--line);background:var(--panel);padding:20px;border-radius:3px}
+  .docgroup h3{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
   ul.clean{list-style:none}
   ul.clean li{padding:8px 0;border-bottom:1px dashed var(--line);font-size:14px}
+  ul.clean li:last-child{border-bottom:none}
   ul.clean li::before{content:"→ ";color:var(--accent2)}
-  ul.clean b{color:var(--fg)}
+  ul.clean b{color:var(--fg);font-weight:400}
+  ul.clean small{color:var(--muted);display:block;margin-left:16px}
+
+  /* evidência */
+  .evidence{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:18px}
+  .ev{border:1px solid var(--line);background:var(--panel2);padding:16px;border-radius:3px}
+  .ev .code{color:var(--accent);font-size:12px;letter-spacing:.08em}
+  .ev .desc{color:var(--muted);font-size:13px;margin-top:6px}
+  .note{color:var(--muted);font-size:13px}
+
   a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent;transition:.2s}
   a:hover{border-bottom-color:var(--accent)}
-  .pill{display:inline-block;font-size:11px;border:1px solid var(--line);padding:2px 8px;
-    border-radius:99px;color:var(--muted);margin-left:6px}
+  code{color:var(--accent2);background:var(--panel);padding:1px 6px;border:1px solid var(--line);border-radius:2px;font-size:13px}
   footer{padding:46px 0 80px;color:var(--muted);font-size:13px}
-  footer code{color:var(--accent2);background:var(--panel);padding:2px 7px;border:1px solid var(--line)}
+  footer p{margin-bottom:10px}
   @keyframes rise{to{opacity:1;transform:translateY(0)}}
-  .tag,h1,.lede{transform:translateY(14px)}
-  @media(max-width:600px){.layer{grid-template-columns:1fr;gap:6px}.ver{position:static;display:inline-block;margin-top:16px}}
+  .tag,h1,.lede,.btns{transform:translateY(14px)}
+  @media(max-width:640px){
+    .layer{grid-template-columns:1fr;gap:6px}
+    .ver{position:static;display:inline-block;margin-top:16px}
+    .story{grid-template-columns:1fr}
+    header{padding:56px 0 40px}
+  }
 </style>
 </head>
 <body>
+
+<nav>
+  <div class="wrap">
+    <span class="brand">◇ Framework Metacognitivo</span>
+    <span class="spacer"></span>
+    <a href="#problema">Por quê</a>
+    <a href="#metodo">Método</a>
+    <a href="#arquitetura">Arquitetura</a>
+    <a href="#fluxo">Fluxo</a>
+    <a href="#docs">Docs</a>
+    <a href="#comece">Começar</a>
+  </div>
+</nav>
+
 <div class="wrap">
 
   <header>
     <div class="ver">v<b>1.21.0</b></div>
-    <div class="tag">Framework Metacognitivo</div>
-    <h1>Um núcleo <em>genérico</em><br>para orquestrar agentes.</h1>
-    <p class="lede">Roteador por contexto e complexidade, papéis de processo, regras transversais em fonte única, e isolamento de subagente — agnóstico de domínio, escalável por clonagem. Fundamentado em evidência (pesquisas A0–A3).</p>
+    <div class="tag">Orquestração de agentes · Claude Code</div>
+    <h1>Um núcleo <em>flexível</em><br>para orquestrar agentes.</h1>
+    <p class="lede">Agentes de IA que <b>classificam o que sabem</b> e não inventam o que não sabem,
+      <b>lembram entre sessões</b>, recusam-se a inflar, e <b>culminam em produto</b> — software ou
+      dados entregáveis, não mais uma parede de texto. Um método, não um framework rígido: adapta-se
+      ao seu contexto e ao seu código existente, sem forçar refatoração.</p>
+    <div class="btns">
+      <a class="btn" href="#comece">Começar em 3 passos</a>
+      <a class="btn ghost" href="#metodo">Ver o método</a>
+    </div>
   </header>
 
-  <section id="camadas">
-    <h2><span class="n">01</span>Arquitetura em camadas</h2>
-    <p class="sub">Cada regra mora em um lugar só. O domínio nunca entra no núcleo.</p>
+  <section id="problema">
+    <h2><span class="n">00</span>O problema que ele resolve</h2>
+    <p class="sub">Por que orquestrar um agente é diferente de só "pedir para a IA fazer".</p>
+    <div class="story">
+      <div class="col bad">
+        <h3>✗ Agente solto</h3>
+        <ul>
+          <li><b>Alucina</b> nomes de campo, sintaxe e regras com confiança — e você só descobre depois.</li>
+          <li><b>Esquece</b> o que foi decidido quando o contexto enche e compacta.</li>
+          <li><b>Incha</b>: cria camadas, papéis e cerimônia que ninguém usa.</li>
+          <li><b>Para na conversa</b>: produz prosa, não um produto que roda.</li>
+          <li>"Confio no shell" vira porta aberta para um <b>rm -rf</b> irreversível.</li>
+        </ul>
+      </div>
+      <div class="col good">
+        <h3>✓ Com o framework</h3>
+        <ul>
+          <li>Toda afirmação é <b>classificada</b> (confirmado / inferido / não sei) — honestidade por padrão.</li>
+          <li><b>Digest persistente</b> antes de compactar: a próxima sessão começa sem perguntar nada.</li>
+          <li><b>Ganho líquido</b>: adição pura é rejeitada — só entra o que funde, remove ou destrava.</li>
+          <li><b>Culmina em produto</b>: código, executável, app, notebook ou pipeline entregável.</li>
+          <li>Ações destrutivas passam por um <b>gate por efeito</b> que bloqueia o irreversível.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="metodo">
+    <h2><span class="n">01</span>Como funciona — o método</h2>
+    <p class="sub">Seis comportamentos sênior, aplicados antes de cada entrega. Sem jargão: o que o
+      agente realmente faz.</p>
+    <div class="steps">
+      <div class="step"><div class="num">1</div><div><div class="t">Classifica a confiança</div><div class="d">Cada fato, número ou nome de sistema recebe um selo: <b>confirmado</b> (tem fonte), <b>inferido</b> (deduzido com lógica) ou <b>não sei</b> (diz direto e sugere onde validar). Nunca inventa.</div></div></div>
+      <div class="step"><div class="num">2</div><div><div class="t">Lê antes de afirmar (file-first)</div><div class="d">Inspeciona o arquivo, o campo, a versão — antes de assumir. O nome aprovado não é renomeado sem decisão registrada.</div></div></div>
+      <div class="step"><div class="num">3</div><div><div class="t">QA adversarial</div><div class="d">Um revisor independente (idealmente outro modelo) assume que <b>existe um bug</b> e tenta prová-lo, antes de qualquer aprovação. Reconstrói a versão mais forte do trabalho, ataca, e dá veredito binário.</div></div></div>
+      <div class="step"><div class="num">4</div><div><div class="t">Da prosa ao mecanismo</div><div class="d">Regra crítica não fica só no texto: ganha um <b>par executável</b> (um hook que roda sozinho) com teste que tenta furá-la. Disciplina que não depende de boa-vontade.</div></div></div>
+      <div class="step"><div class="num">5</div><div><div class="t">Decisões que ficam escritas</div><div class="d">Toda escolha importante fica registrada num documento curto: <b>a pergunta, as alternativas consideradas e o porquê</b>. Você — ou quem pegar o projeto depois — nunca precisa adivinhar como se chegou ali. <small style="color:var(--muted)">(esse tipo de registro tem um nome técnico, "ADR"; mas você não precisa conhecer o termo para usar.)</small></div></div></div>
+      <div class="step"><div class="num">6</div><div><div class="t">Culmina em produto</div><div class="d">O processo não termina na decisão — termina num artefato entregável conforme o briefing: o tipo de produto é declarado no início e ativa os papéis certos (ex.: design de UX, avaliação sistemática).</div></div></div>
+    </div>
+  </section>
+
+  <section id="arquitetura">
+    <h2><span class="n">02</span>Arquitetura em camadas</h2>
+    <p class="sub">Cada regra mora em um lugar só. O domínio (o seu negócio) nunca entra no núcleo —
+      por isso o mesmo núcleo serve dev, dados, BI ou contexto regulado.</p>
     <div class="layers">
-      <div class="layer"><div class="k">ROTEADOR</div><div class="v">AGENT-FRAMEWORK.md (v2.3)<small>decide o modo: metacognição pontual × squad multi-etapa</small></div></div>
-      <div class="layer"><div class="k">NÚCLEO _shared/</div><div class="v">9 regras transversais (fonte única / SSoT)<small>anti-alucinação · confiança · formato · rastreabilidade · metacognição · observabilidade · high-stakes-gate · ação-segura (E1–E6) · modos-de-execução</small></div></div>
-      <div class="layer"><div class="k">PROCESSO</div><div class="v">papéis genéricos<small>pmo · architect · developer · qa-critic · docops · explorer · _template</small></div></div>
-      <div class="layer"><div class="k">CONTRATO</div><div class="v">tools/framework-schema.json<small>8 campos obrigatórios por skill · validate_skills.py (linter CI) · critério binário em validation.md</small></div></div>
-      <div class="layer"><div class="k">ENFORCEMENT (runtime)</div><div class="v">hooks executáveis — prosa→mecanismo<small>effect-gate (E1–E6, ADR-015) · managed-settings fail-closed · compaction-gate (ADR-021) · mission-gate / product_type (ADR-022) · check-repo-sync (ADR-019) · check-core-agnostic (ADR-020)</small></div></div>
-      <div class="layer"><div class="k">INFRA</div><div class="v">_meta/<small>isolamento de subagente · external-access (MCP) · eval-sets</small></div></div>
-      <div class="layer"><div class="k">APLICAÇÕES</div><div class="v">exemplos/<small>dominio-software (ux-designer + evals-engineer, ADR-023) como demonstração viva — domínio vive FORA do núcleo (clonar _template)</small></div></div>
+      <div class="layer"><div class="k">ROTEADOR</div><div class="v">decide o modo de trabalho<small>tarefa pontual (metacognição) × projeto multi-etapa (squad de papéis)</small></div></div>
+      <div class="layer"><div class="k">NÚCLEO (regras)</div><div class="v">9 regras transversais em fonte única<small>anti-alucinação · confiança · formato · rastreabilidade · metacognição · observabilidade · gate de alto risco · ação-segura (efeito) · modos de execução</small></div></div>
+      <div class="layer"><div class="k">PAPÉIS</div><div class="v">o squad genérico<small>pmo · architect · developer · qa-critic · docops · explorer (e um molde para clonar)</small></div></div>
+      <div class="layer"><div class="k">CONTRATO</div><div class="v">o que cada papel promete<small>8 campos por papel + um validador automático + critério binário de "pronto"</small></div></div>
+      <div class="layer"><div class="k">ENFORCEMENT</div><div class="v">hooks que rodam sozinhos<small>gate de ações destrutivas · digest antes de compactar · declaração de produto · sync do repo no boot · linter de agnosticismo</small></div></div>
+      <div class="layer"><div class="k">PRODUTO</div><div class="v">a entrega ao usuário final<small>app de software/dados com design de UX + avaliação sistemática — ativados pelo tipo de produto</small></div></div>
+      <div class="layer"><div class="k">APLICAÇÕES</div><div class="v">o seu domínio vive aqui, FORA do núcleo<small>cria-se clonando o molde; o núcleo não muda — escala por clonagem</small></div></div>
     </div>
   </section>
 
   <section id="fluxo">
-    <h2><span class="n">02</span>Fluxo de trabalho</h2>
-    <p class="sub">Da abertura ao fechamento — incremental, validado, rastreável.</p>
-    <div class="flow">
-      <span class="node hi">/start-session</span><span class="arrow">→</span>
-      <span class="node">pmo</span><span class="arrow">→</span>
-      <span class="node">spec (validation.md)</span><span class="arrow">→</span>
-      <span class="node">developer</span><span class="arrow">→</span>
-      <span class="node">qa-critic</span><span class="arrow">→</span>
-      <span class="node">docops</span><span class="arrow">→</span>
-      <span class="node hi">/checkpoint</span>
+    <h2><span class="n">03</span>Fluxo de trabalho</h2>
+    <p class="sub">Da abertura ao fechamento — incremental, validado e rastreável. Cada seta é uma
+      junção com um critério binário de passagem.</p>
+    <div class="pipe">
+      <div class="step-node"><span class="node hi">/start-session<span class="role">abre a sessão</span></span><span class="arrow">→</span></div>
+      <div class="step-node"><span class="node">pmo<span class="role">orquestra</span></span><span class="arrow">→</span></div>
+      <div class="step-node"><span class="node">spec<span class="role">requisitos + aceite</span></span><span class="arrow">→</span></div>
+      <div class="step-node"><span class="node">developer<span class="role">implementa</span></span><span class="arrow">→</span></div>
+      <div class="step-node"><span class="node">qa-critic<span class="role">ataca (acha bug)</span></span><span class="arrow">→</span></div>
+      <div class="step-node"><span class="node">docops<span class="role">documenta</span></span><span class="arrow">→</span></div>
+      <div class="step-node"><span class="node hi">/checkpoint<span class="role">salva o estado</span></span></div>
     </div>
+    <p class="loop">↻ <b>O ciclo fecha e reabre:</b> o <code>/checkpoint</code> grava o digest que a próxima
+      sessão lê — e um revisor adversarial pode dar <b>rewind</b> a qualquer etapa anterior se achar
+      um problema. Iterações ilimitadas <em>dentro</em> de cada junção; só avança <em>entre</em> elas
+      depois de passar (anti-loop eterno).</p>
   </section>
 
   <section id="principios">
-    <h2><span class="n">03</span>Princípios não-negociáveis</h2>
+    <h2><span class="n">04</span>Princípios não-negociáveis</h2>
+    <p class="sub">O que o framework recusa abrir mão — mesmo sob pressão de "só dessa vez".</p>
     <div class="cards">
-      <div class="card"><h3>Anti-alucinação</h3><p>Classifica tudo (CONFIRMADO/INFERIDO/DESCONHECIDO); diz NÃO SEI; nunca inventa.</p></div>
-      <div class="card"><h3>Single source of truth</h3><p>Cada regra em um arquivo. Papéis referenciam, não copiam.</p></div>
-      <div class="card"><h3>Roteamento por confiança</h3><p>Operacional → linear. <b>Regulado/crítico declarado pelo discovery</b> (ADR-010) → reflexivo. HITL via execution-modes (ADR-005), desacoplado.</p></div>
-      <div class="card"><h3>Estritamente agnóstico</h3><p>Núcleo NÃO carrega normas/convenções hardcoded (ADR-010). Discovery declara o escopo por projeto. Anti-vazamento cross-projeto.</p></div>
-      <div class="card"><h3>Read-and-Review-for-Coherence</h3><p>Comportamento sênior: antes de "pronto", ler tudo afetado + verificar coerência (versões, refs, nomenclatura, contradições). Binário. ADR-010.</p></div>
-      <div class="card"><h3>QA bicelular</h3><p>6 junções binárias forward-only (J0-J5, gates em <code>/handoff</code>) + process-critic adversarial com rewind cascata. Iterações DENTRO; forward-only ENTRE. Anti-loop. ADR-011.</p></div>
-      <div class="card"><h3>Handoff cross-sessão</h3><p>discovery passo 6(e) "alimenta outra sessão?" → Pacote de handoff obrigatório via J5: artefato+versão, localização, acesso, prompt pronto-para-colar, pendências. Teste: outra sessão começa sem perguntar? ADR-012.</p></div>
-      <div class="card"><h3>Context é finito</h3><p>Compaction, note-taking, isolamento de subagente. Mitiga context rot.</p></div>
-      <div class="card"><h3>Escala por clonagem</h3><p>Aplicação nova = clonar _template + eval-set. Núcleo não muda.</p></div>
-      <div class="card"><h3>Validado</h3><p>Roteamento dos papéis testado 33/33. Toda aplicação entra só com eval passando.</p></div>
-      <div class="card"><h3>Enforcement em runtime</h3><p>Da prosa ao mecanismo: hooks executáveis com testes-canário. <b>effect-gate</b> (E1–E6, ADR-015), <b>compaction-gate</b> (digest antes de compactar, ADR-021), <b>mission-gate</b> (product_type, ADR-022), managed-settings fail-closed. Hook bugado falha-aberto; a trava real mora em camadas.</p></div>
-      <div class="card"><h3>Entrega de produto</h3><p>O framework culmina em <b>produto de software/dados</b>. App <code>dominio-software</code> (ADR-023) adiciona ux-designer + evals-engineer, ativados por <code>product_type</code>. Núcleo segue agnóstico; governance/poda já cobertos por high-stakes-gate e pelo campo <code>classe</code>.</p></div>
+      <div class="card"><h3>Anti-alucinação</h3><p>Classifica tudo; diz <b>NÃO SEI</b> quando for; jamais inventa nome, número ou sintaxe.</p></div>
+      <div class="card"><h3>Fonte única</h3><p>Cada regra em um arquivo só. Papéis <b>referenciam</b>, não copiam — nada de regra duplicada divergindo.</p></div>
+      <div class="card"><h3>Ganho líquido</h3><p>Adição pura é rejeitada por padrão. Só entra o que <b>funde, remove ou destrava</b> — o framework não incha.</p></div>
+      <div class="card"><h3>Estritamente flexível</h3><p>O núcleo não carrega normas nem convenções de domínio. O <b>discovery declara o escopo</b> por projeto; nada vaza de um projeto para outro.</p></div>
+      <div class="card"><h3>QA bicelular</h3><p>Revisor <b>adversarial e independente</b> (modelo diferente) com poder de rewind. Todo QA assume que há bug.</p></div>
+      <div class="card"><h3>Memória cross-sessão</h3><p>Contexto é finito: digest + note-taking antes de compactar. A próxima sessão <b>começa sem perguntar nada</b>.</p></div>
+      <div class="card"><h3>Enforcement em runtime</h3><p>Regras críticas viram <b>hooks executáveis</b> com testes que tentam furá-las. Hook bugado falha-aberto; a trava real mora em camadas.</p></div>
+      <div class="card"><h3>Culmina em produto</h3><p>O tipo de produto é declarado no início e ativa os papéis de entrega (design de UX, avaliação sistemática). Entrega, não prosa.</p></div>
+      <div class="card"><h3>Validado</h3><p>Roteamento dos papéis testado <b>33/33</b>. Toda aplicação nova só entra com seu conjunto de avaliação passando.</p></div>
+    </div>
+  </section>
+
+  <section id="evidencia">
+    <h2><span class="n">05</span>Em que isso se baseia</h2>
+    <p class="sub">Não é opinião. Cada decisão é ancorada nas publicações de engenharia da Anthropic
+      e em padrões abertos, destiladas em quatro estudos internos (A0–A3).</p>
+    <div class="evidence">
+      <div class="ev"><div class="code">Anthropic Engineering</div><div class="desc">"Building effective agents", "Effective context engineering", multi-agente e Agent Skills — os padrões oficiais de orquestração e de contexto.</div></div>
+      <div class="ev"><div class="code">Padrões abertos</div><div class="desc">Convenções consolidadas (não inventadas aqui) para versão, registro de mudanças, registro de decisões e observabilidade — SemVer, Keep a Changelog, ADR, OpenTelemetry.</div></div>
+      <div class="ev"><div class="code">A0 · A1</div><div class="desc">Fundamentos de prompt &amp; context engineering; arquitetura RAG multiagente em produção (isolamento de subagente).</div></div>
+      <div class="ev"><div class="code">A2 · A3</div><div class="desc">Desenvolvimento com agentes (spec-driven, "manter simplicidade"); governança de IA não-determinística em ambiente regulado.</div></div>
+    </div>
+    <p class="note">A bibliografia completa, com as URLs e a classificação de cada fonte, <b>acompanha o
+      repositório</b> em <a href="../REFERENCIAS.md">guia/REFERENCIAS.md</a> — e cada release vincula a
+      mudança à fonte que a sustenta no <a href="../../CHANGELOG.md">CHANGELOG</a>.</p>
+  </section>
+
+  <section id="docs">
+    <h2><span class="n">06</span>Documentação completa</h2>
+    <p class="sub">Tudo que acompanha o repositório, organizado por intenção.</p>
+    <div class="docgrid">
+      <div class="docgroup">
+        <h3>Começar</h3>
+        <ul class="clean">
+          <li><b><a href="../INSTALAR-NO-VSCODE.md">Instalar no VS Code</a></b><small>passo a passo, do zip ao /start-session</small></li>
+          <li><b><a href="../SETUP.md">3 modos de uso</a></b><small>novo projeto · revisar · migrar</small></li>
+          <li><b><a href="../GUIA-EQUIPE.md">Uso diário (equipe)</a></b><small>o essencial em 5 minutos</small></li>
+        </ul>
+      </div>
+      <div class="docgroup">
+        <h3>Operar</h3>
+        <ul class="clean">
+          <li><b><a href="../COMO-REVISAR-OUTRO-REPO.md">Revisar outro repo</a></b><small>auditoria read-only</small></li>
+          <li><b><a href="../GIT-VERSIONAMENTO.md">Versionamento git</a></b><small>SemVer + Conventional Commits</small></li>
+          <li><b><a href="../ORIENTACAO.md">Quem lê o quê</a></b><small>humano × IA</small></li>
+          <li><b><a href="../../PROMPT-CHAT-WEB-v4.3.md">Prompt do chat web (v4.3)</a></b><small>o framework no Claude.ai / sem filesystem</small></li>
+        </ul>
+      </div>
+      <div class="docgroup">
+        <h3>Aprofundar</h3>
+        <ul class="clean">
+          <li><b><a href="../../CLAUDE.md">CLAUDE.md</a></b><small>ponto de entrada que o Claude Code lê</small></li>
+          <li><b><a href="../../docs/adr/">Histórico de decisões</a></b><small>todo "porquê" registrado (formato ADR)</small></li>
+          <li><b><a href="../../CHANGELOG.md">CHANGELOG</a></b><small>cada mudança → a fonte que a sustenta</small></li>
+          <li><b><a href="../REFERENCIAS.md">Referências &amp; pesquisas</a></b><small>a base de evidência (A0–A3)</small></li>
+          <li><b><a href="../PITCH.md">Pitch &amp; divulgação</a></b><small>textos prontos para apresentar o framework</small></li>
+        </ul>
+      </div>
     </div>
   </section>
 
   <section id="comece">
-    <h2><span class="n">04</span>Comece por aqui</h2>
-    <ul class="clean">
-      <li><b><a href="../INSTALAR-NO-VSCODE.md">Instalar no VS Code</a></b> — passo a passo</li>
-      <li><b><a href="../SETUP.md">3 modos de uso</a></b> (novo / revisar / migrar)</li>
-      <li><b><a href="../COMO-REVISAR-OUTRO-REPO.md">Revisar outro repo</a></b> read-only</li>
-      <li><b><a href="../GUIA-EQUIPE.md">Uso diário (equipe)</a></b> — 5 minutos</li>
-      <li><b><a href="../GIT-VERSIONAMENTO.md">Versionamento git</a></b> — SemVer + Conventional Commits</li>
-      <li><b><a href="../ORIENTACAO.md">Quem lê o quê</a></b> (humano × IA)</li>
-      <li><b><a href="../REFERENCIAS.md">Referências e pesquisas</a></b> — bibliografia A0–A3</li>
-    </ul>
+    <h2><span class="n">07</span>Comece em 3 passos</h2>
+    <div class="steps">
+      <div class="step"><div class="num">1</div><div><div class="t">Abra a pasta no VS Code</div><div class="d">O Claude Code lê o <code>CLAUDE.md</code> nativamente — é o ponto de entrada do framework.</div></div></div>
+      <div class="step"><div class="num">2</div><div><div class="t">Rode <code>/start-session</code></div><div class="d">O squad acorda: sincroniza o repo, confere o modo de execução, lê o briefing e o histórico, e abre a sessão.</div></div></div>
+      <div class="step"><div class="num">3</div><div><div class="t">Traga seu pedido</div><div class="d">Novo, vago ou complexo: o discovery elicita, declara o tipo de produto, e o fluxo conduz até a entrega validada.</div></div></div>
+    </div>
+    <div class="btns">
+      <a class="btn" href="../INSTALAR-NO-VSCODE.md">Instalar agora</a>
+      <a class="btn ghost" href="../../CLAUDE.md">Ler o CLAUDE.md</a>
+    </div>
   </section>
 
   <footer>
-    <p>Para iniciar: abra a pasta no VS Code → o Claude Code lê <code><a href="../../CLAUDE.md">CLAUDE.md</a></code> → rode <code>/start-session</code>. Histórico: <a href="../../CHANGELOG.md">CHANGELOG</a>.</p>
-    <p style="margin-top:14px">Framework Metacognitivo Agêntico · v1.21.0 · PT-BR · CC BY 4.0 · base de evidência A0–A3.</p>
+    <p>Framework Metacognitivo Agêntico · <b>v1.21.0</b> · PT-BR · CC BY 4.0 (livre para usar, adaptar e distribuir, com atribuição).</p>
+    <p>Genérico no método, especializado por clonagem. A bibliografia (A0–A3) e todo o histórico de decisões acompanham o repositório.</p>
   </footer>
 
 </div>
