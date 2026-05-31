@@ -1,8 +1,13 @@
 # exemplos/ — Aplicações vivem FORA do núcleo
 
-> Este diretório **não contém aplicações pré-prontas**. O framework é genérico
-> por desenho — domínio, ferramenta, norma setorial e contexto operacional são
-> **aplicações**, não núcleo. Aplicação reside no seu repositório, não aqui.
+> O framework é genérico por desenho — domínio, ferramenta, norma setorial e contexto
+> operacional são **aplicações**, não núcleo. Numa distribuição **genérica**, a sua aplicação
+> reside no seu repositório, não aqui.
+>
+> **Exceção declarada (ADR-023):** esta é uma **distribuição especializada em entrega de
+> software/dados** — então mantemos uma aplicação como **demonstração viva**:
+> [`dominio-software/`](dominio-software/README.md) (papéis `ux-designer` + `evals-engineer`,
+> ativados por `product_type`). O núcleo `_shared/` e o squad base seguem **agnósticos e inalterados**.
 
 ## Como criar uma aplicação (escala por clonagem)
 
@@ -52,6 +57,7 @@ ajustar significa que ela deveria virar PR no núcleo, não viver na aplicação
 ## Quando faz sentido ter algo aqui
 
 Em forks pessoais ou em distribuições especializadas do framework, você pode
-manter uma aplicação de exemplo aqui para servir de demonstração viva. Na
-distribuição oficial do framework, esta pasta permanece vazia (exceto este
+manter uma aplicação de exemplo aqui para servir de demonstração viva — é o caso
+de [`dominio-software/`](dominio-software/README.md) nesta distribuição (ADR-023).
+Numa distribuição **genérica** do framework, esta pasta permanece vazia (exceto este
 README) por princípio.

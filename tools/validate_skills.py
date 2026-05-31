@@ -26,6 +26,8 @@ SCHEMA_PATH = os.path.join(ROOT, "tools", "framework-schema.json")
 # de role para não forçar campos que não preencheriam de verdade (P3 §6, régua §0).
 DEFAULT_GLOBS = [
     ".agent/skills/*/SKILL.md",
+    # Aplicações de domínio bundladas (ADR-023): também honram o contrato de 8 campos.
+    "exemplos/*/*/SKILL.md",
 ]
 
 

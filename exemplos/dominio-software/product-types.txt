@@ -1,0 +1,18 @@
+# product-types.txt — taxonomia de tipos de produto da aplicação SW/dados (ADR-022/023).
+#
+# Lido pelo hook mission-gate (tools/hooks/mission-gate.ps1/.sh): dado o product_type declarado
+# no mission.md, o hook ecoa quais PAPÉIS ESPECIALIZADOS da app ativam (além do squad base
+# pmo→architect→developer→qa-critic→docops→release). Núcleo permanece agnóstico: esta taxonomia
+# é da APLICAÇÃO, não do framework (P12). Sem este arquivo → mission-gate usa default agnóstico.
+#
+# formato:  <product_type>: <papéis especializados ativados, ou "(nenhum extra)">
+
+ide-code: (nenhum extra)
+executable: ux-designer (se CLI interativo)
+gui-app: ux-designer, evals-engineer
+data-notebook: evals-engineer
+data-pipeline: (nenhum extra)
+research-code: evals-engineer
+report: (nenhum extra)
+spec: (nenhum extra)
+regulated: ux-designer, evals-engineer (+ high-stakes-gate do núcleo)
