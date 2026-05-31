@@ -1,0 +1,56 @@
+# publish-clean — flow AUTOMÁTICO privado → público (one-way).
+#
+# A cada push na main do repo PRIVADO (fonte full), regenera a versão LIMPA
+# (anonimizada, sem docs/_private, com gate --sensitive) e force-push para o repo PÚBLICO.
+# Sentido único: o público é ARTEFATO GERADO — nunca editar à mão lá.
+#
+# === SETUP (1 passo manual, único) ===
+# 1. Criar um Personal Access Token (fine-grained) com permissão de CONTEÚDO (read+write)
+#    SOMENTE no repo público de distribuição.
+# 2. Guardá-lo como secret do repo privado:  Settings > Secrets and variables > Actions
+#    > New repository secret  ->  nome: PUBLISH_TOKEN
+# 3. Ajustar PUBLIC_REPO abaixo para "<owner>/<repo-publico>".
+#
+# Sem o secret/PUBLIC_REPO, o job de publish é pulado (o export+gate ainda rodam como CI).
+env:
+  PUBLIC_REPO: "OWNER/REPO-PUBLICO"   # <-- AJUSTE
+
+name: publish-clean
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  export-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      # Gate de boot (norma) + canário — falha o build se o núcleo regrediu
+      - name: Lint núcleo (norma) + canário
+        run: |
+          python tools/check_core_agnostic.py
+          python tools/test_core_agnostic.py
+
+      # Export determinístico + GATE sensível (aborta se token de cliente sobreviver)
+      - name: Export limpo (anonimiza + gate --sensitive)
+        run: python tools/export-clean.py "${RUNNER_TEMP}/clean"
+
+      - name: Publicar no repo público
+        if: ${{ env.PUBLIC_REPO != 'OWNER/REPO-PUBLICO' && secrets.PUBLISH_TOKEN != '' }}
+        env:
+          PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+        run: |
+          cd "${RUNNER_TEMP}/clean"
+          git init -q
+          git checkout -q -b main
+          git add -A
+          git -c user.name="auto-publish" -c user.email="actions@users.noreply.github.com" \
+              commit -q -m "publish: export limpo da fonte privada @ ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${PUBLISH_TOKEN}@github.com/${PUBLIC_REPO}.git" main
+          echo "Publicado em https://github.com/${PUBLIC_REPO}"

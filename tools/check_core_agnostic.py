@@ -1,25 +1,34 @@
 #!/usr/bin/env python3
-"""Linter de agnosticismo do NÚCLEO (ADR-020, v1.20.0).
+"""Linter de agnosticismo + anti-vazamento (ADR-020 + EMENDA v1.22.x).
 
-Enforcement EXECUTÁVEL do Princípio 12 (framework agnóstico de domínio) e da regra #5 do
-qa-critic — que era PROSA e falhou >=2x (vazamentos de ALCOA+/ANP/... pegos pelo dono, nunca
-auto-detectados; history.md ## Aprendizado 2026-05-29/30). Mesma tese da série v1.14.x ("da
-prosa ao mecanismo") e mesmo padrão de ADR-013->validate_skills / ADR-015->effect-gate.
+DOIS TIERS:
 
-REGRA: nenhum identificador de norma/convenção regulatória de domínio (denylist) pode aparecer
-no NÚCLEO OPERATIVO, EXCETO em linha portando o sentinela explícito `lint-agnostic:allow`
-(estilo `# noqa` — exige justificativa visível em diff; é a única exceção, auditável).
+  TIER NORMA (ADR-020 original) — enforcement EXECUTÁVEL do Princípio 12 e da regra #5 do
+  qa-critic. Nenhum identificador de NORMA/CONVENÇÃO REGULATÓRIA de domínio (denylist
+  `agnostic-denylist.txt`) pode aparecer no NÚCLEO OPERATIVO. Escopo restrito porque
+  docs/** PODE citar uma norma como exemplo pedagógico. Sentinela: `lint-agnostic:allow`.
 
-ESCOPO (núcleo operativo agnóstico): _shared/**, .agent/skills/**, .agent/rules/**, .agent/workflows/**
-(.md) + AGENT-FRAMEWORK.md, CLAUDE.md, AGENTS.md, README.md. FORA: docs/** (ADRs/specs/_intake discutem
-domínio como exemplo/decisão), exemplos/** (aplicações de domínio), tools/** (infra, inclui este linter e
-a denylist). CLAUDE.md lista rules/ e workflows/ como núcleo (qa-critic round 2 ADR-020): incluídos.
+  TIER SENSÍVEL (EMENDA v1.22.x — incidente de vazamento 2026-05-31) — nenhum identificador
+  de CLIENTE / PROJETO / CASO / REPO (denylist `sensitive-denylist.txt`) pode aparecer no
+  REPOSITÓRIO INTEIRO que distribui. Dado de cliente NÃO é "exemplo pedagógico" — não pode
+  vazar em lugar NENHUM. Por isso o escopo é o repo todo, EXCETO `.git/`, `docs/_private/`
+  (cofre do dono, fora da distribuição), os próprios denylists e arquivos binários.
+  Sentinela: `lint-sensitive:allow` (meta-zero na distribuição). AUTOR ≠ CLIENTE: o nome do
+  mantenedor (atribuição legal) não está na denylist sensível — só orgs/casos de cliente.
+
+REGRA (ambos): violação = exit 1, salvo a linha portar o sentinela do tier (estilo `# noqa`,
+exige justificativa visível em diff — única exceção, auditável).
 
 Uso:
-    python tools/check_core_agnostic.py                 # varre o núcleo operativo
-    python tools/check_core_agnostic.py <arquivo>...    # varre arquivos específicos (canário)
+    python tools/check_core_agnostic.py                 # tier NORMA (núcleo) — gate de BOOT
+    python tools/check_core_agnostic.py --sensitive     # + tier SENSÍVEL (repo inteiro) — gate de EXPORT
+    python tools/check_core_agnostic.py <arquivo>...    # tier NORMA nos arquivos dados (canário)
 
-Exit 0 se limpo; exit 1 se houver vazamento. Sem dependências externas (só stdlib).
+O tier SENSÍVEL é OPT-IN porque a FONTE PRIVADA full carrega nomes de cliente por design
+(é o cofre de acesso total do dono). Ele é o gate de DISTRIBUIÇÃO: roda contra a árvore LIMPA
+de export, garantindo que nada de cliente seja publicado. NÃO roda no boot (evita ruído na fonte).
+
+Exit 0 se limpo; exit 1 se houver vazamento (qualquer tier ativo). Sem dependências externas.
 """
 import glob
 import os
@@ -28,9 +37,11 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DENYLIST_PATH = os.path.join(ROOT, "tools", "agnostic-denylist.txt")
+SENSITIVE_DENYLIST_PATH = os.path.join(ROOT, "tools", "sensitive-denylist.txt")
 SENTINEL = "lint-agnostic:allow"
+SENSITIVE_SENTINEL = "lint-sensitive:allow"
 
-# Núcleo operativo agnóstico (globs + arquivos-âncora). FORA: docs/, exemplos/, tools/.
+# Tier NORMA — núcleo operativo agnóstico (globs + arquivos-âncora). FORA: docs/, exemplos/, tools/.
 CORE_GLOBS = [
     "_shared/**/*.md",
     ".agent/skills/**/*.md",
@@ -39,11 +50,24 @@ CORE_GLOBS = [
 ]
 CORE_FILES = ["AGENT-FRAMEWORK.md", "CLAUDE.md", "AGENTS.md", "README.md"]
 
+# Tier SENSÍVEL — varre o repo inteiro EXCETO estes diretórios e arquivos.
+SENSITIVE_PRUNE_DIRS = {".git", "node_modules", "outputs", "_private"}
+SENSITIVE_PRUNE_RELPATHS = {os.path.join("docs", "_private"), os.path.join(".agent", "brain")}
+ANONYMIZE_MAP_PATH = os.path.join(ROOT, "tools", "anonymize-map.txt")
+# Infra de limpeza carrega os tokens reais por design → não é alvo de varredura.
+SENSITIVE_EXCLUDE_FILES = {DENYLIST_PATH, SENSITIVE_DENYLIST_PATH, ANONYMIZE_MAP_PATH}
+# Binários: não-texto, pula sem tentar decodificar.
+BINARY_EXTS = {
+    ".xlsx", ".xls", ".pdf", ".docx", ".pptx", ".png", ".jpg", ".jpeg", ".gif",
+    ".ico", ".woff", ".woff2", ".ttf", ".eot", ".zip", ".gz", ".tar", ".7z",
+    ".mp4", ".mov", ".webp", ".pyc", ".bak",
+}
 
-def load_patterns():
+
+def load_patterns(path=DENYLIST_PATH):
     """Lê a denylist (uma regex por linha; # e vazias ignoradas). Retorna lista de (regex, fonte)."""
     pats = []
-    with open(DENYLIST_PATH, encoding="utf-8") as fh:
+    with open(path, encoding="utf-8") as fh:
         for raw in fh:
             line = raw.strip()
             if not line or line.startswith("#"):
@@ -66,17 +90,39 @@ def core_targets():
     return sorted(set(files))
 
 
-def scan_file(path, patterns):
-    """Retorna lista de violacoes (linha_no, token, trecho)."""
+def sensitive_targets():
+    """Todos os arquivos de TEXTO do repo, exceto .git/, docs/_private/, denylists e binários."""
+    files = []
+    for dirpath, dirnames, filenames in os.walk(ROOT):
+        # poda in-place de diretórios
+        dirnames[:] = [d for d in dirnames if d not in SENSITIVE_PRUNE_DIRS]
+        rel = os.path.relpath(dirpath, ROOT)
+        if any(rel == p or rel.startswith(p + os.sep) for p in SENSITIVE_PRUNE_RELPATHS):
+            dirnames[:] = []
+            continue
+        for fn in filenames:
+            full = os.path.join(dirpath, fn)
+            if full in SENSITIVE_EXCLUDE_FILES:
+                continue
+            if os.path.splitext(fn)[1].lower() in BINARY_EXTS:
+                continue
+            files.append(full)
+    return sorted(set(files))
+
+
+def scan_file(path, patterns, sentinel=SENTINEL):
+    """Retorna lista de violacoes (linha_no, token, trecho). Pula binário (decode err) silenciosamente."""
     viol = []
     try:
         with open(path, encoding="utf-8-sig") as fh:
             lines = fh.readlines()
+    except UnicodeDecodeError:
+        return []  # binário disfarçado — não é alvo de texto
     except OSError as e:
         return [(0, "<erro-io>", str(e))]
     for n, line in enumerate(lines, 1):
-        if SENTINEL in line:
-            continue  # exceção explícita e auditável (ex.: a própria regra #5 que define a detecção)
+        if sentinel in line:
+            continue  # exceção explícita e auditável
         for rx, src in patterns:
             m = rx.search(line)
             if m:
@@ -84,34 +130,73 @@ def scan_file(path, patterns):
     return viol
 
 
-def main(argv):
-    patterns = load_patterns()
-    if not patterns:
-        print("nenhum padrao na denylist — nada a verificar", file=sys.stderr)
-        return 1
-    targets = argv[1:] if len(argv) > 1 else core_targets()
-    if not targets:
-        print("nenhum arquivo de nucleo encontrado", file=sys.stderr)
-        return 1
+def _run_tier(targets, patterns, sentinel, label, verbose):
+    """Varre `targets` com `patterns`. verbose=True imprime OK por arquivo (tier norma).
+    Retorna (any_leak, n_clean)."""
     any_leak = False
+    n_clean = 0
     for path in targets:
         try:
             rel = os.path.relpath(path, ROOT)
         except ValueError:
             rel = path
-        viol = scan_file(path, patterns)
+        viol = scan_file(path, patterns, sentinel)
         if viol:
             any_leak = True
             for (n, token, snippet) in viol:
-                print(f"LEAK {rel}:{n}: norma de dominio '{token}' no nucleo -> {snippet}")
+                print(f"LEAK [{label}] {rel}:{n}: '{token}' -> {snippet}")
         else:
-            print(f"OK   {rel}")
+            n_clean += 1
+            if verbose:
+                print(f"OK   {rel}")
+    return any_leak, n_clean
+
+
+def main(argv):
+    sensitive_on = False
+    explicit = []
+    for a in argv[1:]:
+        if a in ("--sensitive", "--all"):
+            sensitive_on = True
+        else:
+            explicit.append(a)
+
+    agnostic_patterns = load_patterns(DENYLIST_PATH)
+    if not agnostic_patterns:
+        print("nenhum padrao na denylist (norma) — nada a verificar", file=sys.stderr)
+        return 1
+
+    any_leak = False
+
+    # TIER NORMA — alvos explícitos (canário) OU núcleo operativo. SEMPRE roda (gate de boot).
+    targets = explicit if explicit else core_targets()
+    if not targets:
+        print("nenhum arquivo de nucleo encontrado", file=sys.stderr)
+        return 1
+    leak_n, _ = _run_tier(targets, agnostic_patterns, SENTINEL, "norma", verbose=True)
+    any_leak = any_leak or leak_n
+
+    # TIER SENSÍVEL — OPT-IN (--sensitive/--all). Varre o repo inteiro. Gate de EXPORT, não de boot:
+    # a fonte privada full carrega nomes de cliente por design (cofre de acesso total do dono).
+    if sensitive_on and not explicit:
+        sens_patterns = load_patterns(SENSITIVE_DENYLIST_PATH)
+        if not sens_patterns:
+            print("nenhum padrao na denylist (sensivel) — pulando tier sensivel", file=sys.stderr)
+        else:
+            print("-" * 40)
+            leak_s, clean_s = _run_tier(sensitive_targets(), sens_patterns, SENSITIVE_SENTINEL,
+                                        "sensivel", verbose=False)
+            any_leak = any_leak or leak_s
+            if not leak_s:
+                print(f"OK   [sensivel] {clean_s} arquivos de texto varridos, zero vazamento")
+
     print("-" * 40)
     if any_leak:
-        print("RESULTADO: FAIL (vazamento de dominio no nucleo — Principio 12 / qa-critic regra #5)")
-        print(f"           Corrija, ou — se for menção legítima — adicione o sentinela '{SENTINEL}' na linha com justificativa.")
+        print("RESULTADO: FAIL (vazamento — Principio 12 [norma] e/ou dado de cliente [sensivel])")
+        print(f"           Corrija, ou — se legítimo — adicione '{SENTINEL}' (norma) / "
+              f"'{SENSITIVE_SENTINEL}' (sensivel) na linha com justificativa.")
         return 1
-    print("RESULTADO: PASS (nucleo agnostico — sem normas de dominio hardcoded)")
+    print(f"RESULTADO: PASS ({'norma + sensivel' if sensitive_on else 'norma'})")
     return 0
 
 

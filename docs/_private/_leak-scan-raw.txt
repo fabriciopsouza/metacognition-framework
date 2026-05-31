@@ -1,0 +1,136 @@
+OK   .agent\rules\00-glossario.md
+OK   .agent\rules\01-anti-rename.md
+OK   .agent\rules\02-classificacao.md
+OK   .agent\rules\03-file-first.md
+OK   .agent\rules\04-confidence-routing.md
+OK   .agent\skills\_template\SKILL.md
+OK   .agent\skills\architect\SKILL.md
+OK   .agent\skills\developer\SKILL.md
+OK   .agent\skills\discovery\SKILL.md
+OK   .agent\skills\discovery\mapeamento-de-processo.md
+OK   .agent\skills\discovery\metodo-senior.md
+OK   .agent\skills\discovery\pesquisa-cascata.md
+OK   .agent\skills\discovery\revisar-projeto-existente.md
+OK   .agent\skills\docops\SKILL.md
+OK   .agent\skills\explorer\SKILL.md
+OK   .agent\skills\pmo\SKILL.md
+OK   .agent\skills\qa-critic\SKILL.md
+OK   .agent\workflows\checkpoint.md
+OK   .agent\workflows\feature-plan.md
+OK   .agent\workflows\handoff.md
+OK   .agent\workflows\implement.md
+OK   .agent\workflows\start-session.md
+OK   AGENT-FRAMEWORK.md
+OK   AGENTS.md
+OK   CLAUDE.md
+OK   README.md
+OK   _shared\README.md
+OK   _shared\action-safety\SKILL.md
+OK   _shared\anti-hallucination\SKILL.md
+OK   _shared\confidence-classification\SKILL.md
+OK   _shared\doc-intake\SKILL.md
+OK   _shared\execution-modes\SKILL.md
+OK   _shared\high-stakes-gate\SKILL.md
+OK   _shared\metacognition-core\SKILL.md
+OK   _shared\observability\SKILL.md
+OK   _shared\output-format\SKILL.md
+OK   _shared\traceability\SKILL.md
+----------------------------------------
+LEAK [sensivel] AGENT-FRAMEWORK.md:192: 'AIVI' -> 11. **Observação meta-cognitiva (captura estruturada de feedback)** — o agente registra `method-audit notes` em `history
+LEAK [sensivel] AGENTS.md:41: 'AIVI' -> Mecaniza a ENTRADA (incidente AIVI: agente executou tarefa regulada sem rotear). `route-gate` (UserPromptSubmit universa
+LEAK [sensivel] CHANGELOG.md:20: 'AIVI' -> > Onda **prosa→mecanismo da ENTRADA**, motivada por incidente confirmado (relato AIVI): um agente executou
+LEAK [sensivel] CHANGELOG.md:41: 'AIVI' -> O `route-gate` encarna a norma; a cláusula é o lar normativo (corrige a 2ª metade da falha-raiz AIVI).
+LEAK [sensivel] CHANGELOG.md:243: 'aivi' -> > MINOR feature. Derivado de **dogfood real do v1.12.x** em case regulado externo (repo paralelo `test-aivi-isolated`). 
+LEAK [sensivel] CHANGELOG.md:243: 'test-aivi-isolated' -> > MINOR feature. Derivado de **dogfood real do v1.12.x** em case regulado externo (repo paralelo `test-aivi-isolated`). 
+LEAK [sensivel] CHANGELOG.md:247: 'aivi' -> - **`docs/specs/v1.13.0-aivi-method-fixes/validation.md`** — gate binário V1-Vn.
+LEAK [sensivel] CHANGELOG.md:247: 'aivi-method-fixes' -> - **`docs/specs/v1.13.0-aivi-method-fixes/validation.md`** — gate binário V1-Vn.
+LEAK [sensivel] CHANGELOG.md:257: 'AIVI' -> - 6 gaps remanescentes do dogfood AIVI (Gaps 1/2/3/6/7/9) ficam method-audit aguardando 2ª ocorrência confirmatória.
+LEAK [sensivel] CHANGELOG.md:261: 'AIVI' -> Dogfood AIVI (relatório externo) → Architect (ADR-012, 5 alt) → Developer (drift sync + 2 rules + ADR + princípio 14) → 
+LEAK [sensivel] CHANGELOG.md:362: 'AIVI' -> - **Princípio 11 honestamente reescrito** em `AGENT-FRAMEWORK.md §6`: "Auto-observação" → "Observação meta-cognitiva (ca
+LEAK [sensivel] CHANGELOG.md:380: 'AIVI' -> > MINOR feature: o framework absorve o método sênior validado no case real **AIVI** (2026-05-27, repo `LIMITES-BATENTES-
+LEAK [sensivel] CHANGELOG.md:380: 'LIMITES-BATENTES-RECALC' -> > MINOR feature: o framework absorve o método sênior validado no case real **AIVI** (2026-05-27, repo `LIMITES-BATENTES-
+LEAK [sensivel] CHANGELOG.md:380: 'discovery-aivi-metodo' -> > MINOR feature: o framework absorve o método sênior validado no case real **AIVI** (2026-05-27, repo `LIMITES-BATENTES-
+LEAK [sensivel] CHANGELOG.md:380: '74bd613' -> > MINOR feature: o framework absorve o método sênior validado no case real **AIVI** (2026-05-27, repo `LIMITES-BATENTES-
+LEAK [sensivel] CHANGELOG.md:380: '039fd6d' -> > MINOR feature: o framework absorve o método sênior validado no case real **AIVI** (2026-05-27, repo `LIMITES-BATENTES-
+LEAK [sensivel] CHANGELOG.md:383: 'AIVI' -> - **`docs/adr/009-metodo-senior-discovery-auto-melhoria-framework.md`** — decisão arquitetural que consolida (a) método 
+LEAK [sensivel] CHANGELOG.md:399: 'AIVI' -> ### Pendências e follow-ups (do case AIVI, não bloqueantes)
+LEAK [sensivel] CHANGELOG.md:402: 'AIVI' -> - External research handle no discovery pesquisa-cascata (WebSearch/WebFetch) — item J do audit AIVI.
+LEAK [sensivel] CHANGELOG.md:403: 'AIVI' -> - Detector de drift hook deployado-vs-versionado (framework-boot.ps1 órfão) — item I do audit AIVI.
+LEAK [sensivel] CHANGELOG.md:404: 'AIVI' -> - **AIVI fechamento** (validar a esteira completa): implementar REQ-001..007 + qa-critic + run CSV 2026 + CA-1..6. Fora 
+LEAK [sensivel] CHANGELOG.md:404: 'discovery-aivi-metodo' -> - **AIVI fechamento** (validar a esteira completa): implementar REQ-001..007 + qa-critic + run CSV 2026 + CA-1..6. Fora 
+LEAK [sensivel] CHANGELOG.md:464: 'vibraenergia' -> `fabriciosouza`, `fabriciopsouza`, `vibraenergia`, `natulab`.
+LEAK [sensivel] CHANGELOG.md:464: 'natulab' -> `fabriciosouza`, `fabriciopsouza`, `vibraenergia`, `natulab`.
+LEAK [sensivel] CHANGELOG.md:838: 'aivi' -> - `roles/aivi-indicator-analyst`: aplicação específica — aguarda as regras de
+LEAK [sensivel] CHANGELOG.md:838: 'aivi-indicator-analyst' -> - `roles/aivi-indicator-analyst`: aplicação específica — aguarda as regras de
+LEAK [sensivel] CHANGELOG.md:839: 'AIVI' -> "AIVI emergencial" (repo indisponível na sessão). [DESCONHECIDO].
+LEAK [sensivel] CHANGELOG.md:876: 'aivi' -> - `aivi-indicator-analyst` (scaffold) + spec — exemplo de aplicação por clonagem.
+LEAK [sensivel] CHANGELOG.md:876: 'aivi-indicator-analyst' -> - `aivi-indicator-analyst` (scaffold) + spec — exemplo de aplicação por clonagem.
+LEAK [sensivel] CHANGELOG.md:927: 'aivi' -> - `exemplos/aivi-indicator-analyst/`, `exemplos/python-fuel-forecaster/`,
+LEAK [sensivel] CHANGELOG.md:927: 'aivi-indicator-analyst' -> - `exemplos/aivi-indicator-analyst/`, `exemplos/python-fuel-forecaster/`,
+LEAK [sensivel] CHANGELOG.md:932: 'aivi' -> - `docs/specs/aivi-recalculo-limites/` — spec específica que estava bloqueada por
+LEAK [sensivel] CHANGELOG.md:932: 'aivi-recalculo-limites' -> - `docs/specs/aivi-recalculo-limites/` — spec específica que estava bloqueada por
+LEAK [sensivel] CLAUDE.md:65: 'AIVI' -> Mecaniza a ENTRADA (motivação: incidente AIVI — agente executou tarefa regulada **sem rotear**; roteamento era prosa + a
+LEAK [sensivel] _shared\metacognition-core\SKILL.md:30: 'AIVI' -> > ou rodar um gate, **o processo vence**. Falha-raiz registrada (relato AIVI, 2026-05-31):
+LEAK [sensivel] bootstrap.ps1:131: 'vibraenergia' -> 'vibraenergia'
+LEAK [sensivel] bootstrap.ps1:132: 'natulab' -> 'natulab'
+LEAK [sensivel] bootstrap.sh:134: 'vibraenergia' -> vibraenergia
+LEAK [sensivel] bootstrap.sh:135: 'natulab' -> natulab
+LEAK [sensivel] docs\adr\006-auto-boot-global-squad-allowlist-owners.md:34: 'vibraenergia' -> Pedido textual do mantenedor: *"se o repo for MEU, criado por ferramentas com minhas contas (fpsouza, fpsouz, fsouza, fa
+LEAK [sensivel] docs\adr\006-auto-boot-global-squad-allowlist-owners.md:34: 'natulab' -> Pedido textual do mantenedor: *"se o repo for MEU, criado por ferramentas com minhas contas (fpsouza, fpsouz, fsouza, fa
+LEAK [sensivel] docs\adr\006-auto-boot-global-squad-allowlist-owners.md:76: 'vibraenergia' -> | `~/.claude/squad-owners.txt` | **NOVO** (criado por bootstrap, não versionado) — uma linha por token. Default inicial:
+LEAK [sensivel] docs\adr\006-auto-boot-global-squad-allowlist-owners.md:76: 'natulab' -> | `~/.claude/squad-owners.txt` | **NOVO** (criado por bootstrap, não versionado) — uma linha por token. Default inicial:
+LEAK [sensivel] docs\adr\006-auto-boot-global-squad-allowlist-owners.md:124: 'vibraenergia' -> - **Repos do mantenedor** (`github.com/fabriciopsouza/foo`, `github.com/vibraenergia/dashboards`, etc.): auto-boot dispa
+LEAK [sensivel] docs\adr\009-metodo-senior-discovery-auto-melhoria-framework.md:7: 'AIVI' -> - **Fonte:** case real AIVI (2026-05-27, repo `LIMITES-BATENTES-RECALC` branch `claude/discovery-aivi-metodo-2026-05-27`
+LEAK [sensivel] docs\adr\009-metodo-senior-discovery-auto-melhoria-framework.md:7: 'LIMITES-BATENTES-RECALC' -> - **Fonte:** case real AIVI (2026-05-27, repo `LIMITES-BATENTES-RECALC` branch `claude/discovery-aivi-metodo-2026-05-27`
+LEAK [sensivel] docs\adr\009-metodo-senior-discovery-auto-melhoria-framework.md:7: 'discovery-aivi-metodo' -> - **Fonte:** case real AIVI (2026-05-27, repo `LIMITES-BATENTES-RECALC` branch `claude/discovery-aivi-metodo-2026-05-27`
+LEAK [sensivel] docs\adr\009-metodo-senior-discovery-auto-melhoria-framework.md:11: 'Vibra' -> O case AIVI (distribuição de combustíveis Vibra, ambiente regulado, decisão executiva, perda financeira real) foi o **ca
+LEAK [sensivel] docs\adr\009-metodo-senior-discovery-auto-melhoria-framework.md:11: 'AIVI' -> O case AIVI (distribuição de combustíveis Vibra, ambiente regulado, decisão executiva, perda financeira real) foi o **ca
+LEAK [sensivel] docs\adr\009-metodo-senior-discovery-auto-melhoria-framework.md:55: 'AIVI' -> 3. **`anti-hallucination/SKILL.md` ganha 1 anti-pattern**: "citar norma/spec/doc externa sem checar vigência (em vigor? 
+LEAK [sensivel] docs\adr\009-metodo-senior-discovery-auto-melhoria-framework.md:131: 'aivi' -> 3. **Validity-check externa pode exigir web research**: explorer é repo-only; gap conhecido (item J de `[[framework-gaps
+LEAK [sensivel] docs\adr\009-metodo-senior-discovery-auto-melhoria-framework.md:139: 'AIVI' -> - **Validação:** qa-critic adversarial em rounds até LIMPO + reaplicação do método em próximo case real (AIVI fechamento
+LEAK [sensivel] docs\adr\009-metodo-senior-discovery-auto-melhoria-framework.md:144: 'AIVI' -> - **Template `docs/specs/_template/requirements.md` para caminho universal+sênior** — o template `_template-research/res
+LEAK [sensivel] docs\adr\009-metodo-senior-discovery-auto-melhoria-framework.md:148: 'AIVI' -> - **AIVI fechamento** (validar a esteira completa): implementar REQ-001..007 + qa-critic + run + CA-1..6. Fora deste rep
+LEAK [sensivel] docs\adr\009-metodo-senior-discovery-auto-melhoria-framework.md:152: 'aivi' -> - Memórias-fonte: `[[senior-discovery-method]]` (substância), `[[framework-self-improvement]]` (auto-observação), `[[fra
+LEAK [sensivel] docs\adr\009-metodo-senior-discovery-auto-melhoria-framework.md:153: 'aivi' -> - Case real: `github.com/fabriciopsouza/LIMITES-BATENTES-RECALC` branch `claude/discovery-aivi-metodo-2026-05-27` (commi
+LEAK [sensivel] docs\adr\009-metodo-senior-discovery-auto-melhoria-framework.md:153: 'LIMITES-BATENTES-RECALC' -> - Case real: `github.com/fabriciopsouza/LIMITES-BATENTES-RECALC` branch `claude/discovery-aivi-metodo-2026-05-27` (commi
+LEAK [sensivel] docs\adr\009-metodo-senior-discovery-auto-melhoria-framework.md:153: 'discovery-aivi-metodo' -> - Case real: `github.com/fabriciopsouza/LIMITES-BATENTES-RECALC` branch `claude/discovery-aivi-metodo-2026-05-27` (commi
+LEAK [sensivel] docs\adr\009-metodo-senior-discovery-auto-melhoria-framework.md:153: '74bd613' -> - Case real: `github.com/fabriciopsouza/LIMITES-BATENTES-RECALC` branch `claude/discovery-aivi-metodo-2026-05-27` (commi
+LEAK [sensivel] docs\adr\009-metodo-senior-discovery-auto-melhoria-framework.md:153: '039fd6d' -> - Case real: `github.com/fabriciopsouza/LIMITES-BATENTES-RECALC` branch `claude/discovery-aivi-metodo-2026-05-27` (commi
+LEAK [sensivel] docs\adr\010-framework-agnostico-discovery-declara-escopo.md:18: 'Vibra' -> **Diagnóstico operacional (2026-05-28):** as falhas observadas no case AIVI (citar ANP 884 = varejo como se regulasse di
+LEAK [sensivel] docs\adr\010-framework-agnostico-discovery-declara-escopo.md:18: 'Natulab' -> **Diagnóstico operacional (2026-05-28):** as falhas observadas no case AIVI (citar ANP 884 = varejo como se regulasse di
+LEAK [sensivel] docs\adr\010-framework-agnostico-discovery-declara-escopo.md:18: 'AIVI' -> **Diagnóstico operacional (2026-05-28):** as falhas observadas no case AIVI (citar ANP 884 = varejo como se regulasse di
+LEAK [sensivel] docs\adr\010-framework-agnostico-discovery-declara-escopo.md:31: 'AIVI' -> | 2 | Manter exemplos hardcoded como "pedagógicos" rotulados como `ex.:` | Mínimo esforço; exemplos ajudam quem nunca vi
+LEAK [sensivel] docs\adr\010-framework-agnostico-discovery-declara-escopo.md:64: 'AIVI' -> > **Atalhar este passo = comportamento não-sênior**. O case AIVI demonstrou: 4 rounds de qa-critic na v1.10.0 absorção s
+LEAK [sensivel] docs\adr\010-framework-agnostico-discovery-declara-escopo.md:103: 'Vibra' -> | `PROMPT-CHAT-WEB-v4.2.md` | §1 Identidade e §5 Domínio: substituir conteúdo hardcoded (Vibra/Natulab/Tableau/ANVISA/GA
+LEAK [sensivel] docs\adr\010-framework-agnostico-discovery-declara-escopo.md:103: 'Natulab' -> | `PROMPT-CHAT-WEB-v4.2.md` | §1 Identidade e §5 Domínio: substituir conteúdo hardcoded (Vibra/Natulab/Tableau/ANVISA/GA
+LEAK [sensivel] docs\adr\010-framework-agnostico-discovery-declara-escopo.md:160: 'AIVI' -> Diagnóstico (case AIVI 2026-05-27): 3 violações file-first foram apontadas pelo dono, NÃO auto-observadas pelo agente. C
+LEAK [sensivel] docs\adr\010-framework-agnostico-discovery-declara-escopo.md:182: 'aivi' -> - Memória-fonte: `[[senior-discovery-method]]` (purgada nesta v1.11.0), `[[framework-gaps-from-aivi-case-2026-05-27]]` (
+LEAK [sensivel] docs\adr\010-framework-agnostico-discovery-declara-escopo.md:194: 'AIVI' -> - **Princípio 11 honesto NÃO endereça file-first** (ADV-3 qa-critic round 1): o rename de "auto-observação" → "observaçã
+LEAK [sensivel] docs\adr\012-handoff-cross-sessao.md:7: 'aivi' -> - **Fonte:** sessão paralela 2026-05-29 (repo `test-aivi-isolated`) — dogfood real do v1.12.x em caso regulado real; rel
+LEAK [sensivel] docs\adr\012-handoff-cross-sessao.md:7: 'test-aivi-isolated' -> - **Fonte:** sessão paralela 2026-05-29 (repo `test-aivi-isolated`) — dogfood real do v1.12.x em caso regulado real; rel
+LEAK [sensivel] docs\adr\012-handoff-cross-sessao.md:58: 'aivi' -> | `docs/specs/v1.13.0-aivi-method-fixes/validation.md` | **NOVO** — gate binário V1-Vn release | Adição — gate per relea
+LEAK [sensivel] docs\adr\012-handoff-cross-sessao.md:58: 'aivi-method-fixes' -> | `docs/specs/v1.13.0-aivi-method-fixes/validation.md` | **NOVO** — gate binário V1-Vn release | Adição — gate per relea
+LEAK [sensivel] docs\adr\012-handoff-cross-sessao.md:77: 'AIVI' -> 1. **Princípio 14 = +1 princípio em §6** — viola alvo declarado "v1.13.0 = ≤1 princípio novo" (registrado em method-audi
+LEAK [sensivel] docs\adr\012-handoff-cross-sessao.md:105: 'aivi' -> - Repo externo: `test-aivi-isolated` (case real validação) — `RELATORIO-VALIDACAO-FRAMEWORK.md` §4.1 + §4.2 + §11.3.
+LEAK [sensivel] docs\adr\012-handoff-cross-sessao.md:105: 'test-aivi-isolated' -> - Repo externo: `test-aivi-isolated` (case real validação) — `RELATORIO-VALIDACAO-FRAMEWORK.md` §4.1 + §4.2 + §11.3.
+LEAK [sensivel] docs\adr\027-roteamento-deterministico-e-wiring-global-self-heal.md:10: 'AIVI' -> **Causa-raiz confirmada por inspeção (relato `RELATO-FRAMEWORK-autorrevisao.md`, sessão AIVI, 2026-05-31):**
+LEAK [sensivel] docs\adr\028-precedencia-output-style-versus-processo.md:10: 'AIVI' -> Mesma falha-raiz do relato `RELATO-FRAMEWORK-autorrevisao.md` (sessão AIVI, 2026-05-31): o agente
+LEAK [sensivel] guia\SETUP.md:87: 'AIVI' -> domínio (referencie `_shared/`). É assim que o AIVI nasceu.
+LEAK [sensivel] history.md:14: 'AIVI' -> Origem: incidente confirmado (relato AIVI) — agente executou tarefa **regulada/financeira sem rotear**. Causa-raiz dupla
+LEAK [sensivel] history.md:89: 'AIVI' -> Absorção pelo framework do método sênior validado no case real **AIVI** (LIMITES-BATENTES-RECALC, branch `claude/discove
+LEAK [sensivel] history.md:89: 'LIMITES-BATENTES-RECALC' -> Absorção pelo framework do método sênior validado no case real **AIVI** (LIMITES-BATENTES-RECALC, branch `claude/discove
+LEAK [sensivel] history.md:89: 'discovery-aivi-metodo' -> Absorção pelo framework do método sênior validado no case real **AIVI** (LIMITES-BATENTES-RECALC, branch `claude/discove
+LEAK [sensivel] history.md:107: 'AIVI' -> Próximo passo: **AIVI fechamento** no repo `LIMITES-BATENTES-RECALC` branch `claude/discovery-aivi-metodo-2026-05-27` — 
+LEAK [sensivel] history.md:107: 'LIMITES-BATENTES-RECALC' -> Próximo passo: **AIVI fechamento** no repo `LIMITES-BATENTES-RECALC` branch `claude/discovery-aivi-metodo-2026-05-27` — 
+LEAK [sensivel] history.md:107: 'discovery-aivi-metodo' -> Próximo passo: **AIVI fechamento** no repo `LIMITES-BATENTES-RECALC` branch `claude/discovery-aivi-metodo-2026-05-27` — 
+LEAK [sensivel] history.md:110: 'AIVI' -> - 6 follow-ups em ADR-009 §Pendências (não-bloqueantes): high-stakes-gate auto-load por gatilhos, requirements.md univer
+LEAK [sensivel] history.md:217: 'AIVI' -> - **[2026-05-27/28 · fechado] AIVI fechamento** — PR #20 mergeado em master de `LIMITES-BATENTES-RECALC` (commit `10ecf0
+LEAK [sensivel] history.md:217: 'BABET' -> - **[2026-05-27/28 · fechado] AIVI fechamento** — PR #20 mergeado em master de `LIMITES-BATENTES-RECALC` (commit `10ecf0
+LEAK [sensivel] history.md:217: 'LIMITES-BATENTES-RECALC' -> - **[2026-05-27/28 · fechado] AIVI fechamento** — PR #20 mergeado em master de `LIMITES-BATENTES-RECALC` (commit `10ecf0
+LEAK [sensivel] history.md:243: 'AIVI' -> - **[2026-05-29T23:55] Method-audit (princípio 11 honesto / dogfood AIVI 6 gaps remanescentes):** Sessão paralela `test-
+LEAK [sensivel] history.md:243: 'test-aivi-isolated' -> - **[2026-05-29T23:55] Method-audit (princípio 11 honesto / dogfood AIVI 6 gaps remanescentes):** Sessão paralela `test-
+LEAK [sensivel] tools\hooks\ensure-global-wiring.ps1:6: 'AIVI' -> # QUALQUER pasta não-framework dispara zero hooks (falha-raiz do relato AIVI).
+LEAK [sensivel] tools\hooks\route-gate.ps1:3: 'AIVI' -> # PROBLEMA QUE RESOLVE (relato AIVI 2026-05-31): o roteamento do framework era
+----------------------------------------
+RESULTADO: FAIL (vazamento no repo — Principio 12 [norma] e/ou dado de cliente [sensivel])
+           Corrija, ou — se legítimo — adicione 'lint-agnostic:allow' (norma) / 'lint-sensitive:allow' (sensivel) na linha com justificativa.

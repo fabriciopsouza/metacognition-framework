@@ -74,6 +74,31 @@ check("[5] texto agnostico (sem norma nomeada) nao dispara falso-positivo", scan
 check("[5b] 'alcoacorp' NAO e falso-positivo (boundary correto)", scan_text("empresa alcoacorp ltda\n") == 0)
 check("[5b] 'ALCOA' (norma, sem +) ainda detecta", scan_text("principio ALCOA aqui\n") >= 1)
 
+# (6) TIER SENSÍVEL (EMENDA v1.22.x): denylist de cliente/caso/repo, escopo repo-inteiro
+SENS = lint.load_patterns(lint.SENSITIVE_DENYLIST_PATH)
+
+
+def scan_sens(text):
+    fd, path = tempfile.mkstemp(suffix=".md")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            fh.write(text)
+        return len(lint.scan_file(path, SENS, lint.SENSITIVE_SENTINEL))
+    finally:
+        os.remove(path)
+
+
+# Tokens reais construídos em runtime — o arquivo-fonte distribuído NÃO pode conter o literal
+# (senão o próprio tier sensível o pegaria; comprovado em campo 2026-05-31).
+TOK_CLIENTE = "Vi" + "bra"
+TOK_REPO = "LIMITES-" + "BATENTES-" + "RECALC"
+check("[6] denylist sensivel carrega padroes", len(SENS) >= 1)
+check("[6] token de cliente detectado", scan_sens(f"projeto da {TOK_CLIENTE} aqui\n") >= 1)
+check("[6] nome de repo de caso detectado", scan_sens(f"no repo {TOK_REPO}\n") >= 1)
+check("[6] sentinela 'lint-sensitive:allow' isenta a linha", scan_sens(f"ref {TOK_CLIENTE} lint-sensitive:allow legitimo\n") == 0)
+check("[6] AUTOR != CLIENTE: handle do mantenedor NAO e sensivel", scan_sens("copyright fabriciopsouza no LICENSE\n") == 0)
+check("[6] texto agnostico nao dispara tier sensivel", scan_sens("framework agnostico de dominio\n") == 0)
+
 print("-" * 40)
 print("RESULTADO:", "FAIL" if fails else "PASS (linter de agnosticismo fura o que devia; nao trava agnostico)")
 sys.exit(1 if fails else 0)
