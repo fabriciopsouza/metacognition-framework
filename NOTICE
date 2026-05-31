@@ -1,0 +1,17 @@
+# NOTICE — Proveniência e atribuição
+
+**Framework Metacognitivo Agêntico**
+Autor / detentor de copyright: **Fabricio Souza** — https://github.com/fabriciopsouza
+Repositório canônico: https://github.com/fabriciopsouza/metacognition-framework
+Licença: **CC BY 4.0** (ver `LICENSE`).
+
+A **atribuição ao autor e ao repositório canônico é obrigatória** e não pode ser removida —
+fazê-lo é violação de licença. A autoria é **provável e datada** por:
+- o **histórico git** (registro imutável e cronológico de autoria);
+- **commits/tags assinados** (prova criptográfica verificável por terceiros — selo "Verified" no GitHub);
+- esta `NOTICE` + a linha de crédito no `README.md` e no site.
+
+A integridade da atribuição é verificada por `tools/check_attribution.py` — um guarda **transparente
+e documentado** (o build acusa se a atribuição for removida; um fork que tire o crédito tem o próprio
+CI acusando). Proteção **aberta e auditável**, nunca por mecanismo oculto, telemetria silenciosa ou
+"phone-home" — ver **ADR-025** (a decisão e a refutação explícita do covert).

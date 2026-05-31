@@ -1,0 +1,29 @@
+# Licença
+
+Copyright © 2026 **Fabricio Souza** (https://github.com/fabriciopsouza).
+
+O **Framework Metacognitivo Agêntico** e sua documentação são licenciados sob a
+**Creative Commons Attribution 4.0 International (CC BY 4.0)**.
+
+## Você é livre para
+- **Compartilhar** — copiar e redistribuir em qualquer meio ou formato.
+- **Adaptar** — remixar, transformar e criar a partir do material, para qualquer fim, inclusive comercial.
+
+## Sob a condição (obrigatória)
+- **Atribuição** — dar o **crédito apropriado** ao autor original
+  (**Fabricio Souza — https://github.com/fabriciopsouza/metacognition-framework**), incluir um link
+  para esta licença e indicar se mudanças foram feitas.
+  **Remover ou ocultar a atribuição é violação desta licença.**
+
+Texto legal completo: https://creativecommons.org/licenses/by/4.0/legalcode
+Resumo legível: https://creativecommons.org/licenses/by/4.0/
+
+## Como atribuir (modelo)
+> "Framework Metacognitivo Agêntico" por **Fabricio Souza**
+> (https://github.com/fabriciopsouza/metacognition-framework) — licenciado sob **CC BY 4.0**.
+
+---
+
+Distribuído **sem garantia** (as is). Ver `NOTICE` (proveniência/atribuição) e `SECURITY.md` (postura
+de segurança). A integridade da atribuição é verificada de forma **transparente** por
+`tools/check_attribution.py` (ADR-025) — nunca por mecanismo oculto.

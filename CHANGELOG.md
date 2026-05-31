@@ -15,6 +15,32 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [Não lançado] — pós-v1.21.0 (a consolidar em tag v1.21.1)
+
+> Trabalho acumulado **após** a tag v1.21.0 (site/docs/ergonomia/autoria). A tag de release sai ao
+> consolidar os PRs abertos desta leva (site, autoria, relatório de tokens).
+
+### Added
+- **`LICENSE`** (CC BY 4.0) — antes **ausente** apesar de citada no README; torna a atribuição ao autor
+  obrigatória e a remoção uma violação (recurso legal). + **`NOTICE`** (proveniência).
+- **`tools/check_attribution.py`** — guarda **transparente** de autoria (quebra o build se LICENSE/NOTICE/
+  crédito no README for removido). **ADR-025**: proteção de autoria transparente — **refuta** mecanismo
+  oculto/telemetria silenciosa/"phone-home" (spyware) explicitamente.
+- **`/start-session` como comando registrado** (`.claude/commands/start-session.md`, **ADR-024**) +
+  esclarecido que **não é rígido** (o agente elicita por prosa/perguntas/inspeção; você preenche só 2
+  arquivos por projeto: `briefing.md` + `00-glossario.md`).
+- Site: **GitHub Release v1.21.0** (página + .zip de download).
+
+### Changed
+- **Site (`guia/web/`)**: links → GitHub renderizado; fluxo de instalação real (instalar Claude Code →
+  clone → bootstrap → "iniciar"); seção **Segurança** + **Riscos de operar código por IA**; **Como foi
+  construído** (com as falhas); botões de compartilhar (LinkedIn destaque); engenharia de **gates binários**
+  (anti-loop/escalação); cards de valor (tokens/telemetria/método); e **reestruturação de IA** (enxugado,
+  profundidade nos docs git-linkados). Stack declarada: **testado/desenhado p/ Claude Code; Gemini/Copilot
+  em desenvolvimento**.
+- **Chat-web `PROMPT-CHAT-WEB-v4.3`** (paridade de comportamento: product_type + papéis de entrega).
+- README: linha de **atribuição ao autor** (estava ausente — pega pelo `check_attribution`).
+
 ## [1.21.0] — 2026-05-30 — Hooks de runtime (compaction/mission) + camada de entrega de produto
 
 > MINOR. Origem: revisão de uma pesquisa/SPEC externa (Perplexity) que **re-derivou contra fontes
