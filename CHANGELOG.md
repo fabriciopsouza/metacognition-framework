@@ -15,6 +15,25 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.25.0] — 2026-05-31 — Remediação v2 (marco 3/9): entrega vira produto, não script (completude + porta-do-usuário + ambiente limpo)
+
+> Itens 2 + 4 ⭐ do plano: a aritmética bate mas o **produto** falha — entrega cobre subconjunto do pedido,
+> entry-point quebra no terminal, requirements nunca testados limpos. Três gates mecânicos fecham os três.
+
+### Added
+- **ADR-034** — gate de completude pedido × entrega:
+  - `tools/check_completeness.py`: detecta quantificadores de escopo no pedido ("cada X", "mês a mês",
+    "acumulado"…) e exige critério binário no `validation.md` para cada um. Wirado como qa-critic **rule #8** (J4).
+  - `tools/test_completeness.py`: 4 casos sintéticos agnósticos ("1 mês ≠ mês a mês" reproduzido sem domínio).
+- **ADR-036** — teste pela porta do usuário + ambiente limpo (app SW/dados, ADR-023):
+  - `tools/check_entrypoint_tty.py`: roda o entry-point sem TTY; `input()` bloqueante como única via = FAIL.
+  - `tools/check_clean_env.py`: `pip install` em venv descartável + import; modo `--check --no-network` p/ CI.
+  - `tools/test_entrypoint_no_tty.py` + `tools/test_clean_env.py`: canários sintéticos.
+
+### Changed
+- `qa-critic/SKILL.md`: rule #8 (completude) — contagem "8 rules" sincronizada.
+- `evals-engineer/SKILL.md`: §Gate de entrega de software ("pronto" = porta-do-usuário + ambiente-limpo + completude).
+
 ## [1.24.0] — 2026-05-31 — Remediação v2 (marco 2/9): elicitação-consultiva mecanizada (causa-raiz nº1)
 
 > Item 1 ⭐ do plano: o gap mais caro do incidente de campo foi a **antecipação**, não a segurança de

@@ -44,6 +44,19 @@ produção com critério de sucesso mensurável. Para `ide-code`/`data-pipeline`
 4. Taxa < threshold → rewind para developer (blame: junção developer→evals).
 5. Taxa ≥ threshold → passar `eval-report` ao qa-critic.
 
+## Gate de entrega de software — "pronto" tem definição mecânica (ADR-036 + ADR-034)
+Para `product_type` de software/dado, estes três checks fazem parte do **"pronto"** (não são opcionais):
+1. **Porta do usuário** (`tools/check_entrypoint_tty.py <entrypoint> [-- args]`): roda o entry-point
+   **sem TTY** (stdin fechado + timeout). `input()` bloqueante como única via = REPROVAR — o produto
+   precisa de um caminho não-interativo (argv/flag/env).
+2. **Ambiente limpo** (`tools/check_clean_env.py <requirements.txt> [modulos...]`): `pip install` em
+   **venv descartável** + import dos módulos top-level. "Funciona porque as libs já estavam" não conta.
+3. **Completude pedido × entrega** (`tools/check_completeness.py <spec_dir>`): cada quantificador de
+   escopo do pedido ("cada X", "mês a mês", "acumulado") tem critério binário no `validation.md`.
+
+Falha em qualquer → entrega não-pronta (rewind para developer). São canários no CI
+(`test_entrypoint_no_tty.py`, `test_clean_env.py`, `test_completeness.py`).
+
 ## Anti-padrões (vieses nomeados na pesquisa)
 - **Evals como bala de prata:** evals medem o que foram projetados para medir — não substituem qa
   adversarial nem gate humano.
