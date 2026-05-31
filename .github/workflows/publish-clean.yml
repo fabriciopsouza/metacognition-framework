@@ -13,7 +13,7 @@
 #
 # Sem o secret/PUBLIC_REPO, o job de publish é pulado (o export+gate ainda rodam como CI).
 env:
-  PUBLIC_REPO: "OWNER/REPO-PUBLICO"   # <-- AJUSTE
+  PUBLIC_REPO: "fabriciopsouza/metacognition-framework-public"
 
 name: publish-clean
 on:
