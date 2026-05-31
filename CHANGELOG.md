@@ -15,6 +15,24 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.27.0] — 2026-05-31 — Remediação v2 (marco 5/9): segurança de escrita + governança (overwrite-guard + execution-report)
+
+> Itens 5 + 6 ⭐: o overwrite cego de artefato (E1) passava pelo effect-gate; e tokens/custo/placar nunca
+> eram medidos (o framework não aprendia com a própria execução). Dois mecanismos fecham os dois.
+
+### Added
+- **ADR-037** — action-safety em overwrite cego:
+  - `tools/hooks/overwrite-guard.ps1` + `.sh`: `PreToolUse(Write|Edit)` bloqueia (`exit 2`, robusto ao bug
+    #37210) sobrescrita de arquivo com conteúdo **não-lido/não-criado nesta sessão**; `PostToolUse` registra
+    os arquivos lidos/criados (manifesto por `session_id`). Wirado no `.claude/settings.json`.
+  - `tools/test_overwrite_guard.py`: canário (+ paridade .sh quando há jq). **Dogfood:** o hook pegou a
+    própria edição do agente e revelou um bug real (PowerShell desembrulha array de 1 elem → corrigido com List).
+- **ADR-038** — execution-report automático (estende ADR-026):
+  - `tools/execution_report.py`: tokens (via transcripts; senão **NÃO MEDIDO**, nunca fabricado), tempo,
+    turnos, arquivos, testes, retrabalho e **placar gate × achado**. `validate_report()` reprova report
+    ausente / sem placar / token fabricado. Wirado no `docops` §Encerramento.
+  - `tools/test_execution_report.py`: 5 casos (inclui regressão "token fabricado sem fonte").
+
 ## [1.26.0] — 2026-05-31 — Remediação v2 (marco 4/9): estabilidade de decisão (anti-viés-de-oráculo + sicofância)
 
 > Itens 3 + 9 ⭐: o erro mais caro foi de **execução**, não elicitação — mapear termo→coluna por inferência,

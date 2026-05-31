@@ -35,4 +35,8 @@ Rodar o **consistency-gate** (ADR-030) antes de fechar release:
 `powershell -NoProfile -ExecutionPolicy Bypass -File tools/hooks/consistency-gate.ps1`
 — version-sync, ADR-status, checkpoint no history, unpushed, transientes em `docs/_intake/`.
 Tratar as inconsistências (ou registrá-las como débito declarado) antes do PR de release.
+Gerar o **execution-report** (ADR-038) do bloco — auto, não sob cobrança:
+`python tools/execution_report.py --from-transcripts --out docs/_intake/execution-report.md`
+— tokens (NÃO MEDIDO se a telemetria não estiver exposta — **nunca fabricar**), tempo, turnos,
+arquivos, testes, rodadas de retrabalho e o **placar gate × achado** ("quem pegou o quê").
 Perguntar: "Salvar como Knowledge Item?"
