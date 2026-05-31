@@ -1,0 +1,42 @@
+name: Deploy site (GitHub Pages)
+
+# Publica guia/web/ (site-hub do framework) no GitHub Pages.
+# Site é estático e self-contained (CSS inline, links absolutos p/ GitHub) — basta servir a pasta.
+# Dispara ao mudar o site ou este workflow; e manualmente (workflow_dispatch).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'guia/web/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Uma publicação por vez; cancela a anterior em andamento.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload site (guia/web)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: guia/web
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
