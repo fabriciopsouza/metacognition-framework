@@ -15,6 +15,24 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.31.1] — 2026-06-01 — Fix: integridade da transparência no pacote público + gates cross-drive
+
+> Patch motivado por **crítica adversarial externa que RODOU a suíte no clone público** e achou o defeito
+> (grounding > eloquência). O `export-clean` remove `test_core_agnostic.py` (reconstrói fragmentos de token
+> de cliente p/ testar o linter sensível), mas o `LIMITS.md` o referenciava e o pipeline não regenerava/
+> checava pós-strip → o público recebia um `LIMITS.md` que falhava o próprio `--check`. É o false-PASS que
+> o framework combate, na própria vitrine. Confirmado por export fresco + público 404.
+
+### Fixed
+- **ADR-044 (build_limits):** `INTERNAL_ONLY` — canário interno não-distribuído vira status determinístico
+  (PROVADO na fonte/CI, com nota¹), independente de presença → `--check` passa no privado **e** no export.
+  `test_marketing_claims` não conta canário interno como órfão.
+- **export-clean.py:** gate de transparência **PÓS-STRIP** (`build_limits --check` + `test_marketing_claims`)
+  — não publica se o `LIMITS.md` público divergir (defesa em profundidade; herdado pelo publish-clean).
+- **§13.1 do relato de campo (cross-drive):** `check_completeness` e `check_field_mapping` chamavam
+  `os.path.relpath(path, ROOT)` sem guarda → `ValueError` com spec em drive/mount diferente (gate "não
+  rodava", disfarçado de erro). `try/except` → fallback abs (espelha `check_spec_depth`).
+
 ## [1.31.0] — 2026-05-31 — Remediação v2 (marco 9/9): LIMITS.md mecanizado + marketing ancorado
 
 > Item 13 (último): a transparência estava dispersa em prosa. Agora é um índice único, gerado do estado

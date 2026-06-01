@@ -110,7 +110,10 @@ def main(argv):
         return 0
     any_fail = False
     for path in targets:
-        rel = os.path.relpath(path, ROOT) if os.path.isabs(path) else path
+        try:  # spec em drive/mount diferente do framework (Windows) → relpath lança ValueError (§13.1)
+            rel = os.path.relpath(path, ROOT) if os.path.isabs(path) else path
+        except ValueError:
+            rel = path
         ok, has_sec, bad = check_spec(path)
         if not has_sec:
             print(f"PASS {rel}  (sem seção de mapeamento de campo-fonte — nada a registrar)")
