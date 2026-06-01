@@ -63,6 +63,12 @@ jobs:
               commit -q -m "publish: export limpo da fonte privada @ ${GITHUB_SHA::7}"
           git remote add target "git@github.com:${PUBLIC_REPO}.git"
           GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes" git push -f target main
+          VER=$(grep -oE 'Versão:\*\* [0-9]+\.[0-9]+\.[0-9]+' README.md | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+          if [ -n "${VER}" ]; then
+            GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes" git push -f target "v${VER}" 2>/dev/null \
+              || { git tag -f "v${VER}"; GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes" git push -f target "refs/tags/v${VER}"; }
+            echo "Tag v${VER} publicada (Release formal requer secret PUBLISH_RELEASE_TOKEN — ver README do flow)."
+          fi
           echo "Publicado em https://github.com/${PUBLIC_REPO}"
 
       # Variante NON-ADMIN (ADR-047): MESMA fonte, settings.json sem hooks. Single-source -> multi-distrib.
