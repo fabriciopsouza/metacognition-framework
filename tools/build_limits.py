@@ -51,7 +51,16 @@ CLAIMS = [
 ]
 
 
+# Canários INTERNOS removidos da distribuição pública (export-clean STRIP_AFTER_VERIFY) porque
+# reconstroem fragmentos de token de cliente para testar o linter sensível. Rodam na FONTE e no CI,
+# não no pacote → o status NÃO pode depender da presença do arquivo (senão o LIMITS.md gerado no
+# export diverge do committed e o --check falha no público; ADR-044/020). Determinístico em ambas as árvores.
+INTERNAL_ONLY = {"test_core_agnostic.py"}
+
+
 def status_for(canary):
+    if canary in INTERNAL_ONLY:
+        return "PROVADO"  # roda na fonte/CI; não distribuído (por isso pode faltar no export limpo)
     path = os.path.join(TOOLS, canary)
     if not os.path.isfile(path):
         return "EM DESENVOLVIMENTO"
@@ -74,8 +83,14 @@ def build():
         st = status_for(canary)
         badge = {"PROVADO": "✅ PROVADO", "PARCIAL": "🟡 PARCIAL",
                  "EM DESENVOLVIMENTO": "⏳ EM DESENVOLVIMENTO"}[st]
-        L.append(f"| {claim} | {badge} | `tools/{canary}` | {mec} | {nao} | ADR-{adr} |")
+        canary_cell = f"`tools/{canary}`" + (" (interno¹)" if canary in INTERNAL_ONLY else "")
+        L.append(f"| {claim} | {badge} | {canary_cell} | {mec} | {nao} | ADR-{adr} |")
     L.append("")
+    if any(c in INTERNAL_ONLY for _, c, *_ in CLAIMS):
+        L.append("> ¹ **canário interno**: roda na fonte e no CI, mas é **removido da distribuição pública** "
+                 "(reconstrói fragmentos de token de cliente para testar o linter sensível — não pode ser publicado). "
+                 "O status PROVADO reflete a fonte/CI; no pacote público o arquivo não existe **por design**.")
+        L.append("")
     L.append("## O que NÃO fazemos (anti-overclaim)")
     L.append("- **Não certificamos conformidade.** Os perfis de `exemplos/dominio-regulado/` são **andaime "
              "de partida**, não auditoria — a adequação à norma concreta é do dono + revisão humana (HITL).")

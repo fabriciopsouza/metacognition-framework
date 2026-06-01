@@ -86,6 +86,17 @@ def main(argv):
     for rel in STRIP_AFTER_VERIFY:
         _rm(os.path.join(out, *rel.split("/")))
 
+    # 6. GATE de transparência (ADR-044) na árvore PÓS-STRIP — o estado que o público recebe.
+    #    Sem isto, o público pode receber um LIMITS.md que falha o próprio --check (canário interno
+    #    removido no passo 5 desincronizava o doc). build_limits trata canário interno como
+    #    determinístico (não-distribuído), então aqui deve passar; se falhar, NÃO publica.
+    if run([py, "tools/build_limits.py", "--check"], cwd=out) != 0:
+        print("\nGATE FALHOU: LIMITS.md fora de sync na arvore publica. Regenere (build_limits.py --out LIMITS.md).", file=sys.stderr)
+        return 1
+    if run([py, "tools/test_marketing_claims.py"], cwd=out) != 0:
+        print("\nGATE FALHOU: claim de marketing orfao / LIMITS desync no pacote publico.", file=sys.stderr)
+        return 1
+
     print(f"\nEXPORT OK: arvore limpa publicavel em {out}")
     return 0
 
