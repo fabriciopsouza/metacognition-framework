@@ -5,3 +5,7 @@
 # nunca FAIL (princípio: ambiente não reprova build).
 openpyxl>=3.1
 python-docx>=1.1
+# Elaboração de documentos premium (ADR-050, gen_exec_doc): docx já acima; pptx e pdf opcionais.
+# Ausentes → o gerador degrada (gera md; pula pptx/pdf), nunca falha.
+python-pptx>=0.6
+reportlab>=4.0

@@ -23,6 +23,14 @@ Para `product_type ∈ {gui-app, executable, data-pipeline, data-notebook}`, pro
    ADR-046). Orienta o usuário sobre qual arquivo falta. Resolve "sem validação de arquivos".
 4. **Suíte de saída (não só um número).** Conforme o público: planilha (dados), **documento** (relatório),
    **apresentação executiva** (decisão), gráficos. Cada saída rastreável à fonte (ADR-034/038).
+   **Elaboração de documentos (ADR-050):** `tools/gen_exec_doc.py` gera md/docx/pptx/pdf de qualquer tipo —
+   decisão/orçamento (custo + trade-offs + aprovação), apresentação executiva, **POP/SOP**, **manual de
+   operação**, **guia de configuração**, **plano de manutenção** (templates de REFERÊNCIA em
+   `docs/specs/_template-documentos/` — não-determinísticos: o briefing/spec do cenário adapta). **Qual
+   documento cada situação exige é definido pelo discovery/explorer/briefing+PMO** (regra deles, inalterada);
+   o gerador só renderiza. **Piso não-negociável: runbook de validação SEMPRE** (prova que funciona); em
+   domínio **regulado declarado pelo discovery** (ADR-010/012 + `high-stakes-gate`) o conjunto obrigatório
+   expande (validação/qualificação, rastreabilidade). Campo vazio → `NÃO PREENCHIDO` (nunca fabrica custo).
 5. **Persistência + auditoria.** Histórico entre execuções (reprocesso idempotente) + trilha (quem/quando/
    insumos/versão-da-regra). Para `product_type=regulated`, ver `exemplos/dominio-regulado/`.
 6. **Definição de pronto = gates.** `check_spec_depth` (dimensões) · `check_completeness` (cobertura do

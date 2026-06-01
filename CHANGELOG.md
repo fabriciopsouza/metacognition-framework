@@ -15,6 +15,30 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.36.0] — 2026-06-01 — Elaboração de documentos premium, flexível por tipo (ADR-050, premium-only)
+
+> Pedido do dono: o premium deve **elaborar documentos** focados no que o usuário elicitou — proposta/
+> orçamento (custo + trade-offs + aprovação de mudança/orçamento), **POP/SOP, manual, config/operação,
+> manutenção** — em doc/pdf/pptx. **Qual documento cada situação exige é definido pelo discovery/explorer/
+> briefing+PMO** (regra deles, inalterada). Premium-only (stripado do baseline).
+
+### Added
+- **ADR-050** (Aceito) — `tools/gen_exec_doc.py`: gerador **flexível por TIPO** (renderiza as seções que a
+  spec declarar; `<!-- required: ... -->` por template) → **md/docx/pptx/pdf**. Anti-fabricação: campo vazio
+  vira **`NÃO PREENCHIDO`**, nunca número inventado. + `tools/test_gen_exec_doc.py` (canário).
+  - 7 templates premium em `docs/specs/_template-documentos/` (+ `README.md` da doutrina): **runbook-validação**
+    · **apresentação-executiva** · decisão-executiva · pop-sop · manual-operação · guia-configuração · plano-manutenção.
+  - **Modelos = REFERÊNCIA, não-determinísticos** (refino do dono): a estrutura real de cada doc é *objetivada
+    pelo briefing/spec do cenário/domínio quando ele vier*; o gerador renderiza o que a spec declarar. Forma
+    agnóstica inspirada em entregáveis premium reais de vários domínios (forma, nunca conteúdo/nomes).
+  - **Piso de validação não-negociável:** **runbook de validação SEMPRE** (prova que funciona). **Domínio
+    regulado** (saúde/alimentos/farma/financeiro — *declarado pelo discovery*, ADR-010/012 + `high-stakes-gate`)
+    **expande** o conjunto obrigatório (validação/qualificação, rastreabilidade). Núcleo segue agnóstico — não
+    decide "é regulado" sozinho.
+  - Tudo em `PREMIUM_STRIP_FILES` (stripado de public/non-admin; presente só no premium). `requirements-dev`
+    ganha python-pptx/reportlab (opcionais; degrada para md/docx sem elas).
+  - Wiring no `blueprint.md` premium (discovery/PMO definem o tipo; o gerador só renderiza).
+
 ## [1.35.0] — 2026-06-01 — Três distribuições de fonte única: public · non-admin · premium (ADR-049)
 
 > Pedido do dono: ao final, **3 repos** gerados do **único** privado — `public` (baseline+hooks),
