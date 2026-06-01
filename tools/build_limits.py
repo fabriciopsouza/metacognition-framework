@@ -50,6 +50,8 @@ CLAIMS = [
      "arquivos detectados na pasta + colunas obrigatórias validadas", "mapeamento semântico correto (qa-critic)", "046"),
     ("Modo non-admin inicia sob restrição de scripts (gates anunciados)", "test_nonadmin.py",
      "settings sem hooks + doutrina + bootstrap.py (sem PowerShell)", "enforcement anunciado depende do agente (não hook)", "047"),
+    ("3 distribuições de fonte única (premium/baseline) — core do discovery preservado", "test_premium_tier.py",
+     "premium marcado e stripável; core intacto no baseline", "feature premium nova precisa ser marcada (senão vaza)", "049"),
     ("Núcleo sem termo de domínio/cliente", "test_core_agnostic.py",
      "tier norma + tier sensível (export)", "vazamento semântico novo (qa-critic é o backstop)", "020"),
 ]
@@ -59,7 +61,7 @@ CLAIMS = [
 # reconstroem fragmentos de token de cliente para testar o linter sensível. Rodam na FONTE e no CI,
 # não no pacote → o status NÃO pode depender da presença do arquivo (senão o LIMITS.md gerado no
 # export diverge do committed e o --check falha no público; ADR-044/020). Determinístico em ambas as árvores.
-INTERNAL_ONLY = {"test_core_agnostic.py"}
+INTERNAL_ONLY = {"test_core_agnostic.py", "test_premium_tier.py"}
 
 
 def status_for(canary):
