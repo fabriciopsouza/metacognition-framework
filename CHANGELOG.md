@@ -15,6 +15,23 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.32.0] — 2026-06-01 — PMO maestro: re-orquestração na fronteira de bloco (J6, ADR-045)
+
+> Responde à pergunta do dono ("voltar ao PMO a cada gate?"). Análise adversarial: a cada gate NÃO
+> compensa (custo+loop+gargalo, e duplica J0–J3/PC). A cada BLOCO compensa e quase já existia — formalizado.
+
+### Added
+- **ADR-045** (emenda ao ADR-011) — junção **J6 — PMO re-orquestração de bloco**:
+  - Após o process-critic emitir `APROVADO_LIMPO`, o controle volta ao **PMO** para UMA decisão registrada
+    no `history.md`: `RE-ORQUESTRAÇÃO: prosseguir | re-priorizar | rewind J_i | injetar escopo | reativar estágio`.
+    **NÃO é round-trip por gate** — o intra-bloco segue forward-only (circuit-breaker do ADR-011 preservado).
+  - `tools/check_reorchestration.py` (+ canário): audita que o **último bloco fechado** registrou a decisão
+    (markers específicos `APROVADO_LIMPO` + `RE-ORQUESTRAÇÃO:` — robusto a prosa negativa). Qualidade da
+    decisão = adversarial/não-mecanizável → LIMITS.md.
+
+### Changed
+- `handoff.md` (junção J6 + invariante "PMO a cada bloco, não a cada gate"), `pmo/SKILL.md` (maestro de bloco),
+  `docops/SKILL.md` §Encerramento (registrar + rodar o linter). Dogfood: decisão registrada no `history.md`.
 ## [1.31.1] — 2026-06-01 — Fix: integridade da transparência no pacote público + gates cross-drive
 
 > Patch motivado por **crítica adversarial externa que RODOU a suíte no clone público** e achou o defeito

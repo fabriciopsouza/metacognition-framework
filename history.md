@@ -9,6 +9,19 @@
 
 ---
 
+## 2026-06-01T00:20 — Sessão: Remediação v2 (ADR-033..044, v1.23.0→v1.31.0) + ADR-045 (PMO maestro J6)
+
+Implementados os 13 itens do plano de remediação v2 em 9 marcos (v1.23.0→v1.31.0), mergeados (PR #36,
+merge `01a9a64`) com **CI verde nos 3 SOs** e público regenerado (`--sensitive` = zero vazamento, 224 arq).
+Process-critic adversarial isolado (Sonnet, heterogêneo ADR-018) pegou **falso-PASS crítico** no
+`check_spec_depth` (alias por substring); a matriz CI pegou 3 bugs cross-platform que passavam local
+(`mission-gate` `$env:USERPROFILE`, `.sh` POSIX-only, stdout cp1252). 12 canários novos + CI cross-platform.
+ADR-045 (esta emenda ao ADR-011): **J6 — PMO maestro na fronteira de bloco** (decisão de re-orquestração
+registrada; NÃO round-trip por gate — circuit-breaker forward-only preservado).
+
+process-critic: APROVADO_LIMPO (remediação v2 + ADR-045; 19 canários verde, agnosticismo verde, paridade na matriz CI).
+RE-ORQUESTRAÇÃO: prosseguir — bloco entregue e mergeado; sem re-priorização pendente. ADR-045 fecha a pergunta do dono sobre o PMO-hub (a cada bloco, não a cada gate). Próximo passo aguarda direção do dono.
+
 ## 2026-05-31T03:00 — Sessão: v1.22.0 — entrada determinística (route-gate + wiring self-heal + doc-intake + consistency-gate)
 
 Origem: incidente confirmado (relato AIVI) — agente executou tarefa **regulada/financeira sem rotear**. Causa-raiz dupla por inspeção: (1) roteamento era **prosa** (CLAUDE.md), não mecanismo; (2) auto-boot global **desligado** (settings global sem `hooks` — clobber do mode-apply autosuficiente). Diretiva do dono: "nada importante em prosa → tudo vira ferramenta; ISSO NÃO PODE FALHAR (divulgando)". Execução **autônoma noturna** em modo autosuficiente, autorizada até **merge + limpeza** (override do "parar no PR", só nesta sessão).

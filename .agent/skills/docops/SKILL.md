@@ -39,4 +39,7 @@ Gerar o **execution-report** (ADR-038) do bloco — auto, não sob cobrança:
 `python tools/execution_report.py --from-transcripts --out docs/_intake/execution-report.md`
 — tokens (NÃO MEDIDO se a telemetria não estiver exposta — **nunca fabricar**), tempo, turnos,
 arquivos, testes, rodadas de retrabalho e o **placar gate × achado** ("quem pegou o quê").
+Registrar a **decisão de re-orquestração do PMO** (J6, ADR-045) no `history.md`:
+`RE-ORQUESTRAÇÃO: <prosseguir | re-priorizar | rewind J_i | injetar escopo | reativar estágio>`
+e rodar `python tools/check_reorchestration.py` (último bloco fechado deve ter a decisão).
 Perguntar: "Salvar como Knowledge Item?"
