@@ -21,6 +21,7 @@
 | Modo non-admin inicia sob restrição de scripts (gates anunciados) | ✅ PROVADO | `tools/test_nonadmin.py` | settings sem hooks + doutrina + bootstrap.py (sem PowerShell) | enforcement anunciado depende do agente (não hook) | ADR-047 |
 | 3 distribuições de fonte única (premium/baseline) — core do discovery preservado | ✅ PROVADO | `tools/test_premium_tier.py` (interno¹) | premium marcado e stripável; core intacto no baseline | feature premium nova precisa ser marcada (senão vaza) | ADR-049 |
 | Núcleo sem termo de domínio/cliente | ✅ PROVADO | `tools/test_core_agnostic.py` (interno¹) | tier norma + tier sensível (export) | vazamento semântico novo (qa-critic é o backstop) | ADR-020 |
+| Entrega navegável: índice guiado, auto-verificado (sem link órfão/pro vazio) | ✅ PROVADO | `tools/test_make_index.py` | html+txt, ordem de leitura, lista só o que existe, resumo anti-fabricação | estética do índice (não medida) | ADR-050 |
 
 > ¹ **canário interno**: roda na fonte e no CI, mas é **removido da distribuição pública** (reconstrói fragmentos de token de cliente para testar o linter sensível — não pode ser publicado). O status PROVADO reflete a fonte/CI; no pacote público o arquivo não existe **por design**.
 
@@ -30,5 +31,6 @@
 - **Não garantimos ausência de viés/sicofância em casos novos** — provamos o catch do erro plantado conhecido; o resto é o protocolo adversarial do qa-critic (ADR-018).
 - **Não prometemos detecção exaustiva** de normas (denylist não-exaustiva) nem de comandos destrutivos (effect-gate é backstop conservador, não classificador completo).
 - **Não substituímos o gate humano** em decisão irreversível/regulada (high-stakes-gate).
+- **Não geramos documentos com polimento visual** (gráficos, branding, capa formatada): a geração automatizada (`gen_exec_doc`, premium) produz a **estrutura correta** e pagina o conteúdo — formatação fina é manual ou ADR futuro (ADR-050 §limite).
 
 > Gerado de `tools/build_limits.py`. Para atualizar: adicione o canário e rode o gerador; não edite à mão (o `--check` reprova divergência).

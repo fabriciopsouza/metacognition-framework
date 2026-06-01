@@ -15,6 +15,32 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.37.0] — 2026-06-01 — Entrega navegável: índice guiado + piso de validação mecanizado (ADR-050 emenda)
+
+> Pedido do dono: entregas **acessíveis e fáceis de entender** — pasta `output/<datestamp>/` com subpastas
+> por tipo + **índice visível (html navegável + txt)** com **ordem de leitura guiada**, explicações curtas,
+> para o usuário leigo **não se perder**. + crítica adversarial pediu mecanizar o piso (prosa→gate) e a honestidade.
+
+### Added
+- **`tools/make_index.py`** (BASELINE — usabilidade/correção, vale nas 3 distribuições): varre a pasta de
+  entrega e gera **`index.html`** (navegável) + **`LEIA-ME.txt`** (universal) com **ordem de leitura guiada**
+  (comece-aqui → apresentação → docs → código → dados). **Auto-verificação** (lista só o que existe; nada
+  órfão, nenhum link pro vazio); **resumo de 3 linhas** (de arquivo de resumo/decisão; senão `NÃO PREENCHIDO`);
+  **duplo-papel handoff** (ADR-012: artefato/local/carimbo). + canário `test_make_index.py`.
+- **`gen_exec_doc --deliver LABEL`** (premium): monta `output/<datestamp>-<label>/` com subpastas
+  (`codigo/ docs/ apresentacao/ dados/`), roteia cada formato e invoca o `make_index`. Documentos passam a ser
+  nomeados pelo título (sem colisão em entrega multi-doc).
+- **`tools/check_delivery_floor.py`** (premium): mecaniza o piso "**runbook de validação SEMPRE**" (prosa→gate);
+  dispensa só consciente (`--allow-skip`), bloqueada em `--regulated`. + canário `test_delivery_floor.py`.
+
+### Fixed
+- **Truncagem silenciosa** no `gen_exec_doc`: pptx cortava em 900 chars e pdf em 8 linhas/seção **sem avisar**
+  (perda de conteúdo). Agora **pagina** (slides `(i/n)` + PDF multipágina com quebra de linha).
+
+### Changed
+- **LIMITS.md** (anti-overclaim, ADR-044): declara que a geração produz **estrutura correta, não polimento
+  visual** (sem gráficos/branding/capa) — deck formatado é ADR futuro. Honestidade mecanizada.
+
 ## [1.36.0] — 2026-06-01 — Elaboração de documentos premium, flexível por tipo (ADR-050, premium-only)
 
 > Pedido do dono: o premium deve **elaborar documentos** focados no que o usuário elicitou — proposta/

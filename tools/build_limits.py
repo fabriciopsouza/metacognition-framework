@@ -54,6 +54,8 @@ CLAIMS = [
      "premium marcado e stripável; core intacto no baseline", "feature premium nova precisa ser marcada (senão vaza)", "049"),
     ("Núcleo sem termo de domínio/cliente", "test_core_agnostic.py",
      "tier norma + tier sensível (export)", "vazamento semântico novo (qa-critic é o backstop)", "020"),
+    ("Entrega navegável: índice guiado, auto-verificado (sem link órfão/pro vazio)", "test_make_index.py",
+     "html+txt, ordem de leitura, lista só o que existe, resumo anti-fabricação", "estética do índice (não medida)", "050"),
 ]
 
 
@@ -107,6 +109,9 @@ def build():
     L.append("- **Não prometemos detecção exaustiva** de normas (denylist não-exaustiva) nem de comandos "
              "destrutivos (effect-gate é backstop conservador, não classificador completo).")
     L.append("- **Não substituímos o gate humano** em decisão irreversível/regulada (high-stakes-gate).")
+    L.append("- **Não geramos documentos com polimento visual** (gráficos, branding, capa formatada): a "
+             "geração automatizada (`gen_exec_doc`, premium) produz a **estrutura correta** e pagina o "
+             "conteúdo — formatação fina é manual ou ADR futuro (ADR-050 §limite).")
     L.append("")
     L.append("> Gerado de `tools/build_limits.py`. Para atualizar: adicione o canário e rode o gerador; "
              "não edite à mão (o `--check` reprova divergência).")

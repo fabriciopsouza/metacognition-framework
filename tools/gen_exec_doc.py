@@ -20,13 +20,33 @@ Uso:
 Exit 0 se gerou (md no mínimo) e as seções `required` (se declaradas) existem; 1 caso contrário.
 """
 import argparse
+import datetime
 import os
 import re
 import sys
+import unicodedata
 
 PLACEHOLDER = re.compile(r"^\s*(<.*>|preencher|a preencher|tbd|todo|\.\.\.|\?|n/d)\s*$", re.IGNORECASE)
 REQUIRED_RX = re.compile(r"<!--\s*required:\s*(.+?)\s*-->", re.IGNORECASE)
 NAO_PREENCHIDO = "NÃO PREENCHIDO"
+
+# Convenção de ENTREGA (ADR-050, emenda): output/<datestamp>-<label>/ com subpastas por tipo.
+# Torna a entrega navegável pelo usuário leigo. Cada formato cai na sua subpasta.
+FORMAT_SUBDIR = {"md": "docs", "docx": "docs", "pdf": "docs", "pptx": "apresentacao"}
+DELIVERY_SUBDIRS = {
+    "codigo": "scripts e código-fonte da entrega",
+    "docs": "documentos (md/docx/pdf): relatórios, manuais, POPs, decisão",
+    "apresentacao": "apresentações executivas (pptx)",
+    "dados": "planilhas e dados de entrada/saída",
+}
+
+
+def slugify(s):
+    """ASCII-safe, minúsculo, hifenizado — nome de pasta seguro cross-platform (ç→c, ã→a)."""
+    s = unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode("ascii")
+    s = re.sub(r"\(.*?\)", "", s)                       # remove parênteses (ex.: "(premium, ADR-050)")
+    s = re.sub(r"[^\w\s-]", "", s).strip().lower()
+    return re.sub(r"[\s_-]+", "-", s) or "entrega"
 
 
 def parse_title(text):
@@ -100,13 +120,54 @@ def render_markdown(text):
     return "\n".join(L) + "\n"
 
 
-def export(text, out_dir, formats):
+def _chunk(s, n):
+    """Quebra texto em pedaços de até n chars sem chunk vazio à frente (paginação, não truncagem)."""
+    out, buf = [], ""
+    for line in s.splitlines() or [""]:
+        while len(line) > n:                       # linha sozinha maior que o limite
+            if buf:
+                out.append(buf); buf = ""
+            out.append(line[:n]); line = line[n:]
+        if not buf:
+            buf = line
+        elif len(buf) + 1 + len(line) <= n:
+            buf += "\n" + line
+        else:
+            out.append(buf); buf = line
+    if buf or not out:
+        out.append(buf)
+    return out
+
+
+def _wrap(line, n):
+    out = []
+    while len(line) > n:
+        out.append(line[:n]); line = line[n:]
+    out.append(line)
+    return out
+
+
+def _dst(out_dir, subdirs, fmt, name):
+    """Caminho de saída roteado por subpasta (modo --deliver) ou plano (default), sem overwrite cego."""
+    d = os.path.join(out_dir, subdirs[fmt]) if subdirs and fmt in subdirs else out_dir
+    os.makedirs(d, exist_ok=True)
+    p = os.path.join(d, name)
+    if os.path.exists(p):                           # nunca sobrescreve em silêncio: bump -2/-3...
+        stem, ext = os.path.splitext(name)
+        i = 2
+        while os.path.exists(os.path.join(d, f"{stem}-{i}{ext}")):
+            i += 1
+        p = os.path.join(d, f"{stem}-{i}{ext}")
+    return p
+
+
+def export(text, out_dir, formats, subdirs=None, basename="documento"):
     os.makedirs(out_dir, exist_ok=True)
     title = parse_title(text)
     secs = [(t, value_or_nao_preenchido(c)) for t, c in parse_sections(text) if not REQUIRED_RX.search(t)]
     written, skipped = [], []
     if "md" in formats:
-        p = os.path.join(out_dir, "documento.md")
+        p = _dst(out_dir, subdirs, "md", f"{basename}.md")
         open(p, "w", encoding="utf-8").write(render_markdown(text))
         written.append(p)
     if "docx" in formats:
@@ -115,7 +176,7 @@ def export(text, out_dir, formats):
             d = docx.Document(); d.add_heading(title, 0)
             for t, c in secs:
                 d.add_heading(t, level=1); d.add_paragraph(c)
-            p = os.path.join(out_dir, "documento.docx"); d.save(p); written.append(p)
+            p = _dst(out_dir, subdirs, "docx", f"{basename}.docx"); d.save(p); written.append(p)
         except Exception as e:
             skipped.append(f"docx ({e}; instale python-docx)")
     if "pptx" in formats:
@@ -124,25 +185,35 @@ def export(text, out_dir, formats):
             prs = Presentation()
             t0 = prs.slides.add_slide(prs.slide_layouts[0]); t0.shapes.title.text = title
             for t, c in secs:
-                s = prs.slides.add_slide(prs.slide_layouts[1])
-                s.shapes.title.text = t; s.placeholders[1].text = c[:900]
-            p = os.path.join(out_dir, "documento.pptx"); prs.save(p); written.append(p)
+                parts = _chunk(c, 700)             # pagina em vez de truncar silenciosamente
+                for i, part in enumerate(parts):
+                    s = prs.slides.add_slide(prs.slide_layouts[1])
+                    s.shapes.title.text = t if len(parts) == 1 else f"{t} ({i + 1}/{len(parts)})"
+                    s.placeholders[1].text = part
+            p = _dst(out_dir, subdirs, "pptx", f"{basename}.pptx"); prs.save(p); written.append(p)
         except Exception as e:
             skipped.append(f"pptx ({e}; instale python-pptx)")
     if "pdf" in formats:
         try:
             from reportlab.lib.pagesizes import A4  # type: ignore
             from reportlab.pdfgen import canvas  # type: ignore
-            p = os.path.join(out_dir, "documento.pdf"); c = canvas.Canvas(p, pagesize=A4); y = 800
-            c.setFont("Helvetica-Bold", 15); c.drawString(40, y, title[:90]); y -= 26
-            for t, content in secs:
-                c.setFont("Helvetica-Bold", 12); c.drawString(40, y, t[:90]); y -= 16
-                c.setFont("Helvetica", 10)
-                for line in content.splitlines()[:8]:
-                    c.drawString(48, y, line[:95]); y -= 13
-                y -= 8
-                if y < 80:
+            p = _dst(out_dir, subdirs, "pdf", f"{basename}.pdf"); c = canvas.Canvas(p, pagesize=A4); y = 800
+
+            def _line(s, x, size, bold):
+                nonlocal y
+                if y < 60:
                     c.showPage(); y = 800
+                c.setFont("Helvetica-Bold" if bold else "Helvetica", size)
+                c.drawString(x, y, s)
+                y -= size + 4
+
+            _line(title[:95], 40, 15, True); y -= 8
+            for t, content in secs:
+                _line(t[:95], 40, 12, True)
+                for line in content.splitlines():   # sem corte em 8 linhas: pagina tudo
+                    for seg in _wrap(line, 95):
+                        _line(seg, 48, 10, False)
+                y -= 8
             c.save(); written.append(p)
         except Exception as e:
             skipped.append(f"pdf ({e}; instale reportlab ou converta o .docx)")
@@ -158,6 +229,9 @@ def main(argv):
     ap.add_argument("spec")
     ap.add_argument("--out-dir", default="saida-doc")
     ap.add_argument("--formats", default="md,docx,pptx,pdf")
+    ap.add_argument("--deliver", metavar="LABEL",
+                    help="monta entrega em <root>/<datestamp>-<LABEL>/ com subpastas + índice navegável")
+    ap.add_argument("--root", default="output", help="raiz das entregas (default: output/)")
     args = ap.parse_args(argv[1:])
     if not os.path.isfile(args.spec):
         print(f"spec inexistente: {args.spec}", file=sys.stderr)
@@ -169,11 +243,30 @@ def main(argv):
     if not ok:
         print("RESULTADO: FAIL (documento incompleto — seção obrigatória declarada ausente)")
         return 1
-    written, skipped = export(text, args.out_dir, [f.strip() for f in args.formats.split(",") if f.strip()])
+    formats = [f.strip() for f in args.formats.split(",") if f.strip()]
+    title = parse_title(text)
+    if args.deliver:
+        stamp = datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S")
+        out_dir = os.path.join(args.root, f"{stamp}-{slugify(args.deliver)}")
+        for sub in DELIVERY_SUBDIRS:                      # cria todas as subpastas-padrão da entrega
+            os.makedirs(os.path.join(out_dir, sub), exist_ok=True)
+        written, skipped = export(text, out_dir, formats, subdirs=FORMAT_SUBDIR, basename=slugify(title))
+    else:
+        out_dir, written, skipped = args.out_dir, *export(text, args.out_dir, formats)
     for w in written:
         print(f"  gerado: {w}")
     for s in skipped:
         print(f"  pulado: {s}")
+    if args.deliver:
+        try:
+            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+            import make_index                              # baseline; índice navegável + handoff
+            n, idx = make_index.generate(out_dir, title=title)
+            for p in idx:
+                print(f"  índice: {p}")
+            print(f"ENTREGA: {out_dir} ({n} arquivo(s); abra index.html)")
+        except Exception as e:
+            print(f"  AVISO: índice não gerado ({e}); rode tools/make_index.py {out_dir}")
     print("RESULTADO: PASS (documento gerado; tipo definido pela spec; campos vazios = NÃO PREENCHIDO)")
     return 0
 

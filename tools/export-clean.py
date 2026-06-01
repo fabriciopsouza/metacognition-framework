@@ -44,6 +44,9 @@ PREMIUM_STRIP_FILES = [
     "tools/gen_exec_doc.py",
     "tools/test_gen_exec_doc.py",
     "docs/specs/_template-documentos",
+    # ADR-050 emenda — piso de validação (gate premium). make_index é BASELINE (usabilidade) e fica.
+    "tools/check_delivery_floor.py",
+    "tools/test_delivery_floor.py",
 ]
 # Arquivos com seções premium marcadas (<!-- premium:start --> ... <!-- premium:end -->).
 PREMIUM_MARKER_FILES = [
@@ -77,6 +80,25 @@ def strip_premium(out_root):
         _rm(os.path.join(out_root, *rel.split("/")))
     for rel in PREMIUM_MARKER_FILES:
         strip_premium_markers(os.path.join(out_root, *rel.split("/")))
+
+
+def rewrite_repo_urls(out_root, target):
+    """Self-reference por distribuição: após anonymize (tudo vira `-public`), aponta clone/releases/raw
+    para o repo DESTA distribuição. github.io (site Pages) fica em `-public` (site compartilhado)."""
+    src = "fabriciopsouza/metacognition-framework-public"          # estado pós-anonymize
+    dst = f"fabriciopsouza/{target}"
+    if src == dst:
+        return
+    for dirpath, dirnames, files in os.walk(out_root):
+        dirnames[:] = [d for d in dirnames if d != ".git"]
+        for fn in files:
+            p = os.path.join(dirpath, fn)
+            try:
+                txt = open(p, encoding="utf-8").read()
+            except (UnicodeDecodeError, OSError):
+                continue                                           # binário/ilegível: pula
+            if src in txt:                                         # não casa github.io (path sem `owner/`)
+                open(p, "w", encoding="utf-8").write(txt.replace(src, dst))
 
 
 def strip_pycache(root):
@@ -149,6 +171,7 @@ def main(argv):
     #     Premium = só EXPERIÊNCIA (proposta proativa + UX premium); análise/discovery/QA/segurança = core (ficam em todas).
     if premium:
         print("TIER: PREMIUM (camada premium mantida — ADR-049).")
+        rewrite_repo_urls(out, "metacognition-framework-premium")
     else:
         strip_premium(out)
         print("TIER: BASELINE (camada premium removida: blueprints + seções premium).")
@@ -161,6 +184,7 @@ def main(argv):
         with open(settings, "w", encoding="utf-8") as fh:
             fh.write('{\n  "$schema": "https://json.schemastore.org/claude-code-settings.json"\n}\n')
         _rm(os.path.join(out, ".claude", "settings.nonadmin.json"))  # redundante no pacote non-admin
+        rewrite_repo_urls(out, "metacognition-framework-public-nonadmin")
         print("VARIANTE: NON-ADMIN (settings.json sem hooks; gates anunciados pelo agente — ADR-047).")
 
     print(f"\nEXPORT OK: arvore limpa publicavel em {out}{' [NON-ADMIN]' if nonadmin else ''}")
