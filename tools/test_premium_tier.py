@@ -33,8 +33,8 @@ except Exception:
 def main():
     fails = 0
 
-    # (a) arquivos premium existem na fonte
-    miss = [p for p in PREMIUM_STRIP_FILES if not os.path.isfile(os.path.join(ROOT, *p.split("/")))]
+    # (a) arquivos/dirs premium existem na fonte (PREMIUM_STRIP_FILES inclui dir, ex.: _template-documentos)
+    miss = [p for p in PREMIUM_STRIP_FILES if not os.path.exists(os.path.join(ROOT, *p.split("/")))]
     if miss:
         fails += 1
     print(f"{'OK  ' if not miss else 'FAIL'} arquivos premium presentes na fonte ({'todos' if not miss else miss})")

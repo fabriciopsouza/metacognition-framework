@@ -1,9 +1,9 @@
 # ADR 050 — Elaboração de documentos premium (doc/pdf/pptx, custo + trade-offs, fluxo de aprovação)
 
-- Status: **Proposto** (premium, private/premium-only — a construir; registrado a pedido do dono)
+- Status: **Aceito** (premium-only — implementado em v1.36.0)
 - Data: 2026-06-01 · Decisores: dono + squad (architect)
-- Tipo: futuro (capacidade premium) — camada premium (ADR-049), nunca no baseline.
-- Origem: dono — "elaboração de documentos pelo script focado no que o usuário elicitar (aprovar alteração, aprovar orçamento, propor o software sendo construído) — flexível: doc, pdf, pptx, informando o custo maior e trade-offs".
+- Tipo: capacidade premium — camada premium (ADR-049), **nunca no baseline** (stripada do public/non-admin).
+- Origem: dono — "elaboração de documentos pelo script focado no que o usuário elicitar (aprovar alteração, aprovar orçamento, propor o software) — flexível: doc, pdf, pptx, custo maior e trade-offs" + "deve incluir POPs, manuais, como configurar/operar, manutenção, etc conforme cada situação; discovery, explorer e briefing+PMO definem".
 
 ## Contexto
 
@@ -12,30 +12,40 @@ proposta do software a construir, **orçamento com custo e trade-offs**, pedido 
 orçamento** — em formatos flexíveis (doc/pdf/pptx), focados no que o usuário elicitou. Hoje o framework
 mecaniza o **execution-report** (ADR-038, técnico); falta a camada de **entregável executivo premium**.
 
-## Decisão proposta (1 frase ativa)
+## Decisão (1 frase ativa)
 
-**[PROPOSTA]** Criar uma capacidade premium (na camada premium ADR-049, ausente no baseline) que **gera
-documentos executivos** a partir do que o discovery elicitou — proposta/orçamento com **custo + trade-offs
-+ alternativas** e fluxo de **aprovação** (aprovar mudança / aprovar orçamento) — exportáveis em **doc/pdf/
-pptx**, agnóstica de domínio (a estrutura é padrão; o conteúdo vem do projeto). Provável lar: papel
-`docs-executivos`/extensão do `ux-designer`/`docops` na app premium, com gerador (python-docx/reportlab/
-python-pptx, já dependências opcionais declaradas).
+Criar `tools/gen_exec_doc.py` (gerador **flexível por TIPO**, premium-only) que **renderiza qualquer
+documento que a spec declarar** — decisão/orçamento (custo + trade-offs + alternativas + aprovação),
+**POP/SOP**, **manual de operação**, **guia de configuração**, **plano de manutenção** — em **md/docx/
+pptx/pdf**, sendo **QUAL documento cada situação exige decidido pelo discovery/explorer/briefing+PMO**
+(papel deles, inalterado — o gerador NÃO decide, só renderiza), agnóstico (estrutura da spec, conteúdo do
+projeto) e **anti-fabricação** (campo vazio → `NÃO PREENCHIDO`, nunca número inventado).
 
-## Alternativas a avaliar (quando implementar)
+## Alternativas consideradas (≥3)
 
-1. **Gerador único multi-formato** (markdown → doc/pdf/pptx via libs). Simples; formato premium consistente.
-2. **Templates por tipo de decisão** (proposta de software · orçamento · pedido de aprovação) parametrizados.
-3. **Integrar ao blueprint** (a "suíte de saída" do blueprint premium já prevê apresentação executiva).
+1. **Gerador hardcodado num tipo (só "decisão executiva").** Não cobre POP/manual/config/manutenção. **Rejeitada** — o dono pediu "conforme cada situação".
+2. **Hardcodar a lista de tipos no gerador.** Engessaria; a definição de qual doc cada situação pede é do discovery/PMO (regra existente, não mudar). **Rejeitada.**
+3. **Gerador doc-type-agnóstico que renderiza as seções da spec + `<!-- required: ... -->` por template (ESCOLHIDA).** Prós: 1 gerador, N tipos (templates premium clonáveis); o discovery/PMO escolhe o template; anti-fabricação embutida; degrada sem libs (md sempre). Contras: "completude" (quais seções) depende da spec/template — coerente com a regra de definição existente.
 
-## Consequências (esperadas)
+## Consequências
 
-**Positivas:** o premium entrega o que diferencia (decisão apoiada por documento), focado na elicitação.
-**A decidir:** libs (python-docx/reportlab/python-pptx — opcionais, degradar sem elas), o modelo de
-custo/trade-off (agnóstico: campos, não números hardcoded), e a marcação premium (`<!-- premium -->` +
-arquivos em `exemplos/dominio-software/`). **Limite:** premium-only (ADR-049); custo/trade-off são
-**campos a preencher**, nunca valores inventados (anti-fabricação).
+**Positivas:** o premium entrega o documento que apoia decisão/operação (proposta, orçamento, POP, manual,
+config, manutenção), focado na elicitação; 1 gerador serve todos os tipos; campos vazios nunca viram número
+inventado. **Negativas:** +1 ferramenta + 5 templates premium (stripados do baseline). **Limite declarado:**
+premium-only (ADR-049); pptx/pdf dependem de libs opcionais (degrada para md/docx); **custo/trade-off são
+campos do projeto, nunca fabricados** (canário `test_gen_exec_doc` prova).
 
-## Implementação
+## Implementação (ponteiro após aceito)
 
-- **Pendente.** Marcador da decisão (régua §0: débito declarado). Quando priorizado: gerador + templates +
-  marcação premium + canário (documento gera sem erro; custo/trade-off são campos, não fabricados) + LIMITS.md.
+- Ponteiro: branch `feat/v1.36-doc-premium` · `2026-06-01` · grep `gen_exec_doc|_template-documentos`
+- Artefatos: `tools/gen_exec_doc.py` + `tools/test_gen_exec_doc.py` (canário) + `docs/specs/_template-documentos/`
+  (+ `README.md` da doutrina): **runbook-validacao · apresentacao-executiva** · decisao-executiva · pop-sop ·
+  manual-operacao · guia-configuracao · plano-manutencao — **todos em `PREMIUM_STRIP_FILES`** (stripados do
+  baseline). `requirements-dev` ganha python-pptx/reportlab (opcionais). Wiring no blueprint premium
+  (discovery/PMO definem o tipo). NÃO listado no `build_limits`/LIMITS (capacidade premium; prova pelo canário
+  + ADR, evita desync premium×baseline no LIMITS).
+- **Refino do dono (2026-06-01):** templates são **REFERÊNCIA não-determinística** — a estrutura real é
+  *objetivada pelo briefing/spec do cenário/domínio quando vier*. **Piso:** runbook de validação SEMPRE; em
+  domínio **regulado declarado pelo discovery** (ADR-010/012 + `high-stakes-gate`) o conjunto obrigatório
+  expande. O núcleo permanece agnóstico (não hardcoda normas; o discovery declara).
+- DONE quando: gerador + templates premium (inclui runbook) + canário verde; baseline NÃO recebe (export strip); premium recebe.

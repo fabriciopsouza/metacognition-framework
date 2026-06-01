@@ -40,6 +40,10 @@ PREMIUM_STRIP_FILES = [
     "exemplos/dominio-software/blueprint.md",
     "exemplos/dominio-processo/blueprint.md",
     "exemplos/dominio-projeto/blueprint.md",
+    # ADR-050 — elaboração de documentos premium (gerador + canário + templates):
+    "tools/gen_exec_doc.py",
+    "tools/test_gen_exec_doc.py",
+    "docs/specs/_template-documentos",
 ]
 # Arquivos com seções premium marcadas (<!-- premium:start --> ... <!-- premium:end -->).
 PREMIUM_MARKER_FILES = [
