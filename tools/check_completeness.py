@@ -137,7 +137,10 @@ def main(argv):
             any_fail = True
             continue
         quant, miss_cov, miss_val = check(req, val)
-        rel = os.path.relpath(os.path.dirname(r), ROOT) if os.path.dirname(r) else r
+        try:  # spec em drive/mount diferente do framework (Windows) → relpath lança ValueError (§13.1)
+            rel = os.path.relpath(os.path.dirname(r), ROOT) if os.path.dirname(r) else r
+        except ValueError:
+            rel = os.path.dirname(r) or r
         if not quant:
             print(f"PASS {rel}  (nenhum quantificador de escopo detectado no pedido)")
             continue

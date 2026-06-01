@@ -19,7 +19,7 @@ except Exception:
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
-from build_limits import CLAIMS, build  # noqa: E402
+from build_limits import CLAIMS, build, INTERNAL_ONLY  # noqa: E402
 
 MARKETING_DOCS = ["README.md", "PROMPT-CHAT-WEB-v4.3.md"]
 
@@ -34,8 +34,11 @@ def main():
         fails += 1
     print(f"{'OK  ' if in_sync else 'FAIL'} LIMITS.md em sync com os canários (build_limits)")
 
-    # (b) todo claim PROVADO aponta para canário existente (zero órfão)
-    orphan = [c for c, canary, *_ in CLAIMS if not os.path.isfile(os.path.join(ROOT, "tools", canary))]
+    # (b) todo claim PROVADO aponta para canário existente (zero órfão).
+    # Canários INTERNOS (removidos da distribuição por design — ADR-044) NÃO contam como órfãos:
+    # rodam na fonte/CI. Sem esta exceção, o gate falha no export limpo (o próprio incidente desta correção).
+    orphan = [c for c, canary, *_ in CLAIMS
+              if canary not in INTERNAL_ONLY and not os.path.isfile(os.path.join(ROOT, "tools", canary))]
     if orphan:
         fails += 1
     print(f"{'OK  ' if not orphan else 'FAIL'} todo claim do LIMITS aponta p/ canário existente "
