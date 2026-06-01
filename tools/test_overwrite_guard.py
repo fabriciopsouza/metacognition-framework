@@ -56,7 +56,9 @@ def main():
         return 0
     bash = shutil.which("bash")
     jq = shutil.which("jq")
-    parity = bool(bash and jq)
+    # .sh e hook POSIX; no Windows (git-bash) recebe paths backslash fora do contrato. Paridade
+    # .sh roda nos runners POSIX; no Windows testa-se so o .ps1 nativo. (ver test_parity)
+    parity = bool(bash and jq) and os.name != "nt"
 
     fails = 0
     with tempfile.TemporaryDirectory() as tmp:

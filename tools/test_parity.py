@@ -51,6 +51,14 @@ def run(cmd_list, payload):
 
 
 def main():
+    # O .sh e hook POSIX. No Windows ele so existe via git-bash e recebe paths estilo Windows
+    # (backslash) que quebram a resolucao de caminho — fora do contrato. A paridade .ps1<->.sh e
+    # validada nos runners POSIX (ubuntu+macos), onde o .sh roda de verdade; no Windows o .ps1 e
+    # testado diretamente por test_effect_gate. Logo: SKIP no Windows (nao e divergencia real).
+    if os.name == "nt":
+        print("SKIP: paridade .sh validada nos runners POSIX (ubuntu/macos); no Windows o hook nativo "
+              "e o .ps1 (test_effect_gate).", file=sys.stderr)
+        return 0
     pwsh = find_pwsh()
     bash = shutil.which("bash")
     jq = shutil.which("jq")
