@@ -24,6 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PUBLIC_REPO: "fabriciopsouza/metacognition-framework-public"
+      NONADMIN_REPO: "fabriciopsouza/metacognition-framework-public-nonadmin"
     steps:
       - uses: actions/checkout@v4
 
@@ -62,3 +63,29 @@ jobs:
           git remote add target "git@github.com:${PUBLIC_REPO}.git"
           GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes" git push -f target main
           echo "Publicado em https://github.com/${PUBLIC_REPO}"
+
+      # Variante NON-ADMIN (ADR-047): MESMA fonte, settings.json sem hooks. Single-source -> multi-distrib.
+      - name: Export limpo NON-ADMIN (settings sem hooks)
+        run: python tools/export-clean.py "${RUNNER_TEMP}/clean-nonadmin" --nonadmin
+
+      - name: Publicar no repo público NON-ADMIN (SSH deploy key)
+        env:
+          PUBLISH_DEPLOY_KEY_NONADMIN: ${{ secrets.PUBLISH_DEPLOY_KEY_NONADMIN }}
+        run: |
+          if [ -z "${PUBLISH_DEPLOY_KEY_NONADMIN}" ]; then
+            echo "PUBLISH_DEPLOY_KEY_NONADMIN ausente — export non-admin validado; publish PULADO (configure o secret p/ ativar)."
+            exit 0
+          fi
+          mkdir -p ~/.ssh
+          printf '%s\n' "${PUBLISH_DEPLOY_KEY_NONADMIN}" > ~/.ssh/id_nonadmin
+          chmod 600 ~/.ssh/id_nonadmin
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
+          cd "${RUNNER_TEMP}/clean-nonadmin"
+          git init -q
+          git checkout -q -b main
+          git add -A
+          git -c user.name="auto-publish" -c user.email="actions@users.noreply.github.com" \
+              commit -q -m "publish (non-admin): export limpo @ ${GITHUB_SHA::7}"
+          git remote add target "git@github.com:${NONADMIN_REPO}.git"
+          GIT_SSH_COMMAND="ssh -i ~/.ssh/id_nonadmin -o IdentitiesOnly=yes" git push -f target main
+          echo "Publicado em https://github.com/${NONADMIN_REPO}"

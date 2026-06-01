@@ -56,10 +56,12 @@ def run(cmd, cwd=None):
 
 
 def main(argv):
-    if len(argv) < 2:
-        print("uso: python tools/export-clean.py <out-dir>", file=sys.stderr)
+    args = [a for a in argv[1:] if not a.startswith("--")]
+    nonadmin = ("--nonadmin" in argv) or ("nonadmin" in argv and "--variant" in argv)
+    if not args:
+        print("uso: python tools/export-clean.py <out-dir> [--nonadmin]", file=sys.stderr)
         return 2
-    out = os.path.abspath(argv[1])
+    out = os.path.abspath(args[0])
     if os.path.abspath(out) == os.path.abspath(SRC_ROOT):
         print("out-dir nao pode ser a propria fonte", file=sys.stderr)
         return 2
@@ -97,7 +99,17 @@ def main(argv):
         print("\nGATE FALHOU: claim de marketing orfao / LIMITS desync no pacote publico.", file=sys.stderr)
         return 1
 
-    print(f"\nEXPORT OK: arvore limpa publicavel em {out}")
+    # 7. VARIANTE non-admin (ADR-047): mesma fonte, característica própria = settings.json SEM hooks.
+    #    Single-source -> multi-distribuicao: o admin mantem os hooks; o non-admin inicia sob restricao.
+    if nonadmin:
+        settings = os.path.join(out, ".claude", "settings.json")
+        os.makedirs(os.path.dirname(settings), exist_ok=True)
+        with open(settings, "w", encoding="utf-8") as fh:
+            fh.write('{\n  "$schema": "https://json.schemastore.org/claude-code-settings.json"\n}\n')
+        _rm(os.path.join(out, ".claude", "settings.nonadmin.json"))  # redundante no pacote non-admin
+        print("VARIANTE: NON-ADMIN (settings.json sem hooks; gates anunciados pelo agente — ADR-047).")
+
+    print(f"\nEXPORT OK: arvore limpa publicavel em {out}{' [NON-ADMIN]' if nonadmin else ''}")
     return 0
 
 

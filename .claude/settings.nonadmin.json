@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "_perfil": "NON-ADMIN (ADR-047) — para máquinas corporativas com política de restrição de scripts.",
+  "_doc": "SEM hooks de comando: nada invoca powershell.exe/-ExecutionPolicy Bypass, então o framework INICIA mesmo onde a política (GPO Restricted) bloqueia scripts. Trade-off (decisão do dono): os processos que eram automáticos (route-gate, mission-gate, effect-gate, overwrite-guard) NÃO somem — passam a ser ANUNCIADOS e APLICADOS inline pelo agente (ver CLAUDE.md §Modo non-admin). Automação nunca invisível. Para usar: este arquivo É o settings.json do pacote público non-admin; numa instalação existente, copie-o por cima de .claude/settings.json (bootstrap.py faz isso). Os linters/gates Python (check_spec_depth, check_completeness, check_input_contract, effect-rules…) continuam chamáveis sob demanda — Python não é bloqueado pela política de PowerShell."
+}

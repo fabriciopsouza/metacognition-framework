@@ -30,6 +30,14 @@ O framework opera sob 1 de 3 níveis registrados em `~/.claude/framework-mode.js
 
 Ratchet forward-only: escalação livre (default→avançado→autosuficiente), downgrade só por edição manual do state file. Reativação dispara só quando `~/.claude/hooks/framework-sync.ps1` muda (hash trigger). Detalhe: `_shared/execution-modes/SKILL.md`.
 
+## Modo NON-ADMIN — gates anunciados (v1.34.0 — ADR-047)
+Ortogonal aos 3 modos acima. Em **máquina com restrição de scripts** (GPO bloqueia PowerShell → hooks não rodam), usar o **perfil non-admin** (`settings.nonadmin.json`, sem hooks; ative com `python bootstrap.py` ou clonando o público non-admin). A versão **admin (com hooks) continua a default** onde a máquina permite. **Trade-off do dono — automação NUNCA invisível:** sem hooks, o agente **DECLARA e APLICA inline** cada gate que o hook faria, avisando e orientando:
+- **ROTA** (route-gate): declarar a rota em 1 linha no 1º turno (já é a norma do route-gate).
+- **mission/product_type** (mission-gate): declarar/confirmar product_type + escopo antes de J2+.
+- **action-safety por efeito** (effect-gate): antes de ação destrutiva, classificar o efeito e pedir confirmação (gate humano em T3) — pode rodar `effect-rules.json` via Python.
+- **overwrite-guard**: LER o arquivo antes de sobrescrever artefato com conteúdo; avisar.
+Linters/gates Python (`check_spec_depth`, `check_completeness`, `check_input_contract`…) seguem chamáveis sob demanda (Python não é barrado). **Um aponta para o outro:** detalhe e ativação em `guia/MODO-NON-ADMIN.md`.
+
 ## Auto-boot global (v1.8.0 — ADR-006)
 Após `bootstrap.ps1`, o squad acorda automaticamente em qualquer IDE/projeto
 cujo owner do remote `origin` bata com `~/.claude/squad-owners.txt` (substring

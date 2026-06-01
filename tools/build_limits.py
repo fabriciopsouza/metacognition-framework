@@ -48,6 +48,8 @@ CLAIMS = [
      "famílias conhecidas têm representante", "denylist NÃO-EXAUSTIVA por design", "043"),
     ("Auto-detecção + validação de arquivos de entrada (dicionário-contrato)", "test_input_contract.py",
      "arquivos detectados na pasta + colunas obrigatórias validadas", "mapeamento semântico correto (qa-critic)", "046"),
+    ("Modo non-admin inicia sob restrição de scripts (gates anunciados)", "test_nonadmin.py",
+     "settings sem hooks + doutrina + bootstrap.py (sem PowerShell)", "enforcement anunciado depende do agente (não hook)", "047"),
     ("Núcleo sem termo de domínio/cliente", "test_core_agnostic.py",
      "tier norma + tier sensível (export)", "vazamento semântico novo (qa-critic é o backstop)", "020"),
 ]
