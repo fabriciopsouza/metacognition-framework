@@ -16,6 +16,9 @@ Ver .agent/rules/ (todas referenciam _shared/).
 3 níveis registrados em `~/.claude/framework-mode.json` com ratchet forward-only:
 **default** (prompts conservadores) · **avançado** (blanket shell + ask em push/merge) · **autosuficiente** (`bypassPermissions` + deny mínimo). Reativação só quando `~/.claude/hooks/framework-sync.ps1` muda. Detalhe: `_shared/execution-modes/SKILL.md`.
 
+## Modo NON-ADMIN — gates anunciados (v1.34.0 — ADR-047)
+Em máquina com restrição de scripts (GPO bloqueia PowerShell → hooks não rodam), usar o perfil **non-admin** (`settings.nonadmin.json` sem hooks; ativar com `python bootstrap.py` ou clonar o público non-admin). A versão **admin (com hooks) continua a default**. **Automação nunca invisível:** sem hooks, o agente **declara e aplica inline** cada gate (ROTA/route-gate · mission/product_type · action-safety por efeito · ler-antes-de-sobrescrever), avisando e orientando. Linters Python seguem on-demand. Detalhe: `guia/MODO-NON-ADMIN.md`.
+
 ## Auto-boot global (v1.8.0 — ADR-006)
 Após `bootstrap.ps1`, o squad acorda automaticamente em qualquer IDE/projeto cujo owner do remote `origin` bata com `~/.claude/squad-owners.txt` (substring match). Fallback: `AGENTS.md` ou `.agent/` no projeto. Pular: `.claude/session.lock` ou `~/.claude/session.lock`.
 

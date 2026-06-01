@@ -15,6 +15,29 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.34.0] — 2026-06-01 — Modo NON-ADMIN (sem hooks PS) + pipeline single-source → multi-distribuição (ADR-047)
+
+> Máquina corporativa com GPO `Restricted` bloqueia PowerShell → o framework não iniciava. A versão
+> **admin (com hooks) continua a default**; esta adiciona uma variante **non-admin** que inicia sob
+> restrição **sem perder funcionalidade**, pelo trade-off do dono: **automação nunca invisível** — o que
+> era hook silencioso vira **gate anunciado e aplicado pelo agente**. Uma única fonte gera todas as
+> distribuições (admin + non-admin), cada uma com sua característica própria, a cada release.
+
+### Added
+- **ADR-047** — modo non-admin + pipeline multi-distribuição:
+  - `.claude/settings.nonadmin.json` (sem hooks → inicia sob restrição) + `bootstrap.py` (setup em Python
+    puro, sem PowerShell/admin; `--check` diagnostica) + `guia/MODO-NON-ADMIN.md`.
+  - Doutrina **"gates anunciados"** em `CLAUDE.md`/`AGENTS.md` §Modo non-admin: o agente declara e aplica
+    inline cada gate (ROTA · mission/product_type · action-safety por efeito · ler-antes-de-sobrescrever).
+  - `tools/export-clean.py --nonadmin` (variante: settings.json sem hooks) + `tools/test_nonadmin.py` (canário).
+    `publish-clean` passa a regenerar **admin + non-admin** do mesmo source.
+- **ADR-048 (Proposto/futuro)** — execution-report automático em todo bloco, **somente no privado**
+  (registrado a pedido do dono; gatilho a decidir considerando o modo non-admin).
+
+### Changed
+- **README:** clareza restaurada — histórico de versões movido do topo para **§Evolução por onda** (nada
+  removido). `build_limits` ganha o claim do non-admin; LIMITS regenerado.
+
 ## [1.33.1] — 2026-06-01 — Harness de teste isolado (validação de campo sem vazamento)
 
 ### Added
