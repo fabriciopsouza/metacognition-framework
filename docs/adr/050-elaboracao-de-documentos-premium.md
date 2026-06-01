@@ -49,3 +49,9 @@ campos do projeto, nunca fabricados** (canário `test_gen_exec_doc` prova).
   domínio **regulado declarado pelo discovery** (ADR-010/012 + `high-stakes-gate`) o conjunto obrigatório
   expande. O núcleo permanece agnóstico (não hardcoda normas; o discovery declara).
 - DONE quando: gerador + templates premium (inclui runbook) + canário verde; baseline NÃO recebe (export strip); premium recebe.
+- **Emenda v1.37.0 (entrega navegável + piso mecanizado):** `tools/make_index.py` (**baseline** — usabilidade:
+  `index.html` navegável + `LEIA-ME.txt` com ordem de leitura guiada, auto-verificação, resumo-3-linhas,
+  duplo-papel handoff ADR-012). `gen_exec_doc --deliver` monta `output/<datestamp>-<label>/` com subpastas por
+  tipo e invoca o índice. `tools/check_delivery_floor.py` (**premium**) mecaniza o piso "runbook SEMPRE"
+  (prosa→gate; dispensa consciente, bloqueada em regulado). Corrigida a **truncagem silenciosa** (pptx/pdf agora
+  paginam). LIMITS declara: gera **estrutura, não polimento visual** (deck formatado = ADR futuro).

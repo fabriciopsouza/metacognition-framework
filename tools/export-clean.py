@@ -44,6 +44,9 @@ PREMIUM_STRIP_FILES = [
     "tools/gen_exec_doc.py",
     "tools/test_gen_exec_doc.py",
     "docs/specs/_template-documentos",
+    # ADR-050 emenda — piso de validação (gate premium). make_index é BASELINE (usabilidade) e fica.
+    "tools/check_delivery_floor.py",
+    "tools/test_delivery_floor.py",
 ]
 # Arquivos com seções premium marcadas (<!-- premium:start --> ... <!-- premium:end -->).
 PREMIUM_MARKER_FILES = [
