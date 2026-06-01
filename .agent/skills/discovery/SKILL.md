@@ -84,6 +84,7 @@ deve dar PASS **antes do handoff J1** (discovery→architect) — barra spec ras
 **meta-perguntas** (dimensões) são agnósticas e vivem no banco; as **perguntas de domínio** ("descartar
 tais entidades?", "a referência é X ou Y?") são GERADAS ao ler o material e **nunca** entram no banco.
 
+<!-- premium:start (ADR-049) — camada PREMIUM (proposta proativa de produto); removida nas distribuições baseline (public/non-admin), mantida na premium. NÃO mexe na elicitação-base (que é CORE). -->
 ### Blueprint de domínio — PROPOR a forma premium de uma vez (ADR-046, assertividade > perguntas)
 Quando o `product_type` (passo 6f) casa um domínio com **aplicação** disponível, **carregar o
 `blueprint.md`** daquela app (`exemplos/dominio-software` · `exemplos/dominio-processo` ·
@@ -95,6 +96,8 @@ Para produto com arquivos, gerar o **`data-dictionary.md`** (template) — `tool
 valida que os arquivos da pasta têm as colunas obrigatórias (resolve "produto sem validação de arquivo").
 Sem aplicação de domínio → defaults flexíveis (sem blueprint). O blueprint descreve **forma**, nunca
 conteúdo de domínio (P12 preservado).
+<!-- premium:end -->
+
 
 ## Banco de partida (acelerador EDITÁVEL — nunca gaiola)
 Conjuntos-semente de perguntas para casos comuns. São **ponto de partida**, não

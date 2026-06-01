@@ -15,6 +15,29 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.35.0] — 2026-06-01 — Três distribuições de fonte única: public · non-admin · premium (ADR-049)
+
+> Pedido do dono: ao final, **3 repos** gerados do **único** privado — `public` (baseline+hooks),
+> `non-admin` (baseline+sem-hooks), `premium` (full premium+hooks, privado/pago). Mesma filosofia nos 3.
+> A linha **premium × core = experiência × correção**: o baseline entrega produto **funcional e correto**
+> com TODA a capacidade analítica/discovery/briefing/QA/segurança; o premium adiciona a **camada de
+> experiência** (proposta proativa + UX premium + documentos executivos). **Não tira discovery/análise.**
+
+### Added
+- **ADR-049** — tiering premium/baseline de fonte única:
+  - Camada premium **marcada e removível**: arquivos (`exemplos/dominio-*/blueprint.md`) + seções entre
+    `<!-- premium:start/end -->` (discovery §Blueprint, ux-designer §gate premium).
+  - `tools/export-clean.py`: 3 modos — default (baseline strip-premium) · `--nonadmin` (baseline+sem-hooks)
+    · `--premium` (mantém premium). `tools/test_premium_tier.py` (canário interno): prova que o baseline
+    remove o premium **e PRESERVA o core do discovery** (não mata análise/elicitação).
+  - `publish-clean.yml`: publica **as 3 distribuições** do mesmo source. Repo `metacognition-framework-premium`
+    (privado/pago) + deploy key + secret criados.
+- **ADR-050 (Proposto)** — elaboração de documentos premium (doc/pdf/pptx, custo + trade-offs, fluxo de
+  aprovação de mudança/orçamento) — camada premium, a construir.
+
+### Changed
+- `build_limits` ganha o claim do tiering (canário interno, não-distribuído); LIMITS regenerado.
+
 ## [1.34.0] — 2026-06-01 — Modo NON-ADMIN (sem hooks PS) + pipeline single-source → multi-distribuição (ADR-047)
 
 > Máquina corporativa com GPO `Restricted` bloqueia PowerShell → o framework não iniciava. A versão

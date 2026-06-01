@@ -30,8 +30,49 @@ STRIP_AFTER_VERIFY = [                               # infra de limpeza: carrega
     "tools/anonymize.py",
     "tools/export-clean.py",
     "tools/test_core_agnostic.py",                   # canário interno: tokens split + dep da denylist
+    "tools/test_premium_tier.py",                    # canário interno: testa o pipeline de tiering (depende de export-clean)
     ".github/workflows/publish-clean.yml",
 ]
+
+# Camada PREMIUM (ADR-049): removida nas distribuições BASELINE (public/non-admin), MANTIDA na premium.
+# É só EXPERIÊNCIA (proposta proativa de produto + UX premium); NÃO toca análise/discovery/QA (core).
+PREMIUM_STRIP_FILES = [
+    "exemplos/dominio-software/blueprint.md",
+    "exemplos/dominio-processo/blueprint.md",
+    "exemplos/dominio-projeto/blueprint.md",
+]
+# Arquivos com seções premium marcadas (<!-- premium:start --> ... <!-- premium:end -->).
+PREMIUM_MARKER_FILES = [
+    ".agent/skills/discovery/SKILL.md",
+    "exemplos/dominio-software/ux-designer/SKILL.md",
+]
+
+
+def strip_premium_markers(path):
+    """Remove linhas entre <!-- premium:start --> e <!-- premium:end --> (inclusive)."""
+    if not os.path.isfile(path):
+        return
+    out, skip = [], False
+    for ln in open(path, encoding="utf-8").read().splitlines(keepends=True):
+        low = ln.lower()
+        if "premium:start" in low:
+            skip = True
+            continue
+        if "premium:end" in low:
+            skip = False
+            continue
+        if not skip:
+            out.append(ln)
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.writelines(out)
+
+
+def strip_premium(out_root):
+    """Aplica o strip da camada premium na árvore de export (baseline)."""
+    for rel in PREMIUM_STRIP_FILES:
+        _rm(os.path.join(out_root, *rel.split("/")))
+    for rel in PREMIUM_MARKER_FILES:
+        strip_premium_markers(os.path.join(out_root, *rel.split("/")))
 
 
 def strip_pycache(root):
@@ -58,8 +99,9 @@ def run(cmd, cwd=None):
 def main(argv):
     args = [a for a in argv[1:] if not a.startswith("--")]
     nonadmin = ("--nonadmin" in argv) or ("nonadmin" in argv and "--variant" in argv)
+    premium = "--premium" in argv
     if not args:
-        print("uso: python tools/export-clean.py <out-dir> [--nonadmin]", file=sys.stderr)
+        print("uso: python tools/export-clean.py <out-dir> [--nonadmin | --premium]", file=sys.stderr)
         return 2
     out = os.path.abspath(args[0])
     if os.path.abspath(out) == os.path.abspath(SRC_ROOT):
@@ -98,6 +140,14 @@ def main(argv):
     if run([py, "tools/test_marketing_claims.py"], cwd=out) != 0:
         print("\nGATE FALHOU: claim de marketing orfao / LIMITS desync no pacote publico.", file=sys.stderr)
         return 1
+
+    # 6b. TIER (ADR-049): BASELINE (public/non-admin) remove a camada PREMIUM; a distribuição PREMIUM mantém.
+    #     Premium = só EXPERIÊNCIA (proposta proativa + UX premium); análise/discovery/QA/segurança = core (ficam em todas).
+    if premium:
+        print("TIER: PREMIUM (camada premium mantida — ADR-049).")
+    else:
+        strip_premium(out)
+        print("TIER: BASELINE (camada premium removida: blueprints + seções premium).")
 
     # 7. VARIANTE non-admin (ADR-047): mesma fonte, característica própria = settings.json SEM hooks.
     #    Single-source -> multi-distribuicao: o admin mantem os hooks; o non-admin inicia sob restricao.

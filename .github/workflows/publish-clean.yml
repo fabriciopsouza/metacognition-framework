@@ -25,6 +25,7 @@ jobs:
     env:
       PUBLIC_REPO: "fabriciopsouza/metacognition-framework-public"
       NONADMIN_REPO: "fabriciopsouza/metacognition-framework-public-nonadmin"
+      PREMIUM_REPO: "fabriciopsouza/metacognition-framework-premium"
     steps:
       - uses: actions/checkout@v4
 
@@ -89,3 +90,30 @@ jobs:
           git remote add target "git@github.com:${NONADMIN_REPO}.git"
           GIT_SSH_COMMAND="ssh -i ~/.ssh/id_nonadmin -o IdentitiesOnly=yes" git push -f target main
           echo "Publicado em https://github.com/${NONADMIN_REPO}"
+
+      # Variante PREMIUM (ADR-049): MESMA fonte, mantém a camada premium (proposta proativa + UX premium).
+      # Privado (acesso pago). Mesmo gate sensível (sem dado de cliente nem na premium).
+      - name: Export limpo PREMIUM (mantém camada premium)
+        run: python tools/export-clean.py "${RUNNER_TEMP}/clean-premium" --premium
+
+      - name: Publicar no repo PREMIUM (SSH deploy key)
+        env:
+          PUBLISH_DEPLOY_KEY_PREMIUM: ${{ secrets.PUBLISH_DEPLOY_KEY_PREMIUM }}
+        run: |
+          if [ -z "${PUBLISH_DEPLOY_KEY_PREMIUM}" ]; then
+            echo "PUBLISH_DEPLOY_KEY_PREMIUM ausente — export premium validado; publish PULADO."
+            exit 0
+          fi
+          mkdir -p ~/.ssh
+          printf '%s\n' "${PUBLISH_DEPLOY_KEY_PREMIUM}" > ~/.ssh/id_premium
+          chmod 600 ~/.ssh/id_premium
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
+          cd "${RUNNER_TEMP}/clean-premium"
+          git init -q
+          git checkout -q -b main
+          git add -A
+          git -c user.name="auto-publish" -c user.email="actions@users.noreply.github.com" \
+              commit -q -m "publish (premium): export limpo @ ${GITHUB_SHA::7}"
+          git remote add target "git@github.com:${PREMIUM_REPO}.git"
+          GIT_SSH_COMMAND="ssh -i ~/.ssh/id_premium -o IdentitiesOnly=yes" git push -f target main
+          echo "Publicado em https://github.com/${PREMIUM_REPO}"

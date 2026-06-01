@@ -38,6 +38,7 @@ dashboard. NÃO ativar: pipeline headless, biblioteca, script sem interface.
 O UX **especifica**; o developer **implementa**. A `ux-spec` evita refatoração cara: a UI é decidida
 ANTES do código, não emergindo dele.
 
+<!-- premium:start (ADR-049) — gate de UX PREMIUM; removido nas distribuições baseline, mantido na premium. -->
 ## Definição de pronto PREMIUM (ADR-046 — checklist binário p/ gui-app)
 Para `product_type=gui-app`, a `ux-spec` só passa se propõe (e o produto entrega) o padrão premium do
 `blueprint.md` (vizinho). Checklist verificável (não "beleza", mas estrutura de produto premium):
@@ -51,6 +52,7 @@ Para `product_type=gui-app`, a `ux-spec` só passa se propõe (e o produto entre
 - [ ] **Saída acessível:** o usuário vê onde o resultado foi salvo e consegue abri-lo.
 Falha em qualquer item → `ux-spec` não-pronta (rewind ao ux/developer). Mecaniza o gap do campo: GUI
 básica que "passava" por existir, mas era difícil para leigo e sem validação de arquivos.
+<!-- premium:end -->
 
 ## Relações
 - `[[output-format]]` (formato de entrega) · `[[anti-hallucination]]` (UX não confirmada = INFERIDO) ·
