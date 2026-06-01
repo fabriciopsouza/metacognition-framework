@@ -25,3 +25,19 @@
 \bGxP\b
 21\s*CFR
 \bPCI-?DSS\b
+
+# Expansão v1.30.0 (ADR-043 — item 11 do plano de remediação v2): famílias reguladas comuns
+# que ainda passavam. NÃO-EXAUSTIVA por design (ver check_regulatory_coverage.py). NIST/OWASP são
+# padrões abertos FUNDACIONAIS do framework (guia/REFERENCIAS.md) — quando citados como FONTE de
+# princípio, portam o sentinela `lint-agnostic:allow` (caso real: _shared/action-safety §Princípio).
+\bSOX\b
+\bISO[ -]?13485\b
+\bISO[ -]?27001\b
+\bISO[ -]?9001\b
+\bCOBIT\b
+\bITIL\b
+\bBasel\s?(I{1,3}|IV)\b
+\bSOC ?2\b
+\bNIST\b
+\bCLIA\b
+\bSarbanes-?Oxley\b

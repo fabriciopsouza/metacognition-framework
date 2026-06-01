@@ -3,11 +3,11 @@
 > Método: cada frase foi roteada mentalmente contra as `description` reais dos
 > papéis. "Esperado" = papel correto; "Roteou para" = decisão do roteamento;
 > divergência = falha de description. Frases agnósticas de domínio.
-> Status: papéis A–F EXECUTADO em v1.2.0 (2026-05-23). Papel G `discovery`
-> DESIGN-TIME em v1.5.0 (2026-05-24) — casos escritos e revisados, mas
-> execução real do eval ainda não rodada → marcado [EMERGENTE], acionável
-> como follow-up. Frontmatter de carga validado no review (ver C1 do qa-critic
-> de v1.5.0).
+> Status: papéis A–F EXECUTADO em v1.2.0 (2026-05-23). Papéis G `discovery` e
+> H `mapeamento de processo` **EXECUTADO** em v1.29.0 (2026-05-31, ADR-042) —
+> roteamento + eval funcional mecanizado (cobertura de dimensões) em
+> `_meta/eval-results-discovery.md` + canário `tools/test_discovery_eval.py`.
+> (Era DESIGN-TIME/[EMERGENTE] desde v1.5.0; gap fechado pela remediação v2.)
 
 ## A. PMO — should-trigger (entrada/orquestração)
 | # | Frase | Esperado | Roteou para | OK |

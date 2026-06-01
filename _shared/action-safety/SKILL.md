@@ -13,7 +13,7 @@ metadata:
 > (`tools/hooks/effect-gate.ps1` + managed-settings + canary). Aqui mora o **julgamento**: a regra
 > que o agente aplica em qualquer ambiente. Agnóstico de domínio — classifica por efeito, não por nome.
 
-## Princípio (Saltzer & Schroeder; NIST Zero Trust; OWASP C3)
+## Princípio (Saltzer & Schroeder; NIST Zero Trust; OWASP C3) <!-- lint-agnostic:allow NIST/OWASP = padrão aberto FUNDACIONAL (guia/REFERENCIAS.md), citado como fonte do princípio, não norma de domínio (ADR-043) -->
 **Default-deny.** O que não é claramente reversível-e-baixo-impacto (T1) não é autônomo.
 Denylist por nome de comando é incompleta por construção (falha insegura e silenciosa — caso JARVIS:
 `rm -rf ~/`). Classifique pelo **efeito**, que é finito; nomes de comando são infinitos.

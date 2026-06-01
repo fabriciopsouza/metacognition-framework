@@ -1,0 +1,15 @@
+{
+  "profile": "seguranca-da-informacao",
+  "_doc": "Arquetipo GENERICO (nao-cliente) p/ produto sob requisitos de seguranca da informacao. Seed editavel; norma concreta declarada pelo dono (ADR-010). Andaime, nao certificacao.",
+  "norms_typical": ["ISO 27001", "SOC 2"],
+  "controls": {
+    "audit_trail": {"required": true, "fields": ["quem", "quando", "acao", "recurso", "resultado"], "immutable": true},
+    "access_control": {"required": true, "hint": "menor privilegio; segredos fora do repo (ver action-safety/exfiltration)"},
+    "hitl": {"sufficient_when": "mudanca que afeta postura de seguranca/dados sensiveis passa por revisao antes do final"},
+    "retention": {"min_period": "definir-por-norma", "default_hint": "confirmar com a norma"},
+    "incident_response": {"required": true, "hint": "trilha permite reconstruir o que aconteceu (observability)"},
+    "secrets_handling": {"required": true, "hint": "effect-gate familia 'exfiltration' (ADR-039) cobre exfil de credencial"}
+  },
+  "wires_to": ["high-stakes-gate", "observability", "effect-gate (exfiltration/escalation)"],
+  "note": "Confirmar controles com a norma REAL. Perfil e ponto de partida, nao auditoria."
+}

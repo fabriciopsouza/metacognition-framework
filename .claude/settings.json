@@ -86,6 +86,30 @@
             "statusMessage": "Gate de acoes destrutivas por efeito (effect-gate ADR-015)"
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"tools\\hooks\\overwrite-guard.ps1\"",
+            "timeout": 10,
+            "statusMessage": "Anti-overwrite cego de artefato (overwrite-guard ADR-037)"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Read|Write|Edit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"tools\\hooks\\overwrite-guard.ps1\"",
+            "timeout": 10,
+            "statusMessage": "Registro de arquivos lidos/criados na sessao (overwrite-guard ADR-037)"
+          }
+        ]
       }
     ],
     "PreCompact": [

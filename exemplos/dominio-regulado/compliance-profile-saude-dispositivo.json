@@ -1,0 +1,15 @@
+{
+  "profile": "saude-dispositivo",
+  "_doc": "Arquetipo GENERICO (nao-cliente) p/ produto que apoia decisao em saude/dispositivo/laboratorio. Seed editavel; a norma concreta e declarada pelo dono (ADR-010). Andaime, nao certificacao (LIMITS.md).",
+  "norms_typical": ["ISO 13485", "CLIA", "21 CFR Part 11"],
+  "controls": {
+    "audit_trail": {"required": true, "fields": ["quem", "quando", "o-que", "valor-anterior", "valor-novo", "versao-da-regra"], "immutable": true},
+    "hitl": {"sufficient_when": "decisao irreversivel ou que vai a laudo/decisao clinica passa por revisao humana qualificada antes do final"},
+    "retention": {"min_period": "definir-por-norma", "default_hint": "anos; confirmar com a norma declarada"},
+    "e_signature": {"required": true, "binds": ["identidade", "intencao", "timestamp"]},
+    "data_integrity": {"principles_hint": "integridade/atribuibilidade/legibilidade/contemporaneidade (ALCOA-like) — confirmar com a norma"},
+    "validation": {"risk_based": true, "evidence": ["spec", "casos de teste", "resultado", "aprovacao"]}
+  },
+  "wires_to": ["high-stakes-gate", "observability (logs imutaveis)"],
+  "note": "Preencher 'definir-por-norma' com a norma REAL do caso. Este perfil nao substitui assessoria de conformidade."
+}

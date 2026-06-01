@@ -27,7 +27,11 @@ try {
 
     # Modo de execução (ADR-005) — define a fraseologia da confirmação.
     $mode = 'default'
-    $modeFile = Join-Path $env:USERPROFILE '.claude/framework-mode.json'
+    # $HOME e a variavel automatica cross-platform (PS 5.1 Windows + pwsh POSIX); $env:USERPROFILE
+    # e NULL no Linux/macOS e fazia o Join-Path lancar sob ErrorActionPreference=Stop -> stdout vazio
+    # (pego pelo CI cross-platform, ADR-040). mission-gate.sh ja usa $HOME.
+    $homeDir = if ($env:USERPROFILE) { $env:USERPROFILE } elseif ($HOME) { $HOME } else { '~' }
+    $modeFile = Join-Path $homeDir '.claude/framework-mode.json'
     if (Test-Path $modeFile) {
         try { $m = Get-Content -Raw -LiteralPath $modeFile | ConvertFrom-Json; if ($m.mode) { $mode = [string]$m.mode } } catch { }
     }

@@ -60,7 +60,7 @@ perguntado. Este papel encarna esse método — não um catálogo de domínios, 
    **Modo A — Transcribe (determinístico, ADR-010 §ii-a):** quando o briefing tem declaração nominal explícita, **sustentada em ≥2 lugares**, com **stakeholder nomeado**, sem contradição interna → discovery TRANSCREVE para `## Escopo declarado pelo discovery` marcando origem ("via briefing — citar trechos"), **sem re-asking**. Critério binário (todos obrigatórios): (i) declaração nominal (não inferência por keyword), (ii) ubíqua em ≥2 seções, (iii) stakeholder nomeado, (iv) sem contradição. Falha em qualquer → modo B.
 
    **Modo B — Interview (default):** 5 perguntas explícitas ao dono, registradas em `## Escopo declarado pelo discovery`:
-   - **(a) Regulado?** Este projeto opera sob alguma norma/convenção externa? Quais especificamente? Vigência? (Por norma, classificar `[CONFIRMADO]`/`[INFERIDO]`/`[DESCONHECIDO]`.)
+   - **(a) Regulado?** Este projeto opera sob alguma norma/convenção externa? Quais especificamente? Vigência? (Por norma, classificar `[CONFIRMADO]`/`[INFERIDO]`/`[DESCONHECIDO]`.) **Se SIM (ADR-043):** oferecer o **perfil de conformidade clonável** mais próximo de `exemplos/dominio-regulado/` (saúde-dispositivo / financeiro / infosec) como *andaime de partida* (não certificação) e rodar `tools/check_regulatory_coverage.py` (advisory) — a norma concreta segue declarada pelo dono, núcleo agnóstico.
    - **(b) Alto-risco?** Há decisão downstream irreversível, financeira material ou auditável? (Sim/Não + justificativa.)
    - **(c) Regras com semântica?** Há regra de negócio onde o "como" importa tanto quanto o "quê" (ex.: anti-fraude, audit trail, fairness — listar as concretas do projeto)? (Sim/Não + lista.)
    - **(d) Gaps não-bloqueantes?** Dimensões/dados sabidos ausentes mas não impedem entrega? (Lista + decisão "manter gap" / "tratar follow-up".)
@@ -70,6 +70,19 @@ perguntado. Este papel encarna esse método — não um catálogo de domínios, 
    **Anti-vazamento (ADR-010):** o agente NÃO importa norma/convenção de outro projeto/sessão como resposta. Em modo A, lê só o briefing DESTE projeto. Em modo B, resposta vem do dono ou fica `[DESCONHECIDO]`. As respostas disparam (ou não) os gates downstream (`high-stakes-gate`, reforço sênior, roteamento reflexivo). Sem declaração afirmativa → defaults agnósticos.
 
    **Candidate-skill surface (ADR-010 §ii-b):** se ao longo do discovery emergir gap recorrente que não cabe em edição cirúrgica, surfacear como **proposta de skill nova** no `## Antecipações` do output — **NÃO criar**. Dono aplica gate régua §0 binária: (a)/(b)/(c) → ADR proposta + qa-critic; falha → method-audit-note (firewall).
+
+## Elicitação-consultiva de PRODUTO (banco agnóstico — ADR-033, obrigatório p/ produto recorrente)
+Quando a entrega for **produto recorrente** (software, dado, pipeline, relatório que vira ferramenta),
+carregar `_shared/discovery/elicitation-dimensions.md` e **endereçar cada dimensão universal** —
+operador · interface · entrada-validação · escopo-temporal · recortes-saída · persistência ·
+auditoria-log · ambiente-execução · formato-saída. **Postura consultiva, não de coletor:** para cada
+dimensão, **recomendar um default sênior com o trade-off** e pedir confirmação (*"vai a decisão de
+gente não-técnica e é auditável → recomendo GUI + log; confirma, ou prefere outro caminho?"*) em vez
+de pergunta em aberto (*"qual interface?"*). Registrar a decisão na seção **`## Dimensões de
+elicitação`** do `requirements.md`. **Gate mecânico:** `tools/check_spec_depth.py <requirements.md>`
+deve dar PASS **antes do handoff J1** (discovery→architect) — barra spec rasa que pula produto. As
+**meta-perguntas** (dimensões) são agnósticas e vivem no banco; as **perguntas de domínio** ("descartar
+tais entidades?", "a referência é X ou Y?") são GERADAS ao ler o material e **nunca** entram no banco.
 
 ## Banco de partida (acelerador EDITÁVEL — nunca gaiola)
 Conjuntos-semente de perguntas para casos comuns. São **ponto de partida**, não

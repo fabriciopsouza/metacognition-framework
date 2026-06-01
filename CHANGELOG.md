@@ -15,6 +15,170 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.31.0] — 2026-05-31 — Remediação v2 (marco 9/9): LIMITS.md mecanizado + marketing ancorado
+
+> Item 13 (último): a transparência estava dispersa em prosa. Agora é um índice único, gerado do estado
+> real dos canários, com trava de CI — o doc **não pode mentir**, e o marketing não promete além da prova.
+
+### Added
+- **ADR-044** — LIMITS.md mecanizado + marketing ancorado:
+  - `tools/build_limits.py`: gera `LIMITS.md` (13 capacidades) com status ✅ PROVADO / 🟡 PARCIAL /
+    ⏳ EM DESENVOLVIMENTO derivado do canário; `--check` falha o CI se divergir.
+  - `LIMITS.md`: "o que entrega hoje" (cada linha: mecanizado × NÃO-mecanizado) + "o que NÃO fazemos".
+  - `tools/test_marketing_claims.py`: reprova claim ✅ PROVADO órfão em README/PITCH; exige README linkar LIMITS.
+  - `.github/workflows/ci.yml`: step `build_limits.py --check`.
+
+### Changed
+- `README.md`: pointer para `LIMITS.md` no topo (status ancorado em evidência).
+
+> **Remediação v2 COMPLETA** (9 marcos, 13 itens, ADR-033..044). 19 canários (18 PASS + 1 SKIP local de
+> paridade — provada na matriz CI). Princípio reitor honrado: cada item entrega par executável; prosa só
+> onde não-mecanizável, declarada em `LIMITS.md`.
+
+## [1.30.0] — 2026-05-31 — Remediação v2 (marco 8/9): abrangência regulada (denylist + perfis clonáveis)
+
+> Item 11: a denylist era seed não-exaustiva (ITIL/COBIT/SOX/ISO/SOC 2/CLIA passavam) e o caso regulado
+> não tinha andaime de partida. Expande-se a denylist + meta-linter de cobertura + perfis opt-in — núcleo agnóstico intacto.
+
+### Added
+- **ADR-043** — denylist expandida + catálogo de perfis regulados:
+  - `tools/agnostic-denylist.txt`: +11 padrões (SOX, ISO-13485/27001/9001, COBIT, ITIL, Basel, SOC 2, NIST,
+    CLIA, Sarbanes-Oxley). NIST/OWASP fundacionais (REFERENCIAS) seguem permitidos via sentinela na citação.
+  - `tools/check_regulatory_coverage.py` (+ canário): meta-linter advisory que avisa famílias sem
+    representante, mantendo "não-exaustiva".
+  - `exemplos/dominio-regulado/`: README + 3 perfis clonáveis (`compliance-profile-*.json`: saúde-dispositivo,
+    financeiro, infosec) — andaime de partida, oferecidos pelo discovery quando regulado=sim.
+
+### Changed
+- `_shared/action-safety/SKILL.md`: sentinela `lint-agnostic:allow` na citação fundacional de NIST/OWASP.
+- `discovery/SKILL.md` 6(a): oferece o perfil regulado clonável. `test_core_agnostic.py`: samples dos novos padrões.
+
+## [1.29.0] — 2026-05-31 — Remediação v2 (marco 7/9): discovery sai de DESIGN-TIME (eval G/H executado)
+
+> Item 10: os evals dos papéis `discovery` (G) e `mapeamento de processo` (H) estavam não-executados —
+> a senioridade central era promessa não-medida. Agora EXECUTADO + reproduzível.
+
+### Added
+- **ADR-042** — discovery eval executado:
+  - `tools/test_discovery_eval.py`: eval funcional EXECUTADO contra 3 briefings sintéticos agnósticos
+    (app de indicador / pipeline / relatório), medindo cobertura das dimensões (ADR-033) + controle raso
+    que discrimina. Reproduzível na matriz CI.
+  - `_meta/eval-results-discovery.md`: roteamento G/H (should-trigger/should-NOT) + eval funcional.
+
+### Changed
+- `_meta/eval-results-papeis.md`: status G/H DESIGN-TIME → **EXECUTADO** (ponteiro para o novo arquivo).
+
+## [1.28.0] — 2026-05-31 — Remediação v2 (marco 6/9): effect-gate vira motor de regras por efeito
+
+> Item 7: o effect-gate eram ~5 padrões grep no código; bypasses conhecidos passavam (find -delete,
+> reset --hard, clean -fdx, curl|bash, exfil). Agora a **política é dado** (`effect-rules.json`) e o hook
+> é o **interpretador** — adicionar família/regra não toca o hook.
+
+### Changed
+- **ADR-039** — effect-gate motor por efeito (refatora ADR-015):
+  - `tools/effect-rules.json`: 12 regras / 5 famílias (mass-destruction, history-rewrite,
+    escalation-persistence, exfiltration, resource-exhaustion); cada regra `all`[]+`none`[]+tier+decisão.
+  - `tools/hooks/effect-gate.ps1` (ASCII-only, dodge do BOM/cp1252) + `.sh` (jq + grep -E): interpretadores;
+    regex no subconjunto comum .NET ∩ POSIX-ERE para paridade. default-ALLOW; T3→deny, T2→ask.
+  - `tools/test_effect_gate.py`: agora decision-based (deny/ask/allow), ≥2 deny + ≥2 benignos por família +
+    fuzzing de flag/aspas/espaço. `tools/test_parity.py`: decisão idêntica .ps1↔.sh (validada local por
+    emulação grep -E; prova final na matriz CI).
+- OWASP LLM06 segue **🟡** até a matriz CI (3 SOs) + paridade 100% verdes (honestidade via LIMITS.md/ADR-044).
+
+## [1.27.0] — 2026-05-31 — Remediação v2 (marco 5/9): segurança de escrita + governança (overwrite-guard + execution-report)
+
+> Itens 5 + 6 ⭐: o overwrite cego de artefato (E1) passava pelo effect-gate; e tokens/custo/placar nunca
+> eram medidos (o framework não aprendia com a própria execução). Dois mecanismos fecham os dois.
+
+### Added
+- **ADR-037** — action-safety em overwrite cego:
+  - `tools/hooks/overwrite-guard.ps1` + `.sh`: `PreToolUse(Write|Edit)` bloqueia (`exit 2`, robusto ao bug
+    #37210) sobrescrita de arquivo com conteúdo **não-lido/não-criado nesta sessão**; `PostToolUse` registra
+    os arquivos lidos/criados (manifesto por `session_id`). Wirado no `.claude/settings.json`.
+  - `tools/test_overwrite_guard.py`: canário (+ paridade .sh quando há jq). **Dogfood:** o hook pegou a
+    própria edição do agente e revelou um bug real (PowerShell desembrulha array de 1 elem → corrigido com List).
+- **ADR-038** — execution-report automático (estende ADR-026):
+  - `tools/execution_report.py`: tokens (via transcripts; senão **NÃO MEDIDO**, nunca fabricado), tempo,
+    turnos, arquivos, testes, retrabalho e **placar gate × achado**. `validate_report()` reprova report
+    ausente / sem placar / token fabricado. Wirado no `docops` §Encerramento.
+  - `tools/test_execution_report.py`: 5 casos (inclui regressão "token fabricado sem fonte").
+
+## [1.26.0] — 2026-05-31 — Remediação v2 (marco 4/9): estabilidade de decisão (anti-viés-de-oráculo + sicofância)
+
+> Itens 3 + 9 ⭐: o erro mais caro foi de **execução**, não elicitação — mapear termo→coluna por inferência,
+> bater o alvo e tratar como validar semântica, abandonar resultado validado sem prova. Mecaniza-se a
+> **exigência de registro**; o julgamento semântico fica adversarial (declarado em LIMITS.md).
+
+### Added
+- **ADR-035** — gate de ambiguidade de campo-fonte:
+  - `tools/check_field_mapping.py`: mapeamento termo→coluna sem **confirmação do dono + justificativa** = FAIL.
+  - `tools/test_oracle_bias.py`: 4 casos sintéticos (colunas-irmãs perto do alvo); inferência/over-correção reprovam.
+- **ADR-041** — sicofância como dimensão de teste de 1ª classe:
+  - `tools/test_sycophancy.py`: prova que o gate **reprova** entrega que bate o alvo mas mapeia por inferência
+    (reusa `check_field_mapping` — régua §0). Limite: prova o erro plantado conhecido, não casos novos.
+
+### Changed
+- `qa-critic/SKILL.md`: rule #9 (anti-viés-oráculo + "que outra interpretação produz este número?" +
+  anti-over-correção) — contagem "9 rules" sincronizada.
+- `docs/specs/_template/requirements.md`: seção `## Mapeamento de campo-fonte` (condicional a colunas-irmãs).
+
+## [1.25.0] — 2026-05-31 — Remediação v2 (marco 3/9): entrega vira produto, não script (completude + porta-do-usuário + ambiente limpo)
+
+> Itens 2 + 4 ⭐ do plano: a aritmética bate mas o **produto** falha — entrega cobre subconjunto do pedido,
+> entry-point quebra no terminal, requirements nunca testados limpos. Três gates mecânicos fecham os três.
+
+### Added
+- **ADR-034** — gate de completude pedido × entrega:
+  - `tools/check_completeness.py`: detecta quantificadores de escopo no pedido ("cada X", "mês a mês",
+    "acumulado"…) e exige critério binário no `validation.md` para cada um. Wirado como qa-critic **rule #8** (J4).
+  - `tools/test_completeness.py`: 4 casos sintéticos agnósticos ("1 mês ≠ mês a mês" reproduzido sem domínio).
+- **ADR-036** — teste pela porta do usuário + ambiente limpo (app SW/dados, ADR-023):
+  - `tools/check_entrypoint_tty.py`: roda o entry-point sem TTY; `input()` bloqueante como única via = FAIL.
+  - `tools/check_clean_env.py`: `pip install` em venv descartável + import; modo `--check --no-network` p/ CI.
+  - `tools/test_entrypoint_no_tty.py` + `tools/test_clean_env.py`: canários sintéticos.
+
+### Changed
+- `qa-critic/SKILL.md`: rule #8 (completude) — contagem "8 rules" sincronizada.
+- `evals-engineer/SKILL.md`: §Gate de entrega de software ("pronto" = porta-do-usuário + ambiente-limpo + completude).
+
+## [1.24.0] — 2026-05-31 — Remediação v2 (marco 2/9): elicitação-consultiva mecanizada (causa-raiz nº1)
+
+> Item 1 ⭐ do plano: o gap mais caro do incidente de campo foi a **antecipação**, não a segurança de
+> ação. A elicitação era "de coletor", não "de consultor", e a instrução em prosa foi ignorada. Correção
+> mecânica: banco agnóstico de dimensões + linter que **barra J1** se a spec não decidir o produto.
+
+### Added
+- **ADR-033** — elicitação-consultiva + linter de profundidade de spec:
+  - `_shared/discovery/elicitation-dimensions.md`: banco agnóstico das 9 dimensões universais (operador,
+    interface, entrada-validação, escopo-temporal, recortes-saída, persistência, auditoria-log,
+    ambiente-execução, formato-saída), tabela machine-readable com aliases. Só **meta-perguntas** (agnósticas);
+    perguntas de domínio nunca entram (barradas por `check_core_agnostic`).
+  - `tools/check_spec_depth.py`: gate exit 1 se o `requirements.md` não registra **decisão** (não placeholder)
+    para cada dimensão obrigatória. Verifica cobertura, não qualidade (limite → `LIMITS.md`).
+  - `tools/test_spec_depth.py`: 5 casos sintéticos agnósticos — spec rasa "calcular X" FALHA; spec que decide
+    as 9 dimensões PASSA; placeholder `<...>` não conta.
+
+### Changed
+- `discovery/SKILL.md`: §Elicitação-consultiva (postura de default sênior + trade-off, não pergunta em aberto).
+- `handoff.md` J1: gate `check_spec_depth.py` PASS para produto recorrente.
+- `docs/specs/_template/requirements.md`: seção `## Dimensões de elicitação`.
+
+## [1.23.0] — 2026-05-31 — Remediação v2 (marco 1/9): CI cross-platform + paridade `.sh`↔`.ps1` provada
+
+> Onda **remediação v2** — consolida crítica adversarial sobre v1.22.0 + evidência de campo (incidente
+> registrado em `docs/_private/`, fora da distribuição). Princípio reitor: **tudo vira hook/linter/teste**;
+> prosa só onde não-mecanizável, e então declarada em `LIMITS.md`. Este marco é a BASE que prova todo o resto.
+
+### Added
+- **ADR-040** — paridade cross-platform real + CI matriz 3 SOs:
+  - `tools/run_canaries.py`: runner único que descobre e roda cada `test_*.py` como subprocesso (exit = nº
+    de falhas). Os canários são scripts standalone (não pytest-collectáveis); este é o entrypoint canônico.
+  - `tools/test_parity.py`: exige veredito `deny`/`allow` **idêntico** entre `effect-gate.ps1` e `.sh` para
+    cada payload (fonte única: importa `CASES` do `test_effect_gate`); SKIP se faltar pwsh/bash/jq.
+  - `.github/workflows/ci.yml`: matriz `ubuntu+macos+windows`, roda o runner + o tier norma do
+    `check_core_agnostic` em todo push/PR (o tier --sensitive é gate de export, não roda no source privado).
+  - `tools/requirements-dev.txt`: parsers opcionais (openpyxl, python-docx); núcleo segue sem dep de runtime.
+
 ## [1.22.0] — 2026-05-31 — Entrada determinística: roteamento mecânico + wiring self-heal + doc-intake + consistency-gate
 
 > Onda **prosa→mecanismo da ENTRADA**, motivada por incidente confirmado (relato AIVI): um agente executou

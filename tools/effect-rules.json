@@ -1,0 +1,83 @@
+{
+  "_doc": "Política do effect-gate por EFEITO (ADR-039). O .json é a POLÍTICA; o hook (.ps1/.sh) é o INTERPRETADOR. Backstop conservador default-ALLOW: só T3 inequívoco vira deny; T2 ambíguo vira ask. Cada regra casa se TODOS os padrões de 'all' batem E NENHUM de 'none' bate, no comando em minúsculas. REGEX em subconjunto comum .NET ∩ POSIX-ERE (sem \\s \\b \\d \\w; usar ' ', (^| ), ( |$), [a-z]) para paridade .ps1↔.sh. Editar aqui (não no hook) é o ponto: adicionar família/regra = só dado.",
+  "version": 1,
+  "rules": [
+    {
+      "id": "rm-root", "family": "mass-destruction", "tier": "T3", "decision": "deny",
+      "all": [
+        "(^| )(/bin/)?rm( |$)",
+        "((^| )-[a-z]*r[a-z]*( |$)|--recursive)",
+        "((^| )-[a-z]*f[a-z]*( |$)|--force)",
+        "([\"']?/[\"']?( |$|\\*)|~[\"/]?( |$|\\*)|\\$home|( )/\\*)"
+      ],
+      "none": [],
+      "reason": "rm recursivo-forçado atingindo raiz/home/~ (E1+E2)"
+    },
+    {
+      "id": "mkfs-dd-format", "family": "mass-destruction", "tier": "T3", "decision": "deny",
+      "all": ["(mkfs(\\.[a-z0-9]+)?( |$)|format-volume|format +[a-z]:|dd +.*of=/dev/(sd|nvme|disk|hd))"],
+      "none": [],
+      "reason": "format/mkfs/dd sobre device de bloco (E1+E2)"
+    },
+    {
+      "id": "find-delete-root", "family": "mass-destruction", "tier": "T2", "decision": "ask",
+      "all": ["(^| )find +(/|~)", "-delete( |$)"],
+      "none": [],
+      "reason": "find -delete varrendo raiz/home (E1 em massa); confirme o alvo"
+    },
+    {
+      "id": "fork-bomb", "family": "resource-exhaustion", "tier": "T3", "decision": "deny",
+      "all": [":\\(\\) *\\{ *:\\|:& *\\} *;:"],
+      "none": [],
+      "reason": "fork bomb (E2 — exaustão de recursos)"
+    },
+    {
+      "id": "git-push-force", "family": "history-rewrite", "tier": "T3", "decision": "deny",
+      "all": ["git +push", "(--force( |$)|(^| )-f( |$))"],
+      "none": ["force-with-lease"],
+      "reason": "git push --force/-f sem --force-with-lease (E2+E3); use --force-with-lease ou gate humano"
+    },
+    {
+      "id": "git-reset-hard", "family": "history-rewrite", "tier": "T2", "decision": "ask",
+      "all": ["git +reset +--hard"],
+      "none": [],
+      "reason": "git reset --hard descarta mudanças rastreadas (E1 local); confirme"
+    },
+    {
+      "id": "git-clean-fd", "family": "history-rewrite", "tier": "T2", "decision": "ask",
+      "all": ["git +clean", "((^| )-[a-z]*f|--force)", "((^| )-[a-z]*d|--directories)"],
+      "none": ["(^| )-[a-z]*n( |$)|--dry-run"],
+      "reason": "git clean -f -d remove arquivos/dirs não-rastreados de forma irreversível; confirme (ou use -n)"
+    },
+    {
+      "id": "git-history-rewrite", "family": "history-rewrite", "tier": "T2", "decision": "ask",
+      "all": ["git +(filter-branch|filter-repo)"],
+      "none": [],
+      "reason": "reescrita de histórico (filter-branch/repo) é irreversível em remoto; confirme"
+    },
+    {
+      "id": "chmod-chown-root", "family": "escalation-persistence", "tier": "T3", "decision": "deny",
+      "all": ["(chmod|chown) +-[a-z]*r[a-z]* +.*( )/( |$)"],
+      "none": [],
+      "reason": "alteração recursiva de permissão/dono em raiz (E5)"
+    },
+    {
+      "id": "firewall-off", "family": "escalation-persistence", "tier": "T3", "decision": "deny",
+      "all": ["(netsh +advfirewall +set +allprofiles +state +off|iptables +-f( |$))"],
+      "none": [],
+      "reason": "desligamento de firewall (E5)"
+    },
+    {
+      "id": "curl-pipe-shell", "family": "escalation-persistence", "tier": "T2", "decision": "ask",
+      "all": ["(curl|wget) ", "\\| *(bash|sh|zsh)( |$)"],
+      "none": [],
+      "reason": "download de script remoto canalizado direto para shell (E5 — exec de código não-auditado); confirme"
+    },
+    {
+      "id": "secret-exfil", "family": "exfiltration", "tier": "T2", "decision": "ask",
+      "all": ["(curl|wget|scp|rsync|nc) ", "(id_rsa|\\.ssh|\\.aws|credentials|\\.env|secret|\\.pem)"],
+      "none": [],
+      "reason": "possível exfiltração de credencial/segredo (E6); confirme o destino"
+    }
+  ]
+}

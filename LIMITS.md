@@ -1,0 +1,29 @@
+# LIMITS.md — o que o framework GARANTE, prova, e o que NÃO faz (gerado por tools/build_limits.py, ADR-044)
+
+> **Honestidade mecanizada.** Cada linha tem status derivado do **canário** que a prova (verde na matriz CI = PROVADO; ausente = EM DESENVOLVIMENTO). O `build_limits.py --check` falha o CI se este arquivo divergir dos canários — **o doc não pode mentir**. `PROVADO` = há canário e a suíte roda verde no CI (ADR-040). NÃO confunda com certificação.
+
+## O que entrega hoje
+| Capacidade | Status | Canário (prova) | Mecanizado | NÃO-mecanizado (limite) | ADR |
+|---|---|---|---|---|---|
+| Elicitação cobre as dimensões de produto antes de codar | ✅ PROVADO | `tools/test_spec_depth.py` | cobertura de dimensão (gate barra J1) | qualidade sênior do default (adversarial) | ADR-033 |
+| Entrega cobre cada quantificador do pedido | ✅ PROVADO | `tools/test_completeness.py` | quantificadores do lexicon vs validation | quantificador fora do lexicon | ADR-034 |
+| Mapeamento de campo-fonte é decisão registrada | ✅ PROVADO | `tools/test_oracle_bias.py` | exigência de registro (confirmação+justificativa) | correção semântica do mapeamento | ADR-035 |
+| Gate reprova número-alvo com erro plantado (anti-sicofância) | ✅ PROVADO | `tools/test_sycophancy.py` | catch do erro plantado conhecido | sicofância em caso novo (adversarial) | ADR-041 |
+| Entry-point roda pela porta do usuário (sem TTY) | ✅ PROVADO | `tools/test_entrypoint_no_tty.py` | input() bloqueante = FAIL | — | ADR-036 |
+| Requirements instalam em ambiente limpo | ✅ PROVADO | `tools/test_clean_env.py` | resolução offline (--dry-run --no-index) | venv real depende de rede/PyPI | ADR-036 |
+| Não sobrescreve artefato não-lido/não-criado na sessão | ✅ PROVADO | `tools/test_overwrite_guard.py` | bloqueio (exit 2) de overwrite cego | paridade .sh provada só na matriz CI | ADR-037 |
+| Execution-report auto + token honesto | ✅ PROVADO | `tools/test_execution_report.py` | report+placar+anti-fabricação (NÃO MEDIDO) | telemetria de token real-time (dep. do host) | ADR-038 |
+| Backstop por efeito (4+ famílias) com anti-falso-positivo | ✅ PROVADO | `tools/test_effect_gate.py` | deny T3 / ask T2 por família | OWASP LLM06 🟢 só após matriz CI 3 SOs + paridade 100% | ADR-039 |
+| Paridade de veredito .ps1 ↔ .sh | ✅ PROVADO | `tools/test_parity.py` | decisão idêntica (provada na matriz CI) | SKIP local sem jq — prova é no CI | ADR-040 |
+| Discovery cobre dimensões (eval EXECUTADO, não design-time) | ✅ PROVADO | `tools/test_discovery_eval.py` | cobertura + discriminação raso×sênior | qualidade sênior do default | ADR-042 |
+| Cobertura regulada da denylist | ✅ PROVADO | `tools/test_regulatory_coverage.py` | famílias conhecidas têm representante | denylist NÃO-EXAUSTIVA por design | ADR-043 |
+| Núcleo sem termo de domínio/cliente | ✅ PROVADO | `tools/test_core_agnostic.py` | tier norma + tier sensível (export) | vazamento semântico novo (qa-critic é o backstop) | ADR-020 |
+
+## O que NÃO fazemos (anti-overclaim)
+- **Não certificamos conformidade.** Os perfis de `exemplos/dominio-regulado/` são **andaime de partida**, não auditoria — a adequação à norma concreta é do dono + revisão humana (HITL).
+- **Não medimos tokens em tempo real** sem telemetria exposta pelo host — nesse caso o execution-report diz literalmente `NÃO MEDIDO` (nunca fabricamos número).
+- **Não garantimos ausência de viés/sicofância em casos novos** — provamos o catch do erro plantado conhecido; o resto é o protocolo adversarial do qa-critic (ADR-018).
+- **Não prometemos detecção exaustiva** de normas (denylist não-exaustiva) nem de comandos destrutivos (effect-gate é backstop conservador, não classificador completo).
+- **Não substituímos o gate humano** em decisão irreversível/regulada (high-stakes-gate).
+
+> Gerado de `tools/build_limits.py`. Para atualizar: adicione o canário e rode o gerador; não edite à mão (o `--check` reprova divergência).
