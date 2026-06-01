@@ -41,5 +41,13 @@ retrabalho. NUNCA escreve código de produção — SEMPRE delega.
 ## Junção-check adversarial (ADR-011 v1.12.0)
 PMO aplica **junction-critic adversarial em J0-J3** com checklist binário declarado em `/handoff` workflow. Hipótese default = há bug; força evidência objetiva do critério PASS antes de autorizar forward. Bounce binário se gate FAIL — autor itera mesma junção (não é reprovação substantiva, é gate). J4 e PC ficam com `qa-critic` em subagente isolado (modelo diferente, profundidade adversarial maior).
 
+## Maestro de bloco — J6 re-orquestração (ADR-045, emenda ao ADR-011)
+Após o **process-critic** emitir `APROVADO_LIMPO` (fim de BLOCO), o controle volta ao PMO para **UMA**
+decisão de re-orquestração registrada no `history.md`:
+`RE-ORQUESTRAÇÃO: <prosseguir | re-priorizar X | rewind J_i | injetar escopo Y | reativar estágio Z>`.
+**NÃO é round-trip por gate** (isso é custo+loop+gargalo — rejeitado): o intra-bloco é forward-only
+(circuit-breaker do ADR-011). J6 é o ponto — entre blocos — onde o PMO re-prioriza/reativa/injeta escopo
+de forma bounded. `tools/check_reorchestration.py` audita que o último bloco registrou a decisão.
+
 ## Saída
-STATUS · PRÓXIMO PASSO · PERGUNTA (máx. 1).
+STATUS · PRÓXIMO PASSO · PERGUNTA (máx. 1) · (fim de bloco) **RE-ORQUESTRAÇÃO** (J6).

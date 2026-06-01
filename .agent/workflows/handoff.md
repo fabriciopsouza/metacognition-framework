@@ -27,12 +27,14 @@ pmo | architect | developer | qa-critic | docops | explorer
 | **J4** | qa-critic → docops | resultado adversarial subagente | `APROVADO_LIMPO` (não `_COM_RESSALVAS` nem `REPROVADO`) | qa-critic subagente isolado |
 | **J5** | docops → release | `validation.md` do release | TODOS V1-Vn = PASSA | PMO + dono (revisão humana) |
 | **PC** | **process-critic FINAL** | revisão adversarial do bloco completo | LIMPO → merge/tag; ELSE → rewind cascata J_i + iterações até re-PASS | qa-critic subagente isolado (mesma instância expandida em escopo) |
+| **J6** | **PMO re-orquestração de bloco** (ADR-045) | `RE-ORQUESTRAÇÃO:` no `history.md` | após PC `APROVADO_LIMPO`, PMO registra **1** decisão: `prosseguir \| re-priorizar X \| rewind J_i \| injetar escopo Y \| reativar estágio Z` (`tools/check_reorchestration.py`) | PMO (maestro) |
 
 ### Invariantes operacionais (ADR-011)
 
 - **Binário-com-iterações DENTRO da junção:** autor itera até gate PASS (emenda no mesmo artefato via STATUS-field; rounds N-1, N, N+1 não criam novos artefatos).
 - **Forward-only ENTRE junções:** uma vez gate PASS, junção não volta no fluxo normal. **Sem essa cláusula, oscilação entre junções não-finais = loop eterno.**
 - **Process-critic dispara em:** (a) final de cada BLOCO APROVADO (release, ADR aceito, spec fechada, feature delivered) — mandatório; (b) on-demand do dono; (c) opcional em `/checkpoint` substantivo como backstop.
+- **J6 — PMO maestro na FRONTEIRA DE BLOCO (ADR-045), NÃO por gate:** após o PC emitir `APROVADO_LIMPO`, o controle volta ao **PMO** para UMA decisão de re-orquestração registrada no `history.md` (`RE-ORQUESTRAÇÃO: ...`). **Voltar ao PMO a cada gate é REJEITADO** (custo+loop+gargalo, ADR-045): o intra-bloco segue **forward-only** (circuit-breaker preservado). J6 é onde o fluxo pode re-priorizar/reativar/injetar escopo entre blocos — de forma bounded e auditável.
 - **Rewind cascata default:** process-critic manda de volta a J_i → todos agentes downstream (J_i → J_5) re-rodam. Cirúrgico fica pendente (v1.13.0) para casos onde cascata se mostrar custosa.
 - **SUPLANTA × EMENDA pós-rewind:** §Decisão/§Alternativas muda → SUPLANTA novo ADR + `Substituído por:` no antigo. §Implementação/§Consequências muda → EMENDA in-place via STATUS-field. Within-junction rounds = EMENDA (não conta como rewind).
 
