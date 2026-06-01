@@ -15,6 +15,14 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.33.1] — 2026-06-01 — Harness de teste isolado (validação de campo sem vazamento)
+
+### Added
+- `guia/teste-isolado.ps1` + `guia/TESTE-ISOLADO.md`: harness **agnóstico** para validar o framework num
+  caso de domínio real com **isolamento estrutural** (clone do público + projeto com git/memória próprios)
+  e checagem de **zero vazamento de volta** (`-LeakCheck` → `--sensitive` + git limpo). Acceptance test de
+  "produz premium com menos interações", rodável em 1 comando — sem nome/termo de domínio no framework.
+
 ## [1.33.0] — 2026-06-01 — Blueprints de domínio + dicionário-contrato de entrada + ux-gate premium (ADR-046)
 
 > Feedback de campo: o produto saía sub-premium (GUI básica, difícil p/ leigo, **sem validação de
