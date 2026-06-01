@@ -1,0 +1,6 @@
+# product-types.txt — domínio Gestão de Projetos (ADR-046).
+# Mapa tipo -> papéis ativados, lido pelo mission-gate (ADR-022). Agnóstico: taxonomia da APLICAÇÃO.
+# Formato: <tipo>: <papéis/descrição>.
+project-plan: pmo (orquestra) + discovery (escopo/risco) + architect (decisões técnicas)
+status-dashboard: pmo + discovery (métricas que mudam decisão)
+project-charter: pmo + discovery (stakeholders/escopo) + sumário executivo

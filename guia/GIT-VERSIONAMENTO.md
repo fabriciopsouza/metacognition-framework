@@ -38,7 +38,7 @@ Fluxo: branch → commits → PR/merge em main → tag de release.
 
 ## Marcar um release (tag)
 ```bash
-git tag -a v1.4.0 -m "Repo 100% genérico + drift fix + consolida PROMPT-CHAT-WEB na raiz"
+git tag -a v1.4.0 -m "Repo 100% flexível + drift fix + consolida PROMPT-CHAT-WEB na raiz"
 git push origin main --tags
 ```
 A tag deve casar com a versão do `README.md` e a entrada do `CHANGELOG.md`.

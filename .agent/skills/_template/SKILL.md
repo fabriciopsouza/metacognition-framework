@@ -1,6 +1,6 @@
 ---
 name: _template-application
-description: "NÃO ATIVAR — molde para criar uma APLICAÇÃO do framework (um domínio/contexto específico). Clonar, renomear, preencher description (gatilhos + exclusões), as skills de _shared a carregar, e o domínio. É assim que o framework genérico vira aplicável a qualquer contexto."
+description: "NÃO ATIVAR — molde para criar uma APLICAÇÃO do framework (um domínio/contexto específico). Clonar, renomear, preencher description (gatilhos + exclusões), as skills de _shared a carregar, e o domínio. É assim que o framework flexível vira aplicável a qualquer contexto."
 version: 1.0.0
 source: "padrão de aplicação derivado de A2"
 last_review: 2026-05-23
@@ -15,7 +15,7 @@ shared_refs: []
 
 # <nome-da-aplicação> — Molde
 
-> O framework é genérico. Uma **aplicação** é onde ele encontra um domínio/contexto
+> O framework é flexível. Uma **aplicação** é onde ele encontra um domínio/contexto
 > (BI, regulado, análise de indicador, etc.). Aplicações vivem **FORA do núcleo** —
 > no SEU repositório. Criar em 4 passos:
 > 1. `cp -r .agent/skills/_template <seu-repo>/<minha-aplicacao>`.

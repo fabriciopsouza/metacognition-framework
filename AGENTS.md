@@ -3,7 +3,7 @@
 Roteador: AGENT-FRAMEWORK.md (v2.3) · Núcleo SSoT: _shared/ ·
 Papéis de processo: .agent/skills/ · Regras: .agent/rules/ · Workflows: .agent/workflows/
 
-## Papéis de processo (genéricos)
+## Papéis de processo (flexíveis)
 pmo · architect · developer · qa-critic · docops · explorer (read-only) · _template (molde).
 
 ## Regras sempre ativas

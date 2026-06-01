@@ -8,7 +8,7 @@
 
 Ativar este sub-modo apenas quando **todos** os critérios se verificam:
 
-1. **Há pergunta de fundo** que precisa ser respondida ANTES de a spec ser viável (ex.: "qual o estado-da-arte de SDD em 2026?", "como esta norma/padrão declarado pelo discovery trata componente X?" — exemplos genéricos; o domínio específico vem do projeto declarado pelo discovery, ADR-010).
+1. **Há pergunta de fundo** que precisa ser respondida ANTES de a spec ser viável (ex.: "qual o estado-da-arte de SDD em 2026?", "como esta norma/padrão declarado pelo discovery trata componente X?" — exemplos flexíveis; o domínio específico vem do projeto declarado pelo discovery, ADR-010).
 2. **Não há fonte canônica disponível** no contexto da sessão (briefing/glossário/ADR existente não cobrem).
 3. **A resposta destrava decisão** — não é curiosidade lateral.
 

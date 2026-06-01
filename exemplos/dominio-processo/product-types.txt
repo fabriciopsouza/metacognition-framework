@@ -1,0 +1,6 @@
+# product-types.txt — domínio Mapeamento de Processos (ADR-046).
+# Mapa tipo -> papéis ativados, lido pelo mission-gate (ADR-022). Agnóstico: a taxonomia é da
+# APLICAÇÃO, não do núcleo. Formato: <tipo>: <papéis/descrição>.
+process-map: discovery (sub-modo mapeamento de processo) + architect (ADR de to-be)
+bpmn: discovery (sub-modo mapeamento de processo) + architect
+process-improvement: discovery (mapeamento) + architect (to-be) + sumário executivo

@@ -1,4 +1,4 @@
-# Framework Metacognitivo Agêntico — Genérico e Escalável
+# Framework Metacognitivo Agêntico — Flexível e Escalável
 
 🌐 **Site (visão geral — UX, evidências e índice de docs):** https://fabriciopsouza.github.io/metacognition-framework/
 
@@ -8,8 +8,8 @@
 
 > **O que entrega hoje (honesto, ancorado em evidência):** ver [`LIMITS.md`](LIMITS.md) — cada capacidade com status ✅ PROVADO / 🟡 PARCIAL / ⏳ EM DESENVOLVIMENTO **derivado do canário que a prova** (gerado por `tools/build_limits.py`; o CI falha se divergir). A seção "o que NÃO fazemos" está lá também — andaime, não certificação (ADR-044).
 
-> **Versão:** 1.32.0 · **Autor:** Fabricio Souza (github.com/fabriciopsouza/metacognition-framework) · **Base:** pesquisas A0–A3 · **PT-BR** · **CC BY 4.0** (ver [`LICENSE`](LICENSE) · [`NOTICE`](NOTICE))
-> **Princípio:** o framework é **estritamente agnóstico de domínio** (ADR-010 / Princípio 12). Linguagens, ferramentas, normas setoriais, regulamentações, padrões técnicos, frameworks de validação, regras de negócio — **quaisquer** — são **aplicações/contextos**: não fazem parte do núcleo, **não aparecem hardcoded em prompts/regras/docs do framework** (nem como exemplo). Domínio é **declarado pelo discovery** por projeto. O que o núcleo oferece é **mecanismo genérico**: data integrity, audit trail, validação por risco, traceability, observabilidade — todos no `_shared/`.
+> **Versão:** 1.33.0 · **Autor:** Fabricio Souza (github.com/fabriciopsouza/metacognition-framework) · **Base:** pesquisas A0–A3 · **PT-BR** · **CC BY 4.0** (ver [`LICENSE`](LICENSE) · [`NOTICE`](NOTICE))
+> **Princípio:** o framework é **estritamente agnóstico de domínio** (ADR-010 / Princípio 12). Linguagens, ferramentas, normas setoriais, regulamentações, padrões técnicos, frameworks de validação, regras de negócio — **quaisquer** — são **aplicações/contextos**: não fazem parte do núcleo, **não aparecem hardcoded em prompts/regras/docs do framework** (nem como exemplo). Domínio é **declarado pelo discovery** por projeto. O que o núcleo oferece é **mecanismo flexível**: data integrity, audit trail, validação por risco, traceability, observabilidade — todos no `_shared/`.
 > **QA bicelular (v1.12.0 / ADR-011 / Princípio 13):** fluxo do squad tem 6 junções binárias forward-only (J0-J5) com gates declarados em `/handoff` + process-critic adversarial final (qa-critic em subagente isolado) com poder de rewind cascata. TODO QA é adversarial. SUPLANTA × EMENDA política binária.
 > **Handoff cross-sessão (v1.13.0 / ADR-012 / Princípio 14):** discovery passo 6(e) declara "alimenta outra sessão?"; se SIM, Pacote de handoff obrigatório via J5 (artefato+versão, localização, acesso, prompt pronto-para-colar, pendências). +rules #6 (RCA gate) e #7 (cobertura temporal pós-J4) em qa-critic SKILL.
 > **Série "da prosa ao mecanismo" (v1.14.x→v1.20.0 / ADR-013..020):** regras críticas que dependiam de boa-vontade do agente ganharam par executável — contrato de skill (`validate_skills.py`), allowlist por efeito (`effect-gate`), telemetria/poda, QA turno-único heterogêneo, sync de repo no boot (`check-repo-sync`) e **agnosticismo do núcleo** (`check_core_agnostic.py`, ADR-020: enforcement do Princípio 12 acima).
@@ -19,7 +19,7 @@
 ```
 ROTEADOR     AGENT-FRAMEWORK.md (v2.3)   decide o MODO (contexto × complexidade)
 NÚCLEO       _shared/                    regras transversais (fonte única)
-PROCESSO     .agent/skills/              papéis genéricos: pmo, discovery (+ sub-modo
+PROCESSO     .agent/skills/              papéis flexíveis: pmo, discovery (+ sub-modo
                                          "mapeamento de processo" em v1.6.0), architect,
                                          developer, qa-critic, docops, explorer, _template
 CONTRATO     docs/specs/                 requirements.md + validation.md (gate binário)
@@ -27,7 +27,7 @@ INFRA        _meta/                      isolamento de subagente, external-acces
 APLICAÇÕES   exemplos/README.md          COMO criar aplicações (clonando _template) — vivem FORA do núcleo
 ```
 
-## Tudo no núcleo é genérico (ADR-010 / Princípio 12)
+## Tudo no núcleo é flexível (ADR-010 / Princípio 12)
 **Estritamente agnóstico:** nenhum arquivo de `_shared/`, `.agent/` ou `docs/` (excluindo CHANGELOG histórico e exemplos didáticos rotulados em `docs/specs/exemplos/`) carrega listas hardcoded de produto, norma, convenção ou regra de domínio. O framework sabe **orquestrar, classificar, validar, isolar, rastrear** — para qualquer domínio. Quando há sinal de contexto especializado, **o `discovery` pergunta ao dono** (5 perguntas obrigatórias: regulado/alto-risco/regra-com-semântica/gaps-não-bloqueantes/**alimenta-outra-sessão**); a resposta vai para o `requirements.md`/`research-brief.md` em `## Escopo declarado pelo discovery` e dispara os gates downstream (incluindo Pacote de handoff cross-sessão se item (e) afirmativo — ADR-012 v1.13.0). **Anti-vazamento cross-projeto:** o agente não importa convenção/norma de outra sessão/projeto sem confirmação.
 
 ## Como aplicar a um contexto (escala por clonagem)

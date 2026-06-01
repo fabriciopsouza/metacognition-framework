@@ -1,6 +1,6 @@
 ---
 name: qa-critic
-description: "Ativar SEMPRE após o developer, antes de qualquer aprovação. Validação adversarial — hipótese default é que existe bug. Idealmente modelo diferente do developer. Genérico."
+description: "Ativar SEMPRE após o developer, antes de qualquer aprovação. Validação adversarial — hipótese default é que existe bug. Idealmente modelo diferente do developer. Flexível."
 version: 1.2.0
 source: "SQUAD v1.1.0 (qa-critic) — enxuto"
 last_review: 2026-05-23
@@ -22,7 +22,7 @@ enforcement:
   chat: "self-declared: confirma rótulo de efeito e confirmação informada (sem gate real)"
 ---
 
-# QA-Critic — Validação Adversarial (genérico)
+# QA-Critic — Validação Adversarial (flexível)
 
 ## Carregar de `_shared/`
 `output-format` (checklist) · `confidence-classification` · `_meta/subagent-isolation`
@@ -60,7 +60,7 @@ gate humano antes do "final".
 > **Veredito herda o vocabulário da modalidade ativa** (não inventa termo novo): como **junction-critic J4**
 > → `APROVADO_LIMPO` (reprovar = mais uma iteração no mesmo artefato, sem REPROVADO terminal); como
 > **process-critic (PC)** → `APROVADO_LIMPO | REPROVADO_REWIND J_i`. "REPROVADO" do passo 3 é o gatilho
-> genérico de não-aprovação; concretiza-se conforme a modalidade.
+> flexível de não-aprovação; concretiza-se conforme a modalidade.
 
 ## Duas modalidades (ADR-011 v1.12.0)
 
