@@ -38,6 +38,20 @@ dashboard. NÃO ativar: pipeline headless, biblioteca, script sem interface.
 O UX **especifica**; o developer **implementa**. A `ux-spec` evita refatoração cara: a UI é decidida
 ANTES do código, não emergindo dele.
 
+## Definição de pronto PREMIUM (ADR-046 — checklist binário p/ gui-app)
+Para `product_type=gui-app`, a `ux-spec` só passa se propõe (e o produto entrega) o padrão premium do
+`blueprint.md` (vizinho). Checklist verificável (não "beleza", mas estrutura de produto premium):
+- [ ] **Rodável por leigo:** ponto de entrada abre GUI por default; nada de `input()` bloqueante como
+  única via (`check_entrypoint_tty`). Há também caminho CLI (`<entry> <modulo>`) para poweruser.
+- [ ] **Launcher claro (se >1 módulo):** tela inicial com cards (título + descrição + ação) — não menu
+  de texto confuso. Abas/seções rotuladas e navegáveis.
+- [ ] **Entrada validada:** seleção de pasta → **auto-detecção** dos arquivos do dicionário-contrato +
+  **validação** de schema com mensagem orientando o que falta (`check_input_contract`, ADR-046).
+- [ ] **Feedback de estado:** default/vazio/erro/loading/concluído visíveis (sem "trava sem dizer nada").
+- [ ] **Saída acessível:** o usuário vê onde o resultado foi salvo e consegue abri-lo.
+Falha em qualquer item → `ux-spec` não-pronta (rewind ao ux/developer). Mecaniza o gap do campo: GUI
+básica que "passava" por existir, mas era difícil para leigo e sem validação de arquivos.
+
 ## Relações
 - `[[output-format]]` (formato de entrega) · `[[anti-hallucination]]` (UX não confirmada = INFERIDO) ·
-  ADR-023 (este papel) · ADR-022 (ativação por product_type com interface).
+  ADR-023 (este papel) · ADR-022 (ativação por product_type) · ADR-046 (blueprint + dicionário-contrato).

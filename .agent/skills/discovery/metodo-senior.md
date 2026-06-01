@@ -11,7 +11,7 @@
 Ativar este reforço **apenas** quando **algum** dos critérios abaixo se verifica de forma explícita. Em dúvida, NÃO carregar (default: discovery universal).
 
 1. **Citação de norma regulatória ou padrão técnico EXTERNO declarado pelo discovery do projeto como pertinente**. Não inclui "convenção" interna. **Domínio é declarado pelo projeto, não inferido por sinais semânticos** (ADR-010).
-2. **Referência a documento OFICIAL específico**: resolução, portaria, regulamento técnico, manual oficial de fabricante, spec assinada. **NÃO inclui** contratos comerciais genéricos, documentação interna de projeto, ou READMEs.
+2. **Referência a documento OFICIAL específico**: resolução, portaria, regulamento técnico, manual oficial de fabricante, spec assinada. **NÃO inclui** contratos comerciais flexíveis, documentação interna de projeto, ou READMEs.
 3. **Regra de negócio interna com peso semântico DECLARADO** pelo projeto (ex.: anti-fraude, audit trail, fairness, conformidade regulatória — a regra específica é declarada via discovery, não pré-listada aqui). **NÃO inclui qualquer regra de negócio** — só aquelas cujo impacto envolve perda financeira material ou compliance, confirmado pelo dono.
 4. **Decisão downstream de alto impacto confirmada**: executiva irreversível, financeira material, regulatória/auditável.
 

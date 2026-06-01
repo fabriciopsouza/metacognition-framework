@@ -17,7 +17,7 @@ shared_refs:
   - _shared/traceability
 ---
 
-# Explorer — Exploração/Auditoria Read-Only (genérico)
+# Explorer — Exploração/Auditoria Read-Only (flexível)
 
 ## Antes de responder, carregar de `_shared/`
 - `anti-hallucination` · `confidence-classification` · `traceability` (file-first)

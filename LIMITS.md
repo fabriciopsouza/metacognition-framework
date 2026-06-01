@@ -17,6 +17,7 @@
 | Paridade de veredito .ps1 ↔ .sh | ✅ PROVADO | `tools/test_parity.py` | decisão idêntica (provada na matriz CI) | SKIP local sem jq — prova é no CI | ADR-040 |
 | Discovery cobre dimensões (eval EXECUTADO, não design-time) | ✅ PROVADO | `tools/test_discovery_eval.py` | cobertura + discriminação raso×sênior | qualidade sênior do default | ADR-042 |
 | Cobertura regulada da denylist | ✅ PROVADO | `tools/test_regulatory_coverage.py` | famílias conhecidas têm representante | denylist NÃO-EXAUSTIVA por design | ADR-043 |
+| Auto-detecção + validação de arquivos de entrada (dicionário-contrato) | ✅ PROVADO | `tools/test_input_contract.py` | arquivos detectados na pasta + colunas obrigatórias validadas | mapeamento semântico correto (qa-critic) | ADR-046 |
 | Núcleo sem termo de domínio/cliente | ✅ PROVADO | `tools/test_core_agnostic.py` (interno¹) | tier norma + tier sensível (export) | vazamento semântico novo (qa-critic é o backstop) | ADR-020 |
 
 > ¹ **canário interno**: roda na fonte e no CI, mas é **removido da distribuição pública** (reconstrói fragmentos de token de cliente para testar o linter sensível — não pode ser publicado). O status PROVADO reflete a fonte/CI; no pacote público o arquivo não existe **por design**.

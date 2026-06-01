@@ -46,6 +46,8 @@ CLAIMS = [
      "cobertura + discriminação raso×sênior", "qualidade sênior do default", "042"),
     ("Cobertura regulada da denylist", "test_regulatory_coverage.py",
      "famílias conhecidas têm representante", "denylist NÃO-EXAUSTIVA por design", "043"),
+    ("Auto-detecção + validação de arquivos de entrada (dicionário-contrato)", "test_input_contract.py",
+     "arquivos detectados na pasta + colunas obrigatórias validadas", "mapeamento semântico correto (qa-critic)", "046"),
     ("Núcleo sem termo de domínio/cliente", "test_core_agnostic.py",
      "tier norma + tier sensível (export)", "vazamento semântico novo (qa-critic é o backstop)", "020"),
 ]

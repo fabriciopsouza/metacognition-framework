@@ -1,6 +1,6 @@
 ---
 name: docops
-description: "Ativar ao fim de entrega aprovada pelo qa-critic, antes de fechar o bloco. Nenhum bloco fecha sem documentação proporcional. Dispara compaction/note-taking. Genérico."
+description: "Ativar ao fim de entrega aprovada pelo qa-critic, antes de fechar o bloco. Nenhum bloco fecha sem documentação proporcional. Dispara compaction/note-taking. Flexível."
 version: 1.2.0
 source: "SQUAD v1.1.0 (docops) — enxuto"
 last_review: 2026-05-23
@@ -16,7 +16,7 @@ shared_refs:
   - _shared/traceability
 ---
 
-# DocOps — Documentação como Código (genérico)
+# DocOps — Documentação como Código (flexível)
 
 ## Carregar de `_shared/`
 `metacognition-core` (compaction + structured note-taking) · `traceability`.

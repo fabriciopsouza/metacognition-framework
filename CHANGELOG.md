@@ -15,6 +15,30 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.33.0] — 2026-06-01 — Blueprints de domínio + dicionário-contrato de entrada + ux-gate premium (ADR-046)
+
+> Feedback de campo: o produto saía sub-premium (GUI básica, difícil p/ leigo, **sem validação de
+> arquivos**) e exigia ~12 interações. Faltava ao framework **memória de "como é um entregável premium"**.
+> Correção: o discovery **propõe a forma premium de uma vez** (assertividade > perguntas), carregada **sob
+> demanda** (não infla o núcleo, P12 preservado). Foco no RESULTADO.
+
+### Added
+- **ADR-046** — blueprints de produto por domínio + dicionário-contrato:
+  - `exemplos/dominio-software/blueprint.md` + novos `dominio-processo/` e `dominio-projeto/` (blueprint +
+    product-types) — **3 domínios** como aplicações irmãs, carregadas sob demanda. O discovery PROPÕE a
+    forma completa (launcher fácil-ou-CLI · suíte de saída · auditoria), o dono confirma/ajusta numa batelada.
+  - `docs/specs/_template/data-dictionary.md` + `tools/check_input_contract.py` + `tools/test_input_contract.py`:
+    **auto-detecção + validação** dos arquivos de entrada na pasta (colunas obrigatórias) — resolve "produto
+    sem validação de arquivos" e alerta o anti-pattern de join-a-zero (chave float `5123.0`).
+  - `ux-designer/SKILL.md` §Definição de pronto PREMIUM (checklist binário: rodável-por-leigo · launcher
+    claro · entrada validada · feedback de estado · saída acessível) — barra GUI que "passava" por existir.
+
+### Changed
+- `discovery/SKILL.md`: §Blueprint de domínio (carrega o blueprint e propõe assertivamente).
+- **Terminologia "genérico" → "flexível"** nos docs/papéis voltados ao usuário (mantido "agnóstico", termo
+  técnico preciso) — "genérico soa mal" (pedido do dono).
+- `build_limits` ganha o claim do `check_input_contract` (LIMITS.md regenerado).
+
 ## [1.32.0] — 2026-06-01 — PMO maestro: re-orquestração na fronteira de bloco (J6, ADR-045)
 
 > Responde à pergunta do dono ("voltar ao PMO a cada gate?"). Análise adversarial: a cada gate NÃO

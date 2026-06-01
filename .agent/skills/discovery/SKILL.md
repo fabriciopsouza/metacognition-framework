@@ -1,6 +1,6 @@
 ---
 name: discovery
-description: "Ativar ANTES de planejar/implementar quando o pedido é novo, vago, ou a spec pode estar rasa/limitada ao que o usuário já conhece. Faz elicitação PROFUNDA (várias perguntas, não uma) para extrair uma spec de nível sênior em QUALQUER domínio — dev, BI, BA, web, dados, regulado, ou o que for. Em v1.6.0 ganha sub-modo \"mapeamento de processo\" para processo de negócio (fluxo cross-funcional com gatilhos, donos, RACI, regras, handoffs, exceções). Entrega requirements.md sênior que alimenta o architect. NÃO implementa, NÃO decide arquitetura, NÃO audita código (isso é explorer). Genérico e agnóstico de domínio."
+description: "Ativar ANTES de planejar/implementar quando o pedido é novo, vago, ou a spec pode estar rasa/limitada ao que o usuário já conhece. Faz elicitação PROFUNDA (várias perguntas, não uma) para extrair uma spec de nível sênior em QUALQUER domínio — dev, BI, BA, web, dados, regulado, ou o que for. Em v1.6.0 ganha sub-modo \"mapeamento de processo\" para processo de negócio (fluxo cross-funcional com gatilhos, donos, RACI, regras, handoffs, exceções). Entrega requirements.md sênior que alimenta o architect. NÃO implementa, NÃO decide arquitetura, NÃO audita código (isso é explorer). Flexível e agnóstico de domínio."
 version: 1.9.0
 source: "pedido do usuário — evitar specs rasas limitadas ao conhecimento próprio; fundamentos A0 (decomposição) + A2 (spec-driven); v1.6.0 adiciona BPM-sênior via sub-modo nomeado + progressive disclosure (ADR-003); v1.7.0 adiciona sub-modo pesquisa-cascata para G1 (ADR-007); v1.8.0 adiciona reforço transversal método sênior 8 passos (ADR-009) domain-agnóstico para qualquer caso com fonte canônica/normativa citada; v1.11.0 adiciona passo 9 (Coherence Pass / RRC) ao método sênior + agnosticismo estrito + discovery declara escopo (ADR-010) com método universal ganhando passo 6 obrigatório (lote temático); v1.21.0 adiciona passo 6(f) product_type → mission.md (ADR-022)"
 last_review: 2026-05-30
@@ -83,6 +83,18 @@ elicitação`** do `requirements.md`. **Gate mecânico:** `tools/check_spec_dept
 deve dar PASS **antes do handoff J1** (discovery→architect) — barra spec rasa que pula produto. As
 **meta-perguntas** (dimensões) são agnósticas e vivem no banco; as **perguntas de domínio** ("descartar
 tais entidades?", "a referência é X ou Y?") são GERADAS ao ler o material e **nunca** entram no banco.
+
+### Blueprint de domínio — PROPOR a forma premium de uma vez (ADR-046, assertividade > perguntas)
+Quando o `product_type` (passo 6f) casa um domínio com **aplicação** disponível, **carregar o
+`blueprint.md`** daquela app (`exemplos/dominio-software` · `exemplos/dominio-processo` ·
+`exemplos/dominio-projeto` · ou outra clonada de `_template`) e **PROPOR a forma completa do entregável
+de uma batelada** (launcher fácil-ou-CLI · dicionário-contrato com auto-detecção+validação de arquivos ·
+suíte de saída · auditoria) como default sênior — para o dono **confirmar/ajustar**, em vez de empurrar
+requisito a requisito. É a memória de "como é um produto premium", **carregada sob demanda** (não infla).
+Para produto com arquivos, gerar o **`data-dictionary.md`** (template) — `tools/check_input_contract.py`
+valida que os arquivos da pasta têm as colunas obrigatórias (resolve "produto sem validação de arquivo").
+Sem aplicação de domínio → defaults flexíveis (sem blueprint). O blueprint descreve **forma**, nunca
+conteúdo de domínio (P12 preservado).
 
 ## Banco de partida (acelerador EDITÁVEL — nunca gaiola)
 Conjuntos-semente de perguntas para casos comuns. São **ponto de partida**, não

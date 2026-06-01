@@ -1,6 +1,6 @@
 ---
 name: architect
-description: "Ativar quando a decisão técnica afeta >1 arquivo, introduz dependência, muda contrato/modelo, ou há escolha de arquitetura. Decide e documenta (ADR) — NÃO implementa. Genérico."
+description: "Ativar quando a decisão técnica afeta >1 arquivo, introduz dependência, muda contrato/modelo, ou há escolha de arquitetura. Decide e documenta (ADR) — NÃO implementa. Flexível."
 version: 1.2.0
 source: "SQUAD v1.1.0 (architect) — enxuto"
 last_review: 2026-05-23
@@ -17,7 +17,7 @@ shared_refs:
   - _shared/output-format
 ---
 
-# Architect — Tech Lead (genérico)
+# Architect — Tech Lead (flexível)
 
 ## Carregar de `_shared/`
 `confidence-classification` · `traceability` · `output-format`.
