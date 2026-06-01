@@ -23,6 +23,11 @@ jobs:
   canaries:
     name: canários (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    env:
+      # stdout UTF-8 em todos os runners: o Windows usa cp1252 e quebra em chars como ✅/→/×
+      # presentes nas mensagens dos canários. Alinha o runner à convenção do repo (reconfigure utf-8).
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: "utf-8"
     strategy:
       fail-fast: false
       matrix:

@@ -82,9 +82,9 @@ def main():
         cases = []
         cases.append(("Write sobre pré-existente FORA do manifesto -> bloqueia",
                       payload("PreToolUse", "Write", existing, tmp), None, 2))
-        cases.append(("Write sobre arquivo registrado na sessão -> allow",
-                      payload("PreToolUse", "Write", existing, tmp),
-                      {"sess-canary": [os.path.normpath(existing)]}, 0))
+        # "arquivo registrado -> allow" é coberto de forma ROBUSTA pelo fluxo record->allow no fim
+        # (usa a MESMA normalização GetFullPath do hook; seed manual com os.path.normpath divergia da
+        # canonicalização do hook em alguns runners Windows — falso-FAIL).
         cases.append(("Write de arquivo novo -> allow",
                       payload("PreToolUse", "Write", novo, tmp), None, 0))
         cases.append(("Write sobre arquivo vazio -> allow",
