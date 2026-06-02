@@ -77,9 +77,11 @@ Mecaniza a ENTRADA (motivação: incidente AIVI — agente executou tarefa regul
 - **`consistency-gate`** (ADR-030): auditoria de fechamento fail-soft (version-sync, adr-status, checkpoint, contagens, **unpushed**, transientes); wirada no docops §Encerramento. + `guia/RESILIENCIA-ACESSO.md` (recovery de conta > chave local).
 
 ## Como ler skills
-As skills de processo vivem em `.agent/skills/<nome>/SKILL.md` e o núcleo em
-`_shared/<nome>/SKILL.md`. Carregue o SKILL.md relevante antes de agir. Para
-auto-descoberta nativa do Claude Code, espelhe-as em `.claude/skills/` (ver guia/SETUP.md).
+**Lar único das skills:** `.agent/skills/<nome>/SKILL.md` (processo) e `_shared/<nome>/SKILL.md`
+(núcleo). É AQUI que elas vivem e são editadas — **procure aqui se uma skill "sumiu"**. Carregue o
+SKILL.md relevante antes de agir. O diretório `.claude/skills/` é um **espelho OPCIONAL** que só
+adiciona *auto-trigger* nativo; deixá-lo vazio é válido (a skill funciona lida sob demanda). **Não
+duplicar por cópia** (quebra a fonte única — régua §0); ver `guia/SETUP.md` e `.claude/skills/README.md`.
 
 ## Roteador base
 https://raw.githubusercontent.com/fabriciopsouza/metacognition-framework/main/AGENT-FRAMEWORK.md

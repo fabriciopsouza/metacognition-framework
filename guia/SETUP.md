@@ -43,7 +43,7 @@ Locais NATIVOS do Claude Code (verificado na doc oficial):
 | Peça | Local nativo | Neste framework |
 |---|---|---|
 | Contexto sempre-ativo | `CLAUDE.md` (raiz) | ✅ já incluído |
-| Skills (auto-descoberta) | `.claude/skills/<nome>/SKILL.md` | fonte em `_shared/` e `.agent/skills/`; espelhar se quiser auto-trigger |
+| Skills (lar único) | `.agent/skills/<nome>/SKILL.md` + `_shared/` | **é onde vivem e são editadas — procure aqui**; `.claude/skills/` é espelho OPCIONAL só p/ auto-trigger |
 | Subagentes (isolamento real) | `.claude/agents/<nome>.md` | ✅ explorer, qa-critic + _template |
 | Hooks (auditoria/enforcement) | settings do Claude Code | ver `_shared/observability` |
 
@@ -51,9 +51,10 @@ Dois caminhos:
 - **Quick:** abra a pasta no VS Code. O Claude Code lê `CLAUDE.md`, que aponta para
   `_shared/` e `.agent/skills/`. As skills são lidas quando instruídas. Subagentes
   em `.claude/agents/` já funcionam (explorer, qa-critic).
-- **Native (recomendado):** para as skills **auto-dispararem**, espelhe as pastas de
-  skill em `.claude/skills/` (mantendo `_shared/` como verdade — ver
-  `.claude/skills/README.md`). Subagentes já estão nativos.
+- **Native (opcional — só auto-trigger):** as skills **funcionam no Quick** (lidas sob demanda).
+  Se quiser que elas **auto-disparem**, espelhe as pastas em `.claude/skills/` — preferir **symlink**
+  a cópia (cópia duplica e arrisca divergir da fonte; ver `.claude/skills/README.md`). **Não é
+  pré-requisito** para o framework operar; `.agent/skills/` segue sendo a verdade. Subagentes já estão nativos.
 
 > Importante (doc oficial): ao usar `--add-dir`, o `.claude/skills/` da pasta
 > adicionada é auto-carregado, mas subagentes/comandos `.claude/` NÃO são lidos de

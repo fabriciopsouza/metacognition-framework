@@ -1,9 +1,9 @@
 ---
 name: discovery
 description: "Ativar ANTES de planejar/implementar quando o pedido é novo, vago, ou a spec pode estar rasa/limitada ao que o usuário já conhece. Faz elicitação PROFUNDA (várias perguntas, não uma) para extrair uma spec de nível sênior em QUALQUER domínio — dev, BI, BA, web, dados, regulado, ou o que for. Em v1.6.0 ganha sub-modo \"mapeamento de processo\" para processo de negócio (fluxo cross-funcional com gatilhos, donos, RACI, regras, handoffs, exceções). Entrega requirements.md sênior que alimenta o architect. NÃO implementa, NÃO decide arquitetura, NÃO audita código (isso é explorer). Flexível e agnóstico de domínio."
-version: 1.9.0
-source: "pedido do usuário — evitar specs rasas limitadas ao conhecimento próprio; fundamentos A0 (decomposição) + A2 (spec-driven); v1.6.0 adiciona BPM-sênior via sub-modo nomeado + progressive disclosure (ADR-003); v1.7.0 adiciona sub-modo pesquisa-cascata para G1 (ADR-007); v1.8.0 adiciona reforço transversal método sênior 8 passos (ADR-009) domain-agnóstico para qualquer caso com fonte canônica/normativa citada; v1.11.0 adiciona passo 9 (Coherence Pass / RRC) ao método sênior + agnosticismo estrito + discovery declara escopo (ADR-010) com método universal ganhando passo 6 obrigatório (lote temático); v1.21.0 adiciona passo 6(f) product_type → mission.md (ADR-022)"
-last_review: 2026-05-30
+version: 1.10.0
+source: "pedido do usuário — evitar specs rasas limitadas ao conhecimento próprio; fundamentos A0 (decomposição) + A2 (spec-driven); v1.6.0 adiciona BPM-sênior via sub-modo nomeado + progressive disclosure (ADR-003); v1.7.0 adiciona sub-modo pesquisa-cascata para G1 (ADR-007); v1.8.0 adiciona reforço transversal método sênior 8 passos (ADR-009) domain-agnóstico para qualquer caso com fonte canônica/normativa citada; v1.11.0 adiciona passo 9 (Coherence Pass / RRC) ao método sênior + agnosticismo estrito + discovery declara escopo (ADR-010) com método universal ganhando passo 6 obrigatório (lote temático); v1.21.0 adiciona passo 6(f) product_type → mission.md (ADR-022); v1.38.0 reparo do método sênior — companion metodo-senior.md passa a AUTO-DISPARAR por sinal de stake INFERIDO + verificação de âncora MECANIZADA (context-brief.md + check_context_brief.py, ADR-051)"
+last_review: 2026-06-02
 role_order: 1
 consumes:
   - "pedido bruto do PMO"
