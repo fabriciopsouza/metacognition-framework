@@ -1,8 +1,8 @@
 # ADR 051 — Reparo do discovery sênior: contexto INFERIDO + pesquisa de entidade/âncora MECANIZADA (conserta ADR-009/010/033 provados inertes)
 
-- Status: Proposto
+- Status: **Aceito** (implementado e mergeado em v1.38.0, PR #45 — `54a13d8`; status reconciliado em 2026-06-02)
 - Data: 2026-06-01 · Decisores: dono + squad (architect)
-- Onda: reparo de eficácia (marco candidato v1.38.0) · Tipo: **reparo** — net-gain régua §0 cláusula (a) **funde prosa→tool / poda metodo-senior** + cláusula (c) **destrava verificação hoje inalcançável** (nenhum gate mede se o contexto/âncora foi investigado).
+- Onda: reparo de eficácia (v1.38.0) · Tipo: **reparo** — net-gain régua §0 cláusula (a) **funde prosa→tool / poda metodo-senior** + cláusula (c) **destrava verificação hoje inalcançável** (nenhum gate mede se o contexto/âncora foi investigado).
 - Política: **SUPERSEDE a §Decisão do passo-1 (filtro de entrada) do ADR-009**; **EMENDA** ADR-010 (§Consequências — escopo do "não inferir") e ADR-033 (§Implementação — banco de dimensões). Relaciona: ADR-007 (pesquisa-cascata), ADR-029 (doc-intake/proveniência), ADR-042 (eval discovery), ADR-043 (perfis regulados), ADR-046 (blueprints), ADR-011 (process-critic), ADR-005 (execution-modes).
 
 ## Contexto

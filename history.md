@@ -9,6 +9,32 @@
 
 ---
 
+## 2026-06-02 — Checkpoint de RECONCILIAÇÃO retroativa: v1.31.1 + v1.33.0→v1.38.0 (ADR-046/047/049/050/051) [reconstruído]
+
+> **Catch do retrospective gate + consistency-gate (ADR-030)** no `/start-session` de 2026-06-02: o
+> `history.md` parou em v1.31.0/ADR-045 (entrada T00:20 abaixo) enquanto a `main` já estava em **v1.38.0**
+> (`54a13d8`, PR #45) — **~7 releases sem checkpoint**. Conteúdo abaixo **reconstruído do CHANGELOG (fonte
+> canônica) + ADRs + metadados `gh pr`**; append-only (nada reescrito). QA real (process-critic/CI) ocorreu
+> nas sessões originais de cada PR (todos mergeados com check verde) — **não re-executado aqui**; esta é
+> reconciliação documental, não nova entrega. Tags v1.36.0/v1.37.0/v1.38.0 (antes ausentes) criadas e
+> pushadas nesta reconciliação; ADR-051 flipado Proposto→Aceito (estava merged-as-Proposto, meta-recursão de Status já registrada no `## Aprendizado`).
+
+Arco de 2026-06-01 (todos `main`, mergeados via PR, fechados):
+- **v1.31.1 (PR #38)** — fix integridade da transparência no público + gates cross-drive. Motivado por **crítica adversarial externa que rodou a suíte no clone público** (grounding > eloquência): `LIMITS.md` público falhava o próprio `--check` (false-PASS na vitrine). ADR-044 `build_limits` `INTERNAL_ONLY`; `export-clean` gate **pós-strip**; guarda `relpath` cross-drive em `check_completeness`/`check_field_mapping`.
+- **v1.33.0 (PR #39, ADR-046)** — blueprints de domínio + dicionário-contrato de entrada + ux-gate premium. 3 domínios irmãos (software/processo/projeto) carregados sob demanda (P12 preservado); `data-dictionary.md` + `check_input_contract.py` (auto-detecção/validação de entrada, anti join-a-zero); `ux-designer` §Definição de pronto PREMIUM. Terminologia **"genérico"→"flexível"** nos docs de usuário.
+- **v1.33.1 (PR #40)** — harness de teste isolado (`guia/teste-isolado.ps1` + `TESTE-ISOLADO.md`): valida o framework num caso de domínio real com **isolamento estrutural** + checagem de **zero vazamento** (`-LeakCheck`).
+- **v1.34.0 (PR #41, ADR-047)** — modo **NON-ADMIN** (sem hooks PS, p/ GPO Restricted) + pipeline **single-source → multi-distribuição**. `settings.nonadmin.json` + `bootstrap.py` (Python puro) + `guia/MODO-NON-ADMIN.md`; doutrina **"gates anunciados"** (agente declara/aplica inline o que o hook faria). ADR-048 registrado **Proposto/futuro** (execution-report).
+- **v1.35.0 (PR #42, ADR-049)** — **3 distribuições de fonte única**: public (baseline+hooks) · non-admin (baseline+sem-hooks) · premium (full+hooks, privado/pago). Linha premium×core = **experiência × correção** (baseline NÃO perde discovery/análise). `export-clean` 3 modos; `publish-clean` publica as 3; repo premium privado criado.
+- **v1.36.0 (PR #43, ADR-050 Aceito)** — elaboração de **documentos premium flexível por TIPO**: `gen_exec_doc.py` → md/docx/pptx/pdf, 7 templates premium (runbook-validação · apresentação-executiva · decisão · pop-sop · manual · config · manutenção). Anti-fabricação: campo vazio → **`NÃO PREENCHIDO`**. Modelos = **referência, não-determinísticos** (a spec/domínio objetiva a estrutura real). Premium-only (stripado do baseline).
+- **v1.37.0 (PR #44, ADR-050 emenda)** — **entrega navegável**: `make_index.py` gera `index.html` + `LEIA-ME.txt` com **ordem de leitura guiada** (baseline, usabilidade); `gen_exec_doc --deliver` monta `output/<datestamp>/` por tipo; `check_delivery_floor.py` mecaniza o piso **"runbook de validação SEMPRE"** (prosa→gate). Fix **truncagem silenciosa** pptx/pdf (agora pagina).
+- **v1.38.0 (PR #45, ADR-051)** — **reparo do discovery sênior**: contexto **INFERIDO** + pesquisa de entidade/âncora **MECANIZADA**. Causa-raiz provada (caso de campo regulado, alias AIVI — evidência no cofre, fora do repo): o filtro do `metodo-senior.md` **proibia inferência** e o `check_spec_depth` só media produto → o reforço sênior **nunca carregava**. `_shared/discovery/context-signals.txt` (sinais de STAKE, auto-retroalimentado sem HITL, agnóstico) + `check_context_brief.py` (barra J1 sob sinal de stake sem `context-brief.md` com tabela de verificação de âncora). **Supersede passo-1 do ADR-009**, emenda ADR-010 (inferir STAKE ≠ hardcodar NORMA) + ADR-033 (banco de dimensões). Comportamento **proporcional ao modo** (default valida c/ humano · avançado confirma âncoras · autosuficiente infere e reporta) com **anti-inversão-de-segurança** (efeito T3 segue no gate humano).
+
+Method-audit (registrado também em `## Aprendizado`): o `consistency-gate` (ADR-030) **não disparou no fechamento** dessas 7 sessões — débito de checkpoint/tag/status sobreviveu até o boot manual o pegar. Sinal sobre o **wiring/execução do gate**, não só sobre o history.
+
+RE-ORQUESTRAÇÃO (J6, ADR-045): prosseguir — reconciliação documental fechada; sem re-priorização. Próximo passo aguarda direção do dono.
+
+---
+
 ## 2026-06-01T00:20 — Sessão: Remediação v2 (ADR-033..044, v1.23.0→v1.31.0) + ADR-045 (PMO maestro J6)
 
 Implementados os 13 itens do plano de remediação v2 em 9 marcos (v1.23.0→v1.31.0), mergeados (PR #36,
@@ -240,6 +266,7 @@ Riscos ativos: nenhum bloqueante. Risco residual ADR-010 §Riscos (detector de v
 
 > Notas de fracassos capturadas via `/checkpoint` (ex-G9). **Firewall:** notas são **inertes** — só viram comportamento via skill/regra destilada, aprovada via ADR e mergeada. Nota errada não propaga.
 
+- **[2026-06-02] Method-audit (princípio 11 / consistency-gate não-disparado no fechamento):** o `/start-session` pegou o `history.md` **~7 releases atrás** da `main` (parou em v1.31.0; main em v1.38.0) + **3 tags ausentes** (v1.36/37/38) + **ADR-051 merged-as-Proposto**. · **Causa-raiz:** o `consistency-gate` (ADR-030, fail-soft no docops §Encerramento) **não rodou no fechamento** dessas 7 sessões — o débito de checkpoint/tag/status só foi pego pelo retrospective gate humano no boot seguinte. Mecanismo existe mas não disparou (≠ "não existe"). · **Proposta (não-preemptiva, aguarda 2ª ocorrência confirmatória):** investigar se o `consistency-gate` está **wired e executando** no encerramento real (vs só documentado no SKILL) — se o padrão "gate fail-soft existe mas não roda" recorrer, vira candidato a fail-closed ou a check no `/checkpoint`. Liga a [[framework-self-improvement]]. **Sem ADR agora** — 1 ocorrência confirmada (régua §0; princípio 11 honesto: mecanismo silencioso ≠ ausente). Débito reconciliado nesta sessão (tags + status + checkpoints).
 - **[2026-05-31] Method-audit (operacional / encadear delete com merge não-verificado):** mergeei o PR #25 via `gh pr merge` num comando que **também deletava a branch** (local+remota) logo em seguida; o `gh` deu **network error** (merge não concluiu) mas o delete rodou → PR **auto-fechou sem merge** e a branch sumiu. · **Causa-raiz:** encadeei limpeza destrutiva (branch delete) com a ação principal (merge) no mesmo comando, sem verificar sucesso entre elas. · **Solução (executada):** commit `134d1ad` recuperado (existia local + em `refs/pull/25/head`), recovery-merge direto na main. **Disciplina:** nunca encadear `branch -d`/`push --delete` com o merge; verificar `gh pr view --json mergedAt` ANTES de limpar. Liga a [[feedback_pr_human_gate_merge]].
 - **[2026-05-31] Method-audit (qa-critic / overclaim de segurança pego antes de publicar):** ao escrever o `SECURITY.md`/site, afirmei que o `effect-gate` rodava "por default, mesmo com o agente injetado" — mas ele **não estava wired** no `.claude/settings.json` (só no template de managed-settings, instalação manual). **qa-critic adversarial (Sonnet isolado) pegou o overclaim ALTO antes do merge.** · **Causa-raiz:** descrevi a *capacidade pretendida* (ADR-015) como se fosse o *estado instalado*. · **Solução (executada):** wirar o effect-gate como PreToolUse no `settings.json` (ativo por default) + ressalvas de pré-requisito no SECURITY.md (managed-settings = camada não-bypassável). Reforça [[feedback_framework_integral]]: claim de segurança é alto-risco; gate adversarial antes de publicar, não depois.
 
