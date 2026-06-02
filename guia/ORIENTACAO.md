@@ -13,7 +13,7 @@
 | `guia/GIT-VERSIONAMENTO.md` | como versionar com git |
 | `guia/REFERENCIAS.md` | bibliografia e pesquisas-base |
 | `guia/web/index.html` | versão web (abre no navegador) |
-| `PROMPT-CHAT-WEB-v4.3.md` (raiz) | instruções p/ colar no Claude.ai chat — encarnação do framework para ambientes sem filesystem (mesmos princípios, mesmos resultados, papéis/subagentes simulados) |
+| `PROMPT-CHAT-WEB-v4.4.md` (raiz) | instruções p/ colar no Claude.ai chat — encarnação do framework para ambientes sem filesystem (mesmos princípios, mesmos resultados, papéis/subagentes simulados) |
 | `CHANGELOG.md` (raiz) | o que mudou, versão a versão |
 
 ## Para a IA (Claude Code e afins) — você normalmente NÃO edita à mão
