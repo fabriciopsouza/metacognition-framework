@@ -15,6 +15,19 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.39.1] — 2026-06-02 — Prompt do chat web sincronizado ao estado atual (v4.4, tier público)
+
+### Changed
+- **`PROMPT-CHAT-WEB-v4.4.md`** substitui o `v4.3` (removido): atualiza de "v1.21.0" para **v1.39.0/roteador v2.3**,
+  remove resíduo de domínio (Tableau) tornando o transversal 100% agnóstico, e incorpora as doutrinas novas —
+  **`enforcement.chat`/anti-JARVIS** (gate vira checkpoint declarado, nunca finge mecanismo) + Matriz de ambiente,
+  **postura de execução** textual (default/avançado/autosuficiente; efeito T3 sempre confirma — REQ-MODE-1),
+  **desambiguação "avançado"** (eixo execução × discovery=universal/reforço-sênior — ADR-055), **discovery sênior
+  por stake inferido** (ADR-051), e **contagem ≠ conteúdo** na validação adversarial.
+- Ponteiros vivos atualizados (README, `guia/INSTALAR-NO-VSCODE`, `guia/ORIENTACAO`). Registro histórico (ADRs/spec)
+  preserva a menção ao v4.3.
+- **Débito declarado:** o v4.4 ainda é mantido à mão; o alvo (ADR-054/057) é gerá-lo do main via profile `web`.
+
 ## [1.39.0] — 2026-06-02 — Execution-report de dois tiers: telemetria de processo anonimizada que retroalimenta o framework (ADR-052)
 
 > **O que destrava:** o placar gate × achado (ADR-038) era gerado só no repo do dono, sob invocação.
