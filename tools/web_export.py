@@ -216,16 +216,23 @@ def build(out_dir):
         write(os.path.join(out_dir, "premium", "skills", name, "SKILL.md"),
               gen_shared_skill(name, version, rules))
 
-    # README do repo -web (gerado, não editar à mão)
-    write(os.path.join(out_dir, "README.md"),
-          f"# metacognition-framework-web · v{version}\n\n"
-          "> **GERADO automaticamente do repo main** (`tools/web_export.py`). **Não editar à mão** — "
-          "edite no main e regenere (sentido único; ADR-054/057).\n\n"
-          "Encarnação do Framework Metacognitivo para chat sem filesystem (Claude.ai/Gemini), dois tiers:\n\n"
-          "- **`publico/prompt-web-publico.md`** — cole no Claude.ai; funciona sem instalar nada.\n"
-          "- **`premium/`** — orquestrador + skills nativas (auto-trigger + encadeamento de papéis).\n\n"
-          "Doutrina `enforcement.chat`: no chat, gate vira checkpoint declarado — nunca finge mecanismo "
-          "(anti-JARVIS). Licença CC BY 4.0.\n")
+    # READMEs — um por tier (cada dir é um REPO-ROOT distinto: publico/=público, premium/=PRIVADO/pago).
+    # Espelha o split não-web (-public × -premium; ADR-049). ADR-054 emendado (ADR-058).
+    write(os.path.join(out_dir, "publico", "README.md"),
+          f"# metacognition-framework-web · v{version} (tier PÚBLICO)\n\n"
+          "> **GERADO do repo main** (`tools/web_export.py`). **Não editar à mão** (sentido único; ADR-054/057/058).\n\n"
+          "Encarnação chat (sem filesystem) do Framework Metacognitivo — **tier público, autocontido**:\n\n"
+          "- **`prompt-web-publico.md`** — cole no Claude.ai/Gemini; funciona **sem instalar nada**.\n\n"
+          "O **tier PREMIUM** (orquestrador + skills nativas, auto-trigger + encadeamento) é **pago/privado** "
+          "(repo `metacognition-framework-web-premium`). Doutrina `enforcement.chat` (anti-JARVIS). CC BY 4.0.\n")
+    write(os.path.join(out_dir, "premium", "README.md"),
+          f"# metacognition-framework-web-premium · v{version} (tier PREMIUM — PRIVADO/pago)\n\n"
+          "> **GERADO do repo main** (`tools/web_export.py`). **Não editar à mão** (sentido único; ADR-054/057/058).\n"
+          "> Distribuição **privada** (acesso pago) — não tornar pública.\n\n"
+          "Tier premium do pacote web: **orquestrador enxuto + skills nativas** (auto-trigger por intenção + "
+          "encadeamento de papéis). Pré-requisito de método: o tier público cobre o transversal; este orquestra.\n\n"
+          "- **`prompt-web-premium.md`** — orquestrador.\n"
+          "- **`skills/<nome>/SKILL.md`** — 15 skills (7 papéis + 8 transversais). Doutrina `enforcement.chat`.\n")
 
     violations = anti_jarvis_gate(out_dir, forbidden)
     return version, violations

@@ -9,6 +9,15 @@
 
 ---
 
+## 2026-06-02 — Sessão: Web split público × premium PRIVADO — v1.41.0 (ADR-058)
+
+> **Pedido do dono:** "tier premium web = privado." Split espelhando o não-web (ADR-049):
+> `-web` (PÚBLICO, só prompt-web-publico) × `-web-premium` (PRIVADO/pago, orquestrador + 15 skills).
+> web_export gera publico/ e premium/ como repo-roots; publish-clean publica em dois destinos com deploy
+> keys separadas. Repo privado criado + deploy key PUBLISH_DEPLOY_KEY_WEB_PREMIUM configurada. Deploy key
+> do tier público (PUBLISH_DEPLOY_KEY_WEB) também configurada e **auto-push verificado end-to-end** (run
+> 26847494133). O `-web` público será republicado sem premium/ no próximo run.
+
 ## 2026-06-02 — Sessão (developer): Pacote Web IMPLEMENTADO — v1.40.0 (ADR-054/056/057)
 
 > **Pedido do dono:** "pacote web automatizado (gerar do main + tier premium com skills + repo -web), siga."
