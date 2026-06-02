@@ -80,7 +80,12 @@ dimensão, **recomendar um default sênior com o trade-off** e pedir confirmaç�
 gente não-técnica e é auditável → recomendo GUI + log; confirma, ou prefere outro caminho?"*) em vez
 de pergunta em aberto (*"qual interface?"*). Registrar a decisão na seção **`## Dimensões de
 elicitação`** do `requirements.md`. **Gate mecânico:** `tools/check_spec_depth.py <requirements.md>`
-deve dar PASS **antes do handoff J1** (discovery→architect) — barra spec rasa que pula produto. As
+deve dar PASS **antes do handoff J1** (discovery→architect) — barra spec rasa que pula produto.
+**Sob sinal de STAKE** (regulado/financeiro/saúde/segurança/decisão — `_shared/discovery/context-signals.txt`,
+**inferido, não só declarado**) `tools/check_context_brief.py` também deve dar PASS em J1: exige o
+`context-brief.md` (perfil de entidade + **verificação adversarial de âncora** — vigência/pertinência,
+acusada **mesmo se deliberada**) ou exceção consciente; **proporcional ao modo** (default valida com humano ·
+autosuficiente infere e reporta, com o efeito T3 ainda no gate humano) — ADR-051. As
 **meta-perguntas** (dimensões) são agnósticas e vivem no banco; as **perguntas de domínio** ("descartar
 tais entidades?", "a referência é X ou Y?") são GERADAS ao ler o material e **nunca** entram no banco.
 

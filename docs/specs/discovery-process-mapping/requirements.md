@@ -1,5 +1,7 @@
 # requirements.md — Extensão `discovery` v1.6.0: sub-modo "mapeamento de processo"
 
+> context-brief: nao-aplicavel — spec interna do framework, sem entidade externa (gate ADR-051).
+
 > Spec produzida pelo papel **discovery** (auto-elicitação meta) seguindo o
 > método universal de `.agent/skills/discovery/SKILL.md` v1.5.0. Os 4 lotes
 > temáticos foram conduzidos com a etapa anti-raso obrigatória aplicada.

@@ -5,6 +5,7 @@ notation: mermaid-swimlane
 formality: senior-ba
 personas: [humano-engagement]
 validation_status: VALIDADO-stakeholder
+context-brief: nao-aplicavel — exemplo didatico, entidade ficticia, sem pesquisa de entidade real (gate ADR-051)
 ---
 
 # requirements.md — Mapeamento de Processo: **Liberação de Lote (Farmacêutica)**

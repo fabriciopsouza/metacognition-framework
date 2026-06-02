@@ -15,6 +15,34 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.38.0] — 2026-06-01 — Reparo do discovery: contexto INFERIDO + pesquisa de âncora MECANIZADA (ADR-051)
+
+> **Causa-raiz provada (caso de campo regulado, alias AIVI — evidência no cofre, fora do repo):** os ADRs
+> de discovery sênior (009/033) **não dispararam nem cobriram** o caso — o filtro de entrada do
+> `metodo-senior.md` **proibia inferência** ("não inferir por sinais semânticos") e o `check_spec_depth` só
+> media dimensões de produto. Quando a pesquisa de contexto foi **de fato executada**, pegou sozinha que a
+> **âncora regulatória citada era de outra atividade da cadeia** (referencial, não mandatória), a
+> **materialidade financeira** alta e que o **oráculo usava uma variável ≠ da canônica**. Prosa-only não
+> pegou; mecanismo executado pegou. **Não foi feature nova — foi reparo.**
+
+### Added
+- **`_shared/discovery/context-signals.txt`** — registro agnóstico de sinais de STAKE (lista-semente
+  aberta, **auto-retroalimentada sem HITL** via `check_context_brief.py --learn`). Só termos genéricos
+  (`check_core_agnostic` barra nome de norma/domínio).
+- **`tools/check_context_brief.py`** + **`tools/test_context_brief.py`** (canário, 8 casos) — gate que
+  **barra J1 sob sinal de stake** se faltar o `context-brief.md` com **tabela de verificação de âncora**
+  (vigência+pertinência), fonte datada e classificação de confiança. Word-boundary (anti falso-positivo),
+  stdout utf-8-safe, **exceção consciente** para spec sem entidade externa (flag-não-silencia).
+- **`docs/specs/_template/context-brief.md`** — template de evidência persistida (ABNT/ADR/RAG).
+
+### Changed
+- **ADR-051** (reparo): supersede o passo-1 (filtro) do **ADR-009**, reconcilia o **ADR-010** (inferir
+  STAKE ≠ hardcodar NORMA) e emenda o banco do **ADR-033** (dimensões `contexto-entidade`+`verificacao-ancora`).
+- **`metodo-senior.md`**: filtro passa a **inferir stake**; **comportamento proporcional ao modo** (default
+  valida com humano · avançado confirma âncoras de alto impacto · autosuficiente infere e reporta) com
+  **anti-inversão-de-segurança** (efeito T3 permanece no gate humano, ortogonal ao modo).
+- **`handoff.md`** J1 e **`discovery/SKILL.md`** wirados ao novo gate. **LIMITS.md** ganha a claim ADR-051.
+
 ## [1.37.0] — 2026-06-01 — Entrega navegável: índice guiado + piso de validação mecanizado (ADR-050 emenda)
 
 > Pedido do dono: entregas **acessíveis e fáceis de entender** — pasta `output/<datestamp>/` com subpastas

@@ -42,7 +42,14 @@ cada chave obrigatória (`obr=sim`). Aliases permitem que a spec use o vocabulá
 | auditoria-log | log, trilha, auditoria, accountability, quem-rodou | sim | Registra quem rodou, quando, com quais insumos e versão da regra? | log de auditoria sempre que a saída alimenta decisão |
 | ambiente-execucao | instalacao, deploy, ambiente, requisitos, maquina-limpa | sim | Instala/roda em máquina limpa — dependências resolvem do zero? | testar instalação limpa + entry-point não-interativo |
 | formato-saida | saida, relatorio, export, entrega, artefato | sim | Formato final — relatório formatado, exportável, faixas/metas visíveis? | export legível + números rastreáveis à fonte |
+| contexto-entidade | contexto, entidade, cliente, perfil-entidade, pesquisa-de-contexto | nao | Quem é a entidade/cliente (setor, porte, modelo, escopo, posição) e o domínio foi PESQUISADO além do artefato dado? | quando há stake → pesquisar perfil+domínio e registrar em context-brief |
+| verificacao-ancora | ancora, vigencia, pertinencia, fonte-aplicavel | nao | Cada norma/benchmark citado é VIGENTE e PERTINENTE a ESTE tipo de entidade (acusar mesmo se deliberado)? | verificar vigência+pertinência de toda âncora; registrar no context-brief |
 
 > **Editável:** novas dimensões universais podem entrar (régua §0: só se universais e não-domínio).
 > Marcar `obr=nao` cria dimensão **recomendada** (linter avisa, não barra). A coluna `aliases` é o que
 > permite ao banco ser agnóstico e a spec falar a língua do seu próprio domínio.
+>
+> **`contexto-entidade` e `verificacao-ancora` (ADR-051):** recomendadas aqui (advisory no
+> `check_spec_depth`), mas com **enforcement DURO quando há sinal de stake** via
+> `tools/check_context_brief.py` (exige `context-brief.md` antes de J2). Aqui ficam `obr=nao` para
+> não duplicar a barra nem quebrar o canário de cobertura; o gate de contexto é quem barra de fato.
