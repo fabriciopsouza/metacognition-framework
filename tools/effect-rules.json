@@ -33,7 +33,7 @@
     },
     {
       "id": "git-push-force", "family": "history-rewrite", "tier": "T3", "decision": "deny",
-      "all": ["git +push", "(--force( |$)|(^| )-f( |$))"],
+      "all": ["git +push( +[^ ]+)* +(--force( |$)|-f( |$))"],
       "none": ["force-with-lease"],
       "reason": "git push --force/-f sem --force-with-lease (E2+E3); use --force-with-lease ou gate humano"
     },
