@@ -27,9 +27,12 @@
 > **Decisões do dono (via AskUserQuestion):** GAP-1 = as "4 skills-base web" NÃO existem → **gerar do main**;
 > ritmo = ADR-055 agora + commit, 056/057 depois.
 >
-> **Em aberto (architect WIP):** ADR-056 (consolidação skill+companions gerar-do-main + injeção de
-> `## Encadeamento`), ADR-057 (contrato do profile `web` no export-clean + ordem/carimbo da cascata). Depois:
-> developer redige os prompts/skills; eval Gemini (NFR-1) e token público real (GAP-3) antes de declarar suporte.
+> **Conjunto architect FECHADO (2026-06-02):** ADR-056 (consolidação papel+companions gerar-do-main +
+> injeção determinística de `## Encadeamento` do front-matter) e ADR-057 (profile `web` no export-clean +
+> `web-phrasing-map.txt` + gate anti-JARVIS verificável + carimbo de versão anti-defasagem + ordem da cascata)
+> escritos e aceitos. **Handoff → developer.**
+> **Em aberto (developer WIP):** redigir prompts/skills web (gerar do main via profile); criar repo `-web` +
+> workflow; eval Gemini (NFR-1) e token público real (GAP-3) antes de declarar suporte.
 > **NÃO houve release** — v1.40.0 sobe só na implementação (honestidade: ADR≠código entregue).
 
 ## 2026-06-02 — Sessão: v1.39.0 — execution-report de DOIS TIERS (telemetria de processo anonimizada · ADR-052; realiza ADR-048)
