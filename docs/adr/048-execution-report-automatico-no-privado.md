@@ -1,6 +1,6 @@
 # ADR 048 — Execution-report automático em TODO trabalho (somente no privado)
 
-- Status: **Proposto** (ADR futuro — registrado a pedido do dono; ainda não implementado)
+- Status: **Aceito — implementado e estendido por [ADR-052](052-execution-report-dois-tiers-telemetria-processo-anonimizada.md)** (2026-06-02). O tier OWNER deste ADR foi realizado; o ADR-052 adicionou o tier EXTERNAL (telemetria de processo anonimizada). *(EMENDA de status; a decisão original permanece válida.)*
 - Data: 2026-06-01 · Decisores: dono + squad (architect)
 - Tipo: futuro (mecanismo de fechamento) — estende ADR-038 (execution_report) e ADR-030 (consistency-gate).
 - Origem: dono — "tudo que fizermos deve gerar relatório de execução similar [ao que usamos para melhorar o framework] → **somente no privado**".
@@ -35,6 +35,4 @@ só no privado (anti-vazamento + o público é artefato gerado).
 
 ## Implementação
 
-- **Pendente.** Quando priorizado: escolher o gatilho (alt 2 é a mais robusta cross-modo), wirar, canário,
-  e registrar em `LIMITS.md`. Este ADR é o marcador da decisão futura (rastreabilidade — ADR-007/régua §0:
-  débito declarado, não esquecido).
+- **Implementado em 2026-06-02 via [ADR-052](052-execution-report-dois-tiers-telemetria-processo-anonimizada.md).** Gatilho escolhido = **alt 2** (passo mandatório no `docops §Encerramento`, robusto cross-modo, funciona em non-admin sem hooks). O `execution_report.py` ganhou detecção de tier por `docs/_private/`: OWNER grava o report completo em `docs/_private/_intake/` (stripped do export); EXTERNAL grava telemetria de processo codificada em `telemetry/`. Débito declarado → quitado.

@@ -1,20 +1,25 @@
 #!/usr/bin/env python3
-"""Canário do execution-report (ADR-038, item 6 do plano de remediação v2).
+"""Canário do execution-report dois-tiers (ADR-038 + ADR-052).
 
-Prova a invariante: encerramento sem report = FAIL; report sem o placar = FAIL; número de token
-fabricado quando a telemetria está ausente = FAIL (deve dizer NÃO MEDIDO); report honesto = PASS.
-Também confirma que o report auto-gerado (default, sem telemetria) já passa. Zero domínio.
+Prova as invariantes:
+  OWNER (ADR-038): encerramento sem report = FAIL; sem placar = FAIL; token fabricado = FAIL; honesto = PASS.
+  EXTERNAL (ADR-052): whitelist barra texto livre/PII; só passa schema codificado; opt-out e detector funcionam.
+Hipótese adversarial (qa-critic): o whitelist VAZA até prova em contrário. Zero domínio.
 
-Uso: python tools/test_execution_report.py   (exit 0 PASS; 1 se a validação não distingue honesto de fabricado)
+Uso: python tools/test_execution_report.py   (exit 0 PASS; 1 se qualquer caso falha)
 """
 import os
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
-from execution_report import validate_report, build_report  # noqa: E402
+from execution_report import (  # noqa: E402
+    validate_report, build_report, build_external_report, validate_external_report,
+    detect_tier, telemetry_enabled,
+)
 
-REPORT_HONESTO = build_report()  # default: tokens = NÃO MEDIDO
+# ----------------------------------------------------------------- OWNER (compat ADR-038)
+REPORT_HONESTO = build_report()  # default tier=owner; tokens = NÃO MEDIDO
 
 REPORT_FABRICADO = """# Execution-report
 - Tokens: 152300
@@ -28,10 +33,8 @@ REPORT_FABRICADO = """# Execution-report
 |---|---|---|
 | bug | agente | qa |
 """
-
 REPORT_TOKEN_COM_FONTE = REPORT_FABRICADO.replace(
     "- Tokens: 152300", "- Tokens: input 100000 + output 52300 (fonte: transcripts ADR-026)")
-
 REPORT_SEM_PLACAR = """# Execution-report
 - Tokens: NÃO MEDIDO (sem telemetria exposta)
 - Tempo (wall-clock): NÃO MEDIDO
@@ -41,29 +44,73 @@ REPORT_SEM_PLACAR = """# Execution-report
 - Rodadas de retrabalho: 3
 """
 
+# ----------------------------------------------------------------- EXTERNAL (ADR-052)
+EXT_HONESTO = build_external_report(framework_version="1.39.0", execution_mode="default",
+                                    route="squad", turnos="11", retrabalho="2", session_id="a1b2c3",
+                                    gates_fired=[("route-gate", "pass"), ("mission-gate", "override")],
+                                    failure_points=[("hook", "compaction-gate", "missed", "j4")],
+                                    correction_events=[("rewind", "j3", "7")])
+
+# Ataques que o whitelist DEVE reprovar:
+# token de cliente FICTÍCIO de propósito (não usar nome real — seria o próprio vazamento que testamos)
+EXT_TEXTO_LIVRE = EXT_HONESTO + "\n## notas\n- O cliente ACME-FICTICIO pediu uma mudanca no calculo.\n"
+EXT_EMAIL = EXT_HONESTO.replace("session_id: a1b2c3", "session_id: joao@cliente.com")
+EXT_CPF = EXT_HONESTO + "\n- id: 123.456.789-00; mechanism: gate; failure: missed; junction: na\n"
+EXT_PROSA_COMO_VALOR = EXT_HONESTO.replace(
+    "- type: rewind; junction: j3; turn: 7",
+    "- type: rewind; junction: j3; turn: porque o usuario reclamou bastante do resultado")
+EXT_ENUM_INVALIDO = EXT_HONESTO.replace("failure: missed", "failure: explodiu")
+EXT_SEM_TIER = EXT_HONESTO.replace("tier: external\n", "")
+EXT_SECAO_FORJADA = EXT_HONESTO + '\n## payload_secreto\n- dado: "informacao sensivel do cliente aqui"\n'
+
 CASES = [
-    ("report ausente (encerramento sem report)", "", False),
-    ("report auto-gerado honesto (NÃO MEDIDO)", REPORT_HONESTO, True),
-    ("report com número de token fabricado (sem fonte)", REPORT_FABRICADO, False),
-    ("report com número de token + fonte declarada", REPORT_TOKEN_COM_FONTE, True),
-    ("report sem o placar gate × achado", REPORT_SEM_PLACAR, False),
+    # (desc, validador, texto, espera_ok)
+    ("OWNER ausente", validate_report, "", False),
+    ("OWNER honesto (NÃO MEDIDO)", validate_report, REPORT_HONESTO, True),
+    ("OWNER token fabricado", validate_report, REPORT_FABRICADO, False),
+    ("OWNER token + fonte", validate_report, REPORT_TOKEN_COM_FONTE, True),
+    ("OWNER sem placar", validate_report, REPORT_SEM_PLACAR, False),
+    ("EXTERNAL honesto (schema)", validate_external_report, EXT_HONESTO, True),
+    ("EXTERNAL com texto livre (cliente)", validate_external_report, EXT_TEXTO_LIVRE, False),
+    ("EXTERNAL com e-mail em campo", validate_external_report, EXT_EMAIL, False),
+    ("EXTERNAL com CPF", validate_external_report, EXT_CPF, False),
+    ("EXTERNAL prosa como valor", validate_external_report, EXT_PROSA_COMO_VALOR, False),
+    ("EXTERNAL enum inválido", validate_external_report, EXT_ENUM_INVALIDO, False),
+    ("EXTERNAL sem tier", validate_external_report, EXT_SEM_TIER, False),
+    ("EXTERNAL seção forjada c/ texto", validate_external_report, EXT_SECAO_FORJADA, False),
+    # validate_report deve INFERIR external e barrar (não tratar como owner)
+    ("dispatch infere external e barra texto livre", validate_report, EXT_TEXTO_LIVRE, False),
+    ("dispatch infere external honesto", validate_report, EXT_HONESTO, True),
 ]
 
 
 def main():
     fails = 0
-    for desc, text, expect_ok in CASES:
-        ok, problems = validate_report(text)
+    for desc, fn, text, expect_ok in CASES:
+        ok, problems = fn(text)
         correct = ok == expect_ok
-        if not correct:
-            fails += 1
+        fails += 0 if correct else 1
         status = "OK  " if correct else "FAIL"
         exp = "PASS" if expect_ok else "FAIL"
-        detail = "" if ok else f" -> {problems}"
+        detail = "" if ok else f" -> {problems[:2]}"
         print(f"{status} [esperado {exp:4}] {desc}{detail}")
-    print("-" * 50)
-    print("RESULTADO:", f"FAIL ({fails} caso(s))" if fails
-          else "PASS (valida report; reprova ausência, falta de placar e token fabricado)")
+
+    # detector de tier: este repo TEM docs/_private/ -> owner
+    tier = detect_tier(ROOT)
+    det_ok = tier == "owner"
+    fails += 0 if det_ok else 1
+    print(f"{'OK  ' if det_ok else 'FAIL'} detect_tier(repo do dono) == owner (got {tier!r})")
+
+    # opt-out: env desliga o tier external
+    os.environ["FRAMEWORK_NO_TELEMETRY"] = "1"
+    off = telemetry_enabled(ROOT) is False
+    del os.environ["FRAMEWORK_NO_TELEMETRY"]
+    fails += 0 if off else 1
+    print(f"{'OK  ' if off else 'FAIL'} opt-out via FRAMEWORK_NO_TELEMETRY desliga geração")
+
+    print("-" * 60)
+    print("RESULTADO:", f"FAIL ({fails} caso(s))" if fails else
+          "PASS (owner ADR-038 + whitelist external ADR-052 + detector + opt-out)")
     return 1 if fails else 0
 
 
