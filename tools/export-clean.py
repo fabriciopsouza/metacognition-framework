@@ -126,9 +126,18 @@ def main(argv):
     args = [a for a in argv[1:] if not a.startswith("--")]
     nonadmin = ("--nonadmin" in argv) or ("nonadmin" in argv and "--variant" in argv)
     premium = "--premium" in argv
+    web = ("--web" in argv) or ("web" in args)
     if not args:
-        print("uso: python tools/export-clean.py <out-dir> [--nonadmin | --premium]", file=sys.stderr)
+        print("uso: python tools/export-clean.py <out-dir> [--nonadmin | --premium | --web]", file=sys.stderr)
         return 2
+
+    # PROFILE WEB (ADR-054/057): forma de saída distinta (prompts/skills chat, não repo full).
+    # Delega ao gerador dedicado web_export (determinístico, com gate anti-JARVIS).
+    if web:
+        sys.path.insert(0, HERE)
+        import web_export
+        out_web = os.path.abspath(args[0])
+        return web_export.main(["web_export", out_web])
     out = os.path.abspath(args[0])
     if os.path.abspath(out) == os.path.abspath(SRC_ROOT):
         print("out-dir nao pode ser a propria fonte", file=sys.stderr)
