@@ -15,6 +15,16 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.41.0] — 2026-06-02 — Pacote web em dois repos: público × premium PRIVADO (ADR-058)
+
+### Changed
+- **Split do pacote web** (decisão do dono "premium web = privado"): `tools/web_export.py` gera `publico/`
+  e `premium/` como **repo-roots independentes** (README por tier). `publish-clean.yml` publica em **dois
+  destinos** — tier público → `metacognition-framework-web` (PÚBLICO); tier premium → novo
+  `metacognition-framework-web-premium` (**PRIVADO/pago**) — com deploy keys separadas. Espelha o split
+  não-web `-public` × `-premium` (ADR-049). O `-web` público é republicado **sem** `premium/`.
+- **ADR-058** (EMENDA do ADR-054). Repo privado criado; deploy key `PUBLISH_DEPLOY_KEY_WEB_PREMIUM` configurada.
+
 ## [1.40.0] — 2026-06-02 — Pacote web automatizado: gerador do main + repo `-web` + cascata (ADR-054/056/057)
 
 > **Implementa** o que os ADRs 054/056/057 decidiram. O chat web deixa de ser arquivo mantido à mão e
