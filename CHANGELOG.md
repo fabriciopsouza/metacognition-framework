@@ -15,6 +15,30 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.40.0] — 2026-06-02 — Pacote web automatizado: gerador do main + repo `-web` + cascata (ADR-054/056/057)
+
+> **Implementa** o que os ADRs 054/056/057 decidiram. O chat web deixa de ser arquivo mantido à mão e
+> passa a ser **gerado do main**, com nova distribuição dedicada `metacognition-framework-web`.
+
+### Added
+- **`tools/web_export.py`** — gerador determinístico do pacote web (dois tiers): tier PÚBLICO (carimba o
+  `PROMPT-CHAT-WEB-v4.4.md`) + tier PREMIUM (orquestrador enxuto + **15 skills** geradas do front-matter —
+  `description`=gatilho, `pass_criteria`=checkpoint declarado, **encadeamento** da ordem do pipeline;
+  discovery consolida sub-modos). Corpo IDE NÃO é copiado (inerte no chat). Carimbo de versão do main.
+- **`tools/web-phrasing-map.txt`** — reescrita determinística IDE→chat + lista FORBIDDEN do **gate anti-JARVIS**.
+- **`tools/test_web_export.py`** — 9 checagens (determinismo, encadeamento, gate anti-JARVIS pega enforcement injetado).
+- **Repo `metacognition-framework-web`** (público, GERADO, não editar à mão) — bootstrap publicado.
+
+### Changed
+- **`tools/export-clean.py`**: `--web` delega ao `web_export` (forma de saída distinta — prompts/skills, não repo full).
+- **`.github/workflows/publish-clean.yml`**: estágio WEB ao final da cascata (REQ-CASCADE-6), gated no secret
+  `PUBLISH_DEPLOY_KEY_WEB` (sem o secret: roda export+gate em CI e pula o push — padrão dos outros tiers).
+
+### Pendência declarada
+- Auto-push para `-web` requer o secret `PUBLISH_DEPLOY_KEY_WEB` (deploy key) — setup manual de uma vez pelo
+  dono. Até lá, o `-web` é mantido pelo bootstrap manual (este release). Evals Gemini (NFR-1) e token público
+  real (GAP-3) seguem como follow-up antes de declarar suporte amplo.
+
 ## [1.39.1] — 2026-06-02 — Prompt do chat web sincronizado ao estado atual (v4.4, tier público)
 
 ### Changed

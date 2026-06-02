@@ -1,0 +1,24 @@
+# tools/web-phrasing-map.txt — reescrita determinística IDE -> chat (ADR-057).
+#
+# Usado por tools/web_export.py ao gerar o pacote web. Converte vocabulário de ENFORCEMENT
+# (que o chat NÃO executa) em CHECKPOINT DECLARADO + ressalva (doutrina enforcement.chat / anti-JARVIS).
+#
+# Formato: <regex>  <TAB>  <substituição>  (uma por linha; # e vazias ignoradas; IGNORECASE).
+# ORDEM importa: frases compostas primeiro, termos nus por último.
+#
+# Backstop: depois de aplicar, web_export.py roda o GATE anti-JARVIS (FORBIDDEN abaixo do separador).
+# Se sobrar asserção de enforcement sem ressalva, o build FALHA.
+
+# --- frases de enforcement -> checkpoint declarado ---
+o hook (\w+[- ]?\w*) (barra|bloqueia|impede)	o checkpoint declarado \1 sinaliza (sem enforcement no chat)
+hook (barra|bloqueia|impede) automaticamente	checkpoint declarado sinaliza (sem enforcement automático no chat)
+gate determinístico	checkpoint declarado
+gate mecanizado	checkpoint declarado
+enforcement automático	checkpoint declarado (sem enforcement automático no chat)
+\bbarra (a |o )?(ação|execução|J\d)	sinaliza \1\2 (checkpoint declarado)
+
+#=== FORBIDDEN (gate anti-JARVIS) — se QUALQUER um sobreviver no output, o build FALHA ===
+# (linhas abaixo são padrões proibidos, não substituições; web_export.py lê após este marcador)
+FORBIDDEN	hook\s+\w[\w-]*\s+(barra|bloqueia|impede)
+FORBIDDEN	gate determin[ií]stico
+FORBIDDEN	enforcement autom[áa]tico(?!.{0,40}sem enforcement)

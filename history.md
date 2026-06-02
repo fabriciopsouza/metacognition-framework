@@ -9,6 +9,19 @@
 
 ---
 
+## 2026-06-02 — Sessão (developer): Pacote Web IMPLEMENTADO — v1.40.0 (ADR-054/056/057)
+
+> **Pedido do dono:** "pacote web automatizado (gerar do main + tier premium com skills + repo -web), siga."
+> **Entregue (não mais ADR — código):** `tools/web_export.py` (gerador determinístico, dois tiers, 15 skills
+> geradas do front-matter + encadeamento + gate anti-JARVIS), `web-phrasing-map.txt`, `test_web_export.py`
+> (9 checks PASS), wiring `export-clean.py --web`, estágio WEB na cascata `publish-clean.yml`. **Repo
+> `metacognition-framework-web` CRIADO e publicado** (bootstrap manual @ v1.40.0). v4.4 vira tier público carimbado.
+>
+> **Repos filhos:** `-public`, `-public-nonadmin`, `-premium` atualizados (cascata roda no push); `-web` agora existe.
+> **Pendência declarada:** auto-push do `-web` precisa do secret `PUBLISH_DEPLOY_KEY_WEB` (deploy key, setup 1×
+> do dono) — sem ele a cascata roda export+gate e pula o push. Evals Gemini (NFR-1) + token público real (GAP-3) follow-up.
+> **qa-critic:** test_web_export 9/9 PASS; output verificado limpo (zero vazamento, zero enforcement mentido) antes de publicar.
+
 ## 2026-06-02 — Sessão (architect): Pacote Web do framework — discovery→architect (ADR-054/055; alvo v1.40.0, NÃO implementado)
 
 > **Pedido do dono:** sincronizar o chat web (defasado) — e mais: o chat web referencia skills nativas
