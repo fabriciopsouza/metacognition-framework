@@ -35,9 +35,13 @@ Rodar o **consistency-gate** (ADR-030) antes de fechar release:
 `powershell -NoProfile -ExecutionPolicy Bypass -File tools/hooks/consistency-gate.ps1`
 — version-sync, ADR-status, checkpoint no history, unpushed, transientes em `docs/_intake/`.
 Tratar as inconsistências (ou registrá-las como débito declarado) antes do PR de release.
-Gerar o **execution-report** (ADR-038) do bloco — auto, não sob cobrança:
-`python tools/execution_report.py --from-transcripts --out docs/_intake/execution-report.md`
-— tokens (NÃO MEDIDO se a telemetria não estiver exposta — **nunca fabricar**), tempo, turnos,
+Gerar o **execution-report** (ADR-038/052) do bloco — auto, não sob cobrança:
+`python tools/execution_report.py --from-transcripts`
+— o tier é **detectado automaticamente** (ADR-052): no repo-fonte (`docs/_private/` existe) grava o
+relatório **completo** em `docs/_private/_intake/execution-report.md` (não distribuído); numa
+distribuição grava **só sinais de processo codificados** em `telemetry/telemetry-report.md` (whitelist
+anti-vazamento + opt-out `.claude/no-telemetry.lock`/`FRAMEWORK_NO_TELEMETRY`; ver `TELEMETRY.md`).
+Conteúdo: tokens (NÃO MEDIDO se a telemetria não estiver exposta — **nunca fabricar**), tempo, turnos,
 arquivos, testes, rodadas de retrabalho e o **placar gate × achado** ("quem pegou o quê").
 Registrar a **decisão de re-orquestração do PMO** (J6, ADR-045) no `history.md`:
 `RE-ORQUESTRAÇÃO: <prosseguir | re-priorizar | rewind J_i | injetar escopo | reativar estágio>`

@@ -121,3 +121,22 @@ pode ser ignorado (aberto, "not planned") — por isso defesa-em-profundidade, n
 
 Como o framework é distribuído sob **CC BY 4.0** (sem garantia), trate-o como **defesa-em-profundidade
 auditável**, não como garantia de segurança. Avalie no seu contexto antes de usar em produção crítica.
+
+---
+
+## Telemetria de processo (anonimizada, opt-out) — ADR-052
+
+Numa **distribuição** (público/non-admin/premium), o fechamento de um bloco pode gerar em `telemetry/`
+um relatório de **processo** — **apenas sinais codificados** (qual gate disparou, onde um hook/regra
+falhou, onde você corrigiu, rodadas de retrabalho). **Nunca** registra o conteúdo do seu trabalho, texto
+livre ou dado pessoal — isso é garantido por uma **whitelist de schema verificável** (não por confiança;
+lição do incidente de 2026-05-31), com heurística anti-PII e backstop de anonimização.
+
+- **Base legal:** payload **não-pessoal** → **fora do escopo da LGPD** (Art. 12).
+- **Transmissão:** **nenhuma automática.** O relatório fica local; **só vai ao mantenedor se você abrir
+  um PR** com ele — e esse PR é o seu **consentimento explícito** (você revê o arquivo, é legível).
+- **Opt-out (desliga a geração):** `.claude/no-telemetry.lock` (projeto) · `~/.claude/no-telemetry.lock`
+  (global) · env `FRAMEWORK_NO_TELEMETRY=1`.
+- **Ciência:** ao baixar o framework você toma ciência desta política. Detalhe completo em
+  [`TELEMETRY.md`](TELEMETRY.md). No repo-fonte do mantenedor (tier OWNER) o relatório completo fica em
+  `docs/_private/_intake/` e **não é distribuído**.

@@ -15,6 +15,38 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.39.0] — 2026-06-02 — Execution-report de dois tiers: telemetria de processo anonimizada que retroalimenta o framework (ADR-052)
+
+> **O que destrava:** o placar gate × achado (ADR-038) era gerado só no repo do dono, sob invocação.
+> Agora o `execution_report.py` é **dois-tiers, com detecção automática por invariante** (`docs/_private/`
+> existir = repo-fonte; o `export-clean` o remove de TODA distribuição). No privado → relatório **completo**
+> em `docs/_private/_intake/` (realiza o ADR-048). Numa distribuição → **só sinais de PROCESSO codificados**
+> (gates, pontos de falha, correções) em `telemetry/`, para o usuário **abrir PR ao master** (o PR é o
+> consentimento). **Zero vazamento por mecanismo** (whitelist de schema, não confiança — lição do incidente
+> 2026-05-31): texto livre/PII é rejeitado. Payload não-pessoal → **fora da LGPD** (Art. 12) → **opt-out**.
+
+### Added
+- **`tools/execution_report.py`** (estende ADR-038): `detect_tier()` por `docs/_private/`; tier EXTERNAL com
+  **whitelist de schema** (`gates_fired`/`failure_points`/`correction_events` + escalares codificados),
+  heurística **anti-PII** (e-mail/CPF/CNPJ/telefone/strings longas) e **opt-out** (`.claude/no-telemetry.lock`
+  · `~/.claude/no-telemetry.lock` · `FRAMEWORK_NO_TELEMETRY`). Invariante anti-fabricação de tokens preservada.
+- **`tools/test_execution_report.py`**: 17 casos adversariais (furam o whitelist com nome de cliente, e-mail,
+  CPF, prosa-como-valor, enum inválido, seção forjada → todos barrados) + detector de tier + opt-out.
+- **`TELEMETRY.md`** + **`telemetry/README.md`**: política de transparência/privacidade, os dois tiers, o
+  loop de consentimento-por-PR, e o opt-out. Zona de pouso dos PRs de terceiros no master.
+
+### Changed
+- **ADR-052** (Aceito) + **ADR-048** Proposto→**Aceito** (tier OWNER realizado; alt 2 — passo mandatório no
+  docops, cross-modo, sem depender de hook). **EMENDA** de status, decisão original preservada.
+- **`docops/SKILL.md` §Encerramento**: comando do execution-report passa a **detectar o tier** e grava no path
+  correto por tier (corrige o `docs/_intake/` top-level, que o export NÃO removia → risco de vazamento).
+- **`SECURITY.md`** (nova seção Telemetria), **`README.md`** (link no topo), **`LICENSE`** (ciência ao usar).
+- **ADR-053 + Princípio 14 alargado** (`AGENT-FRAMEWORK.md` §6): o teste binário de handoff passa a ter **dois destinatários** — a próxima sessão/agente **e** o humano que recebe o artefato (usa **sem capacidade oculta**: terminal/instalação/edição de path). Hardcode de ambiente e dependência de tooling oculto **reprovam** o handoff. Destilado agnóstico de insights de método de uma sessão de campo (régua §0: funde no princípio existente, não cria novo).
+
+### Security/Privacy
+- Anonimização do tier externo é **gate verificável** (whitelist), não promessa. Caçado e removido um token
+  sensível ("AIVI") que um teste distribuível ia carregar — o próprio vazamento que o framework previne.
+
 ## [1.38.0] — 2026-06-01 — Reparo do discovery: contexto INFERIDO + pesquisa de âncora MECANIZADA (ADR-051)
 
 > **Causa-raiz provada (caso de campo regulado, alias AIVI — evidência no cofre, fora do repo):** os ADRs

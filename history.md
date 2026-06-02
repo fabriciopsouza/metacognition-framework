@@ -9,6 +9,30 @@
 
 ---
 
+## 2026-06-02 — Sessão: v1.39.0 — execution-report de DOIS TIERS (telemetria de processo anonimizada · ADR-052; realiza ADR-048)
+
+> **Pedido do dono:** relatório de execução tipo o do caso real, mas que **retroalimente o framework** —
+> executado por ele (raiz) registra tudo sem filtro; registrado por usuário externo **anonimiza** e respeita
+> LGPD, focando em **pontos de falha / decisões / gates** (processo, não conteúdo). Decisões do dono (via
+> surface-and-reconcile + high-stakes-gate): destino = **PR ao master** (o PR é o consentimento); payload =
+> **só sinais codificados** (fora da LGPD, Art. 12); consentimento = **opt-out documentado** + switch.
+>
+> **Entregue:** `execution_report.py` dois-tiers (detector por `docs/_private/`), **whitelist de schema**
+> como garantia anti-vazamento (não confiança — lição do incidente 2026-05-31) + anti-PII + opt-out;
+> 17 testes adversariais PASS; `TELEMETRY.md`/`telemetry/`; cláusula em LICENSE/SECURITY/README; docops
+> §Encerramento corrige path `docs/_intake/`→`docs/_private/_intake/` (vazaria no export). ADR-052 Aceito;
+> ADR-048 Proposto→Aceito.
+>
+> **qa-critic (adversarial):** 3 bugs reais pegos — comentário inline em header `##` quebrava o parser de
+> seção; `os.makedirs('')` com `--out` relativo; e o token sensível "AIVI" que um teste **distribuível** ia
+> carregar (o próprio vazamento que o framework previne). Todos corrigidos e reverificados.
+>
+> **Bleed de outra sessão (aduaneiro/Power Query):** confirmado file-first que não pertence a este repo. O dono
+> pediu para **agnosticar os insights de método** daquela sessão. Verdict régua §0: 4/7 já cobertos (classificação,
+> QA adversarial, débito declarado, prosa→mecanismo); 1 net-gain → **ADR-053**: alarga o teste binário do
+> **Princípio 14** para incluir o **humano destinatário** (usa sem capacidade oculta — terminal/instalação/path).
+> Hardcode de ambiente e tooling oculto reprovam o handoff. Edição cirúrgica em `AGENT-FRAMEWORK.md` §6.
+
 ## 2026-06-02 — Checkpoint de RECONCILIAÇÃO retroativa: v1.31.1 + v1.33.0→v1.38.0 (ADR-046/047/049/050/051) [reconstruído]
 
 > **Catch do retrospective gate + consistency-gate (ADR-030)** no `/start-session` de 2026-06-02: o

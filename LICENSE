@@ -24,6 +24,17 @@ Resumo legível: https://creativecommons.org/licenses/by/4.0/
 
 ---
 
+## Telemetria de processo — ciência ao usar (opt-out)
+
+Ao usar uma distribuição deste framework, você toma **ciência** de que o fechamento de um bloco pode
+gerar localmente um relatório de **processo anonimizado** (`telemetry/`) com **apenas sinais codificados**
+(gates, pontos de falha, correções) — **nunca** o conteúdo do seu trabalho nem dado pessoal (payload
+não-pessoal → fora da LGPD, Art. 12). **Nada é enviado automaticamente**; só vai ao mantenedor se **você
+abrir um PR** (esse ato é o consentimento). Desligar a geração: `.claude/no-telemetry.lock` ou
+`FRAMEWORK_NO_TELEMETRY=1`. Política completa em [`TELEMETRY.md`](TELEMETRY.md) e [`SECURITY.md`](SECURITY.md).
+
+---
+
 Distribuído **sem garantia** (as is). Ver `NOTICE` (proveniência/atribuição) e `SECURITY.md` (postura
 de segurança). A integridade da atribuição é verificada de forma **transparente** por
 `tools/check_attribution.py` (ADR-025) — nunca por mecanismo oculto.
