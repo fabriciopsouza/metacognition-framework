@@ -2,8 +2,8 @@
 
 - **Status:** Aceito (2026-05-29) — qa-critic rounds 1-4 (REPROVADO → REPROVADO → REPROVADO → APROVADO_COM_RESSALVAS) com 6 ALTO + 8 MEDIO + 5 BAIXO + 5 ADV endereçados em commits `0ee8505` (round 1) + `f94d55b` (round 2) + `b4b5221`+`106c2b3` (round 3) + final BAIXO V7+princ-12 nesta promoção. Round 4 final: zero ALTO/MEDIO, 2 BAIXO triviais corrigidos, 1 ADV ambiental Windows registrado.
 - **Data:** 2026-05-28 · **Decisores:** Fabricio (mantenedor) + Claude (papel `architect`)
-- **Substitui:** nenhum · **Substituído por:** nenhum
-- **Relaciona-se a:** ADR-007 (régua §0), ADR-009 (método sênior + auto-observação), ADR-005 (modos de execução / HITL via execution-modes)
+- **Substitui:** nenhum · **Substituído por:** nenhum · **RECONCILIADO por ADR-051** (2026-06-01): o "não inferir por sinais" deste ADR vale para **NÃO hardcodar NORMA de domínio no núcleo** (o que motivou a purga ALCOA+/ANP/FDA); **NÃO** significa "não inferir o STAKE/contexto". ADR-051 deixa explícito: inferir o stake → **disparar pesquisa** (read-only, classificada INFERIDO) é permitido; o núcleo segue sem norma hardcoded (`check_core_agnostic` verde).
+- **Relaciona-se a:** ADR-007 (régua §0), ADR-009 (método sênior + auto-observação), ADR-005 (modos de execução / HITL via execution-modes), **ADR-051 (reconciliação do escopo do "não inferir")**
 - **Fonte:** auto-observação 2026-05-28 — purgar âncoras hardcoded de domínio detectadas no próprio framework durante a tentativa de absorção do método sênior; memória `[[senior-discovery-method]]` carregava ALCOA+/ANP/FDA/BACEN como gatilhos (vazamento cross-projeto materializado).
 
 ## Contexto

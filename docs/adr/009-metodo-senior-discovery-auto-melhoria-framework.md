@@ -2,8 +2,8 @@
 
 - **Status:** Aceito (2026-05-28 — qa-critic rounds 1+2+3 incorporados em commits `01e598a` (2 ALTO + 4 MEDIO + 1 BAIXO), `f622f89` (4 MEDIO + 1 BAIXO + 2 ADV), `3d96d94` (3 MEDIO + 1 BAIXO + 2 ADV); round 4 confirmou substância LIMPA — único bloqueador residual era a auto-referência meta-recursiva do próprio campo Status (sempre 1 round atrás), resolvido nesta promoção. Total: 4 rounds adversariais, 16 findings endereçados.)
 - **Data:** 2026-05-28 · **Decisores:** Fabricio (mantenedor) + Claude (papel `architect`)
-- **Substitui:** nenhum · **Substituído por:** nenhum
-- **Relaciona-se a:** ADR-002 (discovery v1.6.0), ADR-003 (progressive disclosure), ADR-007 (régua §0 + pesquisa-cascata + ex-G9/ex-G11)
+- **Substitui:** nenhum · **Substituído por:** nenhum (integral) · **EMENDADO por ADR-051** (2026-06-01): o **passo-1 (filtro de entrada)** — que mandava "não inferir por sinais semânticos" e exigia fonte declarada — era o **bug provado** (o método nunca carregou no caso AIVI/Vibra). ADR-051 muda o gatilho para **disparar também por sinais de stake INFERIDOS** (`context-signals.txt`) e **mecaniza** vigência+pertinência no `context-brief` (gate `check_context_brief.py`).
+- **Relaciona-se a:** ADR-002 (discovery v1.6.0), ADR-003 (progressive disclosure), ADR-007 (régua §0 + pesquisa-cascata + ex-G9/ex-G11), **ADR-051 (reparo do gatilho + mecanização)**
 - **Fonte:** case real AIVI (2026-05-27, repo `LIMITES-BATENTES-RECALC` branch `claude/discovery-aivi-metodo-2026-05-27`); audit trail em memória `[[framework-gaps-from-aivi-case-2026-05-27]]`; substância em `[[senior-discovery-method]]` e `[[framework-self-improvement]]`.
 
 ## Contexto

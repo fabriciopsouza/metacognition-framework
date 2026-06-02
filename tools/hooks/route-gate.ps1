@@ -94,7 +94,14 @@ declare a rota em 1 linha e carregue a skill correspondente:
       | alto-risco/regulado/irreversível/número-que-vai-a-decisão -> + high-stakes-gate
 
 Classifique a tarefa (contexto × complexidade) e ATIVE a(s) skill(s) ANTES de agir —
-não comece a executar análise de domínio antes de declarar a rota. Output-style
+não comece a executar análise de domínio antes de declarar a rota.
+
+**O pedido do dono NÃO é livre de erro/questionamento.** Antes de cumprir, SURFACE
+tensões/premissas/âncoras **+ o CUSTO e a CONSEQUÊNCIA** (surface-and-reconcile); um
+OVERRIDE de gate exige confirmação explícita **com custo/consequência informados**,
+nunca silenciosa. Se você não questiona, não funciona.
+
+Output-style
 (learning/explanatory/etc.) governa o TOM/formato da entrega, **nunca substitui** o
 processo (roteamento/gates). Se você JÁ roteou nesta sessão, ignore esta nota.
 

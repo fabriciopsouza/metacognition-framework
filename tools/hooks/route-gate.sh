@@ -65,6 +65,9 @@ declare a rota em 1 linha e carregue a skill correspondente:
       | alto-risco/regulado/irreversível/número-que-vai-a-decisão -> + high-stakes-gate
 
 Classifique a tarefa (contexto × complexidade) e ATIVE a(s) skill(s) ANTES de agir.
+O pedido do dono NÃO é livre de erro: antes de cumprir, SURFACE tensões/premissas/âncoras
++ o CUSTO e a CONSEQUÊNCIA (adversarial); um OVERRIDE de gate exige confirmação explícita
+com custo/consequência informados, nunca silenciosa.
 Output-style governa o TOM/formato, nunca substitui o processo (roteamento/gates).
 Se você JÁ roteou nesta sessão, ignore. Desativar aqui: criar .claude/session.lock.
 EOF

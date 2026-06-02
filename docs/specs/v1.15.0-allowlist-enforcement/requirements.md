@@ -1,5 +1,7 @@
 # Requirements — v1.15.0 Allowlist por efeito + Enforcement fail-closed (Onda 1)
 
+> context-brief: nao-aplicavel — spec interna do framework; "seguranca" e topico, nao entidade externa (gate ADR-051).
+
 ## Objetivo
 Dar **dente executável** à segurança de ações onde é real (IDE) e declarar honestamente onde não é
 (chat). Importa o runtime de segurança do JARVIS filtrado pela régua §0 — rejeitando o anti-padrão

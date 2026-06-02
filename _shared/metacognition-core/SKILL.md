@@ -1,8 +1,8 @@
 ---
 name: metacognition-core
 description: "Núcleo SSoT do método metacognitivo reutilizável. Carregar quando precisar decompor um problema, validar antes de entregar, aplicar a cláusula anti-loop, resolver precedência de instruções, ou registrar checkpoint/transferência. O roteador (framework v2.3) decide QUANDO; este arquivo guarda o COMO. NÃO carregar para bate-papo casual."
-version: 1.2.0
-source: "metacognição v2.2 §0, §2.A, §4 + master v4.1 §0, §4.5, §17; v1.1.0 (2026-05-29) adiciona §Pacote de handoff cross-sessão (ADR-012); v1.2.0 (2026-05-31) adiciona nível 7 de precedência: output-style nunca suplanta processo (ADR-028)"
+version: 1.3.0
+source: "metacognição v2.2 §0, §2.A, §4 + master v4.1 §0, §4.5, §17; v1.1.0 (2026-05-29) adiciona §Pacote de handoff cross-sessão (ADR-012); v1.2.0 (2026-05-31) adiciona nível 7 de precedência: output-style nunca suplanta processo (ADR-028); v1.3.0 (2026-06-01) adiciona cláusula anti-sicofância-de-entrada: o pedido do dono não é imune a questionamento — surface custo+consequência, override confirmado (ADR-051)"
 last_review: 2026-05-31
 ---
 
@@ -22,6 +22,15 @@ Este arquivo é a **fonte** do método que ele invoca.
 7. **Output-style / persona (learning, explanatory, concise, etc.)** — governa
    **tom e formato** da entrega. Opera **subordinado ao nível 6** (templates de formato)
    e **NUNCA suplanta** o nível 2 (regras invioláveis) nem o nível 5 (roteamento/gates). ADR-028.
+
+> **Nível 1 tem precedência, mas NÃO é imune a questionamento (ADR-051 — anti-sicofância de entrada).**
+> O pedido do dono **não é livre de erro**. Antes de cumprir: SURFACE adversarialmente as
+> tensões/premissas/âncoras **com o CUSTO e a CONSEQUÊNCIA**, e reconcilie (surface-and-reconcile).
+> Um **override** de gate/regra exige **confirmação explícita do dono, com custo/consequência informados**
+> — nunca silenciosa. *"Se você não questiona, não funciona."* Vale em **TODA versão, inclusive sem
+> ferramenta**: aqui a prosa é o mecanismo onde o hook (route-gate) não alcança (1×/sessão é o nudge;
+> esta cláusula sempre-carregada é o "a cada pedido"). Cadência per-turn via banner é **rejeitada por
+> inflação** (banner-blindness) — o adversarial por-pedido vive na prosa + nas junções (qa-critic/ADR-018/041).
 
 > **Output-style ≠ processo (ADR-028, cláusula inviolável).** Uma persona injetada no
 > SessionStart (ex.: "learning", "explanatory") molda *como* você responde — nunca

@@ -8,7 +8,7 @@
 
 > **O que entrega hoje (honesto, ancorado em evidência):** ver [`LIMITS.md`](LIMITS.md) — cada capacidade com status ✅ PROVADO / 🟡 PARCIAL / ⏳ EM DESENVOLVIMENTO **derivado do canário que a prova** (gerado por `tools/build_limits.py`; o CI falha se divergir). A seção "o que NÃO fazemos" está lá também — andaime, não certificação (ADR-044).
 
-> **Versão:** 1.37.0 · **Autor:** Fabricio Souza (github.com/fabriciopsouza/metacognition-framework) · **Base:** pesquisas A0–A3 · **PT-BR** · **CC BY 4.0** (ver [`LICENSE`](LICENSE) · [`NOTICE`](NOTICE))
+> **Versão:** 1.38.0 · **Autor:** Fabricio Souza (github.com/fabriciopsouza/metacognition-framework) · **Base:** pesquisas A0–A3 · **PT-BR** · **CC BY 4.0** (ver [`LICENSE`](LICENSE) · [`NOTICE`](NOTICE))
 > **Princípio:** o framework é **estritamente agnóstico de domínio** (ADR-010 / Princípio 12). Linguagens, ferramentas, normas setoriais, regulamentações, padrões técnicos, frameworks de validação, regras de negócio — **quaisquer** — são **aplicações/contextos**: não fazem parte do núcleo, **não aparecem hardcoded em prompts/regras/docs do framework** (nem como exemplo). Domínio é **declarado pelo discovery** por projeto. O que o núcleo oferece é **mecanismo flexível**: data integrity, audit trail, validação por risco, traceability, observabilidade — todos no `_shared/`.
 > **Evolução por onda:** o histórico de capacidades (QA bicelular, handoff cross-sessão, série "prosa→mecanismo", runtime+produto, blueprints de domínio, modo non-admin) está em **[§Evolução](#evolução-por-onda)** abaixo e, em detalhe, no `CHANGELOG.md`. (Mantém o topo limpo — clareza > acúmulo.)
 
@@ -36,6 +36,7 @@ Rastreabilidade das capacidades (detalhe completo no `CHANGELOG.md` + ADRs):
 - **Remediação v2 (ADR-033..044):** elicitação-consultiva, completude, anti-viés-de-oráculo, porta-do-usuário, overwrite-guard, execution-report, effect-gate motor, eval executado, catálogo regulado, `LIMITS.md` ancorado.
 - **Blueprints de domínio (ADR-046):** software/processo/projeto carregados sob demanda; discovery **propõe a forma premium de uma vez** + dicionário-contrato (auto-detecção+validação de arquivos) + ux-gate premium.
 - **Modo non-admin (ADR-047):** variante sem hooks p/ máquina com restrição de scripts; **gates anunciados** pelo agente (automação visível). Single-source → distribuições admin + non-admin (ver `guia/MODO-NON-ADMIN.md`).
+- **Reparo do discovery (ADR-051):** o reforço sênior era prosa que **não disparava** (o filtro proibia inferência); agora **infere o stake** dos sinais e **mecaniza** a pesquisa de contexto + **verificação adversarial de âncora** (`check_context_brief`, barra J1 sob stake), proporcional ao modo de execução. Conserta ADR-009/010/033 provados inertes num caso de campo. + cláusula "pedido do dono não é imune a questionamento" (surface custo+consequência, override confirmado).
 
 ## Como aplicar a um contexto (escala por clonagem)
 1. `cp -r .agent/skills/_template <aplicacao>` e preencher só o domínio.

@@ -1,0 +1,52 @@
+# context-signals.txt — sinais-semente de STAKE que DISPARAM pesquisa de contexto (ADR-051)
+#
+# Conserta a inércia provada de ADR-009 (filtro proibia inferência) tornando o gatilho
+# do reforço sênior PROATIVO: se algum sinal abaixo aparece no requirements.md/mission.md
+# do projeto, o discovery DEVE produzir um context-brief.md (perfil de entidade + verificação
+# adversarial de âncora + materialidade), validado por tools/check_context_brief.py antes de J2.
+#
+# AGNÓSTICO (régua §0 + ADR-010): só termos GENÉRICOS de impacto material. NUNCA adicionar
+# nome de norma/órgão/domínio aqui (qualquer sigla normativa/setorial) — check_core_agnostic barra e
+# violaria o agnosticismo do núcleo. Inferir o STAKE (→investigar) ≠ hardcodar a NORMA.
+#
+# LISTA-SEMENTE, NÃO EXAUSTIVA e AUTO-RETROALIMENTADA: a seção AUTO recebe sinais novos
+# detectados em operação (append por ferramenta, sem HITL). Um sinal por linha; '#' comenta.
+# Casamento por substring normalizada (sem acento, minúsculo).
+
+# --- regulatório / auditoria externa ---
+regulado
+regulatorio
+norma
+resolucao
+portaria
+regulamento
+regulamento tecnico
+auditavel
+auditoria
+compliance
+orgao regulador
+fiscalizacao
+reporte obrigatorio
+
+# --- decisão / financeiro material ---
+decisao executiva
+decisao irreversivel
+perda financeira
+risco financeiro
+custo alto
+volume material
+materialidade
+remuneracao
+bonus
+meta corporativa
+indicador que vai a decisao
+
+# --- saúde / segurança / alimentar ---
+saude
+seguranca
+seguranca alimentar
+risco a saude
+risco de seguranca
+
+# --- AUTO (append por ferramenta, sem HITL — sinais novos detectados em operação) ---
+# >>> AUTO-APPEND ABAIXO DESTA LINHA <<<
