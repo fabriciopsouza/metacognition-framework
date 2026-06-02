@@ -9,6 +9,29 @@
 
 ---
 
+## 2026-06-02 — Sessão (architect): Pacote Web do framework — discovery→architect (ADR-054/055; alvo v1.40.0, NÃO implementado)
+
+> **Pedido do dono:** sincronizar o chat web (defasado) — e mais: o chat web referencia skills nativas
+> (Claude.ai), potencialmente mais autossuficientes que as nossas (que dependem de `_shared/`+companions).
+> O dono entregou uma **spec sênior completa** (discovery output) para um `metacognition-framework-web` em
+> dois tiers (público sem skills / premium com skills), com cascata main→web anti-defasagem.
+>
+> **discovery → architect:** spec versionada em `docs/specs/web-package/requirements.md` (verbatim + nota de
+> reconciliação: base v1.22.0→**v1.39.0**, discovery v1.9.0→**v1.10.0**; GAP-2 rebaixado — `export-clean.py`
+> já é motor de profiles). **ADR-054 (keystone, Aceito):** dois tiers + cascata como **profile `web` do
+> export-clean** (não pipeline novo — régua §0) + repo dedicado `-web` + doutrina **`enforcement.chat`**
+> (anti-JARVIS: gate→checkpoint declarado, nunca fingir mecanismo). **ADR-055 (Aceito):** desambigua
+> "avançado" (eixo execução × eixo profundidade-discovery=`universal`/`reforço-sênior`) + regra anti-silêncio
+> de stake no qa-critic (modo alto não pode pular reforço sênior em silêncio — vira achado atacável).
+>
+> **Decisões do dono (via AskUserQuestion):** GAP-1 = as "4 skills-base web" NÃO existem → **gerar do main**;
+> ritmo = ADR-055 agora + commit, 056/057 depois.
+>
+> **Em aberto (architect WIP):** ADR-056 (consolidação skill+companions gerar-do-main + injeção de
+> `## Encadeamento`), ADR-057 (contrato do profile `web` no export-clean + ordem/carimbo da cascata). Depois:
+> developer redige os prompts/skills; eval Gemini (NFR-1) e token público real (GAP-3) antes de declarar suporte.
+> **NÃO houve release** — v1.40.0 sobe só na implementação (honestidade: ADR≠código entregue).
+
 ## 2026-06-02 — Sessão: v1.39.0 — execution-report de DOIS TIERS (telemetria de processo anonimizada · ADR-052; realiza ADR-048)
 
 > **Pedido do dono:** relatório de execução tipo o do caso real, mas que **retroalimente o framework** —
