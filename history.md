@@ -9,6 +9,16 @@
 
 ---
 
+## 2026-06-03 — Sessão (architect/docops): Gates de honestidade da vitrine — pesquisa + ADR-059 (Proposto)
+
+> **Pedido do dono:** análise crítica da vitrine pública × capacidades reais, "sem exageros, não depender de prosa"; depois trouxe deep-research dos 3 gaps + companions sênior; "documente, elabore um plano, commit e push (trabalhar de outro PC)".
+>
+> **Análise (rota pontual→squad-lite):** vitrine tem prosa de marketing **não-gateada** contradizendo o rigor do miolo (`LIMITS.md` gerado por canário). **Bug concreto [CONFIRMADO]:** `test_marketing_claims.py:24` aponta `PROMPT-CHAT-WEB-v4.3.md` (repo tem `v4.4`) → `continue` em arquivo ausente **silencia** o anti-overclaim no prompt web (fail-open). G2: `web_export` não tem gate anti-overclaim (só `anti_jarvis_gate`). G3: claim×LIMITS não cruzado.
+>
+> **Entregue (docs, NÃO código):** `docs/specs/honesty-gates/research-brief.md` (pesquisa do dono **com proveniência** — citações FTC/NeurIPS classificadas INFERIDO até verificar; tags de maturidade preservadas; §5 reconciliação régua §0 = nativo > dep externa), **ADR-059 Proposto** (3 gates nativos fail-closed, zero dep; LLM-as-judge = EMERGENTE/opt-in fora do core offline), `docs/specs/honesty-gates/plano.md` (4 fases + thresholds binários + cascata). **Memória:** registrada diretiva de cascata original→premium/web/noadmin/public.
+>
+> **Não implementado** (próximo bloco com developer→qa-critic). ADR-059 vira Aceito quando F1–F3 mergeadas verdes.
+
 ## 2026-06-02 — Sessão: Web split público × premium PRIVADO — v1.41.0 (ADR-058)
 
 > **Pedido do dono:** "tier premium web = privado." Split espelhando o não-web (ADR-049):
@@ -326,6 +336,7 @@ Riscos ativos: nenhum bloqueante. Risco residual ADR-010 §Riscos (detector de v
 - *(v1.13.0 FECHADA em 2026-05-29 — ADR-012 Aceito após qa-critic round 1; handoff cross-sessão + drift sync + qa-critic rules #6/#7).*
 - *(v1.11.0/v1.12.0/v1.12.1 fechadas em 2026-05-29 — merges `bd64b08`/`fb637ac`/`8fb044f` + tags `v1.11.0`/`v1.12.0`/`v1.12.1`).*
 - **[2026-05-27/28 · fechado] AIVI fechamento** — PR #20 mergeado em master de `LIMITES-BATENTES-RECALC` (commit `10ecf0b`, 2026-05-28). REQ-001..011 implementadas + gate BABET 2025 = 0 (delta 0.000000) + 3 pendências runtime fechadas. Validação framework SSOT F0-F4 concluída.
+- **[2026-06-03 · ATIVA] Gates de honestidade da vitrine (ADR-059 Proposto)** — docs entregues (research-brief + ADR-059 + plano faseado). **Próximo passo:** implementar F1 (corrigir fail-open G1 em `test_marketing_claims.py` — glob+versão-numérica+`pytest.fail`, prioridade: bug ativo) → F2 (`anti_overclaim_gate` no `web_export`) → F3 (`{#CLAIM-NNN}`×LIMITS). Bloco developer→qa-critic. F4 (eval LLM-as-judge p/ companions sênior) = EMERGENTE, ADR próprio com dep declarada. ADR-059→Aceito quando F1–F3 verdes no CI.
 - **Backlog ativo (trigger-gated, NÃO WIP):**
   - ~~ADR-010 §Pendências: templates `_template-research/research-brief.md` + `_template/requirements.md` ganham seção `## Escopo declarado pelo discovery`~~ **FECHADO em 2026-05-29 pós-merge v1.12.0** — ambos templates ganharam a seção em commit polish + diagrama Mermaid em ADR-011 §Topologia.
   - ADR-011 §Pendências: Alternativa 2 (rewind cirúrgico) — trigger: caso real onde cascata é custosa.
