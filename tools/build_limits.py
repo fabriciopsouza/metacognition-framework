@@ -59,6 +59,10 @@ CLAIMS = [
      "tier norma + tier sensível (export)", "vazamento semântico novo (qa-critic é o backstop)", "020"),
     ("Entrega navegável: índice guiado, auto-verificado (sem link órfão/pro vazio)", "test_make_index.py",
      "html+txt, ordem de leitura, lista só o que existe, resumo anti-fabricação", "estética do índice (não medida)", "050"),
+    ("Vitrine honesta: sem overclaim + anti-drift de versão/link + prompt web fail-closed", "test_marketing_claims.py",
+     "léxico absoluto-sem-hedge na vitrine; prompt web derivado de PUBLIC_SRC (fail-closed); versão/link da "
+     "vitrine == main; disclosure de alucinação residual (proximidade)",
+     "paráfrase de overclaim (léxico não-exaustivo, anti-FP > recall); qa-critic é o backstop", "059"),
 ]
 
 

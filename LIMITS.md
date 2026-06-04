@@ -23,6 +23,7 @@
 | 3 distribuições de fonte única (premium/baseline) — core do discovery preservado | ✅ PROVADO | `tools/test_premium_tier.py` (interno¹) | premium marcado e stripável; core intacto no baseline | feature premium nova precisa ser marcada (senão vaza) | ADR-049 |
 | Núcleo sem termo de domínio/cliente | ✅ PROVADO | `tools/test_core_agnostic.py` (interno¹) | tier norma + tier sensível (export) | vazamento semântico novo (qa-critic é o backstop) | ADR-020 |
 | Entrega navegável: índice guiado, auto-verificado (sem link órfão/pro vazio) | ✅ PROVADO | `tools/test_make_index.py` | html+txt, ordem de leitura, lista só o que existe, resumo anti-fabricação | estética do índice (não medida) | ADR-050 |
+| Vitrine honesta: sem overclaim + anti-drift de versão/link + prompt web fail-closed | ✅ PROVADO | `tools/test_marketing_claims.py` | léxico absoluto-sem-hedge na vitrine; prompt web derivado de PUBLIC_SRC (fail-closed); versão/link da vitrine == main; disclosure de alucinação residual (proximidade) | paráfrase de overclaim (léxico não-exaustivo, anti-FP > recall); qa-critic é o backstop | ADR-059 |
 
 > ¹ **canário interno**: roda na fonte e no CI, mas é **removido da distribuição pública** (reconstrói fragmentos de token de cliente para testar o linter sensível — não pode ser publicado). O status PROVADO reflete a fonte/CI; no pacote público o arquivo não existe **por design**.
 

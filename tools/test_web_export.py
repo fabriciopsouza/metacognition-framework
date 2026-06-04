@@ -11,6 +11,11 @@ import os
 import sys
 import tempfile
 
+try:  # stdout UTF-8: console Windows cp1252 quebra ao imprimir '→' (lição recorrente)
+    sys.stdout.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 import web_export as w  # noqa: E402
