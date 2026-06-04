@@ -1,6 +1,6 @@
 # ADR 061 — Auditor de liveness de hooks: falha de hook NUNCA é silenciosa (+ porte do 2º hook vetado)
 
-- Status: **Proposto** · Data: 2026-06-04 · Decisores: dono + squad (architect/developer)
+- Status: **Aceito** (2026-06-04 — gate de aceite: CI verde 3 SOs + qa-critic; verificação na máquina deferida pelo dono) · Data: 2026-06-04 · Decisores: dono + squad (architect/developer)
 - Onda: resiliência de runtime (alvo v1.42.0) · Tipo: **adição reconciliada** (estende ADR-060). Atende: "checar todos os vetados + os que podem ser vetados; 100% anti-bloqueio; falha silenciosa quebra a confiança".
 - Relaciona: ADR-060 (sync resiliente a EDR), ADR-019/020 (gates de boot), ADR-027 (route-gate), ADR-047 (gates anunciados / non-admin).
 

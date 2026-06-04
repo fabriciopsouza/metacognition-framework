@@ -9,6 +9,10 @@
 
 ---
 
+## 2026-06-04 — RELEASE v1.42.0 (ADR-059/060/061/062 Aceitos)
+
+> **Release de hardening.** 4 ADRs Aceitos (gate de aceite: **CI verde 3 SOs + qa-critic isolado**; verificação na máquina do dono deferida): 059 honestidade da vitrine · 060 resiliência a EDR · 061 auditor de liveness (falha de hook nunca silenciosa) · 062 corpus de aprendizado. README+vitrine+CHANGELOG bumpados a **1.42.0** (gate-i acopla README↔vitrine). Tag `v1.42.0` + GitHub release. **Pendências do dono (não-bloqueantes):** exclusão Kaspersky `.claude\hooks\*`; criar repos de relatório + opt-in.
+
 ## 2026-06-04 (cont. 2) — Sessão (squad completo): ADR-062 — relatório de execução enriquecido + corpus público anonimizado
 
 > **Pedido do dono:** todo fim de execução gera relatório estilo-AIVI (erros/acertos/**detecção framework×humano**/gaps/melhorias/boas práticas/**lições por skill**); modo público sem dados sensíveis (commit/push); dono vê todos, colaborador só o seu; LGPD como "preço de uso"; agnóstico, especializado por skill. "Siga todo o framework; aplique ADRs anteriores (ganho nem sempre imediato)."
