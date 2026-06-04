@@ -15,7 +15,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 from execution_report import (  # noqa: E402
     validate_report, build_report, build_external_report, validate_external_report,
-    detect_tier, telemetry_enabled,
+    detect_tier, telemetry_enabled, learnings_public,
 )
 
 # ----------------------------------------------------------------- OWNER (compat ADR-038)
@@ -33,8 +33,10 @@ REPORT_FABRICADO = """# Execution-report
 |---|---|---|
 | bug | agente | qa |
 """
-REPORT_TOKEN_COM_FONTE = REPORT_FABRICADO.replace(
-    "- Tokens: 152300", "- Tokens: input 100000 + output 52300 (fonte: transcripts ADR-026)")
+REPORT_TOKEN_COM_FONTE = build_report(  # ADR-062: via build_owner_report -> inclui seções de aprendizado
+    tokens_line="input 100000 + output 52300 (fonte: transcripts ADR-026)")
+# ADR-062: report completo MENOS as seções de aprendizado -> deve FALHAR (obrigação nova).
+REPORT_SEM_APRENDIZADO = REPORT_FABRICADO.replace("- Tokens: 152300", "- Tokens: NÃO MEDIDO")
 REPORT_SEM_PLACAR = """# Execution-report
 - Tokens: NÃO MEDIDO (sem telemetria exposta)
 - Tempo (wall-clock): NÃO MEDIDO
@@ -70,6 +72,7 @@ CASES = [
     ("OWNER token fabricado", validate_report, REPORT_FABRICADO, False),
     ("OWNER token + fonte", validate_report, REPORT_TOKEN_COM_FONTE, True),
     ("OWNER sem placar", validate_report, REPORT_SEM_PLACAR, False),
+    ("OWNER sem seção de aprendizado (ADR-062)", validate_report, REPORT_SEM_APRENDIZADO, False),
     ("EXTERNAL honesto (schema)", validate_external_report, EXT_HONESTO, True),
     ("EXTERNAL com texto livre (cliente)", validate_external_report, EXT_TEXTO_LIVRE, False),
     ("EXTERNAL com e-mail em campo", validate_external_report, EXT_EMAIL, False),
@@ -100,6 +103,13 @@ def main():
     det_ok = tier == "owner"
     fails += 0 if det_ok else 1
     print(f"{'OK  ' if det_ok else 'FAIL'} detect_tier(repo do dono) == owner (got {tier!r})")
+
+    # ADR-062: learnings_public no report OWNER limpo -> publicavel (sem problems) + header presente.
+    pub, problems = learnings_public(REPORT_HONESTO, ROOT)
+    lp_ok = (not problems) and "PÚBLICO ANONIMIZADO" in pub
+    fails += 0 if lp_ok else 1
+    print(f"{'OK  ' if lp_ok else 'FAIL'} learnings_public (report limpo -> publicavel) "
+          f"{'' if lp_ok else problems[:2]}")
 
     # opt-out: env desliga o tier external
     os.environ["FRAMEWORK_NO_TELEMETRY"] = "1"

@@ -24,6 +24,7 @@
 | Núcleo sem termo de domínio/cliente | ✅ PROVADO | `tools/test_core_agnostic.py` (interno¹) | tier norma + tier sensível (export) | vazamento semântico novo (qa-critic é o backstop) | ADR-020 |
 | Entrega navegável: índice guiado, auto-verificado (sem link órfão/pro vazio) | ✅ PROVADO | `tools/test_make_index.py` | html+txt, ordem de leitura, lista só o que existe, resumo anti-fabricação | estética do índice (não medida) | ADR-050 |
 | Vitrine honesta: sem overclaim + anti-drift de versão/link + prompt web fail-closed | ✅ PROVADO | `tools/test_marketing_claims.py` | léxico absoluto-sem-hedge na vitrine; prompt web derivado de PUBLIC_SRC (fail-closed); versão/link da vitrine == main; disclosure de alucinação residual (proximidade) | paráfrase de overclaim (léxico não-exaustivo, anti-FP > recall); qa-critic é o backstop | ADR-059 |
+| Corpus público de aprendizado anonimizado (learnings) com fail-closed + opt-in | ✅ PROVADO | `tools/test_execution_report.py` | anonymize + gate sensitive-denylist (recusa se map/denylist ausente, regex inválida ou token sobrevive) + consent opt-in no CLI | anonimização por regex NÃO-exaustiva: token fora do map E da denylist passa — revisão humana antes do push | ADR-062 |
 
 > ¹ **canário interno**: roda na fonte e no CI, mas é **removido da distribuição pública** (reconstrói fragmentos de token de cliente para testar o linter sensível — não pode ser publicado). O status PROVADO reflete a fonte/CI; no pacote público o arquivo não existe **por design**.
 

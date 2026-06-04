@@ -9,6 +9,18 @@
 
 ---
 
+## 2026-06-04 (cont. 2) — Sessão (squad completo): ADR-062 — relatório de execução enriquecido + corpus público anonimizado
+
+> **Pedido do dono:** todo fim de execução gera relatório estilo-AIVI (erros/acertos/**detecção framework×humano**/gaps/melhorias/boas práticas/**lições por skill**); modo público sem dados sensíveis (commit/push); dono vê todos, colaborador só o seu; LGPD como "preço de uso"; agnóstico, especializado por skill. "Siga todo o framework; aplique ADRs anteriores (ganho nem sempre imediato)."
+>
+> **Discovery (explorer, file-first):** a feature **já existe em grande parte** (`execution_report.py`, ADR-038/052: dois tiers OWNER/EXTERNAL, anti-fabricação, opt-out, wirado no docops). Régua §0 → **estender, não reinventar.**
+>
+> **Decisões do dono (gate humano — high-stakes/LGPD, ortogonal ao modo autosuficiente):** (1) repo PRIVADO por colaborador + 1 PÚBLICO anonimizado; (2) gatilho fim-de-bloco + fim-de-sessão; (3) público 100% anonimizado + opt-in registrado.
+>
+> **Entregue (ADR-062, EMENDA de ADR-038/052; aplica ADR-021/030/012/017/044/020/026):** `execution_report.py` — seções de aprendizado no OWNER + `learnings_public()` (anonymize + gate sensitive-denylist, **fail-closed**) + CLI `--learnings-public` com **gate de consent** (opt-in mecanizado). `docs/REPORTS-CONTRIBUTION.md` (LGPD). `consistency-gate.ps1` **7ª dim** (report presente). docops §Encerramento emendado. +linha LIMITS (limite honesto: anonimização não-exaustiva).
+>
+> **qa-critic (subagente isolado):** ataque de VAZAMENTO — fail-closed confirmado. 3 MÉD (map-ausente, regex-inválida, consent não-mecanizado) + 2 BAIXO → **todos corrigidos**. Tier EXTERNAL intacto. Regressão 5/5 verde + consent gate provado (RECUSADO exit 1). Status Proposto.
+
 ## 2026-06-04 (cont.) — Sessão (squad): ADR-061 — auditor de liveness (falha de hook NUNCA silenciosa)
 
 > **Pedido do dono:** "checar todos os vetados + os que PODEM ser vetados; 100% anti-bloqueio; falha silenciosa quebra a confiança. Seja adversarial, aplique o framework, modo autosuficiente, leve até merge."

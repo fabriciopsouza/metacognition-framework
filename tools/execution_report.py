@@ -32,7 +32,7 @@ import re
 import sys
 import unicodedata
 
-# --- OWNER: seções obrigatórias (ADR-038) ---
+# --- OWNER: seções obrigatórias (ADR-038 + ADR-062 aprendizado estilo-AIVI) ---
 REQUIRED = {
     "tokens": ["token"],
     "tempo": ["tempo", "wall-clock", "wall clock", "duracao"],
@@ -41,7 +41,15 @@ REQUIRED = {
     "testes": ["teste"],
     "retrabalho": ["retrabalho", "rework"],
     "placar": ["placar", "gate x achado", "gate × achado", "quem pegou"],
+    # ADR-062: seções de APRENDIZADO (heading obrigatório; conteúdo vazio="— (nenhum)" é válido,
+    # NÃO é fabricação — só tokens tem invariante de número-com-fonte).
+    "deteccao": ["framework x humano", "framework × humano", "deteccao framework"],
+    "gaps": ["gap"],
+    "melhorias": ["melhoria"],
+    "boas_praticas": ["boa pratica", "boas praticas", "boa prática", "boas práticas"],
+    "licoes": ["licao por skill", "licoes por skill", "lição por skill", "lições por skill"],
 }
+NENHUM = "— (nenhum neste bloco)"
 SOURCE_KEYS = ("fonte:", "transcript", "telemetria", "usage", "adr-026")
 NAO_MEDIDO = "NÃO MEDIDO"
 
@@ -164,7 +172,8 @@ def validate_owner_report(text):
 
 
 def build_owner_report(tokens_line=None, wall_clock="NÃO MEDIDO", turnos="NÃO MEDIDO",
-                       arquivos=None, testes="NÃO MEDIDO", retrabalho="NÃO MEDIDO", placar=None):
+                       arquivos=None, testes="NÃO MEDIDO", retrabalho="NÃO MEDIDO", placar=None,
+                       deteccao=None, gaps=None, melhorias=None, boas_praticas=None, licoes=None):
     if tokens_line is None:
         tokens_line = f"{NAO_MEDIDO} — sem telemetria de token exposta ao agente (dependência do host; ver LIMITS.md)"
     arquivos = arquivos or "NÃO MEDIDO"
@@ -180,6 +189,17 @@ def build_owner_report(tokens_line=None, wall_clock="NÃO MEDIDO", turnos="NÃO 
           "| Achado | Quem pegou | Gate que deveria ter pego |", "|---|---|---|"]
     for achado, quem, gate in placar:
         L.append(f"| {achado} | {quem} | {gate} |")
+
+    # ADR-062: seções de APRENDIZADO (estilo-AIVI). Default = NENHUM (válido, não fabricado).
+    def _block(title, body):
+        return ["", f"## {title}", (body or NENHUM)]
+    L += _block("Detecção: framework × humano (quem pegou o quê — mecanismo vs. revisão humana)", deteccao)
+    L += _block("Gaps (não-bloqueantes detectados — flagados, não silenciados)", gaps)
+    L += _block("Melhorias (do framework/processo — adição passa pela régua §0)", melhorias)
+    L += _block("Boas práticas (o que funcionou — reutilizável)", boas_praticas)
+    L += _block("Lições por skill (agnóstico de domínio — o que daqui serve a OUTRO projeto)",
+                licoes or "- dev: " + NENHUM + "\n- discovery: " + NENHUM + "\n- architect: " + NENHUM +
+                "\n- qa-critic: " + NENHUM + "\n- docops: " + NENHUM + "\n- research/spec/ux: " + NENHUM)
     return "\n".join(L)
 
 
@@ -338,6 +358,59 @@ def tokens_from_transcripts():
         return None
 
 
+def has_publish_consent(home=None):
+    """ADR-062: opt-in p/ publicar o corpus público, registrado em ~/.claude/exec-report-consent.json
+    (`{"consent": true, ...}`). Sem o arquivo / consent != true -> não publica. Ver REPORTS-CONTRIBUTION.md."""
+    import json
+    home = home or os.path.expanduser("~")
+    try:
+        with open(os.path.join(home, ".claude", "exec-report-consent.json"), encoding="utf-8") as fh:
+            return json.load(fh).get("consent") is True
+    except Exception:
+        return False
+
+
+def learnings_public(owner_text, root=None):
+    """ADR-062: versão PÚBLICA ANONIMIZADA do report OWNER (corpus de aprendizado agnóstico).
+    Reusa anonymize.py (determinístico) + GATE sensitive-denylist (mesmo trust-model do export-clean,
+    ADR-020). FAIL-CLOSED: denylist ausente OU token sensível sobrevivente -> RECUSA (problems != []).
+    Retorna (texto_publico, problems). problems não-vazio = NÃO publicar."""
+    root = root or repo_root()
+    problems = []
+    text = owner_text or ""
+    # 1) anonimização determinística — FAIL-CLOSED: map ausente = sem anonimização = recuso.
+    map_path = os.path.join(root, "tools", "anonymize-map.txt")
+    if not os.path.isfile(map_path):
+        problems.append("anonymize-map.txt ausente — sem anonimização; recuso publicar (fail-closed)")
+    else:
+        try:
+            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+            import anonymize as an  # noqa
+            text = an.apply_rules(text, an.load_rules(map_path))
+        except Exception as e:
+            problems.append(f"anonimização indisponível ({e}) — recuso publicar (fail-closed)")
+    # 2) backstop denylist — FAIL-CLOSED: ausente, token sobrevivente, OU regex inválida = recuso.
+    deny_path = os.path.join(root, "tools", "sensitive-denylist.txt")
+    if not os.path.isfile(deny_path):
+        problems.append("sensitive-denylist.txt ausente — sem backstop; recuso publicar (fail-closed)")
+    else:
+        for raw in open(deny_path, encoding="utf-8"):
+            pat = raw.strip()
+            if not pat or pat.startswith("#"):
+                continue
+            try:
+                if re.search(pat, text, re.IGNORECASE):
+                    problems.append(f"token sensível sobreviveu: /{pat}/ — NÃO publicar")
+            except re.error:
+                problems.append(f"padrão de denylist inválido (/{pat}/) — backstop comprometido; recuso (fail-closed)")
+    # NUNCA devolver texto (possivelmente contaminado) quando recusado (anti-footgun p/ callers).
+    if problems:
+        return "", problems
+    header = ("# Learnings report — PÚBLICO ANONIMIZADO (ADR-062 · corpus de melhoria do framework)\n"
+              "# anonymize.py + gate sensitive-denylist. SEM cliente/PII. Opt-in: ver docs/REPORTS-CONTRIBUTION.md.\n\n")
+    return header + text, problems
+
+
 def main():
     try:
         sys.stdout.reconfigure(encoding="utf-8")
@@ -349,7 +422,35 @@ def main():
     ap.add_argument("--from-transcripts", action="store_true", help="tokens via project_report (ADR-026)")
     ap.add_argument("--out", help="arquivo de saída (default: por tier; '-' = stdout)")
     ap.add_argument("--validate", help="validar um report existente (tier inferido do conteúdo)")
+    ap.add_argument("--learnings-public", dest="learnings_public",
+                    help="ADR-062: gera versão PÚBLICA ANONIMIZADA de um report OWNER (anonymize+denylist)")
     args = ap.parse_args()
+
+    if args.learnings_public:
+        if not has_publish_consent():
+            print("RECUSADO: sem opt-in registrado (~/.claude/exec-report-consent.json com "
+                  '{"consent": true}). Ver docs/REPORTS-CONTRIBUTION.md. (Geração pública é opt-in — ADR-062.)')
+            return 1
+        try:
+            owner_text = open(args.learnings_public, encoding="utf-8-sig").read()
+        except OSError as e:
+            print(f"FAIL: {e}")
+            return 1
+        pub, problems = learnings_public(owner_text, repo_root())
+        if problems:
+            print("RECUSADO publicar learnings-public (fail-closed, ADR-062/020):")
+            for p in problems:
+                print("  - " + p)
+            return 1
+        out = args.out or os.path.join(repo_root(), "telemetry", "learnings-public.md")
+        if out == "-":
+            print(pub)
+            return 0
+        os.makedirs(os.path.dirname(out), exist_ok=True)
+        with open(out, "w", encoding="utf-8") as fh:
+            fh.write(pub + "\n")
+        print(f"learnings-public ANONIMIZADO escrito em {out} (revise antes do push ao repo público)")
+        return 0
 
     if args.validate:
         try:

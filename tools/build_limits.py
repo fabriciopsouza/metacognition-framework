@@ -63,6 +63,9 @@ CLAIMS = [
      "léxico absoluto-sem-hedge na vitrine; prompt web derivado de PUBLIC_SRC (fail-closed); versão/link da "
      "vitrine == main; disclosure de alucinação residual (proximidade)",
      "paráfrase de overclaim (léxico não-exaustivo, anti-FP > recall); qa-critic é o backstop", "059"),
+    ("Corpus público de aprendizado anonimizado (learnings) com fail-closed + opt-in", "test_execution_report.py",
+     "anonymize + gate sensitive-denylist (recusa se map/denylist ausente, regex inválida ou token sobrevive) + consent opt-in no CLI",
+     "anonimização por regex NÃO-exaustiva: token fora do map E da denylist passa — revisão humana antes do push", "062"),
 ]
 
 
