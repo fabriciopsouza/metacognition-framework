@@ -1,0 +1,17 @@
+{
+  "_doc": "ADR-061: manifesto de hooks AUDITADOS por liveness. Cada hook listado CARIMBA .claude/.hooklive/<key>=<session_id> quando roda; o route-gate (nao-bloqueavel, so le arquivo) compara com a sessao atual e DECLARA os ausentes (nao ha falha silenciosa). Listar SO hooks que de fato carimbam (senao falso-alarme). Hooks de boot global (sync-global, framework-boot) NAO sao auditados aqui (editar boot e arriscado/untestavel) -> cobertos pela EXCLUSAO do Kaspersky.",
+  "audited_hooks": [
+    {
+      "key": "check-repo-sync",
+      "event": "SessionStart",
+      "gate": "sincronizacao com origin (ADR-019)",
+      "manual": "rode `git fetch --prune` + `git status -sb` voce mesmo (nao assuma sincronizado)"
+    },
+    {
+      "key": "check-core-agnostic",
+      "event": "SessionStart",
+      "gate": "agnosticismo do nucleo (ADR-020)",
+      "manual": "rode `python tools/check_core_agnostic.py` para checar vazamento de dominio no nucleo"
+    }
+  ]
+}

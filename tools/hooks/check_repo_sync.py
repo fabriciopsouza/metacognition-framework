@@ -34,15 +34,28 @@ def git(cwd, *args):
         return "", 1
 
 
-def write_marker(cwd):
-    """Prova de liveness (ADR-060): grava o epoch do ultimo sync. O route-gate LE a idade deste
-    marker (sem spawnar git) e lembra o agente se estiver velho/ausente. Local, NAO versionado."""
+def session_id_from_stdin():
+    """SessionStart passa {session_id,...} no stdin. tty-guard: nao bloqueia em run manual."""
+    try:
+        if sys.stdin and not sys.stdin.isatty():
+            raw = sys.stdin.read()
+            if raw and raw.strip():
+                return str(json.loads(raw).get("session_id") or "")
+    except Exception:
+        pass
+    return ""
+
+
+def stamp_liveness(cwd, key, session_id):
+    """Prova de liveness (ADR-060/061): grava .claude/.hooklive/<key>=<session_id> (ou epoch se
+    sem session_id). O route-gate (nao-bloqueavel) compara com a sessao atual e DECLARA se ausente
+    -> sem falha silenciosa. Local, NAO versionado."""
     try:
         import time
-        mp = os.path.join(cwd, ".claude", ".repo-sync-marker")
-        os.makedirs(os.path.dirname(mp), exist_ok=True)
-        with open(mp, "w", encoding="utf-8") as f:
-            f.write(str(int(time.time())))
+        d = os.path.join(cwd, ".claude", ".hooklive")
+        os.makedirs(d, exist_ok=True)
+        with open(os.path.join(d, key), "w", encoding="utf-8") as f:
+            f.write(session_id or f"epoch:{int(time.time())}")
     except Exception:
         pass
 
@@ -52,9 +65,12 @@ def main():
         sys.stdout.reconfigure(encoding="utf-8")
     except Exception:
         pass
+    sid = session_id_from_stdin()
     try:
         pd = os.environ.get("CLAUDE_PROJECT_DIR")
         cwd = pd if (pd and os.path.isdir(pd)) else os.getcwd()
+        stamp_liveness(cwd, "check-repo-sync", sid)  # ADR-061: carimba ANTES de qualquer saida
+                                                     # antecipada (carimbo = "o hook executou").
 
         inside, _ = git(cwd, "rev-parse", "--is-inside-work-tree")
         if inside != "true":
@@ -65,7 +81,6 @@ def main():
             upstream = "origin/main"
 
         git(cwd, "fetch", "--quiet")  # sempre (read-only, seguro)
-        write_marker(cwd)  # ADR-060: liveness p/ o route-gate ler
 
         counts, rc = git(cwd, "rev-list", "--left-right", "--count", f"{upstream}...HEAD")
         if rc != 0 or not counts:

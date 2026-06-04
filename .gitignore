@@ -16,5 +16,6 @@ output/
 .claude/scheduled_tasks.lock
 .claude/scheduled_tasks.json
 
-# ADR-060: marker de liveness do sync (epoch local, por maquina — nunca versionar)
+# ADR-060/061: markers de liveness dos hooks (por sessao/maquina — nunca versionar)
+.claude/.hooklive/
 .claude/.repo-sync-marker

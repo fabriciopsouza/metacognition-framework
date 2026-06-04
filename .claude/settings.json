@@ -36,9 +36,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude\\hooks\\check-core-agnostic.ps1\"",
+            "command": "cmd /c \"python tools\\hooks\\check_core_agnostic_hook.py || powershell.exe -NoProfile -ExecutionPolicy Bypass -File .claude\\hooks\\check-core-agnostic.ps1\"",
             "timeout": 20,
-            "statusMessage": "Verificando agnosticismo do nucleo (ADR-020)"
+            "statusMessage": "Verificando agnosticismo do nucleo (ADR-020/061: python->powershell)"
           }
         ]
       },

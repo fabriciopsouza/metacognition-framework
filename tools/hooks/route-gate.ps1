@@ -64,22 +64,32 @@ try {
     $globalLock  = Join-Path $env:USERPROFILE '.claude\session.lock'
     if ((Test-Path $projectLock) -or (Test-Path $globalLock)) { Emit-Silent }
 
-    # 2.5 [ADR-060] Nudge de sync. O route-gate NAO e bloqueado pelo Kaspersky (so injeta texto);
-    # aqui ele LE a idade do marker escrito por check_repo_sync (NAO spawna git -> continua livre).
-    # Roda TODO turno (independe do once-gate de rota abaixo). Cobre: sync determinstico do boot
-    # vetado por EDR, ou sessao longa sem re-sync. Auto-resolvente: cala quando o marker atualiza.
+    # 2.5 [ADR-061] AUDITOR DE LIVENESS (anti falha-silenciosa). O route-gate NAO e bloqueavel pelo
+    # Kaspersky (so LE arquivo + injeta texto; NAO spawna processo/rede) e roda TODO turno. Le o
+    # manifesto de hooks auditados + os carimbos .claude/.hooklive/<key>; qualquer hook cujo carimbo
+    # != session atual NAO rodou (provavel veto EDR) -> DECLARA + da o fallback manual. Sem session_id
+    # nao audita (degrada gracioso, sem falso-alarme). Auto-resolvente: cala quando o carimbo bate.
     $syncNudge = ''
     try {
-        $marker = Join-Path $cwd '.claude\.repo-sync-marker'
-        $stale = $true
-        if (Test-Path $marker) {
-            $epoch = 0
-            [int64]::TryParse(((Get-Content $marker -Raw -ErrorAction SilentlyContinue) -replace '\s',''), [ref]$epoch) | Out-Null
-            $ageH = ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() - $epoch) / 3600.0
-            if ($epoch -gt 0 -and $ageH -lt 2) { $stale = $false }
-        }
-        if ($stale) {
-            $syncNudge = "# [sync ADR-060] O sync determinístico do boot pode NÃO ter rodado (hook vetado por EDR) ou está velho (>2h). ANTES de afirmar estado / reconciliar WIP, rode ``git fetch`` + ``git status -sb`` você mesmo — não assuma sincronizado.`n`n"
+        if ($sessionId) {
+            $manifestPath = Join-Path $cwd 'tools\hooks\hooks-manifest.json'
+            $liveDir      = Join-Path $cwd '.claude\.hooklive'
+            if (Test-Path $manifestPath) {
+                $manifest = Get-Content $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
+                $inert = @()
+                foreach ($h in $manifest.audited_hooks) {
+                    $mk = Join-Path $liveDir $h.key
+                    $stamp = if (Test-Path $mk) { (Get-Content $mk -Raw -ErrorAction SilentlyContinue).Trim() } else { '' }
+                    if ($stamp -ne $sessionId) {
+                        $inert += "- **$($h.gate)** (hook ``$($h.key)``) NAO rodou nesta sessao -> gate INERTE. Aplique manual: $($h.manual)"
+                    }
+                }
+                if ($inert.Count -gt 0) {
+                    $syncNudge = "# [liveness ADR-061] Gate(s) possivelmente vetados por EDR (declarado, NAO silencioso):`n`n" +
+                        ($inert -join "`n") +
+                        "`n`n(Se voce acabou de abrir a sessao pode ser timing — reaparece ate o carimbo bater. Exclusao do Kaspersky por pasta ``.claude\hooks\*`` resolve de vez.)`n`n"
+                }
+            }
         }
     } catch { }
 

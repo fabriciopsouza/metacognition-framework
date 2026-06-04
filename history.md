@@ -9,6 +9,20 @@
 
 ---
 
+## 2026-06-04 (cont.) — Sessão (squad): ADR-061 — auditor de liveness (falha de hook NUNCA silenciosa)
+
+> **Pedido do dono:** "checar todos os vetados + os que PODEM ser vetados; 100% anti-bloqueio; falha silenciosa quebra a confiança. Seja adversarial, aplique o framework, modo autosuficiente, leve até merge."
+>
+> **Discovery (explorer, file-first):** inventário dos 17 pontos de hook → 2 confirmados vetados (check-repo-sync, check-core-agnostic), 3 "podem ser vetados" (sync-global, **framework-boot** [GLOBAL, fora do repo, maior exposição], inject-start-session-global), ~8 BAIXO (só leem+injetam → rule AAC não dispara).
+>
+> **Enquadramento adversarial (dogfood do ADR-059 anti-overclaim):** "100% anti-bloqueio só em código" é IMPOSSÍVEL contra EDR adaptativo — o 100% é a **exclusão**. O alcançável em código é **100% anti-falha-SILENCIOSA**. Reescrever boot (sync-global/framework-boot) cego = risco de quebrar boot em toda máquina → recusado.
+>
+> **Entregue (ADR-061):** auditor de liveness — `hooks-manifest.json` + carimbo `.claude/.hooklive/<key>=<session_id>` nos 2 hooks confirmados (check_repo_sync.py, novo **check_core_agnostic_hook.py** porte python+fallback) + **route-gate §2.5 audita** (lê manifesto+carimbos, declara gates cujo carimbo≠sessão, só-leitura→não-bloqueável, fail-soft). settings check-core-agnostic→`cmd /c python||powershell`. `.gitignore` `.hooklive/`.
+>
+> **qa-critic (subagente isolado):** auditor estático OK (silêncio quando carimbos batem; declara quando ausente; não spawna; PS 5.1 válido; sem falso-alarme em sessão longa — session_id-keyed). Achou bug BAIXO (stamp depois da saída antecipada em check_repo_sync — projeto não-git) → **corrigido** (carimbo antes das saídas, igual ao core-agnostic); +lacunas de doc (manifesto-ausente=silêncio; fallback .ps1 não carimba=falso-alarme benigno) → **declaradas no ADR**.
+>
+> **Limites residuais DECLARADOS (não silenciosos):** manifesto ausente, sem session_id, route-gate vetado, hooks fora do manifesto → exclusão é o único 100%. **framework-boot (global) = maior exposição, fora do repo → exclusão.** Status ADR-061 Proposto.
+
 ## 2026-06-04 — Sessão (developer→qa-critic→docops): ADR-059 IMPLEMENTADO + ADR-060 (resiliência de sync a EDR)
 
 > **Pedido do dono:** "siga adr59 até final" → implementar F1–F3. No meio, descoberta operacional: o **Kaspersky AAC** bloqueia 2 hooks (`check-repo-sync.ps1`, `check-core-agnostic.ps1`) na máquina 9TRP7H4 desde ~30/05 (regra "PowerShell executa código ofuscado"; comportamental, não ofuscação — medido no CSV do dono). Dono: "este repo continua admin; non-admin só onde há restrição".
@@ -348,7 +362,7 @@ Riscos ativos: nenhum bloqueante. Risco residual ADR-010 §Riscos (detector de v
 - *(v1.13.0 FECHADA em 2026-05-29 — ADR-012 Aceito após qa-critic round 1; handoff cross-sessão + drift sync + qa-critic rules #6/#7).*
 - *(v1.11.0/v1.12.0/v1.12.1 fechadas em 2026-05-29 — merges `bd64b08`/`fb637ac`/`8fb044f` + tags `v1.11.0`/`v1.12.0`/`v1.12.1`).*
 - **[2026-05-27/28 · fechado] AIVI fechamento** — PR #20 mergeado em master de `LIMITES-BATENTES-RECALC` (commit `10ecf0b`, 2026-05-28). REQ-001..011 implementadas + gate BABET 2025 = 0 (delta 0.000000) + 3 pendências runtime fechadas. Validação framework SSOT F0-F4 concluída.
-- **[2026-06-04 · ATIVA, aguarda merge+verificação] Honestidade da vitrine (ADR-059) + resiliência de sync a EDR (ADR-060)** — IMPLEMENTADOS e qa-critic-aprovados (2 rodadas); canários verdes no sandbox. **Pendências:** (1) merge da branch `docs/honesty-gates-adr-059` (PR — gate humano); (2) **verificação do dono na máquina** (ADR-060): o python-hook escapa do Kaspersky AAC? o guard pede confirmação no push atrasado? (3) **Opção A paralela:** dono/TI adiciona exclusão do Kaspersky por pasta `.claude\hooks\*` (admin pleno). (4) ADR-059/060 → Aceito após merge. **Deferido:** `check-core-agnostic` ainda em PowerShell (vulnerável ao AAC; CI+qa-critic como backstop); F4 (eval LLM-as-judge p/ companions sênior) = EMERGENTE, ADR próprio.
+- **[2026-06-04 · ATIVA, aguarda merge+verificação] Honestidade da vitrine (ADR-059) + resiliência de sync a EDR (ADR-060) + auditor de liveness (ADR-061)** — IMPLEMENTADOS e qa-critic-aprovados (3 rodadas); canários verdes no sandbox. **Pendências:** (1) merge da branch `docs/honesty-gates-adr-059` (PR #53 — gate humano; o dono autorizou merge autônomo); (2) **verificação do dono na máquina:** os python-hooks escapam do Kaspersky AAC? o guard pede confirmação no push atrasado? o route-gate DECLARA gates inertes? (3) **Exclusão do Kaspersky** por pasta `.claude\hooks\*` = o único 100% anti-bloqueio (cobre sync-global/**framework-boot** global); (4) ADR-059/060/061 → Aceito após verificação. **Deferido:** porte de sync-global/framework-boot (boot machinery, untestável→risco); fallback .ps1 carimbar liveness; F4 (eval LLM-as-judge p/ companions sênior) = EMERGENTE.
 - **Backlog ativo (trigger-gated, NÃO WIP):**
   - ~~ADR-010 §Pendências: templates `_template-research/research-brief.md` + `_template/requirements.md` ganham seção `## Escopo declarado pelo discovery`~~ **FECHADO em 2026-05-29 pós-merge v1.12.0** — ambos templates ganharam a seção em commit polish + diagrama Mermaid em ADR-011 §Topologia.
   - ADR-011 §Pendências: Alternativa 2 (rewind cirúrgico) — trigger: caso real onde cascata é custosa.
