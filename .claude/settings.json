@@ -26,9 +26,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude\\hooks\\check-repo-sync.ps1\"",
+            "command": "cmd /c \"python tools\\hooks\\check_repo_sync.py || powershell.exe -NoProfile -ExecutionPolicy Bypass -File .claude\\hooks\\check-repo-sync.ps1\"",
             "timeout": 30,
-            "statusMessage": "Verificando sincronizacao do repo com origin (ADR-019)"
+            "statusMessage": "Verificando sincronizacao do repo com origin (ADR-019/060: python->powershell)"
           }
         ]
       },
@@ -84,6 +84,17 @@
             "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"tools\\hooks\\effect-gate.ps1\"",
             "timeout": 10,
             "statusMessage": "Gate de acoes destrutivas por efeito (effect-gate ADR-015)"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmd /c \"python tools\\hooks\\prepush_sync_guard.py || exit /b 0\"",
+            "timeout": 20,
+            "statusMessage": "Guard de pre-push: barra push sobre base atrasada (ADR-060)"
           }
         ]
       },

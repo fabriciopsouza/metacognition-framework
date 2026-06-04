@@ -65,9 +65,9 @@ try {
         $pullRc = $LASTEXITCODE   # exit code do pull e o sinal autoritativo (nao inferir so por behind)
         $newBehind = (git -C $cwd rev-list --count "HEAD..$upstream" 2>$null)
         if ($pullRc -eq 0 -and ($newBehind -eq '0' -or $newBehind -eq 0)) {
-            Emit "# Repo sync (ADR-019)`n✅ Repo estava $behind commit(s) atras de ``$upstream`` e foi AUTO-ATUALIZADO (fast-forward, sem modificacoes rastreadas). Agora em dia. Reconcilie WIP sobre o estado novo."
+            Emit "# Repo sync (ADR-019/060)`n✅ Repo estava $behind commit(s) atras de ``$upstream`` e foi AUTO-ATUALIZADO (fast-forward, sem modificacoes rastreadas). Agora em dia. Reconcilie WIP sobre o estado novo."
         } else {
-            Emit "# Repo sync (ADR-019)`n⚠️ Tentei auto-atualizar (estava $behind atras de ``$upstream``) mas ``pull --ff-only`` NAO concluiu (rc=$pullRc; ex.: untracked colidiria, lock, ou pre-merge hook). Rode ``git pull`` manual e verifique ANTES de reconciliar WIP."
+            Emit "# Repo sync (ADR-019/060)`n⚠️ Tentei auto-atualizar (estava $behind atras de ``$upstream``) mas ``pull --ff-only`` NAO concluiu (rc=$pullRc; ex.: untracked colidiria, lock, ou pre-merge hook). Rode ``git pull`` manual e verifique ANTES de reconciliar WIP."
         }
     } else {
         if (-not $isClean) {
@@ -77,7 +77,7 @@ try {
             $motivo = 'historico DIVERGIU (nao-fast-forward)'
             $acao   = 'rebase/merge manual de ``' + $upstream + '``'
         }
-        Emit "# Repo sync (ADR-019)`n⚠️ Repo esta $behind commit(s) atras de ``$upstream`` (e $ahead a frente). NAO auto-atualizei: $motivo. **Antes de reconciliar WIP / afirmar estado:** $acao. Operar agora = ler retrato congelado (licao method-audit 2026-05-30)."
+        Emit "# Repo sync (ADR-019/060)`n⚠️ Repo esta $behind commit(s) atras de ``$upstream`` (e $ahead a frente). NAO auto-atualizei: $motivo. **Antes de reconciliar WIP / afirmar estado:** $acao. Operar agora = ler retrato congelado (licao method-audit 2026-05-30)."
     }
 }
 catch {

@@ -15,3 +15,6 @@ output/
 # Claude Code scheduler internal
 .claude/scheduled_tasks.lock
 .claude/scheduled_tasks.json
+
+# ADR-060: marker de liveness do sync (epoch local, por maquina — nunca versionar)
+.claude/.repo-sync-marker
