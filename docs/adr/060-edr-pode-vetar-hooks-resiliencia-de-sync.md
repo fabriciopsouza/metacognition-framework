@@ -1,6 +1,6 @@
 # ADR 060 — EDR pode vetar hooks numa máquina admin → resiliência de sync em camadas (não-PowerShell + fallback)
 
-- Status: **Proposto** · Data: 2026-06-04 · Decisores: dono + squad (architect/developer)
+- Status: **Aceito** (2026-06-04 — gate de aceite: CI verde 3 SOs + qa-critic; verificação na máquina deferida pelo dono) · Data: 2026-06-04 · Decisores: dono + squad (architect/developer)
 - Onda: resiliência de runtime (alvo v1.42.0) · Tipo: **adição reconciliada** (preserva ADR-019; não revoga hooks). Atende: incidente Kaspersky AAC na máquina 9TRP7H4.
 - Relaciona: ADR-019 (sync no boot = mecanismo), ADR-027 (route-gate), ADR-047 (modo non-admin / gates anunciados), ADR-005 (modos de execução).
 

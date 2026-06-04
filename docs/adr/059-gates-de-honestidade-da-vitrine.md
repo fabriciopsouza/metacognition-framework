@@ -1,6 +1,6 @@
 # ADR 059 — Gates de honestidade da vitrine (G1 drift · G2 anti-overclaim · G3 claim×LIMITS), nativos e fail-closed
 
-- Status: **Proposto** · Data: 2026-06-03 · Decisores: dono + squad (architect)
+- Status: **Aceito** (2026-06-04 — gate de aceite: CI verde 3 SOs + qa-critic; verificação na máquina deferida pelo dono) · Data: 2026-06-03 · Decisores: dono + squad (architect)
 - Onda: honestidade mecanizada (alvo v1.42.0) · Tipo: **adição reconciliada** (estende ADR-044 LIMITS + ADR-054 web_export). Atende: análise crítica da vitrine (sessão 2026-06-03) + deep-research do dono.
 - Relaciona: ADR-044 (LIMITS gerado por canário), ADR-054/056/057/058 (web_export/cascata), ADR-018 (qa adversarial), ADR-042 (`test_discovery_eval` — eval executado).
 

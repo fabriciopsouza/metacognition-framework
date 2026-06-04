@@ -15,6 +15,18 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.42.0] — 2026-06-04 — Hardening: honestidade da vitrine + resiliência a EDR + auditor de liveness + corpus de aprendizado (ADR-059/060/061/062)
+
+### Added
+- **ADR-059** — honestidade da vitrine mecanizada: `overclaim_lexicon.py` (detector absoluto-sem-hedge, consciente de hedge/negação) + gates fail-closed em `test_marketing_claims.py` (prompt web derivado de `PUBLIC_SRC`; anti-drift de versão/link da vitrine; disclosure de alucinação residual). [CONSOLIDADO]
+- **ADR-060** — sync resiliente a EDR (Kaspersky AAC veta hooks): `check_repo_sync.py` (porte Python + fallback PowerShell) + `prepush_sync_guard.py` (gate humano se push atrás de `@{upstream}`) + nudge no route-gate. Camadas, graceful-degradation por máquina. [CONSOLIDADO]
+- **ADR-061** — **auditor de liveness: falha de hook nunca silenciosa**. `hooks-manifest.json` + carimbo `.claude/.hooklive/<key>=<session_id>`; o route-gate (não-bloqueável) declara gates inertes + fallback manual. +porte `check_core_agnostic_hook.py`. Provado ao vivo. [CONSOLIDADO]
+- **ADR-062** — relatório de execução enriquecido (estilo-AIVI: detecção framework×humano, gaps, melhorias, boas práticas, **lições por skill**) + corpus PÚBLICO anonimizado opt-in (`learnings_public`: anonymize + gate `sensitive-denylist`, fail-closed) + `consistency-gate` 7ª dimensão + `docs/REPORTS-CONTRIBUTION.md` (LGPD). EMENDA de ADR-038/052. [CONSOLIDADO]
+
+### Notas
+- Gate de aceite dos 4 ADRs: **CI verde (macOS/Ubuntu/Windows) + qa-critic adversarial isolado** (verificação na máquina do dono deferida). Cada bloco passou pelo squad completo.
+- Limite honesto (LIMITS.md): "100% anti-bloqueio" = exclusão do Kaspersky (não código); anonimização por regex não-exaustiva. Sem overclaim.
+
 ## [1.41.0] — 2026-06-02 — Pacote web em dois repos: público × premium PRIVADO (ADR-058)
 
 ### Changed
