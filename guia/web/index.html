@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Framework Metacognitivo Agêntico — orquestre agentes que não alucinam</title>
-<meta name="description" content="Um núcleo flexível para orquestrar agentes de IA: classificam o que sabem, não inventam, lembram entre sessões e culminam em produto — não em prosa.">
+<title>Framework Metacognitivo Agêntico — orquestre agentes que sabem o que não sabem</title>
+<meta name="description" content="Um núcleo flexível para orquestrar agentes de IA: classificam o que sabem, dizem quando não sabem, lembram entre sessões e culminam em produto — não em prosa.">
 <style>
   :root{
     --ink:#0d1117; --panel:#11161f; --panel2:#0f141d; --line:#1f2730; --grid:#161c26;
@@ -173,10 +173,10 @@
 <div class="wrap">
 
   <header>
-    <a class="ver" href="https://github.com/fabriciopsouza/metacognition-framework/releases/tag/v1.22.0">v<b>1.22.0</b> · release ↗</a>
+    <a class="ver" href="https://github.com/fabriciopsouza/metacognition-framework/releases/tag/v1.41.0">v<b>1.41.0</b> · release ↗</a>
     <div class="tag">Orquestração de agentes · Claude Code · open source</div>
     <h1>Um núcleo <em>adaptável</em><br>para orquestrar agentes.</h1>
-    <p class="lede">Agentes de IA que <b>classificam o que sabem</b> e não inventam o que não sabem,
+    <p class="lede">Agentes de IA que <b>classificam o que sabem</b> e admitem o que não sabem,
       <b>lembram entre sessões</b>, recusam-se a inflar, e <b>culminam em produto</b> — software ou
       dados entregáveis, não mais uma parede de texto. Um método, não um framework rígido: adapta-se
       ao seu contexto e ao seu código existente, sem forçar refatoração.</p>
@@ -219,7 +219,7 @@
     <p class="sub">Seis comportamentos sênior, aplicados antes de cada entrega. Sem jargão: o que o
       agente realmente faz.</p>
     <div class="steps">
-      <div class="step"><div class="num">1</div><div><div class="t">Classifica a confiança</div><div class="d">Cada fato, número ou nome de sistema recebe um selo: <b>confirmado</b> (tem fonte), <b>inferido</b> (deduzido com lógica) ou <b>não sei</b> (diz direto e sugere onde validar). Nunca inventa.</div></div></div>
+      <div class="step"><div class="num">1</div><div><div class="t">Classifica a confiança</div><div class="d">Cada fato, número ou nome de sistema recebe um selo: <b>confirmado</b> (tem fonte), <b>inferido</b> (deduzido com lógica) ou <b>não sei</b> (diz direto e sugere onde validar). Prefere o NÃO SEI a um palpite inventado.</div></div></div>
       <div class="step"><div class="num">2</div><div><div class="t">Lê antes de afirmar (file-first)</div><div class="d">Inspeciona o arquivo, o campo, a versão — antes de assumir. O nome aprovado não é renomeado sem decisão registrada.</div></div></div>
       <div class="step"><div class="num">3</div><div><div class="t">QA adversarial</div><div class="d">Um revisor independente (idealmente outro modelo) assume que <b>existe um bug</b> e tenta prová-lo, antes de qualquer aprovação. Reconstrói a versão mais forte do trabalho, ataca, e dá veredito binário.</div></div></div>
       <div class="step"><div class="num">4</div><div><div class="t">Da prosa ao mecanismo</div><div class="d">Regra crítica não fica só no texto: ganha um <b>par executável</b> (um hook que roda sozinho) com teste que tenta furá-la. Disciplina que não depende de boa-vontade.</div></div></div>
@@ -267,7 +267,7 @@
     <h2><span class="n">04</span>Princípios não-negociáveis</h2>
     <p class="sub">O que o framework recusa abrir mão — mesmo sob pressão de "só dessa vez".</p>
     <div class="cards">
-      <div class="card"><h3>Anti-alucinação</h3><p>Classifica tudo; diz <b>NÃO SEI</b> quando for; jamais inventa nome, número ou sintaxe.</p></div>
+      <div class="card"><h3>Anti-alucinação</h3><p>Classifica tudo; diz <b>NÃO SEI</b> quando for; em vez de inventar nome, número ou sintaxe, sinaliza onde falta fonte.</p></div>
       <div class="card"><h3>Ganho líquido</h3><p>Adição pura é rejeitada por padrão. Só entra o que <b>funde, remove ou destrava</b> — o framework não incha.</p></div>
       <div class="card"><h3>Estritamente flexível</h3><p>O núcleo não carrega normas de domínio. O <b>discovery declara o escopo</b> por projeto; nada vaza entre projetos.</p></div>
       <div class="card"><h3>QA bicelular</h3><p>Revisor <b>adversarial e independente</b> (modelo diferente) com poder de rewind. Todo QA assume que há bug.</p></div>
@@ -344,7 +344,7 @@
           <li><b><a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/guia/COMO-REVISAR-OUTRO-REPO.md">Revisar outro repo</a></b><small>auditoria read-only</small></li>
           <li><b><a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/guia/GIT-VERSIONAMENTO.md">Versionamento git</a></b><small>SemVer + Conventional Commits</small></li>
           <li><b><a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/guia/ORIENTACAO.md">Quem lê o quê</a></b><small>humano × IA</small></li>
-          <li><b><a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/PROMPT-CHAT-WEB-v4.3.md">Prompt do chat web (v4.3)</a></b><small>o framework no Claude.ai / sem filesystem</small></li>
+          <li><b><a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/PROMPT-CHAT-WEB-v4.4.md">Prompt do chat web (v4.4)</a></b><small>o framework no Claude.ai / sem filesystem</small></li>
         </ul>
       </div>
       <div class="docgroup">
@@ -365,18 +365,18 @@
     <div class="stacknote"><b>✓ Testado e desenhado para o Claude Code</b> — é o runtime onde o framework foi validado.
       <b>Gemini e Copilot: em desenvolvimento</b> (ainda não validados). Em chat sem filesystem (Claude.ai, Gemini),
       apenas o <b>método</b> (não os hooks nem o enforcement — <b>exclusivos do Claude Code</b>) pode rodar via o
-      <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/PROMPT-CHAT-WEB-v4.3.md">PROMPT-CHAT-WEB</a>.</div>
+      <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/PROMPT-CHAT-WEB-v4.4.md">PROMPT-CHAT-WEB</a>.</div>
     <p class="sub">Quatro passos, sem quebra. <b>Por projeto você preenche só 2 arquivos</b> (<code>docs/briefing.md</code> — objetivo/escopo/aceite — e <code>.agent/rules/00-glossario.md</code> — nomes/termos); o resto a IA usa, e <b>não é rígido</b>: ela elicita por perguntas/inspeção se faltar.</p>
     <div class="steps">
       <div class="step"><div class="num">1</div><div><div class="t">Instale o Claude Code</div><div class="d">O runtime onde o framework foi testado e desenhado (CLI + extensão de VS Code). Instalação na doc oficial: <a href="https://code.claude.com/docs">code.claude.com/docs</a>.</div></div></div>
-      <div class="step"><div class="num">2</div><div><div class="t">Clone o repositório</div><div class="d">Ou <a href="https://github.com/fabriciopsouza/metacognition-framework/archive/refs/tags/v1.22.0.zip">baixe a release v1.22.0 (.zip)</a>:<span class="cmd">git clone https://github.com/fabriciopsouza/metacognition-framework</span></div></div></div>
+      <div class="step"><div class="num">2</div><div><div class="t">Clone o repositório</div><div class="d">Ou <a href="https://github.com/fabriciopsouza/metacognition-framework/archive/refs/tags/v1.41.0.zip">baixe a release v1.41.0 (.zip)</a>:<span class="cmd">git clone https://github.com/fabriciopsouza/metacognition-framework</span></div></div></div>
       <div class="step"><div class="num">3</div><div><div class="t">Rode o bootstrap — o "instalador"</div><div class="d">Idempotente (roda 2× sem quebrar): configura git, garante o <code>gh</code> CLI, espelha o framework. <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/bootstrap.ps1">bootstrap.ps1</a> · <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/bootstrap.sh">bootstrap.sh</a>:<span class="cmd">pwsh ./bootstrap.ps1        # Windows
 ./bootstrap.sh             # macOS / Linux</span></div></div></div>
       <div class="step"><div class="num">4</div><div><div class="t">Abra a pasta no VS Code e diga <b>"iniciar"</b></div><div class="d">O Claude Code lê o <code>CLAUDE.md</code> nativamente e o squad <b>acorda sozinho</b> (hooks de SessionStart: sincroniza o repo, confere o modo, lê o histórico). Diga <b>"iniciar"</b> para abrir a sessão pelo PMO — e traga seu pedido. O discovery conduz até a entrega validada.</div></div></div>
     </div>
     <div class="btns">
       <a class="btn" href="https://github.com/fabriciopsouza/metacognition-framework">Ver no GitHub ↗</a>
-      <a class="btn ghost" href="https://github.com/fabriciopsouza/metacognition-framework/archive/refs/tags/v1.22.0.zip">Baixar v1.22.0 (.zip)</a>
+      <a class="btn ghost" href="https://github.com/fabriciopsouza/metacognition-framework/archive/refs/tags/v1.41.0.zip">Baixar v1.41.0 (.zip)</a>
       <a class="btn ghost" href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/guia/INSTALAR-NO-VSCODE.md">Guia de instalação</a>
     </div>
   </section>
@@ -389,9 +389,9 @@
       <button class="sbtn" type="button" title="Instagram não compartilha link pela web — copie e cole no story/bio" onclick="navigator.clipboard&&navigator.clipboard.writeText('https://fabriciopsouza.github.io/metacognition-framework/');this.textContent='link copiado ✓'">Instagram (copiar link)</button>
     </div>
     <p><a href="https://github.com/fabriciopsouza/metacognition-framework">Repositório no GitHub ↗</a> ·
-       <a href="https://github.com/fabriciopsouza/metacognition-framework/releases/tag/v1.22.0">Release v1.22.0 ↗</a> ·
+       <a href="https://github.com/fabriciopsouza/metacognition-framework/releases/tag/v1.41.0">Release v1.41.0 ↗</a> ·
        <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/CHANGELOG.md">CHANGELOG</a></p>
-    <p>Framework Metacognitivo Agêntico · <b>v1.22.0</b> · PT-BR · CC BY 4.0 (livre para usar, adaptar e distribuir, com atribuição).</p>
+    <p>Framework Metacognitivo Agêntico · <b>v1.41.0</b> · PT-BR · CC BY 4.0 (livre para usar, adaptar e distribuir, com atribuição).</p>
     <p>Adaptável no método, especializado por clonagem. A bibliografia (A0–A3) e todo o histórico de decisões acompanham o repositório.</p>
   </footer>
 

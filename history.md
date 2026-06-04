@@ -9,6 +9,42 @@
 
 ---
 
+## 2026-06-04 (cont.) — Sessão (squad): ADR-061 — auditor de liveness (falha de hook NUNCA silenciosa)
+
+> **Pedido do dono:** "checar todos os vetados + os que PODEM ser vetados; 100% anti-bloqueio; falha silenciosa quebra a confiança. Seja adversarial, aplique o framework, modo autosuficiente, leve até merge."
+>
+> **Discovery (explorer, file-first):** inventário dos 17 pontos de hook → 2 confirmados vetados (check-repo-sync, check-core-agnostic), 3 "podem ser vetados" (sync-global, **framework-boot** [GLOBAL, fora do repo, maior exposição], inject-start-session-global), ~8 BAIXO (só leem+injetam → rule AAC não dispara).
+>
+> **Enquadramento adversarial (dogfood do ADR-059 anti-overclaim):** "100% anti-bloqueio só em código" é IMPOSSÍVEL contra EDR adaptativo — o 100% é a **exclusão**. O alcançável em código é **100% anti-falha-SILENCIOSA**. Reescrever boot (sync-global/framework-boot) cego = risco de quebrar boot em toda máquina → recusado.
+>
+> **Entregue (ADR-061):** auditor de liveness — `hooks-manifest.json` + carimbo `.claude/.hooklive/<key>=<session_id>` nos 2 hooks confirmados (check_repo_sync.py, novo **check_core_agnostic_hook.py** porte python+fallback) + **route-gate §2.5 audita** (lê manifesto+carimbos, declara gates cujo carimbo≠sessão, só-leitura→não-bloqueável, fail-soft). settings check-core-agnostic→`cmd /c python||powershell`. `.gitignore` `.hooklive/`.
+>
+> **qa-critic (subagente isolado):** auditor estático OK (silêncio quando carimbos batem; declara quando ausente; não spawna; PS 5.1 válido; sem falso-alarme em sessão longa — session_id-keyed). Achou bug BAIXO (stamp depois da saída antecipada em check_repo_sync — projeto não-git) → **corrigido** (carimbo antes das saídas, igual ao core-agnostic); +lacunas de doc (manifesto-ausente=silêncio; fallback .ps1 não carimba=falso-alarme benigno) → **declaradas no ADR**.
+>
+> **Limites residuais DECLARADOS (não silenciosos):** manifesto ausente, sem session_id, route-gate vetado, hooks fora do manifesto → exclusão é o único 100%. **framework-boot (global) = maior exposição, fora do repo → exclusão.** Status ADR-061 Proposto.
+
+## 2026-06-04 — Sessão (developer→qa-critic→docops): ADR-059 IMPLEMENTADO + ADR-060 (resiliência de sync a EDR)
+
+> **Pedido do dono:** "siga adr59 até final" → implementar F1–F3. No meio, descoberta operacional: o **Kaspersky AAC** bloqueia 2 hooks (`check-repo-sync.ps1`, `check-core-agnostic.ps1`) na máquina 9TRP7H4 desde ~30/05 (regra "PowerShell executa código ofuscado"; comportamental, não ofuscação — medido no CSV do dono). Dono: "este repo continua admin; non-admin só onde há restrição".
+>
+> **ADR-059 IMPLEMENTADO (gates de honestidade da vitrine, nativo/zero-dep):** `tools/overclaim_lexicon.py` (detector absoluto-sem-hedge, consciente de hedge/negação; 20/20 veneno, 10/10 honesto), `test_marketing_claims.py` reescrito (F1 fail-closed: prompt web derivado de `PUBLIC_SRC` — mata o skip silencioso v4.3; F2 vitrine sem overclaim; F3 disclosure real de alucinação residual; +anti-drift de **versão/link** da vitrine — achado ALTO do qa-critic: a vitrine linkava v4.3 morto e v1.22.0). Vitrine `guia/web/index.html` corrigida (headline + 4 rewords honestas; v4.3→v4.4; 1.22.0→1.41.0). +linha em LIMITS (build_limits). `test_overclaim_lexicon.py` (poison-test). Fix de encoding em `test_web_export.py`.
+>
+> **ADR-060 (resiliência de sync a EDR, em camadas — sua ideia "Python→PowerShell, se falhar"):** `tools/hooks/check_repo_sync.py` (porte 1:1 do .ps1, escreve marker de liveness); settings SessionStart → `cmd /c "python || powershell"` (fallback); `route-gate.ps1` lê idade do marker e injeta nudge de sync a cada turno (sem spawnar git → não bloqueado); `prepush_sync_guard.py` (PreToolUse, `ask` se push atrás de `@{upstream}`, fail-open); doutrina no start-session; `.gitignore` do marker. agent-git = conveniência, não garantia.
+>
+> **qa-critic (subagente isolado, 2 rodadas):** R1 ADR-059 achou 2 ALTO (drift v4.3/v1.22.0 na vitrine — mecanizados como gates h/i) + MÉD (hedge-rescue, léxico raso) → corrigidos. R2 bloco completo: passou=true, aprovar_com_ressalvas (ask-path do guard PROVADO em repo descartável; paridade do porte confirmada; PS válido); MÉD (nudge engolido em trivial/catch) + 2 BAIXO → corrigidos. **NÃO testável no sandbox (sem pwsh + AV é local):** disparo do hook + se o Kaspersky pega o python-hook → verificação do dono.
+>
+> **Status:** ADR-059 e ADR-060 **Proposto** (viram Aceito após merge + verificação do dono na máquina). **Não bumpei versão** (gate-i acopla README↔vitrine; bump no release/merge). **Memórias:** `kaspersky-aac-blocks-hooks`, `cascade-from-canonical-original`.
+
+## 2026-06-03 — Sessão (architect/docops): Gates de honestidade da vitrine — pesquisa + ADR-059 (Proposto)
+
+> **Pedido do dono:** análise crítica da vitrine pública × capacidades reais, "sem exageros, não depender de prosa"; depois trouxe deep-research dos 3 gaps + companions sênior; "documente, elabore um plano, commit e push (trabalhar de outro PC)".
+>
+> **Análise (rota pontual→squad-lite):** vitrine tem prosa de marketing **não-gateada** contradizendo o rigor do miolo (`LIMITS.md` gerado por canário). **Bug concreto [CONFIRMADO]:** `test_marketing_claims.py:24` aponta `PROMPT-CHAT-WEB-v4.3.md` (repo tem `v4.4`) → `continue` em arquivo ausente **silencia** o anti-overclaim no prompt web (fail-open). G2: `web_export` não tem gate anti-overclaim (só `anti_jarvis_gate`). G3: claim×LIMITS não cruzado.
+>
+> **Entregue (docs, NÃO código):** `docs/specs/honesty-gates/research-brief.md` (pesquisa do dono **com proveniência** — citações FTC/NeurIPS classificadas INFERIDO até verificar; tags de maturidade preservadas; §5 reconciliação régua §0 = nativo > dep externa), **ADR-059 Proposto** (3 gates nativos fail-closed, zero dep; LLM-as-judge = EMERGENTE/opt-in fora do core offline), `docs/specs/honesty-gates/plano.md` (4 fases + thresholds binários + cascata). **Memória:** registrada diretiva de cascata original→premium/web/noadmin/public.
+>
+> **Não implementado** (próximo bloco com developer→qa-critic). ADR-059 vira Aceito quando F1–F3 mergeadas verdes.
+
 ## 2026-06-02 — Sessão: Web split público × premium PRIVADO — v1.41.0 (ADR-058)
 
 > **Pedido do dono:** "tier premium web = privado." Split espelhando o não-web (ADR-049):
@@ -326,6 +362,7 @@ Riscos ativos: nenhum bloqueante. Risco residual ADR-010 §Riscos (detector de v
 - *(v1.13.0 FECHADA em 2026-05-29 — ADR-012 Aceito após qa-critic round 1; handoff cross-sessão + drift sync + qa-critic rules #6/#7).*
 - *(v1.11.0/v1.12.0/v1.12.1 fechadas em 2026-05-29 — merges `bd64b08`/`fb637ac`/`8fb044f` + tags `v1.11.0`/`v1.12.0`/`v1.12.1`).*
 - **[2026-05-27/28 · fechado] AIVI fechamento** — PR #20 mergeado em master de `LIMITES-BATENTES-RECALC` (commit `10ecf0b`, 2026-05-28). REQ-001..011 implementadas + gate BABET 2025 = 0 (delta 0.000000) + 3 pendências runtime fechadas. Validação framework SSOT F0-F4 concluída.
+- **[2026-06-04 · ATIVA, aguarda merge+verificação] Honestidade da vitrine (ADR-059) + resiliência de sync a EDR (ADR-060) + auditor de liveness (ADR-061)** — IMPLEMENTADOS e qa-critic-aprovados (3 rodadas); canários verdes no sandbox. **Pendências:** (1) merge da branch `docs/honesty-gates-adr-059` (PR #53 — gate humano; o dono autorizou merge autônomo); (2) **verificação do dono na máquina:** os python-hooks escapam do Kaspersky AAC? o guard pede confirmação no push atrasado? o route-gate DECLARA gates inertes? (3) **Exclusão do Kaspersky** por pasta `.claude\hooks\*` = o único 100% anti-bloqueio (cobre sync-global/**framework-boot** global); (4) ADR-059/060/061 → Aceito após verificação. **Deferido:** porte de sync-global/framework-boot (boot machinery, untestável→risco); fallback .ps1 carimbar liveness; F4 (eval LLM-as-judge p/ companions sênior) = EMERGENTE.
 - **Backlog ativo (trigger-gated, NÃO WIP):**
   - ~~ADR-010 §Pendências: templates `_template-research/research-brief.md` + `_template/requirements.md` ganham seção `## Escopo declarado pelo discovery`~~ **FECHADO em 2026-05-29 pós-merge v1.12.0** — ambos templates ganharam a seção em commit polish + diagrama Mermaid em ADR-011 §Topologia.
   - ADR-011 §Pendências: Alternativa 2 (rewind cirúrgico) — trigger: caso real onde cascata é custosa.

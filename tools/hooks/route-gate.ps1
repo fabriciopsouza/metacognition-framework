@@ -44,6 +44,7 @@ function Emit-Route([string]$ctx) {
 }
 
 try {
+    $syncNudge = ''  # [ADR-060] definido cedo: caminhos triviais/catch tambem podem emiti-lo.
     # 1. Ler payload do stdin (session_id, cwd, prompt).
     $raw = [Console]::In.ReadToEnd()
     $sessionId = ''
@@ -63,11 +64,41 @@ try {
     $globalLock  = Join-Path $env:USERPROFILE '.claude\session.lock'
     if ((Test-Path $projectLock) -or (Test-Path $globalLock)) { Emit-Silent }
 
+    # 2.5 [ADR-061] AUDITOR DE LIVENESS (anti falha-silenciosa). O route-gate NAO e bloqueavel pelo
+    # Kaspersky (so LE arquivo + injeta texto; NAO spawna processo/rede) e roda TODO turno. Le o
+    # manifesto de hooks auditados + os carimbos .claude/.hooklive/<key>; qualquer hook cujo carimbo
+    # != session atual NAO rodou (provavel veto EDR) -> DECLARA + da o fallback manual. Sem session_id
+    # nao audita (degrada gracioso, sem falso-alarme). Auto-resolvente: cala quando o carimbo bate.
+    $syncNudge = ''
+    try {
+        if ($sessionId) {
+            $manifestPath = Join-Path $cwd 'tools\hooks\hooks-manifest.json'
+            $liveDir      = Join-Path $cwd '.claude\.hooklive'
+            if (Test-Path $manifestPath) {
+                $manifest = Get-Content $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
+                $inert = @()
+                foreach ($h in $manifest.audited_hooks) {
+                    $mk = Join-Path $liveDir $h.key
+                    $stamp = if (Test-Path $mk) { (Get-Content $mk -Raw -ErrorAction SilentlyContinue).Trim() } else { '' }
+                    if ($stamp -ne $sessionId) {
+                        $inert += "- **$($h.gate)** (hook ``$($h.key)``) NAO rodou nesta sessao -> gate INERTE. Aplique manual: $($h.manual)"
+                    }
+                }
+                if ($inert.Count -gt 0) {
+                    $syncNudge = "# [liveness ADR-061] Gate(s) possivelmente vetados por EDR (declarado, NAO silencioso):`n`n" +
+                        ($inert -join "`n") +
+                        "`n`n(Se voce acabou de abrir a sessao pode ser timing — reaparece ate o carimbo bater. Exclusao do Kaspersky por pasta ``.claude\hooks\*`` resolve de vez.)`n`n"
+                }
+            }
+        }
+    } catch { }
+
     # 3. Triviais não merecem rota (saudações, "ok", "obrigado", confirmações curtas).
     #    Heurística conservadora: < 12 chars úteis OU só pontuação/ack comum.
     $trimmed = ($prompt -replace '\s+', ' ').Trim()
-    if ($trimmed.Length -lt 12) { Emit-Silent }
-    if ($trimmed -match '^(ok|okay|sim|n[aã]o|valeu|obrigad[oa]|certo|isso|segue|siga|continua[r]?|prossiga|beleza|blz|pode|vai|go|yes|no|thanks?)\b.{0,12}$') { Emit-Silent }
+    # Trivial: nao injeta ROTA, mas o nudge de sync (ADR-060) ainda vale se estiver stale.
+    if ($trimmed.Length -lt 12) { if ($syncNudge) { Emit-Route $syncNudge } else { Emit-Silent } }
+    if ($trimmed -match '^(ok|okay|sim|n[aã]o|valeu|obrigad[oa]|certo|isso|segue|siga|continua[r]?|prossiga|beleza|blz|pode|vai|go|yes|no|thanks?)\b.{0,12}$') { if ($syncNudge) { Emit-Route $syncNudge } else { Emit-Silent } }
 
     # 4. Uma vez por sessão: marker keyed por session_id. Sem session_id, não persiste
     #    estado (injeta toda vez — degradação graciosa, melhor pecar por lembrar).
@@ -77,7 +108,8 @@ try {
         # Sanitiza session_id para nome de arquivo seguro.
         $safe = ($sessionId -replace '[^A-Za-z0-9_.-]', '_')
         $marker = Join-Path $stateDir ($safe + '.routed')
-        if (Test-Path $marker) { Emit-Silent }
+        # Ja roteado nesta sessao: nao re-injeta a rota — mas o nudge de sync (todo turno) ainda vale.
+        if (Test-Path $marker) { if ($syncNudge) { Emit-Route $syncNudge } else { Emit-Silent } }
         # Marca ANTES de injetar: se algo falhar depois, não fica injetando em loop.
         Set-Content -Path $marker -Value ([string]$cwd) -Encoding UTF8 -ErrorAction SilentlyContinue
     }
@@ -108,9 +140,9 @@ processo (roteamento/gates). Se você JÁ roteou nesta sessão, ignore esta nota
 Desativar o framework aqui: ``New-Item .claude/session.lock`` (este projeto) ou
 ``~/.claude/session.lock`` (todos). Reativar: deletar o lock.
 "@
-    Emit-Route $ctx
+    Emit-Route ($syncNudge + $ctx)
 }
 catch {
     [Console]::Error.WriteLine("[route-gate] warning (nao-bloqueante): $($_.Exception.Message)")
-    Emit-Silent
+    if ($syncNudge) { Emit-Route $syncNudge } else { Emit-Silent }
 }
