@@ -33,16 +33,21 @@ shared_refs:
 Sem CHANGELOG + dicionário (se aplicável) + ADR aceito (se havia) → não fecha.
 Rodar o **consistency-gate** (ADR-030) antes de fechar release:
 `powershell -NoProfile -ExecutionPolicy Bypass -File tools/hooks/consistency-gate.ps1`
-— version-sync, ADR-status, checkpoint no history, unpushed, transientes em `docs/_intake/`.
+— version-sync, ADR-status, checkpoint no history, unpushed, transientes, **execution-report presente** (7ª dim, ADR-062).
 Tratar as inconsistências (ou registrá-las como débito declarado) antes do PR de release.
-Gerar o **execution-report** (ADR-038/052) do bloco — auto, não sob cobrança:
+Gerar o **execution-report** (ADR-038/052/062) do bloco **e ao fim de sessão** — auto, não sob cobrança:
 `python tools/execution_report.py --from-transcripts`
 — o tier é **detectado automaticamente** (ADR-052): no repo-fonte (`docs/_private/` existe) grava o
 relatório **completo** em `docs/_private/_intake/execution-report.md` (não distribuído); numa
 distribuição grava **só sinais de processo codificados** em `telemetry/telemetry-report.md` (whitelist
 anti-vazamento + opt-out `.claude/no-telemetry.lock`/`FRAMEWORK_NO_TELEMETRY`; ver `TELEMETRY.md`).
 Conteúdo: tokens (NÃO MEDIDO se a telemetria não estiver exposta — **nunca fabricar**), tempo, turnos,
-arquivos, testes, rodadas de retrabalho e o **placar gate × achado** ("quem pegou o quê").
+arquivos, testes, rodadas de retrabalho, o **placar gate × achado** ("quem pegou o quê") e — **ADR-062** —
+**detecção framework×humano, gaps, melhorias, boas práticas e lições por skill** (agnóstico de domínio).
+**Corpus público (opt-in, ADR-062):** se houver consentimento (`~/.claude/exec-report-consent.json`, ver
+`docs/REPORTS-CONTRIBUTION.md`), gerar a versão pública ANONIMIZADA e publicá-la:
+`python tools/execution_report.py --learnings-public docs/_private/_intake/execution-report.md --out telemetry/learnings-public.md`
+— anonymize + gate `sensitive-denylist` (**fail-closed**: recusa se token sensível sobrevive); revisar antes do push.
 Registrar a **decisão de re-orquestração do PMO** (J6, ADR-045) no `history.md`:
 `RE-ORQUESTRAÇÃO: <prosseguir | re-priorizar | rewind J_i | injetar escopo | reativar estágio>`
 e rodar `python tools/check_reorchestration.py` (último bloco fechado deve ter a decisão).

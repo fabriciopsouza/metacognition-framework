@@ -6,7 +6,7 @@
 # para "estou divulgando" — COMMITS NÃO-PUSHADOS (trabalho que existe só no PC; decisão #5:
 # o recovery real é a CONTA GitHub, então o que não subiu não está protegido).
 #
-# MECANISMO: lê o estado do repo e reporta 6 dimensões. NÃO bloqueia (fail-soft): é um
+# MECANISMO: lê o estado do repo e reporta 7 dimensões (ADR-062 +execution-report). NÃO bloqueia (fail-soft): é um
 # espelho para o /checkpoint, o retrospective gate (start-session 2.5) e o fechamento de
 # release. Exit code = nº de inconsistências (0 = limpo) para uso programático.
 #
@@ -136,6 +136,21 @@ if (Test-Path $intakeDir) {
 }
 $results['transients'] = [ordered]@{ files = $transients }
 
+# --- Dim 7: execution-report do bloco presente (ADR-062; padrão ADR-021) --------
+# OWNER: docs/_private/_intake/execution-report.md ; EXTERNAL: telemetry/telemetry-report.md.
+# Fail-soft: declara se ausente/vazio (não bloqueia o fechamento — é espelho, como as outras dims).
+$reportOwner = Rel 'docs/_private/_intake/execution-report.md'
+$reportExt   = Rel 'telemetry/telemetry-report.md'
+$reportPath  = if (Test-Path (Rel 'docs/_private')) { $reportOwner } else { $reportExt }
+$reportOk = $false
+if (Test-Path $reportPath) {
+    try { $reportOk = -not [string]::IsNullOrWhiteSpace((Get-Content $reportPath -Raw -ErrorAction SilentlyContinue)) } catch {}
+}
+if (-not $reportOk) {
+    Add-Issue 'execution-report' "execution-report do bloco ausente/vazio ($reportPath) — gere com 'python tools/execution_report.py --from-transcripts' (ADR-038/062)"
+}
+$results['execution-report'] = [ordered]@{ path = $reportPath; present = $reportOk }
+
 # --- Saída ---------------------------------------------------------------------
 $summary = [ordered]@{
     repo            = $RepoDir
@@ -156,6 +171,7 @@ Write-Output ("ADRs: {0} arquivo(s); Proposto: {1}" -f $adrNums.Count, ($(if($pr
 Write-Output ("checkpoint history: {0}" -f $(if($histHasCheckpoint){'OK'}else{'AUSENTE'}))
 Write-Output ("não-pushados em '{0}': {1}" -f $branch, $(if($null -ne $unpushed){$unpushed}else{'?'}))
 Write-Output ("transientes _intake: {0}" -f $(if($transients.Count){$transients -join ', '}else{'nenhum'}))
+Write-Output ("execution-report: {0}" -f $(if($reportOk){'OK'}else{'AUSENTE/VAZIO'}))
 Write-Output "----------------------------------------------"
 if ($issues.Count -eq 0) {
     Write-Output "RESULTADO: CONSISTENTE (0 inconsistências)"
