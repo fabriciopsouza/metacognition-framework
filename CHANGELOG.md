@@ -15,6 +15,16 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.44.0] — 2026-06-05 — Knowledge-catalog + RAG léxico offline + fixes (ADR-068)
+
+### Added
+- **ADR-068** — `knowledge_catalog.py`: parser de execution-reports → catalog.json + **BM25 offline stdlib** (zero dep) + `session-insights.md` pré-renderizado injetado no boot. CLI: `--build` / `--recall --context` / `--patterns`. Hook global lê arquivo estático (sem spawn Python, anti-Kaspersky). [CONSOLIDADO]
+- **eval-web-gemini** — `check_web_public_size.py` (mede chars/~tokens do prompt público vs alvo 12k) + `_meta/eval-web-gemini.md` (protocolo 8 probes NFR-1 para validação manual). GAP-3 honesto: estimativa chars/4, não tokenizer real. [EMERGENTE]
+
+### Fixed
+- **effect-gate** — falso-positivo em `git commit -F -` + `git push` combinados: regex ancorada ao push, `commit -F` não era force-push. 7 casos de teste adicionados.
+- **knowledge-catalog** — símbolo `×` (U+00D7, multiplicação) nos SECTION_KEYS: `"framework × humano"` / `"gate × achado"` — corrige matching de headings de relatórios reais.
+
 ## [1.43.0] — 2026-06-05 — Corpus de aprendizado: central via PR + adoção + oferta por-solução + onboarding (ADR-063/064/065/066/067)
 
 ### Added
