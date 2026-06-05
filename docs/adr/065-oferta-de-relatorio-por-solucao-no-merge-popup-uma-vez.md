@@ -1,6 +1,6 @@
 # ADR 065 — Oferta do relatório POR SOLUÇÃO: popup no merge, decidido pelo humano, 1× por solução
 
-- Status: **Proposto** · Data: 2026-06-05 · Decisores: dono + squad (architect)
+- Status: **Aceito** (2026-06-05 — CI verde 3 SOs + qa-critic; state-machine de oferta testada) · Data: 2026-06-05 · Decisores: dono + squad (architect)
 - Onda: telemetria/aprendizado (alvo v1.43.0) · Tipo: **EMENDA do gatilho do ADR-064** (de "fim de sessão" → "por solução, no merge"). Atende: "cada solução produz 1 relatório ao concluir; oferecido no merge; 1×; fácil; legal/LGPD".
 - Relaciona/herda: ADR-064 (auto-publish — BASE), ADR-022 (`mission.md` = identidade/escopo da solução), ADR-062/063 (anonimização, pseudônimo, consent).
 

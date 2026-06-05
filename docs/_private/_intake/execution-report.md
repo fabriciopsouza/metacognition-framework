@@ -60,6 +60,18 @@
 - **docops:** "mecanizado" só pode ser dito se houver gate de runtime (consent virou gate no CLI, não prosa); LIMITS é o lar do limite honesto (anti-overclaim aplicado a si mesmo).
 - **ux (vitrine):** headline honesta pode manter punch ("agentes que sabem o que não sabem"); auto-contradição (headline × disclosure) é o overclaim mais comum e o mais invisível ao autor.
 
+## Continuação 2026-06-05 — ADR-063/064/065 (sistema de relatório/aprendizado completo)
+
+> Estendido: 063 (repo central via PR + pseudônimo + auto-merge + CI re-valida), 064 (adoção: auto-publish + opt-in no bootstrap + setup 1-comando guiado), 065 (oferta por-solução: popup no merge, humano confirma, 1×). v1.42.0 released (059-062 Aceitos). Este relatório é o **1º item do corpus** (dogfood do próprio sistema).
+
+### Lições novas (alto valor — agnósticas)
+
+- **O framework pegou os MEUS erros, 2×** (a prova de valor mais forte): (a) `effect-gate` é cego a ação outward-facing spawnada por **subprocesso** — rodei `setup --yes` e criei um repo público sem o gate ver (gap → candidato a ADR); (b) `check_core_agnostic` (ADR-020) **barrou "LGPD"** que enfiei no núcleo (norma de domínio no core). O sistema de detecção detectou o autor.
+- **Adoção (regra geral):** cada passo manual recorrente corta a adesão pela metade. Telemetria/contribuição que exige ação por-evento = adoção zero → automatizar + opt-in único. Reutilizável em qualquer ferramenta com telemetria.
+- **Anonimato × ownership** são incompatíveis (pseudônimo aleatório sem auth = sem prova-de-dono) → integridade vem de **append-only**, não de ACL. Padrão p/ qualquer corpus público de contribuição.
+- **"1×" ≠ "uma pergunta":** oferta surge a cada merge (enquanto não-resolvida); "1×" = 1 publicação ao concluir; o humano encerra (done/declined). Desambiguar "uma vez" cedo evita nag.
+- **fail-closed antes de ação irreversível:** PR público entra no histórico mesmo se fechado → o gate (consent+denylist) roda CLIENT-SIDE antes do PR; CI central é 2ª barreira.
+
 ## Decisão de re-orquestração (J6, ADR-045)
 
-RE-ORQUESTRAÇÃO: **prosseguir** — 4 blocos fecharam em PASS; pendências são ações de infra do dono (repos de relatório, exclusão Kaspersky, verificação na máquina), não re-trabalho de processo.
+RE-ORQUESTRAÇÃO: **prosseguir** — 7 ADRs (059-065) fecharam em PASS; v1.42.0 released; pendências são infra do dono (Kaspersky, verificação live). Não há re-trabalho de processo.

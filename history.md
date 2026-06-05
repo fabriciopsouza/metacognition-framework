@@ -9,6 +9,12 @@
 
 ---
 
+## 2026-06-05 — RELEASE v1.43.0 (ADR-063/064/065/066/067 Aceitos) + dogfood LIVE do corpus
+
+> **Release do corpus de aprendizado.** 5 ADRs Aceitos. **Verificação LIVE (dogfood ponta-a-ponta):** opt-in → relatório → anonimiza (fail-closed) → PR → CI green (append-only+anti-PII) → merge; **2 relatórios no corpus público** `metacognition-exec-reports`. Bugs de campo corrigidos durante o live: (a) `_gh_publish` não criava o branch antes do PUT → corrigido; (b) CI YAML inválido (`env:{...}` inline + heredoc) → bash-puro; (c) anti-PII frouxo casava dígitos soltos no grep do Linux → estrito (CPF/CNPJ pontuado). Bump README+vitrine+CHANGELOG→1.43.0 (gate-i acopla). Tag + GitHub release.
+>
+> **Detecção framework×humano (corpus):** o framework pegou 2 erros MEUS no caminho — effect-gate cego a `gh` por subprocesso (criei repo público num teste); `check_core_agnostic` barrou "LGPD" no core. **Pendência única (não-código):** exclusão do Kaspersky `.claude\hooks\*` (AV do dono).
+
 ## 2026-06-05 (cont. 3) — Sessão (squad): ADR-067 — onboarding na 1ª abertura (popup usar×dev, instala, "feche o instalador e abra seu projeto")
 
 > **Pedido do dono:** ao clonar qualquer repo → popup GUI com link p/ instruções + ativação automática no IDE; instruir a NÃO modificar o instalador (exceto intencional); instala, configura, fecha o instalador e abre a pasta do projeto.

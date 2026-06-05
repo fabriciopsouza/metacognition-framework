@@ -15,6 +15,18 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.43.0] — 2026-06-05 — Corpus de aprendizado: central via PR + adoção + oferta por-solução + onboarding (ADR-063/064/065/066/067)
+
+### Added
+- **ADR-063** — repo central de relatórios via **PR** (contribuidor limitado), **pseudônimo** aleatório, **auto-merge**, **CI re-valida** (append-only + anti-PII). [CONSOLIDADO]
+- **ADR-064** — **adoção**: auto-publish (batch/sessão), **opt-in no bootstrap**, **setup 1-comando guiado** (`setup_central_reports.py`). Fail-soft. [CONSOLIDADO]
+- **ADR-065** — **oferta por SOLUÇÃO**: popup no merge, **humano confirma a conclusão**, 1× (state-machine pending/deferred/declined/done). [CONSOLIDADO]
+- **ADR-066** — READMEs web com uso/config detalhados + anti-confusão (`-web-premium` chat × `-premium` full) + **cofre por clone** (bootstrap `ensure_cofre`). [CONSOLIDADO]
+- **ADR-067** — **onboarding na 1ª abertura**: popup usar×desenvolver, instala global, "feche o instalador e abra seu projeto". [CONSOLIDADO]
+
+### Verificação LIVE (dogfood)
+- Cadeia ponta-a-ponta provada na máquina: opt-in → relatório → anonimiza (fail-closed) → PR → **CI green (append-only+anti-PII)** → merge. **2 relatórios** no corpus público `metacognition-exec-reports`. Bugs de campo corrigidos no caminho (effect-gate cego a subprocesso; "LGPD" no core; YAML do CI inválido; PII estrito vs frouxo).
+
 ## [1.42.0] — 2026-06-04 — Hardening: honestidade da vitrine + resiliência a EDR + auditor de liveness + corpus de aprendizado (ADR-059/060/061/062)
 
 ### Added

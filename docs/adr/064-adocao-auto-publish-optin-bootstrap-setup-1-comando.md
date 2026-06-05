@@ -1,6 +1,6 @@
 # ADR 064 — Adoção: publish AUTOMÁTICO (batch/sessão) + opt-in no bootstrap + setup do dono em 1 comando
 
-- Status: **Proposto** · Data: 2026-06-04 · Decisores: dono + squad (architect/developer)
+- Status: **Aceito** (2026-06-05 — LIVE-verificado: --publish gerou PR no corpus, fail-soft confirmado) · Data: 2026-06-04 · Decisores: dono + squad (architect/developer)
 - Onda: telemetria/aprendizado (alvo v1.43.0) · Tipo: **EMENDA do ADR-063** (a §Implementação do publish). Atende: "eu e os usuários precisamos executar estes passos? não vai ter adesão."
 - Relaciona/herda: **ADR-063** (repo central via PR — BASE), **ADR-062** (learnings_public, consent), **ADR-006** (auto-boot/bootstrap).
 
