@@ -16,6 +16,7 @@ sys.path.insert(0, os.path.join(ROOT, "tools"))
 from execution_report import (  # noqa: E402
     validate_report, build_report, build_external_report, validate_external_report,
     detect_tier, telemetry_enabled, learnings_public,
+    central_report_path, init_consent, publish_pseudonym,
 )
 
 # ----------------------------------------------------------------- OWNER (compat ADR-038)
@@ -105,11 +106,27 @@ def main():
     print(f"{'OK  ' if det_ok else 'FAIL'} detect_tier(repo do dono) == owner (got {tier!r})")
 
     # ADR-062: learnings_public no report OWNER limpo -> publicavel (sem problems) + header presente.
-    pub, problems = learnings_public(REPORT_HONESTO, ROOT)
+    pub, problems = learnings_public(REPORT_HONESTO, ROOT, require_consent=False)
     lp_ok = (not problems) and "PÚBLICO ANONIMIZADO" in pub
     fails += 0 if lp_ok else 1
     print(f"{'OK  ' if lp_ok else 'FAIL'} learnings_public (report limpo -> publicavel) "
           f"{'' if lp_ok else problems[:2]}")
+
+    # ADR-063: central_report_path determinístico + anti-traversal.
+    p_ok = central_report_path("ab12cd34", "2026-06-04T10:00:00", "blk-1") == "reports/ab12cd34/2026-06-04T10-00-00__blk-1.md"
+    p_safe = ".." not in central_report_path("../../etc", "../..", "../../../x")  # traversal sanitizado
+    fails += 0 if (p_ok and p_safe) else 1
+    print(f"{'OK  ' if (p_ok and p_safe) else 'FAIL'} central_report_path (deterministico + anti-traversal)")
+
+    # ADR-063: init_consent em home temporario (idempotente, pseudonimo aleatorio valido).
+    import tempfile, re as _re
+    th = tempfile.mkdtemp(prefix="consent_")
+    path1, pseudo1, created1 = init_consent(home=th)
+    path2, pseudo2, created2 = init_consent(home=th)  # 2a vez: preserva
+    ic_ok = (created1 and not created2 and pseudo1 == pseudo2
+             and _re.fullmatch(r"[a-f0-9]{8,32}", pseudo1) and publish_pseudonym(home=th) == pseudo1)
+    fails += 0 if ic_ok else 1
+    print(f"{'OK  ' if ic_ok else 'FAIL'} init_consent (idempotente + pseudonimo aleatorio + publish_pseudonym le)")
 
     # opt-out: env desliga o tier external
     os.environ["FRAMEWORK_NO_TELEMETRY"] = "1"

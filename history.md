@@ -9,6 +9,16 @@
 
 ---
 
+## 2026-06-04 (cont. 3) — Sessão (squad): ADR-063 — repo central de relatórios via PR (pseudônimo, auto-merge, CI re-valida)
+
+> **Pedido do dono:** "receber os relatórios anonimizados de TODOS num repo nosso; quem sincroniza vira contribuidor limitado; armazenados ordenados por usuário/timestamp/execução." Decisões: **pseudônimo** + **auto-merge**.
+>
+> **Architect — restrição dura do GitHub:** não há write-isolado por-usuário → "contribuidor limitado" nativo = **PR** (o ato de PR-ar é tornar-se contribuidor, sem pré-cadastro). "Receber de todos COM segurança" → o **CI central RE-VALIDA** (a denylist privada NÃO entra no repo público — vazaria nomes; só PII genérico + append-only).
+>
+> **Entregue (ADR-063, EMENDA da §Decisão pública do ADR-062):** `execution_report.py` — `init_consent` (pseudônimo ALEATÓRIO via `secrets`, anti-rainbow), `publish_pseudonym`, `central_report_path` (anti-traversal, filesystem-safe), CLI `--init-consent`. `tools/templates/central-reports-ci.yml` (append-only + anti-PII genérico). `REPORTS-CONTRIBUTION.md` §4/5/6. Tests (path anti-traversal + init_consent idempotente).
+>
+> **qa-critic (subagente isolado):** traversal APROVADO; denylist privada NÃO vaza ✓. 1 ALTO (consent não-gateado na API `learnings_public` → `require_consent` default True) + MÉDIOs (threshold de aspas 40→15; corpus **append-only** anti-tamper cross-pseudônimo; telefone +55) → **corrigidos**. Limites declarados no ADR (pseudônimo aleatório → squatting inviável; pollution = spam podável; EXTERNAL-push deferido). Regressão verde. Status **Proposto** (Aceito quando o dono criar o repo central).
+
 ## 2026-06-04 — RELEASE v1.42.0 (ADR-059/060/061/062 Aceitos)
 
 > **Release de hardening.** 4 ADRs Aceitos (gate de aceite: **CI verde 3 SOs + qa-critic isolado**; verificação na máquina do dono deferida): 059 honestidade da vitrine · 060 resiliência a EDR · 061 auditor de liveness (falha de hook nunca silenciosa) · 062 corpus de aprendizado. README+vitrine+CHANGELOG bumpados a **1.42.0** (gate-i acopla README↔vitrine). Tag `v1.42.0` + GitHub release. **Pendências do dono (não-bloqueantes):** exclusão Kaspersky `.claude\hooks\*`; criar repos de relatório + opt-in.
