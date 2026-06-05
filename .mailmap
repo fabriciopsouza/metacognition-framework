@@ -1,0 +1,12 @@
+# .mailmap — unifica identidades git de um mesmo autor.
+# Forma: <Nome canônico> <email-canônico>  <Nome usado> <email-usado>
+# Git aplica em: git log, shortlog, blame, etc. Não reescreve histórico.
+# Validar:  git shortlog -sne
+# Ref: https://git-scm.com/docs/gitmailmap
+
+# Fabricio Pinheiro Souza — 4 identidades observadas (mesma pessoa)
+Fabricio Pinheiro Souza <fabriciopsouza@gmail.com> <fabriciopsouza@gmail.com>
+Fabricio Pinheiro Souza <fabriciopsouza@gmail.com> Fabricio Souza <fabriciopsouza@gmail.com>
+Fabricio Pinheiro Souza <fabriciopsouza@gmail.com> fabriciopsouza <fabriciopsouza@gmail.com>
+Fabricio Pinheiro Souza <fabriciopsouza@gmail.com> Fabricio Pinheiro Souza <40571104+fabriciopsouza@users.noreply.github.com>
+Fabricio Pinheiro Souza <fabriciopsouza@gmail.com> fabriciopsouza <seu-email@exemplo.com>
