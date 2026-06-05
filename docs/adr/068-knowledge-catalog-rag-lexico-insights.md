@@ -1,6 +1,6 @@
 # ADR-068 — Catálogo de insights + RAG léxico sobre corpus de relatórios (knowledge-catalog)
 
-- Status: **Proposto**
+- Status: **Aceito**
 - Data: 2026-06-05
 - Decisores: dono + squad (architect/developer)
 - EMENDA de: ADR-062 (execution-report), ADR-029 (doc-intake offline)

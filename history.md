@@ -9,6 +9,16 @@
 
 ---
 
+## 2026-06-05 — RELEASE v1.44.0 (ADR-068 Aceito + 2 fixes + eval scaffold)
+
+> **Knowledge-catalog:** camada de retroalimentação do corpus. `knowledge_catalog.py` — parser de relatórios → catálogo estruturado (catalog.json) + BM25 offline stdlib (zero dep) + `session-insights.md` pré-renderizado para injeção no boot (hook lê arquivo, sem spawn Python — anti-Kaspersky). CLI: `--build` / `--recall --context` / `--patterns`. Hook global estendido (ADR-068).
+>
+> **Fixes:** (a) `fix/effect-gate-push-false-positive` (PR #63) — regex do effect-gate ancorada ao push; `commit -F -` + push não era force-push e estava sendo negado indevidamente; 7 casos de teste. (b) Fix pós-merge: símbolo `×` (U+00D7) nos SECTION_KEYS do catalog — `"framework × humano"` ≠ `"framework x humano"` ASCII; 30/30 testes PASS.
+>
+> **Eval scaffold** (PR #64): `check_web_public_size.py` (mede chars/tokens do prompt público vs alvo 12k) + `_meta/eval-web-gemini.md` (protocolo 8 probes NFR-1 para o dono rodar). GAP-3 (token real) declarado honestamente: chars/4 é estimativa, não tokenizer real.
+>
+> **WIP fechado:** item "ATIVA" de ADR-059/060/061 encerrado (foi mergeado em v1.42.0).
+
 ## 2026-06-05 — RELEASE v1.43.0 (ADR-063/064/065/066/067 Aceitos) + dogfood LIVE do corpus
 
 > **Release do corpus de aprendizado.** 5 ADRs Aceitos. **Verificação LIVE (dogfood ponta-a-ponta):** opt-in → relatório → anonimiza (fail-closed) → PR → CI green (append-only+anti-PII) → merge; **2 relatórios no corpus público** `metacognition-exec-reports`. Bugs de campo corrigidos durante o live: (a) `_gh_publish` não criava o branch antes do PUT → corrigido; (b) CI YAML inválido (`env:{...}` inline + heredoc) → bash-puro; (c) anti-PII frouxo casava dígitos soltos no grep do Linux → estrito (CPF/CNPJ pontuado). Bump README+vitrine+CHANGELOG→1.43.0 (gate-i acopla). Tag + GitHub release.
@@ -430,7 +440,7 @@ Riscos ativos: nenhum bloqueante. Risco residual ADR-010 §Riscos (detector de v
 - *(v1.13.0 FECHADA em 2026-05-29 — ADR-012 Aceito após qa-critic round 1; handoff cross-sessão + drift sync + qa-critic rules #6/#7).*
 - *(v1.11.0/v1.12.0/v1.12.1 fechadas em 2026-05-29 — merges `bd64b08`/`fb637ac`/`8fb044f` + tags `v1.11.0`/`v1.12.0`/`v1.12.1`).*
 - **[2026-05-27/28 · fechado] AIVI fechamento** — PR #20 mergeado em master de `LIMITES-BATENTES-RECALC` (commit `10ecf0b`, 2026-05-28). REQ-001..011 implementadas + gate BABET 2025 = 0 (delta 0.000000) + 3 pendências runtime fechadas. Validação framework SSOT F0-F4 concluída.
-- **[2026-06-04 · ATIVA, aguarda merge+verificação] Honestidade da vitrine (ADR-059) + resiliência de sync a EDR (ADR-060) + auditor de liveness (ADR-061)** — IMPLEMENTADOS e qa-critic-aprovados (3 rodadas); canários verdes no sandbox. **Pendências:** (1) merge da branch `docs/honesty-gates-adr-059` (PR #53 — gate humano; o dono autorizou merge autônomo); (2) **verificação do dono na máquina:** os python-hooks escapam do Kaspersky AAC? o guard pede confirmação no push atrasado? o route-gate DECLARA gates inertes? (3) **Exclusão do Kaspersky** por pasta `.claude\hooks\*` = o único 100% anti-bloqueio (cobre sync-global/**framework-boot** global); (4) ADR-059/060/061 → Aceito após verificação. **Deferido:** porte de sync-global/framework-boot (boot machinery, untestável→risco); fallback .ps1 carimbar liveness; F4 (eval LLM-as-judge p/ companions sênior) = EMERGENTE.
+- **[2026-06-04 · FECHADA em v1.42.0] Honestidade da vitrine (ADR-059) + resiliência de sync a EDR (ADR-060) + auditor de liveness (ADR-061)** — Mergeados e Aceitos em v1.42.0. **Pendência permanente (não-código):** exclusão do Kaspersky `.claude\hooks\*` (decisão do dono). Deferidos: porte sync-global/framework-boot; F4 eval LLM-as-judge = EMERGENTE.
 - **Backlog ativo (trigger-gated, NÃO WIP):**
   - ~~ADR-010 §Pendências: templates `_template-research/research-brief.md` + `_template/requirements.md` ganham seção `## Escopo declarado pelo discovery`~~ **FECHADO em 2026-05-29 pós-merge v1.12.0** — ambos templates ganharam a seção em commit polish + diagrama Mermaid em ADR-011 §Topologia.
   - ADR-011 §Pendências: Alternativa 2 (rewind cirúrgico) — trigger: caso real onde cascata é custosa.
