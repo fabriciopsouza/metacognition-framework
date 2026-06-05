@@ -9,6 +9,14 @@
 
 ---
 
+## 2026-06-05 (cont. 3) — Sessão (squad): ADR-067 — onboarding na 1ª abertura (popup usar×dev, instala, "feche o instalador e abra seu projeto")
+
+> **Pedido do dono:** ao clonar qualquer repo → popup GUI com link p/ instruções + ativação automática no IDE; instruir a NÃO modificar o instalador (exceto intencional); instala, configura, fecha o instalador e abre a pasta do projeto.
+>
+> **Realidade (architect):** não há hook "ao clonar" → o gatilho é a 1ª ABERTURA na IDE (SessionStart); "popup GUI" = `AskUserQuestion` (ato do agente); a injeção que sinaliza não é bloqueada pelo Kaspersky.
+>
+> **Entregue (ADR-067, EMENDA de ADR-006):** `tools/framework_onboarding.py` (`is_framework_repo`/`needs_onboarding`/`mark_onboarded` + CLI) — detecta o repo-instalador (assinatura AGENT-FRAMEWORK+_shared+web_export) e marca 1×. `start-session.md` **step 0**: na 1ª abertura do instalador, agente apresenta popup (usar→bootstrap+oriente "feche e abra seu projeto, auto-boot ADR-006, não modifique"; dev→fica). `test_framework_onboarding` (detecta fonte, ignora projeto-que-usa, 1× idempotente). Agnóstico limpo.
+
 ## 2026-06-05 (cont. 2) — Sessão (squad): ADR-066 — READMEs web detalhados + anti-confusão premium + cofre por clone
 
 > **Pedido do dono (campo):** tentou usar o premium em outro PC, clonou o `-web-premium` (skills-only) esperando o full. + "repos web deveriam ter instruções detalhadas" + "cada clone seu próprio cofre".
