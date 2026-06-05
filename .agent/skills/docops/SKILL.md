@@ -44,10 +44,15 @@ anti-vazamento + opt-out `.claude/no-telemetry.lock`/`FRAMEWORK_NO_TELEMETRY`; v
 Conteúdo: tokens (NÃO MEDIDO se a telemetria não estiver exposta — **nunca fabricar**), tempo, turnos,
 arquivos, testes, rodadas de retrabalho, o **placar gate × achado** ("quem pegou o quê") e — **ADR-062** —
 **detecção framework×humano, gaps, melhorias, boas práticas e lições por skill** (agnóstico de domínio).
-**Corpus público (opt-in, ADR-062/063/064):** ao **FIM DE SESSÃO**, se houver consentimento
-(`~/.claude/exec-report-consent.json`), o publish é **AUTOMÁTICO** (zero ação manual recorrente):
-`python tools/execution_report.py --publish`
-— anonimiza (gate `sensitive-denylist` **fail-closed**) → abre PR para o repo central → auto-merge.
+**Corpus público — oferta POR SOLUÇÃO no merge (ADR-062/063/064/065):** ao **mergear um PR da solução**
+(ou no boot se a solução está mergeada e ofertável), cheque `python tools/execution_report.py --offer-state`;
+se `ofertar=SIM` (estado `pending`/`deferred`), apresente o **popup** (`AskUserQuestion`) com a tabela
+**vai / NÃO-vai** + 4 opções e aja: **✅ gerar+contribuir** → `--publish` (anonimiza fail-closed → PR
+central → auto-merge) + `--set-offer done`; **📄 só local** → `--publish` sem gh + `--set-offer done`;
+**⏳ ainda não** → `--set-offer deferred` (re-oferta no próximo merge); **🚫 não p/ esta solução** →
+`--set-offer declined`. O popup É a disclosure+consentimento por-solução (conformidade/privacidade detalhada em
+`docs/REPORTS-CONTRIBUTION.md`); 1× por solução (estado em `.claude/.report-offers/`). Sem
+opt-in/`gh` → fail-soft (gera local ou nem oferta).
 **Fail-soft:** sem `gh`/opt-in → gera local e NÃO publica (nunca trava). Opt-in é 1× (bootstrap ou
 `--init-consent`); setup do dono é 1 comando guiado (`python tools/setup_central_reports.py`). Ver
 `docs/REPORTS-CONTRIBUTION.md`.

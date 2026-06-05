@@ -9,6 +9,16 @@
 
 ---
 
+## 2026-06-05 (cont.) — Sessão (squad): ADR-065 — oferta do relatório POR SOLUÇÃO (popup no merge, humano confirma, 1×)
+
+> **Pedido do dono:** relatório por SOLUÇÃO (ex.: DGO 360) ao concluir; oferecido no merge; 1×; "a cada merge" mas decidido por mim; LGPD. Gatilho escolhido: **PR+merge** (humano confirma a conclusão no popup).
+>
+> **Entregue (ADR-065, EMENDA do gatilho do ADR-064):** `execution_report.py` — `solution_id` (de mission.md/basename, slug anti-traversal), `get/set_offer_state`+`should_offer` (estados pending/deferred/declined/done), CLI `--offer-state`/`--set-offer`. Doutrina no docops/start-session: ao merge, se `should_offer`, o agente abre **popup AskUserQuestion** (tabela vai/não-vai + 4 opções) e age. `REPORTS-CONTRIBUTION §8`. `.gitignore` (`.report-offers/`).
+>
+> **Reconciliação:** "a cada merge" (oferta surge enquanto pending/deferred) × "1×" (= 1 PUBLICAÇÃO ao concluir); `declined` corta o nag, `done` encerra. Conclusão = julgamento humano no popup (framework não adivinha qual merge é o final).
+>
+> **qa-critic (subagente isolado):** state-machine + anti-traversal PASSARAM; sem dupla-publicação (docops substituído, não duplicado). 1 ALTO (drift: REPORTS-CONTRIBUTION §5/§7 ainda prometiam auto-publish-por-sessão do ADR-064) + MÉDIOs (spec CLI; moldura honesta do deferred sem teto) → **corrigidos**. Regressão verde. Status **Proposto**.
+
 ## 2026-06-05 — Sessão (squad): ADR-064 — adoção (auto-publish + opt-in no bootstrap + setup 1-comando guiado)
 
 > **Pedido do dono:** "precisamos executar estes passos? não vai ter adesão" — fricção mata. Decisões: batch/sessão + opt-in + auto.

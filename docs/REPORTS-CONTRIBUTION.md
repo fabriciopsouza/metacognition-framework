@@ -47,7 +47,7 @@ python tools/execution_report.py --init-consent
 
 ## 5. Fluxo (mecanizado — não prosa)
 
-Fim de bloco/sessão → `docops` gera o OWNER enriquecido → `consistency-gate` declara se faltou (7ª dim, fail-soft) → **se opt-in:** `execution_report.py --learnings-public` (anonimiza + **gate `sensitive-denylist` fail-closed, client-side**) → abre **PR** para o repo central público `metacognition-exec-reports` em `reports/<pseudônimo>/<timestamp>__<exec>.md` (**contribuidor limitado** — só PR, nunca write direto; ADR-063).
+Fim de bloco → `docops` gera o **OWNER local** + `consistency-gate` (7ª dim). A **PUBLICAÇÃO é POR SOLUÇÃO, no merge** (ADR-065, ver §8) — **não** automática por sessão. Quando você confirma a conclusão no popup: `execution_report.py --publish` (anonimiza + **gate `sensitive-denylist` fail-closed, client-side**) → abre **PR** ao repo central `metacognition-exec-reports` em `reports/<pseudônimo>/<timestamp>__<exec>.md` (**contribuidor limitado** — só PR; ADR-063).
 
 ## 6. Repo central, "contribuidor limitado" e auto-merge (ADR-063)
 
@@ -62,9 +62,22 @@ Fim de bloco/sessão → `docops` gera o OWNER enriquecido → `consistency-gate
 
 | Quem | Passo ÚNICO | Depois disso |
 |---|---|---|
-| **Contribuidor** | responde 1 pergunta no `bootstrap` (ou `python tools/execution_report.py --init-consent`) — opt-in, default **Não** | nada — ao fim de cada sessão o relatório anonimizado vai sozinho (`--publish`, **batch por sessão**, fail-soft) |
+| **Contribuidor** | responde 1 pergunta no `bootstrap` (ou `python tools/execution_report.py --init-consent`) — opt-in, default **Não** | ao **concluir cada solução** (popup no merge, você confirma — §8/ADR-065) o relatório anonimizado vai sozinho; fail-soft |
 | **Dono** | **1 comando guiado**: `python tools/setup_central_reports.py` (cria o repo + CI + auto-merge + grava o destino; orienta em cada passo, falha-soft com instrução) | nada — os relatórios chegam e auto-mergeiam |
 
 - **Fail-soft:** sem `gh` autenticado → gera local em `telemetry/learnings-public/…` e **não publica** (nunca trava).
 - **Privacy-by-default:** opt-in (não opt-out), pergunta clara — mais confiável e LGPD-correto.
 - **Não-interativo** (CI/cron) não pergunta → sem opt-in → não publica (default seguro).
+
+## 8. Oferta POR SOLUÇÃO, no merge (ADR-065)
+
+Cada **solução** (ex.: um projeto de BI/dados) gera **1 relatório-resumo de aprendizado ao concluir** — não por sessão. A oferta aparece **no merge de um PR da solução**, num **popup**, e **quem decide se concluiu é você**:
+
+| Opção no popup | O que faz |
+|---|---|
+| ✅ **Gerar e contribuir** | anonimiza (fail-closed) → PR ao repo central → auto-merge; marca a solução `done` |
+| 📄 **Só gerar local** | gera o anonimizado local, **não** publica; marca `done` |
+| ⏳ **Ainda não** | este merge **não** é a conclusão → não gera agora; **pergunta de novo no próximo merge** (`deferred`) |
+| 🚫 **Não, para esta solução** | **nunca** ofereça para esta solução (`declined`) — sem nag |
+
+- **1× por solução** (estado em `.claude/.report-offers/<solução>`). O popup mostra **o que vai / o que NÃO vai** (§1) — é a disclosure + consentimento por-solução, além do opt-in global do §4. **"Ainda não" ≠ "Não":** o primeiro adia (re-oferta), o segundo silencia de vez.
