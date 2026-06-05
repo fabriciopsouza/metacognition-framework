@@ -22,3 +22,6 @@ output/
 
 # ADR-064: staging local de relatorios anonimizados (gerado, nao versionar no repo-fonte)
 telemetry/learnings-public/
+
+# ADR-065: estado da oferta de relatorio por solucao (por maquina; nao versionar)
+.claude/.report-offers/

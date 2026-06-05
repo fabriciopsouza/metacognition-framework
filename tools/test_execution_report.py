@@ -17,6 +17,7 @@ from execution_report import (  # noqa: E402
     validate_report, build_report, build_external_report, validate_external_report,
     detect_tier, telemetry_enabled, learnings_public,
     central_report_path, init_consent, publish_pseudonym, publish_learnings, central_repo_slug, _valid_slug,
+    solution_id, get_offer_state, set_offer_state, should_offer,
 )
 
 # ----------------------------------------------------------------- OWNER (compat ADR-038)
@@ -120,6 +121,20 @@ def main():
                and not _valid_slug("owner/..foo") and not _valid_slug("noslash"))
     fails += 0 if slug_ok else 1
     print(f"{'OK  ' if slug_ok else 'FAIL'} _valid_slug (rejeita '..'/invalido, aceita owner/repo)")
+
+    # ADR-065: oferta por-solução — solution_id de mission.md + transições de estado (deferred re-oferta; done/declined nao).
+    import tempfile
+    tr = tempfile.mkdtemp(prefix="sol_")
+    open(os.path.join(tr, "mission.md"), "w", encoding="utf-8").write("# Solucao DGO 360\n")
+    sid = solution_id(tr)
+    s0 = should_offer(sid, tr)                                   # pending -> oferta
+    set_offer_state(sid, "deferred", tr); s1 = should_offer(sid, tr)   # deferred -> re-oferta
+    set_offer_state(sid, "done", tr); s2 = should_offer(sid, tr)       # done -> nao
+    set_offer_state(sid, "declined", tr); s3 = should_offer(sid, tr)   # declined -> nao
+    inv = set_offer_state(sid, "lixo", tr)                       # estado invalido recusado
+    off_ok = (sid == "solucao-dgo-360" and s0 and s1 and not s2 and not s3 and not inv)
+    fails += 0 if off_ok else 1
+    print(f"{'OK  ' if off_ok else 'FAIL'} oferta por-solução (solution_id + pending/deferred ofertam; done/declined nao)")
     fails += 0 if (p_ok and p_safe) else 1
     print(f"{'OK  ' if (p_ok and p_safe) else 'FAIL'} central_report_path (deterministico + anti-traversal)")
 

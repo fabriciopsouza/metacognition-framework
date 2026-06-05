@@ -490,6 +490,57 @@ def central_repo_slug(home=None):
         return None
 
 
+def solution_id(root=None):
+    """ADR-065: identidade da SOLUÇÃO (p/ ofertar o relatório 1x). De mission.md (1ª linha/título),
+    senão basename do repo. Slug seguro."""
+    root = root or repo_root()
+    name = ""
+    mp = os.path.join(root, "mission.md")
+    if os.path.isfile(mp):
+        try:
+            for ln in open(mp, encoding="utf-8-sig"):
+                ln = ln.strip().lstrip("#").strip()
+                if ln:
+                    name = ln
+                    break
+        except Exception:
+            pass
+    if not name:
+        name = os.path.basename(os.path.abspath(root)) or "solucao"
+    return re.sub(r"[^A-Za-z0-9_-]", "-", name).strip("-").lower()[:48] or "solucao"
+
+
+_OFFER_STATES = {"deferred", "declined", "done"}  # ausente = "pending"
+
+
+def _offer_marker(sid, root=None):
+    root = root or repo_root()
+    return os.path.join(root, ".claude", ".report-offers", re.sub(r"[^A-Za-z0-9_-]", "-", str(sid))[:48] or "x")
+
+
+def get_offer_state(sid, root=None):
+    try:
+        s = open(_offer_marker(sid, root), encoding="utf-8").read().strip()
+        return s if s in _OFFER_STATES else "pending"
+    except Exception:
+        return "pending"
+
+
+def set_offer_state(sid, state, root=None):
+    if state not in _OFFER_STATES:
+        return False
+    mk = _offer_marker(sid, root)
+    os.makedirs(os.path.dirname(mk), exist_ok=True)
+    with open(mk, "w", encoding="utf-8") as fh:
+        fh.write(state)
+    return True
+
+
+def should_offer(sid, root=None):
+    """ADR-065: ofertar se a solução está 'pending' ou 'deferred' (ainda não). 'done'/'declined' = não."""
+    return get_offer_state(sid, root) in ("pending", "deferred")
+
+
 def publish_learnings(owner_path, root=None, run_gh=True, home=None, now_iso=None):
     """ADR-064: AUTO-PUBLISH (fail-soft). consent→learnings_public(fail-closed)→stage em
     telemetry/learnings-public/<pseudo>/<ts>__<exec>.md→PR p/ o central (best-effort, gh).
@@ -565,7 +616,20 @@ def main():
                     help="ADR-063: registra opt-in (consent + pseudônimo aleatório) — ver REPORTS-CONTRIBUTION.md")
     ap.add_argument("--publish", nargs="?", const="auto", default=None,
                     help="ADR-064: auto-publish (fim de sessão) do report OWNER anonimizado p/ o repo central (fail-soft)")
+    ap.add_argument("--offer-state", action="store_true",
+                    help="ADR-065: mostra o estado da oferta de relatório da solução atual (e se deve ofertar)")
+    ap.add_argument("--set-offer", choices=sorted(_OFFER_STATES),
+                    help="ADR-065: seta o estado da oferta da solução atual (deferred|declined|done)")
     args = ap.parse_args()
+
+    if args.offer_state or args.set_offer:
+        root = repo_root()
+        sid = solution_id(root)
+        if args.set_offer:
+            set_offer_state(sid, args.set_offer, root)
+        print(f"solução={sid} · estado={get_offer_state(sid, root)} · "
+              f"ofertar={'SIM' if should_offer(sid, root) else 'não'} (ADR-065)")
+        return 0
 
     if args.init_consent:
         path, pseudo, created = init_consent()
