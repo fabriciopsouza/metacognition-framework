@@ -9,6 +9,16 @@
 
 ---
 
+## 2026-06-05 — Sessão (squad): ADR-064 — adoção (auto-publish + opt-in no bootstrap + setup 1-comando guiado)
+
+> **Pedido do dono:** "precisamos executar estes passos? não vai ter adesão" — fricção mata. Decisões: batch/sessão + opt-in + auto.
+>
+> **Entregue (ADR-064, EMENDA do publish do ADR-063):** `execution_report.py` — `publish_learnings` (consent-gated→anonimiza fail-closed→stage→`_gh_publish_best_effort` fail-soft), `central_repo_slug`/`_valid_slug` (anti-`..`), CLI `--publish`, FIX `init_consent` (preserva `central_repo`). `setup_central_reports.py` (setup do dono 1-comando, GUIADO, fail-soft). `bootstrap.py` `prompt_report_optin` (opt-in 1×, TTY-guarded, privacy-by-default). docops §Encerramento (fim de sessão `--publish`), `REPORTS-CONTRIBUTION.md §7`.
+>
+> **Incidente (detecção framework×humano):** rodei `setup_central_reports.py --yes` como "teste" → **criou o repo público real** `fabriciopsouza/metacognition-exec-reports` (+CI+auto-merge). **O effect-gate NÃO pegou** (gh spawnado por subprocesso Python fura o gate PreToolUse) — gap declarado no ADR-064 §Consequências. O dono confirmou que o repo É a spec (mantido = item pendente concluído). Nenhum publish ocorreu (consent só setado depois). Bug revelado: `init_consent` sobrescrevia `central_repo` → corrigido (merge).
+>
+> **qa-critic (subagente isolado):** gates de vazamento PASSARAM (staging nunca sujo; gh nunca quebra o fluxo). 2 MÉD (slug `../`, env-inválida-fallthrough) + BAIXO (gitignore, ADR-note) → **corrigidos**. Regressão verde. Status **Proposto** (Aceito após verificação do dono).
+
 ## 2026-06-04 (cont. 3) — Sessão (squad): ADR-063 — repo central de relatórios via PR (pseudônimo, auto-merge, CI re-valida)
 
 > **Pedido do dono:** "receber os relatórios anonimizados de TODOS num repo nosso; quem sincroniza vira contribuidor limitado; armazenados ordenados por usuário/timestamp/execução." Decisões: **pseudônimo** + **auto-merge**.

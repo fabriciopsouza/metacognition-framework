@@ -19,3 +19,6 @@ output/
 # ADR-060/061: markers de liveness dos hooks (por sessao/maquina — nunca versionar)
 .claude/.hooklive/
 .claude/.repo-sync-marker
+
+# ADR-064: staging local de relatorios anonimizados (gerado, nao versionar no repo-fonte)
+telemetry/learnings-public/

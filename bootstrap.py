@@ -68,6 +68,32 @@ def activate_nonadmin():
     return True, "perfil non-admin ativo (settings.json sem hooks; backup em settings.json.bak)"
 
 
+def prompt_report_optin():
+    """ADR-064: pergunta 1x (privacy-by-default, TTY-guarded) sobre contribuir aprendizado anonimizado.
+    Idempotente (consent OU declined.lock -> nao re-pergunta). Fail-soft: nunca quebra o bootstrap."""
+    home = os.path.expanduser("~")
+    consent = os.path.join(home, ".claude", "exec-report-consent.json")
+    declined = os.path.join(home, ".claude", "exec-report-declined.lock")
+    if os.path.exists(consent) or os.path.exists(declined) or not sys.stdin.isatty():
+        return
+    try:
+        print("[bootstrap.py] Contribuir relatorios de execucao ANONIMIZADOS p/ melhorar o framework?")
+        print("               (so licoes agnosticas, sem cliente/PII; opt-in; ver docs/REPORTS-CONTRIBUTION.md)")
+        ans = input("               Contribuir? [s/N] ").strip().lower()
+        os.makedirs(os.path.dirname(consent), exist_ok=True)
+        if ans in ("s", "sim", "y", "yes"):
+            sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools"))
+            from execution_report import init_consent
+            _, pseudo, _ = init_consent()
+            print(f"[bootstrap.py] opt-in registrado (pseudonimo aleatorio {pseudo}). "
+                  "Dono: rode 'python tools/setup_central_reports.py' p/ criar o repo central.")
+        else:
+            open(declined, "w", encoding="utf-8").write("declined\n")
+            print("[bootstrap.py] ok, sem contribuicao (mude depois com 'python tools/execution_report.py --init-consent').")
+    except Exception as e:
+        print(f"[bootstrap.py] (opt-in pulado, nao-bloqueante: {e})")
+
+
 def main(argv):
     try:
         sys.stdout.reconfigure(encoding="utf-8")
@@ -92,6 +118,7 @@ def main(argv):
     if not no_mirror:
         n = mirror_skills()
         print(f"[bootstrap.py] espelhadas {n} skills para {os.path.join(HOME_CLAUDE, 'skills')}")
+    prompt_report_optin()  # ADR-064: opt-in 1x (TTY-guarded, fail-soft)
     ok, msg = activate_nonadmin()
     print(f"[bootstrap.py] {'OK' if ok else 'FALHA'}: {msg}")
     print("[bootstrap.py] Modo NON-ADMIN: os hooks automaticos NAO rodam. O agente APLICA e ANUNCIA")
