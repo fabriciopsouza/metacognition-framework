@@ -124,6 +124,20 @@ Esta sessao segue sem boot automatico (voce assume o controle).
 
     $startContent = Get-Content $startDoc -Raw -Encoding UTF8
     $status = if ($matchToken) { "owner=$owner match=$matchToken" } else { "marker=$marker" }
+
+    # ADR-068: injetar insights do corpus se session-insights.md existir.
+    # Hook SÓ LÊ arquivo (sem spawn Python) — fail-soft se ausente/vazio.
+    $insightsBlock = ''
+    try {
+        $siPath = Join-Path $cwd 'docs\_private\_catalog\session-insights.md'
+        if (Test-Path $siPath) {
+            $siRaw = Get-Content $siPath -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+            if ($siRaw -and $siRaw.Trim()) {
+                $insightsBlock = "`n`n---`n`n$($siRaw.Trim())"
+            }
+        }
+    } catch { }
+
     $context = @"
 # Boot automatico do squad - global (ADR-006 v1.8.0)
 
@@ -136,7 +150,7 @@ Para pular em sessoes futuras:
 
 ---
 
-$startContent
+$startContent$insightsBlock
 "@
     Emit-Result $context $status
 }
