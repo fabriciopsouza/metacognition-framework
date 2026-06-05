@@ -38,12 +38,12 @@ MAX_SNIPPET    = 130  # chars por bullet no output
 
 # Fragmentos que identificam cada seção (normalizado, sem acento)
 SECTION_KEYS: Dict[str, List[str]] = {
-    "detecao":       ["framework x humano", "framework   humano", "detecao framework", "deteccao framework"],
+    "detecao":       ["framework x humano", "framework × humano", "detecao framework", "deteccao framework"],
     "gaps":          ["gap"],
     "melhorias":     ["melhoria"],
     "boas_praticas": ["boa pratica", "boas praticas"],
     "licoes":        ["licao por skill", "licoes por skill", "licoes novas"],
-    "placar":        ["placar gate", "gate x achado", "gate   achado"],
+    "placar":        ["placar gate", "gate x achado", "gate × achado"],
 }
 
 KNOWN_SKILLS = ["dev", "discovery", "architect", "qa-critic", "docops", "pmo",
