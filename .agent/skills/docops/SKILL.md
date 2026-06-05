@@ -50,8 +50,9 @@ se `ofertar=SIM` (estado `pending`/`deferred`), apresente o **popup** (`AskUserQ
 **vai / NÃO-vai** + 4 opções e aja: **✅ gerar+contribuir** → `--publish` (anonimiza fail-closed → PR
 central → auto-merge) + `--set-offer done`; **📄 só local** → `--publish` sem gh + `--set-offer done`;
 **⏳ ainda não** → `--set-offer deferred` (re-oferta no próximo merge); **🚫 não p/ esta solução** →
-`--set-offer declined`. O popup É a disclosure+consentimento por-solução (LGPD); 1× por solução (estado em
-`.claude/.report-offers/`). Sem opt-in/`gh` → fail-soft (gera local ou nem oferta).
+`--set-offer declined`. O popup É a disclosure+consentimento por-solução (conformidade/privacidade detalhada em
+`docs/REPORTS-CONTRIBUTION.md`); 1× por solução (estado em `.claude/.report-offers/`). Sem
+opt-in/`gh` → fail-soft (gera local ou nem oferta).
 **Fail-soft:** sem `gh`/opt-in → gera local e NÃO publica (nunca trava). Opt-in é 1× (bootstrap ou
 `--init-consent`); setup do dono é 1 comando guiado (`python tools/setup_central_reports.py`). Ver
 `docs/REPORTS-CONTRIBUTION.md`.

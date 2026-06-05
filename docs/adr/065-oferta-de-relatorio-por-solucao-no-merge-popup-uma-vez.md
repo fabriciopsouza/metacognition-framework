@@ -6,7 +6,7 @@
 
 ## Contexto
 
-O ADR-064 dispara no FIM DE SESSÃO. O dono refinou: o relatório é **por SOLUÇÃO** (ex.: DGO 360), gerado **ao concluí-la**, oferecido **no merge** e **1×**. Tensão: uma solução tem VÁRIOS merges (cada bloco) → "merge" sozinho ofereceria toda hora; "1× ao concluir" exige saber QUAL merge é o final — julgamento que o framework não deve adivinhar.
+O ADR-064 dispara no FIM DE SESSÃO. O dono refinou: o relatório é **por SOLUÇÃO** (ex.: um projeto de BI/dados), gerado **ao concluí-la**, oferecido **no merge** e **1×**. Tensão: uma solução tem VÁRIOS merges (cada bloco) → "merge" sozinho ofereceria toda hora; "1× ao concluir" exige saber QUAL merge é o final — julgamento que o framework não deve adivinhar.
 
 ## Decisão (1 frase ativa)
 

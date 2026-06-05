@@ -71,7 +71,7 @@ Fim de bloco → `docops` gera o **OWNER local** + `consistency-gate` (7ª dim).
 
 ## 8. Oferta POR SOLUÇÃO, no merge (ADR-065)
 
-Cada **solução** (ex.: DGO 360) gera **1 relatório-resumo de aprendizado ao concluir** — não por sessão. A oferta aparece **no merge de um PR da solução**, num **popup**, e **quem decide se concluiu é você**:
+Cada **solução** (ex.: um projeto de BI/dados) gera **1 relatório-resumo de aprendizado ao concluir** — não por sessão. A oferta aparece **no merge de um PR da solução**, num **popup**, e **quem decide se concluiu é você**:
 
 | Opção no popup | O que faz |
 |---|---|
