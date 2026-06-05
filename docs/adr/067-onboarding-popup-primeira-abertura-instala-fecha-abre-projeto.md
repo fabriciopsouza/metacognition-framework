@@ -1,6 +1,6 @@
 # ADR 067 — Onboarding na 1ª abertura: popup (usar×desenvolver), instala global, "feche o instalador e abra seu projeto"
 
-- Status: **Proposto** · Data: 2026-06-05 · Decisores: dono + squad (architect)
+- Status: **Aceito** (2026-06-05 — CI verde 3 SOs + qa-critic; detector testado) · Data: 2026-06-05 · Decisores: dono + squad (architect)
 - Onda: onboarding/adoção · Tipo: **EMENDA** de ADR-006 (auto-boot global) — torna a 1ª abertura explícita. Atende: "ao clonar, popup GUI com link p/ instruções + ativação automática; instruir a NÃO modificar o repo (exceto intencional); instala, configura, fecha o instalador e abre a pasta do projeto".
 
 ## Contexto

@@ -1,6 +1,6 @@
 # ADR 063 — Repo central de relatórios via PR (contribuidor limitado), pseudônimo, auto-merge com CI que RE-VALIDA
 
-- Status: **Proposto** · Data: 2026-06-04 · Decisores: dono + squad (architect)
+- Status: **Aceito** (2026-06-05 — LIVE-verificado: 2 relatórios no corpus via PR→CI green→merge) · Data: 2026-06-04 · Decisores: dono + squad (architect)
 - Onda: telemetria/aprendizado (alvo v1.43.0) · Tipo: **EMENDA da §Decisão do corpus público do ADR-062** (muda o mecanismo de publicação → novo ADR por rastreabilidade). Atende: "receber os relatórios anonimizados de TODOS num repo nosso; quem sincroniza vira contribuidor limitado; armazenados ordenados por usuário/timestamp/execução".
 - Relaciona/herda: **ADR-062** (corpus público anonimizado — BASE), **ADR-052** ("o PR é o consentimento"; whitelist de schema; anti-PII), **ADR-020** (denylist/anonimização), **ADR-044** (LIMITS honesto).
 

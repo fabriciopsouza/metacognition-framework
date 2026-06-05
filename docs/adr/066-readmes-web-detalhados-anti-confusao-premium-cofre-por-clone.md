@@ -1,6 +1,6 @@
 # ADR 066 — READMEs web com uso/config detalhados, anti-confusão web×full, e cofre próprio por clone
 
-- Status: **Proposto** · Data: 2026-06-05 · Decisores: dono + squad (developer)
+- Status: **Aceito** (2026-06-05 — CI verde 3 SOs + qa-critic; -premium full verificado via gh) · Data: 2026-06-05 · Decisores: dono + squad (developer)
 - Onda: distribuição/adoção · Tipo: **EMENDA** de ADR-054/058 (READMEs web) + ADR-049/052 (tiers/cofre). Atende: dono tentou usar o premium em outro PC, clonou o `-web-premium` (skills-only) esperando o full; "os repos web deveriam ter instruções detalhadas"; "cada clone seu próprio cofre".
 
 ## Contexto

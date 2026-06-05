@@ -578,23 +578,33 @@ def _gh_publish_best_effort(staging_file, central_rel_path, slug):
     import subprocess
     if not slug or not shutil.which("gh"):
         return False
+    def gh(*args, t=40):
+        return subprocess.run(["gh", *args], capture_output=True, text=True, timeout=t)
     try:
-        api = f"repos/{slug}/contents/{central_rel_path}"
+        import base64
         with open(staging_file, encoding="utf-8") as fh:
-            import base64
             content_b64 = base64.b64encode(fh.read().encode("utf-8")).decode("ascii")
-        # cria o arquivo num branch do FORK do contribuidor e abre PR (gh resolve o fork).
         branch = "report-" + central_rel_path.rsplit("/", 1)[-1].replace(".md", "")
-        r = subprocess.run(
-            ["gh", "api", "--method", "PUT", api, "-f", f"message=report {central_rel_path}",
-             "-f", f"content={content_b64}", "-f", f"branch={branch}"],
-            capture_output=True, text=True, timeout=60)
+        # 1. branch precisa EXISTIR antes do PUT (a contents API NÃO cria branch). Cria do default.
+        default = (gh("api", f"repos/{slug}", "--jq", ".default_branch").stdout.strip() or "main")
+        sha = gh("api", f"repos/{slug}/git/ref/heads/{default}", "--jq", ".object.sha").stdout.strip()
+        if not sha:
+            return False
+        gh("api", "--method", "POST", f"repos/{slug}/git/refs",
+           "-f", f"ref=refs/heads/{branch}", "-f", f"sha={sha}")  # ignora se já existe
+        # 2. cria o arquivo nesse branch.
+        r = gh("api", "--method", "PUT", f"repos/{slug}/contents/{central_rel_path}",
+               "-f", f"message=report {central_rel_path}", "-f", f"content={content_b64}",
+               "-f", f"branch={branch}", t=60)
         if r.returncode != 0:
             return False
-        pr = subprocess.run(["gh", "pr", "create", "--repo", slug, "--head", branch,
-                             "--title", f"report {central_rel_path}", "--body", "auto (ADR-064)"],
-                            capture_output=True, text=True, timeout=60)
-        return pr.returncode == 0
+        # 3. abre o PR contra o default; tenta ligar auto-merge (fail-soft se não configurado).
+        pr = gh("pr", "create", "--repo", slug, "--base", default, "--head", branch,
+                "--title", f"report {central_rel_path}", "--body", "auto (ADR-064/065)", t=60)
+        if pr.returncode != 0:
+            return False
+        gh("pr", "merge", branch, "--repo", slug, "--auto", "--merge")  # auto-merge se CI verde (best-effort)
+        return True
     except Exception:
         return False
 
