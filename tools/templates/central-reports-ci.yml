@@ -1,0 +1,74 @@
+# central-reports-ci.yml — CI do repo central `metacognition-exec-reports` (ADR-063).
+#
+# COMO USAR (ação do dono, 1x): copie para `.github/workflows/ci.yml` no repo central público;
+# em Settings → Branches → branch protection da `main`, exija o check "validate-reports";
+# em Settings → General → marque "Allow auto-merge". SÓ ENTÃO um PR que passa o check auto-mergeia
+# (o workflow é o CHECK; o auto-merge é a CONFIG do repo — o workflow sozinho NÃO mergeia).
+#
+# O QUE FAZ (2 barreiras):
+#  (1) APPEND-ONLY: rejeita PR que MODIFICA/DELETA report existente — só ADIÇÃO de arquivo novo é
+#      permitida (anti-tamper cross-pseudônimo: ninguém apaga/edita o report de outro).
+#  (2) ANTI-PII GENÉRICO nos arquivos ADICIONADOS (e-mail/CPF/CNPJ/telefone/string-longa-entre-aspas).
+#  Defesa-em-profundidade: a anonimização + a sensitive-denylist (PRIVADA) já rodaram CLIENT-SIDE no
+#  `learnings_public` (fail-closed) ANTES do PR. A denylist privada NÃO entra aqui (publicá-la vazaria
+#  os nomes — ADR-020/063); só PII genérico, seguro em repo público.
+#
+# Contribuidor é LIMITADO (só PR, nunca write direto). PR com PII / tamper = check vermelho = não entra.
+
+name: validate-reports
+on:
+  pull_request:
+    paths: ['reports/**']
+
+permissions:
+  contents: read
+
+jobs:
+  validate-reports:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Append-only + anti-PII genérico nos relatórios do PR
+        env: { BASE_REF: ${{ github.base_ref }} }
+        run: |
+          python - <<'PY'
+          import os, re, subprocess, sys
+          base = subprocess.run(["git","merge-base",f"origin/{os.environ['BASE_REF']}","HEAD"],
+                                capture_output=True, text=True).stdout.strip()
+          status = subprocess.run(["git","diff","--name-status",base,"HEAD"],
+                                  capture_output=True, text=True).stdout.splitlines()
+          added, tampered = [], []
+          for line in status:
+              parts = line.split("\t")
+              if len(parts) < 2:
+                  continue
+              st, path = parts[0], parts[-1]
+              if not (path.startswith("reports/") and path.endswith(".md")):
+                  continue
+              (added if st.startswith("A") else tampered).append((st, path))
+          if tampered:
+              print("REPROVADO — corpus é APPEND-ONLY: PR modifica/deleta report existente "
+                    "(anti-tamper cross-pseudônimo). Só adição de arquivo NOVO é permitida:")
+              [print(f"  - {st} {p}") for st, p in tampered]
+              sys.exit(1)
+          PII = [(re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"), "e-mail"),
+                 (re.compile(r"\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b"), "CPF"),
+                 (re.compile(r"\b\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2}\b"), "CNPJ"),
+                 (re.compile(r"(?:\+?55[\s-]?)?\(?\d{2}\)?[\s-]?9?\d{4}[\s-]?\d{4}"), "telefone"),
+                 (re.compile(r'"[^"]{15,}"'), "string longa entre aspas (texto livre?)")]
+          fails = []
+          for _, f in added:
+              try:
+                  txt = open(f, encoding="utf-8").read()
+              except OSError:
+                  continue
+              for rx, label in PII:
+                  if rx.search(txt):
+                      fails.append(f"{f}: possível {label}")
+          if fails:
+              print("REPROVADO — possível PII/texto não-anonimizado:")
+              [print("  -", x) for x in fails]
+              sys.exit(1)
+          print(f"OK — {len(added)} relatório(s) novo(s), append-only, sem PII genérica.")
+          PY

@@ -89,7 +89,7 @@ PII_PATTERNS = [
     (re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"), "e-mail"),
     (re.compile(r"\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b"), "CPF"),
     (re.compile(r"\b\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2}\b"), "CNPJ"),
-    (re.compile(r"\b\(?\d{2}\)?\s?9?\d{4}-?\d{4}\b"), "telefone"),
+    (re.compile(r"(?:\+?55[\s-]?)?\(?\d{2}\)?[\s-]?9?\d{4}[\s-]?\d{4}"), "telefone"),
     (re.compile(r'"[^"]{15,}"'), "string longa entre aspas (texto livre?)"),
 ]
 
@@ -370,7 +370,53 @@ def has_publish_consent(home=None):
         return False
 
 
-def learnings_public(owner_text, root=None):
+def publish_pseudonym(home=None):
+    """ADR-063: pseudônimo ALEATÓRIO e estável do contribuidor (gerado 1x no opt-in, guardado no
+    consent.json). NÃO derivado de e-mail/username (anti-rainbow). None se sem consent/pseudônimo."""
+    import json
+    home = home or os.path.expanduser("~")
+    try:
+        with open(os.path.join(home, ".claude", "exec-report-consent.json"), encoding="utf-8") as fh:
+            p = str(json.load(fh).get("pseudonym") or "")
+            return p if re.fullmatch(r"[a-f0-9]{8,32}", p) else None
+    except Exception:
+        return None
+
+
+def init_consent(home=None):
+    """ADR-062/063: registra o opt-in (o ato de rodar É o consentimento informado — ver
+    REPORTS-CONTRIBUTION.md) com um pseudônimo ALEATÓRIO. Idempotente: não sobrescreve consent existente."""
+    import json
+    import secrets
+    home = home or os.path.expanduser("~")
+    path = os.path.join(home, ".claude", "exec-report-consent.json")
+    if os.path.isfile(path):
+        try:
+            with open(path, encoding="utf-8") as fh:
+                cur = json.load(fh)
+            if cur.get("consent") is True and re.fullmatch(r"[a-f0-9]{8,32}", str(cur.get("pseudonym") or "")):
+                return path, cur["pseudonym"], False  # já existe — preserva
+        except Exception:
+            pass
+    pseudo = secrets.token_hex(6)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump({"consent": True, "pseudonym": pseudo, "adr": "062/063",
+                   "scope": "learnings-public-anonimizado"}, fh, ensure_ascii=True, indent=2)
+    return path, pseudo, True
+
+
+def central_report_path(pseudonym, timestamp, exec_id):
+    """ADR-063: reports/<pseudonimo>/<ISO-timestamp>__<exec-id>.md. Sanitiza componentes (anti-traversal)."""
+    def safe(s, default):
+        # só alfanumérico/_/- : filesystem-safe (Windows não aceita ':') E anti-traversal (sem '.').
+        s = re.sub(r"[^A-Za-z0-9_-]", "-", str(s or "")).strip("-")[:64]  # trunca (MAX_PATH Windows)
+        return s or default
+    return "reports/{}/{}__{}.md".format(
+        safe(pseudonym, "anon"), safe(timestamp, "0000"), safe(exec_id, "exec"))
+
+
+def learnings_public(owner_text, root=None, require_consent=True):
     """ADR-062: versão PÚBLICA ANONIMIZADA do report OWNER (corpus de aprendizado agnóstico).
     Reusa anonymize.py (determinístico) + GATE sensitive-denylist (mesmo trust-model do export-clean,
     ADR-020). FAIL-CLOSED: denylist ausente OU token sensível sobrevivente -> RECUSA (problems != []).
@@ -378,6 +424,9 @@ def learnings_public(owner_text, root=None):
     root = root or repo_root()
     problems = []
     text = owner_text or ""
+    # 0) CONSENT (ADR-062/063) — gate na própria função, não só no CLI (anti-bypass de API caller).
+    if require_consent and not has_publish_consent():
+        return "", ["sem opt-in registrado (~/.claude/exec-report-consent.json) — recuso publicar (ADR-063)"]
     # 1) anonimização determinística — FAIL-CLOSED: map ausente = sem anonimização = recuso.
     map_path = os.path.join(root, "tools", "anonymize-map.txt")
     if not os.path.isfile(map_path):
@@ -424,7 +473,15 @@ def main():
     ap.add_argument("--validate", help="validar um report existente (tier inferido do conteúdo)")
     ap.add_argument("--learnings-public", dest="learnings_public",
                     help="ADR-062: gera versão PÚBLICA ANONIMIZADA de um report OWNER (anonymize+denylist)")
+    ap.add_argument("--init-consent", action="store_true",
+                    help="ADR-063: registra opt-in (consent + pseudônimo aleatório) — ver REPORTS-CONTRIBUTION.md")
     args = ap.parse_args()
+
+    if args.init_consent:
+        path, pseudo, created = init_consent()
+        print(f"opt-in {'registrado' if created else 'já existia'}: {path} · pseudônimo={pseudo} "
+              f"(aleatório, não-identificável; ADR-063). Corpus público via PR ativado — ver docs/REPORTS-CONTRIBUTION.md.")
+        return 0
 
     if args.learnings_public:
         if not has_publish_consent():

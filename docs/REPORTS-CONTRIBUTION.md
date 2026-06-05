@@ -33,17 +33,25 @@ GitHub **não isola por-arquivo** dentro de um repo. Para "o dono vê todos, cad
 
 ## 4. Opt-in (como contribuir)
 
-A geração do **OWNER local** é sempre obrigatória (é o seu aprendizado, fica com você). A publicação **PÚBLICA** é **opt-in explícito, 1× na adoção**:
+A geração do **OWNER local** é sempre obrigatória (é o seu aprendizado, fica com você). A publicação **PÚBLICA** é **opt-in explícito, 1× na adoção** — o ato de rodar o comando É o consentimento informado (ADR-063):
 
 ```
-# registrar consentimento (cria ~/.claude/exec-report-consent.json)
-# conteúdo: {"consent": true, "date": "<AAAA-MM-DD>", "scope": "learnings-public-anonimizado", "adr": "062"}
+python tools/execution_report.py --init-consent
+# cria ~/.claude/exec-report-consent.json = {consent:true, pseudonym:<aleatório>, adr:"062/063"}
 ```
 
+- Gera um **pseudônimo ALEATÓRIO** (não derivado de e-mail/username — anti-rainbow). Seus relatórios públicos ficam em `reports/<pseudônimo>/…` no repo central — **ordenados por você sem te identificar** (atribuição real é opt-in separado).
 - **Sem esse arquivo → o learnings-public NÃO é publicado** (só o OWNER local existe).
 - **Opt-out a qualquer momento:** delete o arquivo, OU `FRAMEWORK_NO_TELEMETRY=1`, OU `.claude/no-telemetry.lock` (mata a telemetria EXTERNAL também — ADR-052).
 - O dono (`metacognition-framework`) é colaborador dos repos privados de relatório; isso é parte do opt-in (visibilidade do mantenedor para agregar aprendizado).
 
 ## 5. Fluxo (mecanizado — não prosa)
 
-Fim de bloco/sessão → `docops` gera o OWNER enriquecido → `consistency-gate` declara se faltou (7ª dimensão, fail-soft) → **se opt-in:** `execution_report.py --learnings-public` (anonimiza + gate denylist) → revisão → push ao repo público + ao privado do colaborador.
+Fim de bloco/sessão → `docops` gera o OWNER enriquecido → `consistency-gate` declara se faltou (7ª dim, fail-soft) → **se opt-in:** `execution_report.py --learnings-public` (anonimiza + **gate `sensitive-denylist` fail-closed, client-side**) → abre **PR** para o repo central público `metacognition-exec-reports` em `reports/<pseudônimo>/<timestamp>__<exec>.md` (**contribuidor limitado** — só PR, nunca write direto; ADR-063).
+
+## 6. Repo central, "contribuidor limitado" e auto-merge (ADR-063)
+
+- **Como viro contribuidor:** não há pré-cadastro. O **ato de abrir o PR** é tornar-se contribuidor limitado (GitHub não tem write-isolado por-usuário; PR é o "limitado" nativo).
+- **Receber de todos COM segurança:** o **CI do repo central RE-VALIDA** cada PR com varredura **anti-PII genérica** (`tools/templates/central-reports-ci.yml`) — defesa-em-profundidade sobre a anonimização client-side. PR com PII = check vermelho = **não entra**. A `sensitive-denylist` privada NÃO roda no central (publicá-la vazaria os nomes; roda só client-side).
+- **Auto-merge:** CI verde → **auto-merge** (o gate é a validação, não revisão humana). O dono ativa em Settings (branch protection exigindo o check + "Allow auto-merge").
+- **Irreversibilidade:** PR público entra no histórico git mesmo se fechado → por isso o fail-closed é **antes** do PR (client-side) e o CI central é a 2ª barreira.
