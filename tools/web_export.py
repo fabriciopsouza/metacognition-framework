@@ -219,20 +219,48 @@ def build(out_dir):
     # READMEs — um por tier (cada dir é um REPO-ROOT distinto: publico/=público, premium/=PRIVADO/pago).
     # Espelha o split não-web (-public × -premium; ADR-049). ADR-054 emendado (ADR-058).
     write(os.path.join(out_dir, "publico", "README.md"),
-          f"# metacognition-framework-web · v{version} (tier PÚBLICO)\n\n"
+          f"# metacognition-framework-web · v{version} (tier PÚBLICO — chat, sem filesystem)\n\n"
           "> **GERADO do repo main** (`tools/web_export.py`). **Não editar à mão** (sentido único; ADR-054/057/058).\n\n"
-          "Encarnação chat (sem filesystem) do Framework Metacognitivo — **tier público, autocontido**:\n\n"
-          "- **`prompt-web-publico.md`** — cole no Claude.ai/Gemini; funciona **sem instalar nada**.\n\n"
-          "O **tier PREMIUM** (orquestrador + skills nativas, auto-trigger + encadeamento) é **pago/privado** "
-          "(repo `metacognition-framework-web-premium`). Doutrina `enforcement.chat` (anti-JARVIS). CC BY 4.0.\n")
+          "Encarnação **chat** do Framework Metacognitivo para ambientes **sem filesystem** (Claude.ai, "
+          "Gemini, ChatGPT). Autocontido, grátis (CC BY 4.0).\n\n"
+          "## Como usar (3 passos)\n"
+          "1. Abra um chat com instruções de projeto: **Claude.ai** (Projects → Instruções), **Gemini** "
+          "(Gem → Instruções) ou **ChatGPT** (Custom GPT → Instructions).\n"
+          "2. **Cole o conteúdo de `prompt-web-publico.md`** como a instrução de sistema/projeto.\n"
+          "3. Converse — o método (classificar confiança, file-first, anti-alucinação, validação, decisões "
+          "registradas) já governa as respostas. **Sem instalar nada.**\n\n"
+          "## O que esperar (e o que NÃO)\n"
+          "- ✅ Método metacognitivo: confiança (CONFIRMADO/INFERIDO/NÃO SEI), validação, anti-fabricação.\n"
+          "- ❌ **Sem gates de runtime** (hooks/effect-gate/sync): no chat não há filesystem nem execução — "
+          "o método vale por LEITURA, não por mecanismo. Efeito irreversível **sempre pede sua confirmação** "
+          "(doutrina anti-JARVIS: nunca finge mecanismo que o chat não executa).\n\n"
+          "## Quer mais?\n"
+          "- **Squad por papéis no chat** → tier PREMIUM (pago): repo `metacognition-framework-web-premium`.\n"
+          "- **Framework COMPLETO (clona e roda, com hooks/tools/gates reais)** → repo "
+          "`metacognition-framework` — **esta aqui é só a versão chat, não o full.**\n")
     write(os.path.join(out_dir, "premium", "README.md"),
-          f"# metacognition-framework-web-premium · v{version} (tier PREMIUM — PRIVADO/pago)\n\n"
-          "> **GERADO do repo main** (`tools/web_export.py`). **Não editar à mão** (sentido único; ADR-054/057/058).\n"
-          "> Distribuição **privada** (acesso pago) — não tornar pública.\n\n"
-          "Tier premium do pacote web: **orquestrador enxuto + skills nativas** (auto-trigger por intenção + "
-          "encadeamento de papéis). Pré-requisito de método: o tier público cobre o transversal; este orquestra.\n\n"
-          "- **`prompt-web-premium.md`** — orquestrador.\n"
-          "- **`skills/<nome>/SKILL.md`** — 15 skills (7 papéis + 8 transversais). Doutrina `enforcement.chat`.\n")
+          f"# metacognition-framework-web-premium · v{version} (tier PREMIUM — chat, PRIVADO/pago)\n\n"
+          "> ⚠️ **Esta é a versão CHAT (sem filesystem)** — orquestrador + skills para COLAR no Claude.ai/Gemini.\n"
+          "> **Para o framework COMPLETO que clona-e-roda (hooks, tools, gates, bootstrap), use o repo "
+          "`metacognition-framework-premium`** (não este).\n"
+          "> GERADO do repo main (`tools/web_export.py`) — **não editar à mão**. Privado (acesso pago) — não publicar.\n\n"
+          "Tier premium do pacote web: **orquestrador enxuto + 15 skills** (7 papéis + 8 transversais), com "
+          "auto-trigger por intenção e encadeamento de papéis.\n\n"
+          "## Como usar — Claude.ai Projects (recomendado)\n"
+          "1. Crie um **Projeto** no Claude.ai.\n"
+          "2. **Instruções do projeto:** cole `prompt-web-premium.md` (o orquestrador).\n"
+          "3. **Conhecimento do projeto:** adicione os arquivos `skills/<nome>/SKILL.md` (arraste a pasta "
+          "`skills/`). O orquestrador os referencia por nome (auto-trigger).\n"
+          "4. Converse: ele roteia (pontual→metacognição · multi-etapa→squad "
+          "pmo→discovery→architect→developer→qa-critic→docops) e encadeia os papéis.\n\n"
+          "## Gemini / ChatGPT\n"
+          "Cole `prompt-web-premium.md` como instrução do Gem/GPT; cole as `SKILL.md` relevantes na conversa "
+          "(não têm 'conhecimento de projeto' persistente como o Claude.ai Projects).\n\n"
+          "## Config / limites\n"
+          "- **Sem filesystem** → papéis/subagentes SIMULADOS (anti-JARVIS: declara checkpoint, **nunca finge** "
+          "gate de runtime); efeito irreversível sempre confirma.\n"
+          "- Pré-requisito de método: o tier público cobre o transversal; este orquestra.\n"
+          "- **Framework FULL (clone-e-roda)** = repo `metacognition-framework-premium`.\n")
 
     violations = anti_jarvis_gate(out_dir, forbidden)
     return version, violations

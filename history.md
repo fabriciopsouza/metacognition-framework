@@ -9,6 +9,14 @@
 
 ---
 
+## 2026-06-05 (cont. 2) — Sessão (squad): ADR-066 — READMEs web detalhados + anti-confusão premium + cofre por clone
+
+> **Pedido do dono (campo):** tentou usar o premium em outro PC, clonou o `-web-premium` (skills-only) esperando o full. + "repos web deveriam ter instruções detalhadas" + "cada clone seu próprio cofre".
+>
+> **Diagnóstico:** não é bug — `-web-premium` é a versão CHAT (prompt+skills por design); o full é `-premium` (tem .agent/.claude/_shared/tools/docs-sem-cofre — verificado via gh). Confusão de nome + READMEs tersos.
+>
+> **Entregue (ADR-066, EMENDA de ADR-054/058/049/052):** `web_export.py` — READMEs público e premium reescritos com **uso+config passo-a-passo** (Claude.ai Projects: instruções=prompt, conhecimento=skills/; Gemini/ChatGPT; o que o chat NÃO faz) + **header anti-confusão** (`-web-premium` → "versão CHAT; full = `metacognition-framework-premium`"). `bootstrap.py` `ensure_cofre()` — clone full sem cofre cria o **cofre próprio** (`docs/_private/_intake/`+README) → vira OWNER; README avisa do `sensitive-denylist` próprio p/ publicar. `test_web_export` segue verde (determinístico); agnostic limpo.
+
 ## 2026-06-05 (cont.) — Sessão (squad): ADR-065 — oferta do relatório POR SOLUÇÃO (popup no merge, humano confirma, 1×)
 
 > **Pedido do dono:** relatório por SOLUÇÃO (ex.: DGO 360) ao concluir; oferecido no merge; 1×; "a cada merge" mas decidido por mim; LGPD. Gatilho escolhido: **PR+merge** (humano confirma a conclusão no popup).

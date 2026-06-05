@@ -68,6 +68,30 @@ def activate_nonadmin():
     return True, "perfil non-admin ativo (settings.json sem hooks; backup em settings.json.bak)"
 
 
+def ensure_cofre():
+    """ADR-052/065: o cofre `docs/_private` define o tier OWNER. As distribuições (premium/public) vêm
+    SEM ele (stripped). Num clone FULL, cria o COFRE PRÓPRIO vazio → o usuário vira OWNER do SEU cofre
+    (relatório de execução FULL local). Idempotente (não toca se já existe). 'Cada clone seu próprio cofre.'"""
+    cofre = os.path.join(ROOT, "docs", "_private")
+    if os.path.isdir(cofre):
+        return False
+    try:
+        os.makedirs(os.path.join(cofre, "_intake"), exist_ok=True)
+        with open(os.path.join(cofre, "README.md"), "w", encoding="utf-8") as fh:
+            fh.write(
+                "# docs/_private — SEU cofre (tier OWNER, ADR-052/065)\n\n"
+                "Privado e LOCAL. Sua presenca define o tier OWNER (relatorio de execucao FULL em "
+                "`_intake/`, nao anonimizado). As distribuicoes vem SEM cofre; **este e o seu** — cada "
+                "clone tem o proprio.\n\n"
+                "- **Nao tornar publico** (e privado por natureza).\n"
+                "- **Para publicar learnings (ADR-062/063)** voce precisa do SEU `tools/sensitive-denylist.txt` "
+                "(clientes/casos a anonimizar) — as distros nao trazem a do mantenedor. Sem ela, o publish "
+                "RECUSA (fail-closed, seguro).\n")
+        return True
+    except Exception:
+        return False
+
+
 def prompt_report_optin():
     """ADR-064: pergunta 1x (privacy-by-default, TTY-guarded) sobre contribuir aprendizado anonimizado.
     Idempotente (consent OU declined.lock -> nao re-pergunta). Fail-soft: nunca quebra o bootstrap."""
@@ -118,6 +142,8 @@ def main(argv):
     if not no_mirror:
         n = mirror_skills()
         print(f"[bootstrap.py] espelhadas {n} skills para {os.path.join(HOME_CLAUDE, 'skills')}")
+    if ensure_cofre():  # ADR-052/065: clone full sem cofre -> cria o cofre proprio (vira OWNER)
+        print(f"[bootstrap.py] cofre proprio criado: {os.path.join(ROOT, 'docs', '_private')} (tier OWNER; cada clone o seu).")
     prompt_report_optin()  # ADR-064: opt-in 1x (TTY-guarded, fail-soft)
     ok, msg = activate_nonadmin()
     print(f"[bootstrap.py] {'OK' if ok else 'FALHA'}: {msg}")
