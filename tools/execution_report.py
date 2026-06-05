@@ -398,11 +398,19 @@ def init_consent(home=None):
                 return path, cur["pseudonym"], False  # já existe — preserva
         except Exception:
             pass
+    # Preserva campos existentes (ex.: central_repo gravado pelo setup) — não sobrescrever (bug evitado).
+    data = {}
+    if os.path.isfile(path):
+        try:
+            data = json.load(open(path, encoding="utf-8"))
+        except Exception:
+            data = {}
     pseudo = secrets.token_hex(6)
+    data.update({"consent": True, "pseudonym": pseudo, "adr": "062/063",
+                 "scope": "learnings-public-anonimizado"})
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as fh:
-        json.dump({"consent": True, "pseudonym": pseudo, "adr": "062/063",
-                   "scope": "learnings-public-anonimizado"}, fh, ensure_ascii=True, indent=2)
+        json.dump(data, fh, ensure_ascii=True, indent=2)
     return path, pseudo, True
 
 
@@ -460,6 +468,86 @@ def learnings_public(owner_text, root=None, require_consent=True):
     return header + text, problems
 
 
+def _valid_slug(s):
+    """owner/repo do GitHub: owner alfanum/-, repo alfanum/._- ; REJEITA '..' (anti-traversal de path/URL)."""
+    s = str(s or "")
+    return bool(re.fullmatch(r"[A-Za-z0-9-]+/[A-Za-z0-9._-]+", s)) and ".." not in s
+
+
+def central_repo_slug(home=None):
+    """ADR-064: slug <owner>/repo do repo central. Do consent.json (`central_repo`) ou env
+    FRAMEWORK_REPORTS_REPO. None se não configurado/ inválido (→ stage local, sem publicar)."""
+    import json
+    env = os.environ.get("FRAMEWORK_REPORTS_REPO")
+    if env:  # env DEFINIDO decide (não cai p/ consent): inválido -> None (sem surpresa silenciosa)
+        return env if _valid_slug(env) else None
+    home = home or os.path.expanduser("~")
+    try:
+        with open(os.path.join(home, ".claude", "exec-report-consent.json"), encoding="utf-8") as fh:
+            s = str(json.load(fh).get("central_repo") or "")
+            return s if _valid_slug(s) else None
+    except Exception:
+        return None
+
+
+def publish_learnings(owner_path, root=None, run_gh=True, home=None, now_iso=None):
+    """ADR-064: AUTO-PUBLISH (fail-soft). consent→learnings_public(fail-closed)→stage em
+    telemetry/learnings-public/<pseudo>/<ts>__<exec>.md→PR p/ o central (best-effort, gh).
+    SEM gh/consent/slug → gera local e NÃO publica (nunca trava). Retorna (staging_path, problems, published)."""
+    import hashlib
+    root = root or repo_root()
+    if not has_publish_consent(home):
+        return None, ["sem opt-in (rode --init-consent) — não publico"], False
+    try:
+        owner_text = open(owner_path, encoding="utf-8-sig").read()
+    except OSError as e:
+        return None, [f"report OWNER ausente ({e})"], False
+    # consent JÁ gateado acima (com home); o anonimizador re-valida só denylist/map (require_consent=False).
+    pub, problems = learnings_public(owner_text, root, require_consent=False)
+    if problems:
+        return None, problems, False  # fail-closed: não publica conteúdo possivelmente sujo
+    pseudo = publish_pseudonym(home) or "anon"
+    ts = (now_iso or "0000").replace(":", "-")  # caller passa ISO; sem relógio aqui (determinístico/testável)
+    exec_id = hashlib.sha256(pub.encode("utf-8")).hexdigest()[:8]
+    rel = central_report_path(pseudo, ts, exec_id)  # reports/<pseudo>/<ts>__<exec>.md
+    staging = os.path.join(root, "telemetry", "learnings-public", os.path.relpath(rel, "reports"))
+    os.makedirs(os.path.dirname(staging), exist_ok=True)
+    with open(staging, "w", encoding="utf-8") as fh:
+        fh.write(pub + "\n")
+    published = False
+    if run_gh:
+        published = _gh_publish_best_effort(staging, rel, central_repo_slug(home))
+    return staging, [], published
+
+
+def _gh_publish_best_effort(staging_file, central_rel_path, slug):
+    """PR best-effort p/ o repo central via gh (fork→branch→PR). FAIL-SOFT: qualquer erro → False
+    (já está staged local). Não testado no sandbox (sem gh/repo) — verificação do dono."""
+    import shutil
+    import subprocess
+    if not slug or not shutil.which("gh"):
+        return False
+    try:
+        api = f"repos/{slug}/contents/{central_rel_path}"
+        with open(staging_file, encoding="utf-8") as fh:
+            import base64
+            content_b64 = base64.b64encode(fh.read().encode("utf-8")).decode("ascii")
+        # cria o arquivo num branch do FORK do contribuidor e abre PR (gh resolve o fork).
+        branch = "report-" + central_rel_path.rsplit("/", 1)[-1].replace(".md", "")
+        r = subprocess.run(
+            ["gh", "api", "--method", "PUT", api, "-f", f"message=report {central_rel_path}",
+             "-f", f"content={content_b64}", "-f", f"branch={branch}"],
+            capture_output=True, text=True, timeout=60)
+        if r.returncode != 0:
+            return False
+        pr = subprocess.run(["gh", "pr", "create", "--repo", slug, "--head", branch,
+                             "--title", f"report {central_rel_path}", "--body", "auto (ADR-064)"],
+                            capture_output=True, text=True, timeout=60)
+        return pr.returncode == 0
+    except Exception:
+        return False
+
+
 def main():
     try:
         sys.stdout.reconfigure(encoding="utf-8")
@@ -475,12 +563,32 @@ def main():
                     help="ADR-062: gera versão PÚBLICA ANONIMIZADA de um report OWNER (anonymize+denylist)")
     ap.add_argument("--init-consent", action="store_true",
                     help="ADR-063: registra opt-in (consent + pseudônimo aleatório) — ver REPORTS-CONTRIBUTION.md")
+    ap.add_argument("--publish", nargs="?", const="auto", default=None,
+                    help="ADR-064: auto-publish (fim de sessão) do report OWNER anonimizado p/ o repo central (fail-soft)")
     args = ap.parse_args()
 
     if args.init_consent:
         path, pseudo, created = init_consent()
         print(f"opt-in {'registrado' if created else 'já existia'}: {path} · pseudônimo={pseudo} "
               f"(aleatório, não-identificável; ADR-063). Corpus público via PR ativado — ver docs/REPORTS-CONTRIBUTION.md.")
+        return 0
+
+    if args.publish:  # ADR-064: auto-publish (fim de sessão; fail-soft)
+        root = repo_root()
+        owner = args.publish if isinstance(args.publish, str) and args.publish not in ("", "auto") \
+            else default_out_path("owner", root)
+        try:
+            import datetime
+            now_iso = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H-%M-%S")
+        except Exception:
+            now_iso = "0000"
+        staging, problems, published = publish_learnings(owner, root, now_iso=now_iso)
+        if problems:
+            print("publish: não publicado — " + "; ".join(problems) + " (fail-soft, não trava).")
+            return 0
+        msg = "publicado (PR aberto no repo central)" if published else \
+              "gerado LOCAL (gh ausente/sem slug ou PR falhou — publique depois; fail-soft)"
+        print(f"learnings-public {msg}: {staging}")
         return 0
 
     if args.learnings_public:

@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.join(ROOT, "tools"))
 from execution_report import (  # noqa: E402
     validate_report, build_report, build_external_report, validate_external_report,
     detect_tier, telemetry_enabled, learnings_public,
-    central_report_path, init_consent, publish_pseudonym,
+    central_report_path, init_consent, publish_pseudonym, publish_learnings, central_repo_slug, _valid_slug,
 )
 
 # ----------------------------------------------------------------- OWNER (compat ADR-038)
@@ -115,6 +115,11 @@ def main():
     # ADR-063: central_report_path determinístico + anti-traversal.
     p_ok = central_report_path("ab12cd34", "2026-06-04T10:00:00", "blk-1") == "reports/ab12cd34/2026-06-04T10-00-00__blk-1.md"
     p_safe = ".." not in central_report_path("../../etc", "../..", "../../../x")  # traversal sanitizado
+    # ADR-064 (qa-critic): slug rejeita '..' e formato invalido; aceita owner/repo legitimo.
+    slug_ok = (_valid_slug("fabriciopsouza/metacognition-exec-reports") and not _valid_slug("../etc")
+               and not _valid_slug("owner/..foo") and not _valid_slug("noslash"))
+    fails += 0 if slug_ok else 1
+    print(f"{'OK  ' if slug_ok else 'FAIL'} _valid_slug (rejeita '..'/invalido, aceita owner/repo)")
     fails += 0 if (p_ok and p_safe) else 1
     print(f"{'OK  ' if (p_ok and p_safe) else 'FAIL'} central_report_path (deterministico + anti-traversal)")
 
@@ -127,6 +132,18 @@ def main():
              and _re.fullmatch(r"[a-f0-9]{8,32}", pseudo1) and publish_pseudonym(home=th) == pseudo1)
     fails += 0 if ic_ok else 1
     print(f"{'OK  ' if ic_ok else 'FAIL'} init_consent (idempotente + pseudonimo aleatorio + publish_pseudonym le)")
+
+    # ADR-064: publish_learnings — consent-gated, gera staging anonimizado, fail-soft sem gh.
+    ow = os.path.join(th, "owner.md"); open(ow, "w", encoding="utf-8").write(REPORT_HONESTO)
+    th2 = tempfile.mkdtemp(prefix="noconsent_")  # home SEM consent
+    _, prob_nc, _ = publish_learnings(ow, ROOT, run_gh=False, home=th2)
+    staging, prob_ok, published = publish_learnings(ow, ROOT, run_gh=False, home=th, now_iso="2026-06-05T10-00-00")
+    pl_ok = (prob_nc and "opt-in" in prob_nc[0]                       # sem consent -> recusa
+             and not prob_ok and staging and os.path.isfile(staging)  # com consent -> staging gravado
+             and "PÚBLICO ANONIMIZADO" in open(staging, encoding="utf-8").read()
+             and published is False)                                  # run_gh=False -> nao publica (fail-soft)
+    fails += 0 if pl_ok else 1
+    print(f"{'OK  ' if pl_ok else 'FAIL'} publish_learnings (consent-gated + staging anonimizado + fail-soft sem gh)")
 
     # opt-out: env desliga o tier external
     os.environ["FRAMEWORK_NO_TELEMETRY"] = "1"

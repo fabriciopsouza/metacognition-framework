@@ -44,10 +44,13 @@ anti-vazamento + opt-out `.claude/no-telemetry.lock`/`FRAMEWORK_NO_TELEMETRY`; v
 Conteúdo: tokens (NÃO MEDIDO se a telemetria não estiver exposta — **nunca fabricar**), tempo, turnos,
 arquivos, testes, rodadas de retrabalho, o **placar gate × achado** ("quem pegou o quê") e — **ADR-062** —
 **detecção framework×humano, gaps, melhorias, boas práticas e lições por skill** (agnóstico de domínio).
-**Corpus público (opt-in, ADR-062):** se houver consentimento (`~/.claude/exec-report-consent.json`, ver
-`docs/REPORTS-CONTRIBUTION.md`), gerar a versão pública ANONIMIZADA e publicá-la:
-`python tools/execution_report.py --learnings-public docs/_private/_intake/execution-report.md --out telemetry/learnings-public.md`
-— anonymize + gate `sensitive-denylist` (**fail-closed**: recusa se token sensível sobrevive); revisar antes do push.
+**Corpus público (opt-in, ADR-062/063/064):** ao **FIM DE SESSÃO**, se houver consentimento
+(`~/.claude/exec-report-consent.json`), o publish é **AUTOMÁTICO** (zero ação manual recorrente):
+`python tools/execution_report.py --publish`
+— anonimiza (gate `sensitive-denylist` **fail-closed**) → abre PR para o repo central → auto-merge.
+**Fail-soft:** sem `gh`/opt-in → gera local e NÃO publica (nunca trava). Opt-in é 1× (bootstrap ou
+`--init-consent`); setup do dono é 1 comando guiado (`python tools/setup_central_reports.py`). Ver
+`docs/REPORTS-CONTRIBUTION.md`.
 Registrar a **decisão de re-orquestração do PMO** (J6, ADR-045) no `history.md`:
 `RE-ORQUESTRAÇÃO: <prosseguir | re-priorizar | rewind J_i | injetar escopo | reativar estágio>`
 e rodar `python tools/check_reorchestration.py` (último bloco fechado deve ter a decisão).

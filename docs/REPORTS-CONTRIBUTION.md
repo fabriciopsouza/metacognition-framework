@@ -55,3 +55,16 @@ Fim de bloco/sessão → `docops` gera o OWNER enriquecido → `consistency-gate
 - **Receber de todos COM segurança:** o **CI do repo central RE-VALIDA** cada PR com varredura **anti-PII genérica** (`tools/templates/central-reports-ci.yml`) — defesa-em-profundidade sobre a anonimização client-side. PR com PII = check vermelho = **não entra**. A `sensitive-denylist` privada NÃO roda no central (publicá-la vazaria os nomes; roda só client-side).
 - **Auto-merge:** CI verde → **auto-merge** (o gate é a validação, não revisão humana). O dono ativa em Settings (branch protection exigindo o check + "Allow auto-merge").
 - **Irreversibilidade:** PR público entra no histórico git mesmo se fechado → por isso o fail-closed é **antes** do PR (client-side) e o CI central é a 2ª barreira.
+
+## 7. Adoção — zero atrito recorrente (ADR-064)
+
+**Cada passo manual por relatório mataria a adesão.** Por isso a contribuição é **automática** após dois passos ÚNICOS:
+
+| Quem | Passo ÚNICO | Depois disso |
+|---|---|---|
+| **Contribuidor** | responde 1 pergunta no `bootstrap` (ou `python tools/execution_report.py --init-consent`) — opt-in, default **Não** | nada — ao fim de cada sessão o relatório anonimizado vai sozinho (`--publish`, **batch por sessão**, fail-soft) |
+| **Dono** | **1 comando guiado**: `python tools/setup_central_reports.py` (cria o repo + CI + auto-merge + grava o destino; orienta em cada passo, falha-soft com instrução) | nada — os relatórios chegam e auto-mergeiam |
+
+- **Fail-soft:** sem `gh` autenticado → gera local em `telemetry/learnings-public/…` e **não publica** (nunca trava).
+- **Privacy-by-default:** opt-in (não opt-out), pergunta clara — mais confiável e LGPD-correto.
+- **Não-interativo** (CI/cron) não pergunta → sem opt-in → não publica (default seguro).
