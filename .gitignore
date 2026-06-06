@@ -28,3 +28,6 @@ telemetry/learnings-public/
 
 # ADR-068: catalogo de insights gerado offline (owner-only; nao distribuir)
 docs/_private/_catalog/
+
+# Permissoes pessoais (nao distribuir) — ADR-005/047
+.claude/settings.local.json
