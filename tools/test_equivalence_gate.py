@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Testes do equivalence-gate (ADR-071) — prova que MORDE divergência não-justificada.
+"""Testes do equivalence-gate v2 (ADR-071) — equivalência por CAPACIDADE.
+Prova que MORDE divergência não-justificada e que NÃO força import literal.
 Roda: python tools/test_equivalence_gate.py
 """
 import sys
@@ -8,62 +9,87 @@ import equivalence_gate as g
 AIS = ["claude", "gemini"]
 
 
+def _cap(cid, ai, status, **extra):
+    r = {"capability_id": cid, "ai": ai, "status": status}
+    r.update(extra)
+    return r
+
+
 def run():
     fails = []
 
-    def check(name, manifest, expect_ok, must_contain=None):
-        flags = g.validate(manifest, AIS)
+    def check(name, manifest, known, expect_ok, must_contain=None):
+        flags = g.validate(manifest, known)
         ok = not flags
         if ok != expect_ok:
             fails.append(f"{name}: esperava ok={expect_ok}, deu ok={ok} (flags={flags})")
         elif must_contain and not any(must_contain in x for x in flags):
             fails.append(f"{name}: esperava flag contendo '{must_contain}', deu {flags}")
 
-    # 1) Ambas adotaram -> equivalentes. PASS.
-    check("ambas_adotam", {"adoptions": [
-        {"improvement_id": "adr069", "ai": "claude", "verdict": "ADOTADO"},
-        {"improvement_id": "adr069", "ai": "gemini", "verdict": "ADOTADO"},
-    ]}, expect_ok=True)
+    # 1) Ambas PROVÊEM a capacidade -> equivalentes. PASS.
+    check("ambas_provem", {"capabilities": [
+        _cap("anti-loop", "claude", "PROVIDES", mechanism="cross_ai_gate.py"),
+        _cap("anti-loop", "gemini", "PROVIDES", mechanism="seu proprio gate"),
+    ]}, AIS, expect_ok=True)
 
-    # 2) Claude adotou, Gemini SEM decisão -> divergência implícita. FLAG.
-    check("gemini_sem_decisao", {"adoptions": [
-        {"improvement_id": "adr070", "ai": "claude", "verdict": "ADOTADO"},
-    ]}, expect_ok=False, must_contain="SEM decisao")
+    # 2) PROVÊ por MECANISMOS DIFERENTES -> ainda equivalente (NÃO força import literal). PASS.
+    #    (Ponto do qa-critic: equivalência é de capacidade, não de id/implementação.)
+    check("mecanismos_diferentes", {"capabilities": [
+        _cap("identidade-repo", "claude", "PROVIDES", mechanism="repo_identity.py ancestry"),
+        _cap("identidade-repo", "gemini", "PROVIDES", mechanism="hook nativo de workspace"),
+    ]}, AIS, expect_ok=True)
 
-    # 3) Gemini não-adota COM justificativa completa (categoria+ADR+HITL+motivação). PASS.
-    check("nao_adota_justificado", {"adoptions": [
-        {"improvement_id": "adr070", "ai": "claude", "verdict": "ADOTADO"},
-        {"improvement_id": "adr070", "ai": "gemini", "verdict": "JA_COBERTO",
-         "adr_ref": "gemini-adr-012", "hitl": True,
-         "motivation": "arquitetura Gemini ja tem enforcement nativo equivalente"},
-    ]}, expect_ok=True)
+    # 3) Claude provê, Gemini OMISSA (sem registro). FLAG.
+    check("gemini_omissa", {"capabilities": [
+        _cap("anti-loop", "claude", "PROVIDES"),
+    ]}, AIS, expect_ok=False, must_contain="OMISSA")
 
-    # 4) Não-adota mas SEM HITL -> divergência não-ratificada. FLAG.
-    check("nao_adota_sem_hitl", {"adoptions": [
-        {"improvement_id": "adr070", "ai": "claude", "verdict": "ADOTADO"},
-        {"improvement_id": "adr070", "ai": "gemini", "verdict": "NAO_APLICAVEL",
-         "adr_ref": "gemini-adr-012", "hitl": False, "motivation": "nao se aplica"},
-    ]}, expect_ok=False, must_contain="sem HITL")
+    # 4) Gemini ausência JUSTIFICADA completa (ADR + hitl_proof + motivação). PASS.
+    check("ausencia_justificada", {"capabilities": [
+        _cap("anti-loop", "claude", "PROVIDES"),
+        _cap("anti-loop", "gemini", "JUSTIFIED_ABSENT",
+             adr_ref="gemini-adr-040", hitl_proof="commit:abc123 (assinado dono)",
+             motivation="arquitetura Gemini single-agent: loop cross-IA nao se aplica ainda"),
+    ]}, AIS, expect_ok=True)
 
-    # 5) Não-adota mas SEM motivation (só §0 não basta). FLAG.
-    check("nao_adota_sem_motivacao", {"adoptions": [
-        {"improvement_id": "adr070", "ai": "claude", "verdict": "ADOTADO"},
-        {"improvement_id": "adr070", "ai": "gemini", "verdict": "REJEITADO",
-         "adr_ref": "gemini-adr-013", "hitl": True},
-    ]}, expect_ok=False, must_contain="motivation")
+    # 5) Ausência justificada mas SEM hitl_proof (booleano não vale — tem que ser prova). FLAG.
+    check("sem_hitl_proof", {"capabilities": [
+        _cap("anti-loop", "claude", "PROVIDES"),
+        _cap("anti-loop", "gemini", "JUSTIFIED_ABSENT",
+             adr_ref="gemini-adr-040", motivation="m"),
+    ]}, AIS, expect_ok=False, must_contain="hitl_proof")
 
-    # 6) Ninguém adotou ainda -> sem paridade a forçar. PASS (não flaga).
-    check("ninguem_adotou", {"adoptions": [
-        {"improvement_id": "adrX", "ai": "claude", "verdict": "REJEITADO",
-         "adr_ref": "c-adr-1", "hitl": True, "motivation": "m"},
-    ]}, expect_ok=True)
+    # 6) Ausência justificada SEM motivation (só §0 não basta). FLAG.
+    check("sem_motivation", {"capabilities": [
+        _cap("anti-loop", "claude", "PROVIDES"),
+        _cap("anti-loop", "gemini", "JUSTIFIED_ABSENT",
+             adr_ref="gemini-adr-040", hitl_proof="commit:abc"),
+    ]}, AIS, expect_ok=False, must_contain="motivation")
+
+    # 7) status ABSENT (não-justificado) enquanto a outra provê. FLAG.
+    check("absent_nao_justificado", {"capabilities": [
+        _cap("anti-loop", "claude", "PROVIDES"),
+        _cap("anti-loop", "gemini", "ABSENT"),
+    ]}, AIS, expect_ok=False, must_contain="sem justificativa")
+
+    # 8) Ninguém provê -> todas iguais (sem capacidade) -> sem divergência. PASS.
+    check("ninguem_prove", {"capabilities": [
+        _cap("anti-loop", "claude", "ABSENT"),
+        _cap("anti-loop", "gemini", "ABSENT"),
+    ]}, AIS, expect_ok=True)
+
+    # 9) known_ais NÃO declarado -> não dá p/ detectar omissa. FLAG.
+    check("sem_known_ais", {"capabilities": [
+        _cap("anti-loop", "claude", "PROVIDES"),
+        _cap("anti-loop", "gemini", "PROVIDES"),
+    ]}, None, expect_ok=False, must_contain="known_ais")
 
     if fails:
         print("FAIL:")
         for f in fails:
             print("  -", f)
         return 1
-    print("OK — 6 casos (gate MORDE: divergencia implicita, sem-HITL, sem-motivacao barrados).")
+    print("OK — 9 casos (capacidade-nao-id-literal; omissa, sem-hitl-proof, sem-motivacao, absent barrados).")
     return 0
 
 
