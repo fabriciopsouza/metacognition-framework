@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""equivalence-gate v2 (ADR-071) — TRAVA FÍSICA de equivalência FUNCIONAL entre repos-mãe.
+"""equivalence-gate v2 (ADR-071) — gate de equivalência FUNCIONAL entre repos-mãe.
+
+ENFORCEMENT CONDICIONAL (honesto — qa-critic): este gate é a LÓGICA determinística; o
+enforcement REAL exige dois itens ainda PENDENTES: (a) um passo de CI que rode este gate sobre
+o manifest do hub E verifique a autenticidade de cada `hitl_proof` via `git verify-commit`;
+(b) o hub provisionado. Enquanto isso, o gate valida FORMA (formato do proof, catálogo, duplicata)
+mas NÃO prova a assinatura humana sozinho. Não é "trava física" plena até a CR existir.
 
 OBJETIVO: os repos-mãe (claude, gemini, futuros — agnóstico de IA) devem ser SEMPRE
 funcionalmente EQUIVALENTES. Equivalência é de CAPACIDADE (resultado), NÃO de implementação:
@@ -29,9 +35,17 @@ Uso:
 Exit 0 = equivalentes/justificados; 2 = divergência flagada; 1 = erro. Stdlib only.
 """
 import json
+import re
 import sys
 
 VALID_STATUS = {"PROVIDES", "ABSENT", "JUSTIFIED_ABSENT"}
+# hitl_proof = referencia a artefato que SO o humano produz. Formato minimo checado AQUI
+# (rejeita 'fake'/'true'/'ok'); a AUTENTICIDADE (git verify-commit) e do passo de CI (declarado).
+PROOF_RE = re.compile(r"^(commit:[0-9a-f]{7,40}|tag:\S+|pr:[0-9]+|approved-pr:\S+)$")
+
+
+def _valid_proof(s):
+    return bool(s) and bool(PROOF_RE.match(str(s).strip()))
 
 
 def validate(manifest, known_ais=None):
@@ -43,32 +57,57 @@ def validate(manifest, known_ais=None):
             "known_ais NAO declarado (--ais ou manifest.known_ais) -> impossivel detectar IA omissa; "
             "equivalencia so pode ser parcial. Declare o conjunto de maes.")
     ais = set(declared)
-    for r in records:
-        if r.get("ai"):
-            ais.add(r["ai"])
-    if len(ais) < 2:
-        return flags  # <2 maes: nada a reconciliar
+    ais_with_records = set()
+    catalog = manifest.get("capability_catalog")  # opcional: enum FECHADO de capability_id
 
     by_cap = {}
     for r in records:
+        ai = r.get("ai")
+        if ai:
+            ais.add(ai)
+            ais_with_records.add(ai)
         cid = r.get("capability_id")
         if cid is None:
             flags.append("registro sem capability_id")
             continue
         st = r.get("status")
         if st not in VALID_STATUS:
-            flags.append(f"[{cid}] '{r.get('ai')}' status invalido '{st}' (use {sorted(VALID_STATUS)})")
-        by_cap.setdefault(cid, {})[r.get("ai")] = r
+            flags.append(f"[{cid}] '{ai}' status invalido '{st}' (use {sorted(VALID_STATUS)})")
+        # catalogo canonico fecha o furo do vocabulario divergente (qa-critic ALTO):
+        # sem ele, 'anti-loop' e 'loop-prevention' contam como capacidades distintas.
+        if catalog is not None and cid not in catalog:
+            flags.append(
+                f"[{cid}] capability_id FORA do catalogo canonico -> normalize p/ um id do catalogo "
+                f"(vocabulario divergente mascara nao-cobertura)")
+        # duplicata conflitante (qa-critic ALTO): (capability_id, ai) deve ter status unico.
+        prev = by_cap.setdefault(cid, {}).get(ai)
+        if prev is not None and prev.get("status") != st:
+            flags.append(
+                f"[{cid}] '{ai}' registros DUPLICADOS conflitantes ('{prev.get('status')}' vs '{st}') "
+                f"-> ambiguo, rejeitado")
+        by_cap[cid][ai] = r
+
+    if len(ais) < 2:
+        return flags  # <2 maes: nada a reconciliar
+
+    # OMISSA TOTAL: inscrita mas sem NENHUM registro -> 1 flag so (evita flood por-capacidade).
+    omissa_total = sorted(declared - ais_with_records)
+    for ai in omissa_total:
+        flags.append(
+            f"'{ai}' inscrita em known_ais mas NAO publicou nenhuma capability (OMISSA total) -> "
+            f"publicar suas capabilities ou sair do conjunto")
 
     for cap, decided in by_cap.items():
         providers = [ai for ai, r in decided.items() if r.get("status") == "PROVIDES"]
         if not providers:
             continue  # ninguem prove -> todas iguais (sem capacidade) -> sem divergencia
         for ai in sorted(ais):
+            if ai in omissa_total:
+                continue  # ja flagada 1x; nao floodar por-capacidade
             r = decided.get(ai)
             if r is None:
                 flags.append(
-                    f"[{cap}] '{ai}' OMISSA (sem registro) mas {providers} prove(em) -> exige PROVIDES "
+                    f"[{cap}] '{ai}' OMISSA nesta capacidade mas {providers} prove(em) -> PROVIDES "
                     f"ou JUSTIFIED_ABSENT (ADR + hitl_proof + motivacao)")
                 continue
             st = r.get("status")
@@ -77,15 +116,16 @@ def validate(manifest, known_ais=None):
             if st != "JUSTIFIED_ABSENT":
                 flags.append(
                     f"[{cap}] '{ai}' status '{st}' diverge de {providers} sem justificativa -> "
-                    f"use JUSTIFIED_ABSENT com ADR + hitl_proof + motivacao")
+                    f"JUSTIFIED_ABSENT com ADR + hitl_proof + motivacao")
                 continue
             faltas = []
             if not r.get("adr_ref"):
-                faltas.append("sem adr_ref (replicabilidade)")
-            if not r.get("hitl_proof"):
-                faltas.append("sem hitl_proof (commit/tag assinado pelo dono ou PR aprovado — verificado na CI)")
+                faltas.append("sem adr_ref")
+            if not _valid_proof(r.get("hitl_proof")):
+                faltas.append("hitl_proof ausente/invalido (use commit:<sha>|tag:<t>|pr:<n>|"
+                              "approved-pr:<ref>; autenticidade verificada na CI via git verify-commit)")
             if not r.get("motivation"):
-                faltas.append("sem motivation (ganho subjetivo/finalidade/motivacao do usuario)")
+                faltas.append("sem motivation")
             if faltas:
                 flags.append(
                     f"[{cap}] '{ai}' JUSTIFIED_ABSENT INCOMPLETO: " + "; ".join(faltas)

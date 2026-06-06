@@ -51,14 +51,22 @@ a **autenticidade** é verificada por um passo de CI (limite honesto declarado).
 **Contras:** quebra a autonomia arquitetural; uma solução boa numa pode não encaixar na outra;
 contra o agnosticismo. Equivalência é de capacidade, não de código.
 
-## Mecanismo (TRAVA FÍSICA)
+## Mecanismo (enforcement CONDICIONAL — honesto, qa-critic)
 
-`tools/equivalence_gate.py` (testes: `test_equivalence_gate.py`, 9 casos que mordem). Lê o manifest
+`tools/equivalence_gate.py` (testes: `test_equivalence_gate.py`, **12 casos que mordem**). Lê o manifest
 unificado do hub: `capabilities[] = {capability_id, ai, status, mechanism, adr_ref, hitl_proof, motivation}`
 com `status ∈ {PROVIDES, ABSENT, JUSTIFIED_ABSENT}`. Para cada capacidade com ≥1 `PROVIDES`, toda mãe
-em `known_ais` precisa `PROVIDES` ou `JUSTIFIED_ABSENT` completo; senão FLAGA (exit 2 = CI barra).
-`hitl_proof` = commit/tag assinado pelo dono ou PR aprovado; **autenticidade verificada na CI**
-(`git verify-commit`) — o gate exige presença, a CI prova.
+em `known_ais` precisa `PROVIDES` ou `JUSTIFIED_ABSENT` completo; senão FLAGA (exit 2). Correções do
+qa-critic v2→v2.1 já no gate:
+- **Catálogo canônico** (`capability_catalog` opcional, enum FECHADO): id fora dele FLAGA — fecha o furo
+  do **vocabulário divergente** (`anti-loop` vs `loop-prevention` não mascaram mais não-cobertura).
+- **`hitl_proof` valida FORMATO** (`commit:<sha>|tag:<t>|pr:<n>|approved-pr:<ref>`) — mata `'fake'`/booleano.
+- **Duplicata** `(capability_id, ai)` conflitante FLAGA (não sobrescreve silenciosamente).
+- **Omissa total** (IA sem nenhum registro) = 1 flag, sem flood por-capacidade.
+
+**LIMITE HONESTO (não over-claim):** o enforcement PLENO exige (a) passo de CI rodando este gate sobre o
+hub + `git verify-commit` na autenticidade do `hitl_proof`, e (b) o hub provisionado — **ambos PENDENTES**.
+Até lá o gate prova FORMA, não a assinatura humana. **É lógica pronta-para-cravar, não trava plena ainda.**
 
 ## Consequências
 

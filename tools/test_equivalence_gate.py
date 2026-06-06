@@ -44,26 +44,33 @@ def run():
         _cap("anti-loop", "claude", "PROVIDES"),
     ]}, AIS, expect_ok=False, must_contain="OMISSA")
 
-    # 4) Gemini ausência JUSTIFICADA completa (ADR + hitl_proof + motivação). PASS.
+    # 4) Gemini ausência JUSTIFICADA completa (ADR + hitl_proof VÁLIDO + motivação). PASS.
     check("ausencia_justificada", {"capabilities": [
         _cap("anti-loop", "claude", "PROVIDES"),
         _cap("anti-loop", "gemini", "JUSTIFIED_ABSENT",
-             adr_ref="gemini-adr-040", hitl_proof="commit:abc123 (assinado dono)",
+             adr_ref="gemini-adr-040", hitl_proof="commit:a1b2c3d4e5f6",
              motivation="arquitetura Gemini single-agent: loop cross-IA nao se aplica ainda"),
     ]}, AIS, expect_ok=True)
 
-    # 5) Ausência justificada mas SEM hitl_proof (booleano não vale — tem que ser prova). FLAG.
+    # 5) Ausência justificada mas SEM hitl_proof. FLAG.
     check("sem_hitl_proof", {"capabilities": [
         _cap("anti-loop", "claude", "PROVIDES"),
         _cap("anti-loop", "gemini", "JUSTIFIED_ABSENT",
              adr_ref="gemini-adr-040", motivation="m"),
     ]}, AIS, expect_ok=False, must_contain="hitl_proof")
 
+    # 5b) hitl_proof FORJADO ('fake') — string não-vazia mas formato inválido. FLAG (mata o teatro da v1).
+    check("hitl_proof_forjado", {"capabilities": [
+        _cap("anti-loop", "claude", "PROVIDES"),
+        _cap("anti-loop", "gemini", "JUSTIFIED_ABSENT",
+             adr_ref="g-adr", hitl_proof="fake", motivation="m"),
+    ]}, AIS, expect_ok=False, must_contain="hitl_proof")
+
     # 6) Ausência justificada SEM motivation (só §0 não basta). FLAG.
     check("sem_motivation", {"capabilities": [
         _cap("anti-loop", "claude", "PROVIDES"),
         _cap("anti-loop", "gemini", "JUSTIFIED_ABSENT",
-             adr_ref="gemini-adr-040", hitl_proof="commit:abc"),
+             adr_ref="gemini-adr-040", hitl_proof="pr:42"),
     ]}, AIS, expect_ok=False, must_contain="motivation")
 
     # 7) status ABSENT (não-justificado) enquanto a outra provê. FLAG.
@@ -84,12 +91,33 @@ def run():
         _cap("anti-loop", "gemini", "PROVIDES"),
     ]}, None, expect_ok=False, must_contain="known_ais")
 
+    # 10) DUPLICATA conflitante (qa-critic ALTO): mesmo (cap,ai) com status divergente. FLAG.
+    check("duplicata_conflitante", {"capabilities": [
+        _cap("anti-loop", "claude", "PROVIDES"),
+        _cap("anti-loop", "gemini", "ABSENT"),
+        _cap("anti-loop", "gemini", "PROVIDES"),  # 2o registro forja paridade
+    ]}, AIS, expect_ok=False, must_contain="DUPLICADOS")
+
+    # 11) Catálogo canônico (qa-critic ALTO): id fora do catálogo = vocabulário divergente. FLAG.
+    check("vocabulario_divergente", {
+        "capability_catalog": ["anti-loop", "identidade-repo"],
+        "capabilities": [
+            _cap("anti-loop", "claude", "PROVIDES"),
+            _cap("loop-prevention", "gemini", "PROVIDES"),  # mesmo conceito, id divergente
+        ]}, AIS, expect_ok=False, must_contain="catalogo")
+
+    # 12) OMISSA TOTAL: IA em known_ais sem nenhum registro -> 1 flag (sem flood). FLAG.
+    check("omissa_total", {"capabilities": [
+        _cap("anti-loop", "claude", "PROVIDES"),
+        _cap("identidade-repo", "claude", "PROVIDES"),
+    ]}, ["claude", "gemini", "nova-ia"], expect_ok=False, must_contain="OMISSA total")
+
     if fails:
         print("FAIL:")
         for f in fails:
             print("  -", f)
         return 1
-    print("OK — 9 casos (capacidade-nao-id-literal; omissa, sem-hitl-proof, sem-motivacao, absent barrados).")
+    print("OK — 12 casos (capacidade; catalogo, duplicata, hitl_proof-forjado, omissa-total barrados).")
     return 0
 
 
