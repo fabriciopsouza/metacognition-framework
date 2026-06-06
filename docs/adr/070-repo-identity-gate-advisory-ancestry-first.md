@@ -38,19 +38,27 @@ de escrever/commitar, sem alegar enforcement que esta máquina não sustenta.**
 
 Ordem de decisão (git manda; marker corrobora ou levanta alerta de divergência):
 
-| Veredito | Sinal git (autoritativo) | Papel do marker |
-|---|---|---|
-| `FOREIGN` | sem `.git`, ou `origin` ≠ `canonical_remote` do marker | se marker ausente e remote desconhecido → FOREIGN |
-| `CLONE-VELHO/DIVERGENTE` | sem `merge-base` com `origin/<branch>`, **ou** `behind > N` (linhagem disjunta/abandonada) | marker dizendo "master" aqui = **ALERTA: marker forjado/stale** |
-| `SOMBRA-EXPORT` | log recente casa `^(publish|export).*@ [0-9a-f]{7,}` (commit de export) | corrobora `role: shadow` |
-| `MASTER-CANÔNICO` | `origin == canonical_remote` **e** ancestral de / em `origin/<branch>` **e** não-export | corrobora `role: master` |
-| `AMBÍGUO (master ou export-fiel)` | ahead/behind 0/0 com o canônico **e** sem sinal de export | **declarar a ambiguidade** — não assumir master |
+Ordem avaliada de cima para baixo (primeiro que casa vence):
 
-- **Regra de ouro:** se o marker disser `master` mas o git disser DIVERGENTE/atrasado, **vence o git**
-  e anuncia-se "marker possivelmente forjado/desatualizado". Fecha o vetor "export copiou o marker".
-- **`N`** (limiar de behind) declarado no marker (`stale_behind_threshold`, default 50).
-- A detecção de SOMBRA por mensagem de commit é **heurística frágil** (declarado) — só **rebaixa
-  confiança**, nunca promove a master.
+| Veredito | Sinal (autoritativo) | Confiança |
+|---|---|---|
+| `FOREIGN` | sem `.git`, ou `origin` ≠ `canonical_remote` do marker | alta |
+| `CLONE-VELHO/DIVERGENTE` | sem `merge-base` com `origin/<branch>`, **ou** `behind > N` | alta — se marker diz "master" aqui → **ALERTA marker forjado/stale** |
+| `SOMBRA-EXPORT` | **marker `role: shadow`** (carimbado pelo `export-clean.py` — trava física) **OU** commit `…@<hash>` (sinal fraco secundário) | **alta** com marker; média só com commit |
+| `MASTER-CANÔNICO` | **marker `role: master`** **e** `origin == canonical_remote` **e** não-divergente | média |
+| `AMBÍGUO` | **default seguro** — qualquer outro caso (sem marker de master confiável, sem sinal de shadow) | baixa → **escrita exige confirmação** |
+
+- **O falso-MASTER é fechado por MECANISMO, não por heurística** (qa-critic ALTO): o `export-clean.py`
+  **carimba `role: shadow`** em toda árvore exportada → uma sombra/export **nunca** chega como `master`.
+  Logo `marker role:master` é confiável o suficiente para promover a MASTER. A regex de commit-message
+  (`…@<hash>`) vira só **sinal fraco secundário** (não-confiável sozinha; era código quase-morto).
+- **AMBÍGUO é o default, não exceção:** sem `role:master` confiável e sem `role:shadow`, o git **não
+  distingue** master de export-fiel → AMBÍGUO → escrita pede confirmação. Antes o `else` caía em MASTER
+  (bug: export com commits locais virava MASTER). Corrigido.
+- **Regra de ouro:** se o marker diz `master` mas o git diz DIVERGENTE/atrasado, **vence o git**.
+- **`N`** (limiar behind) no marker (`stale_behind_threshold`, default 50).
+- **Residual documentado:** cópia manual/maliciosa que re-carimbe `role:master` fora do `export-clean`
+  seria promovida — fora do fluxo normal; o caso comum (clone velho) é pego por divergência.
 
 ## Marker `.repo-identity.json` (raiz do repo — dica declarada, versionada)
 ```json
@@ -114,7 +122,10 @@ forjável; **overclaim** ("bloqueia") que a máquina não sustenta. **Rejeitada*
 
 ## Implementação (ponteiro após aceito)
 - branch `feat/adr-070-repo-identity-gate` · data `2026-06-05`
-- artefatos: `.repo-identity.json` (marker do master), `tools/repo_identity.py` (classificador on-demand)
-- grep: `repo_identity`, `repo-identity`, `stale_behind_threshold`
-- Pendência: carimbar `role: shadow` no `.repo-identity.json` do export premium e `role: clone-archive`
-  no clone OneDrive (Ação 4 do incidente — confirmar com o dono antes).
+- artefatos: `.repo-identity.json` (marker do master), `tools/repo_identity.py` (classificador on-demand),
+  `tools/export-clean.py` (`stamp_shadow_identity` — **trava física** que carimba `role: shadow` no export)
+- grep: `repo_identity`, `repo-identity`, `stale_behind_threshold`, `stamp_shadow_identity`
+- testado: master=MASTER-CANONICO (exit 0); OneDrive=CLONE-VELHO/DIVERGENTE; premium=SOMBRA-EXPORT (exit 2);
+  export-clean produz `role: shadow`. Achados ALTO do qa-critic (falso-MASTER, SOMBRA código-morto,
+  AMBÍGUO) corrigidos.
+- Pendência: `role: clone-archive` no clone OneDrive (Ação 4 do incidente — confirmar com o dono).

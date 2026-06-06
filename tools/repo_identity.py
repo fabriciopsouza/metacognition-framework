@@ -92,21 +92,26 @@ def classify():
             else f"behind {behind} > limiar {threshold} vs {ref}"
         if marker_role == "master":
             marker_conflict = True  # marker forjado/stale: git vence
-    elif is_export:
-        verdict, conf, reason = "SOMBRA-EXPORT", "media", \
-            "commit de export/publish recente (@<hash>)"
-    elif behind == 0 and (ahead == 0 or ahead is None) and not is_export:
-        # mesmo HEAD do canonico, sem sinal de export -> indistinguivel
-        if marker_role == "master" and remote_matches:
-            verdict, conf, reason = "MASTER-CANONICO", "media", \
-                "origin canonico + em sync; marker=master (corrobora)"
-        else:
-            verdict, conf, reason = "AMBIGUO", "baixa", \
-                "em sync com o canonico, mas indistinguivel de export-fiel sem marker confiavel"
-    else:
-        # ahead num branch de feature que trackeia o canonico = trabalho normal no master
+    elif marker_role == "shadow" or is_export:
+        # SOMBRA: o marker role=shadow e carimbado PELO export-clean.py (trava fisica) -> confiavel.
+        # is_export (commit '...@<hash>') e so sinal fraco secundario.
+        sig = "marker role=shadow (carimbado pelo export-clean)" if marker_role == "shadow" \
+            else "commit de export/publish (@<hash>) -- sinal fraco"
+        verdict = "SOMBRA-EXPORT"
+        conf = "alta" if marker_role == "shadow" else "media"
+        reason = sig
+    elif marker_role == "master" and remote_matches:
+        # UNICO caminho MASTER positivo. SEGURO porque export-clean carimba role=shadow nos
+        # exports: um export nunca chega aqui como 'master'. Fecha o falso-MASTER (qa-critic ALTO).
+        # Residual documentado: copia manual/maliciosa re-carimbando 'master' (fora do fluxo).
         verdict, conf, reason = "MASTER-CANONICO", "media", \
-            f"origin canonico, ancestral de {ref} (ahead={ahead}, behind={behind})"
+            f"marker=master + origin canonico + nao-divergente (ahead={ahead}, behind={behind})"
+    else:
+        # DEFAULT SEGURO = AMBIGUO. Sem marker confiavel de master e sem sinal de shadow, git NAO
+        # prova identidade (master x export-fiel sao indistinguiveis). Escrita exige confirmacao.
+        marker_note = "marker ausente" if not marker else f"marker_role={marker_role}"
+        verdict, conf, reason = "AMBIGUO", "baixa", \
+            f"{marker_note}; git nao prova master vs export-fiel (ahead={ahead}, behind={behind})"
 
     return {
         "verdict": verdict,
@@ -135,6 +140,7 @@ def main(argv):
     # Guard de stdout no Windows (cp1252) — evita UnicodeEncodeError (licao execution-report).
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     except Exception:
         pass
     r = classify()
