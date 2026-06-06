@@ -122,6 +122,37 @@ def run(cmd, cwd=None):
     return subprocess.run(cmd, cwd=cwd).returncode
 
 
+def stamp_shadow_identity(out_root):
+    """TRAVA FISICA (ADR-070): carimba .repo-identity.json como role=shadow no export.
+    Assim TODO export/sombra se auto-identifica -> repo_identity.py classifica SOMBRA-EXPORT,
+    nunca MASTER-CANONICO. Fecha o falso-MASTER (uma sombra que copiasse o marker do master
+    seria classificada master). O carimbo sobrescreve qualquer marker herdado da copia."""
+    import json
+    remote = "https://github.com/fabriciopsouza/metacognition-framework"
+    branch, owner = "main", "claude"
+    try:
+        with open(os.path.join(SRC_ROOT, ".repo-identity.json"), encoding="utf-8") as fh:
+            m = json.load(fh)
+        remote = m.get("canonical_remote", remote)
+        branch = m.get("canonical_branch", branch)
+        owner = m.get("ai_owner", owner)
+    except Exception:
+        pass
+    shadow = {
+        "schema_version": "1.0",
+        "role": "shadow",
+        "ai_owner": owner,
+        "canonical_remote": remote,
+        "canonical_branch": branch,
+        "derived_from": "metacognition-framework (master)",
+        "note": "Distribuicao derivada via export-clean (ADR-049/070). NAO e master; deriva do "
+                "master sem vida propria. repo_identity classifica SOMBRA-EXPORT; escrita exige confirmacao.",
+    }
+    with open(os.path.join(out_root, ".repo-identity.json"), "w", encoding="utf-8") as fh:
+        json.dump(shadow, fh, ensure_ascii=False, indent=2)
+        fh.write("\n")
+
+
 def main(argv):
     args = [a for a in argv[1:] if not a.startswith("--")]
     nonadmin = ("--nonadmin" in argv) or ("nonadmin" in argv and "--variant" in argv)
@@ -195,6 +226,10 @@ def main(argv):
         _rm(os.path.join(out, ".claude", "settings.nonadmin.json"))  # redundante no pacote non-admin
         rewrite_repo_urls(out, "metacognition-framework-public-nonadmin")
         print("VARIANTE: NON-ADMIN (settings.json sem hooks; gates anunciados pelo agente — ADR-047).")
+
+    # 8. TRAVA FISICA de identidade (ADR-070): a arvore exportada se auto-declara SOMBRA.
+    stamp_shadow_identity(out)
+    print("IDENTITY: .repo-identity.json carimbado role=shadow (ADR-070).")
 
     print(f"\nEXPORT OK: arvore limpa publicavel em {out}{' [NON-ADMIN]' if nonadmin else ''}")
     return 0
