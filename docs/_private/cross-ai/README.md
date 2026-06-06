@@ -8,19 +8,21 @@
 ## Ecossistema (1 fonte → 2 distribuições; simétrico por IA)
 
 ```
-metacognition-framework (MASTER, Claude)        metacognition-gemini (MASTER, Gemini)
-      |  fonte única (ADR-049)                         |  mesmo ecossistema
-      +--> public web (anônimo)                        +--> public web
-      +--> premium (deriva do master, SEM vida própria)+--> premium
-                         \                             /
-                          \----- HUB PRIVADO ---------/
-                           (troca cross-IA via PR; cada IA escreve só
-                            no próprio branch/pseudônimo — ninguém escreve
-                            no repo da outra; ADR-069)
+  metacognition-framework (MÃE, Claude)            metacognition-gemini (MÃE, Gemini)
+   ▲ relatório de aprendizado (opt-in)   │  cross-IA   │   ▲ relatório de aprendizado (opt-in)
+   │ (única coisa que a sombra devolve)  │ (só MÃE↔MÃE)│   │
+   +-- public web ─┐                     ▼             ▼   ┌─ public web --+
+   +-- premium ────┴── SOMBRAS           HUB PRIVADO       SOMBRAS ──┴── premium
+       (derivam da mãe, SEM vida própria; NÃO fazem dev nem cross-IA)
 ```
 
-- **Premium deriva do master** — nunca recebe conteúdo manual; é espelho via `export-clean.py`/`web_export.py`.
-- **Gemini é simétrico** — tem master próprio que alimenta o web+premium dele. Tudo aqui vale para os dois lados.
+- **Sombras (public/premium/web) só DEVOLVEM relatórios de aprendizado** (opt-in, ADR-062/063). Não
+  desenvolvem, não fazem cross-IA, não escrevem código. Recebem a melhoria por **export da mãe** (ADR-049).
+- **Cross-IA ocorre SÓ entre os repos-mãe** (Claude-mãe ↔ Gemini-mãe), nunca via sombra.
+- **Spread da melhoria (sem onerar o usuário):** o que a Claude-mãe melhora **propaga à Gemini-mãe via
+  hub cross-IA** — a Claude **não escreve** no repo do Gemini; **publica o handoff**, e a Gemini-mãe lê,
+  **critica adversarialmente e implementa** no próprio repo. Simétrico. A entrega (hub + scan) é mecanizada
+  → o usuário não carrega passo manual, e a melhoria chega aos dois lados.
 
 ## Papéis dos documentos (cada um com sua finalidade)
 
@@ -41,25 +43,35 @@ metacognition-framework (MASTER, Claude)        metacognition-gemini (MASTER, Ge
 3. A outra IA **varre o hub no início** (`cross-ai-inbox-scan`, ADR-069), lê, **avalia criticamente,
    implementa ou não**, e responde via PR **no próprio branch**. Eu nunca escrevo no repo dela.
 
-## Aprendizado mútuo + crítica — SEM loop infinito (regra de terminação)
+## Aprendizado mútuo + crítica — SEM loop infinito (TRAVA FÍSICA, não prosa)
 
-Ambas as IAs **aprendem dos relatórios de execução opt-in** (corpus ADR-062/063/068) e **criticam uma
-à outra** (hub). Para a crítica mútua **terminar** (não virar ping-pong eterno):
+Ambas as mães **aprendem dos relatórios de execução opt-in** (corpus ADR-062/063/068) e **criticam uma
+à outra** (hub). A terminação NÃO é confiada à boa-vontade da IA — é **mecanizada** em
+[`tools/cross_ai_gate.py`](../../../tools/cross_ai_gate.py) (testes: `test_cross_ai_gate.py`, 8 casos que
+provam que o gate MORDE), rodado pela **CI do hub** no merge de cada PR. Determinístico, opera só sobre o
+frontmatter (não julga texto livre). Invariantes que ele FORÇA (exit≠0 = PR barrado):
 
-1. **DAG anti-reanálise:** toda mensagem lista `analyzed_reports[]` (ids que responde). Nunca reanalisar
-   um `report_id` já em `.cross-ai-seen.json` (idempotência por sessão). Dedup ≠ terminação — ver abaixo.
-2. **Regra do "novo argumento" (espelha o anti-loop §0):** uma crítica sobre uma `claim` só gera nova
-   mensagem se traz **argumento NOVO**. Repetir a mesma objeção 2× sem novo argumento → **não responder**;
-   selar ou escalar. (É o "se eu perguntar 'posso prosseguir?' 2× → pare e reformule" aplicado a cross-IA.)
-3. **Convergência por verdito:** cada `claim` recebe `ACEITO | REJEITADO | DEFERIDO | AVANCA_COM_RESSALVA`.
-   Thread **sela** (`status: sealed`) quando todas as claims estão ACEITO/REJEITADO **ou** em DEFERIDO
-   estável (concordar em discordar, registrado).
-4. **Teto de rodadas:** **máx. 3 rodadas** por thread. Na 3ª sem convergência → **escala ao dono** (HITL
-   decide) e **sela**. Circuit-breaker forward-only (espelha a arquitetura bicelular J0-J5, ADR-011).
-5. **Postura preservada:** "nunca aceitar na 1ª passagem" (ADR-011) é sobre **rigor**, não sobre eternizar
-   — o teto + novo-argumento garantem que rigor não vira loop.
+1. **Agrupa por `topic_fingerprint`, não por mensagem.** Dedup por `report_id` só evita reprocessar a MESMA
+   mensagem — novo report sobre o mesmo tópico passa; por isso dedup-de-mensagem **falha sozinho**.
+2. **Monotonicidade / ponto-fixo (quebra-loop):** rodada `>1` só passa se **resolve claim aberta**,
+   **introduz claim nova**, ou traz **`evidence_sha256` inédito**. Restating (mesmas claims/vereditos/
+   evidência) → **REJEITADO**. É o "novo argumento" tornado **checável por máquina**.
+3. **Convergência→selar:** sem claim aberta (todas `ACEITO`/`REJEITADO`) o tópico **deve** estar `sealed`.
+4. **Teto POR TÓPICO (não por thread):** `round > 3` exige `escalation: pending|resolved` (gate humano).
+   Criar novo `thread_id` não escapa — o teto é do `topic_fingerprint`.
+5. **Finalidade:** tópico `sealed` só reabre com **chave humana** (`reopen_token`) **ou** **evidência externa
+   inédita** (`reopen_evidence_sha256`). **Persuasão de IA sozinha NÃO reabre** — fecha o furo "uma IA
+   convence a outra e recomeça o ciclo".
 
-## Frontmatter do hub (agnóstico de IA — ver ADR-069 §Layout)
-`schema_version, report_id (=sha256[:8] do corpo, stampado no merge), thread_id, from, to[], date,
-status(open|sealed), kind`. Opcionais: `analyzed_reports[]`, `verdict_per_claim{}`, `tags[]`,
-`round` (1..3), `supersedes/superseded_by`, `machine_id` (**só peer-private/hub, nunca no público**).
+**Selar SEM cross-write (ADR-069):** `status: sealed` é declarado pelo **próprio autor**; o **arquivamento**
+(`inbox/`→`archive/`) é ação da **CI do hub** (automação neutra), nunca da IA receptora. Ninguém escreve no
+arquivo da outra; o gate só **lê** `status`.
+
+## Frontmatter do hub (agnóstico de IA — validado por `cross_ai_gate.py`)
+**Requeridos:** `schema_version, report_id (=sha256[:8] do corpo), topic_fingerprint, thread_id, from,
+to[], date, status(open|sealed), kind, round`.
+**Para terminação:** `verdict_per_claim{claim_id: ACEITO|REJEITADO|DEFERIDO|OPEN}`,
+`claims[]{claim_id, evidence_sha256}`, `escalation(none|pending|resolved)`.
+**Para finalidade:** `reopen_token` (só humano), `reopen_evidence_sha256`.
+**Opcionais:** `analyzed_reports[]`, `tags[]`, `supersedes/superseded_by`, `machine_id`
+(**só peer-private/hub, nunca no público**).
