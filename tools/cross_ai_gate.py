@@ -73,7 +73,9 @@ def validate(manifest):
 
         verdicts = {}              # estado acumulado claim_id -> veredito
         seen_evidence = set()
-        seen_claims = set()
+        seen_claims = set()        # claims DECLARADAS em claims[] (com evidência)
+        declared = set()           # todos os claim_id já declarados em claims[]
+        all_verdict_keys = set()   # todos os claim_id que receberam veredito
         sealed = False
 
         for i, m in enumerate(msgs):
@@ -103,30 +105,46 @@ def validate(manifest):
                     f"[{topic[:8]}] msg {rid}: round {rnd} > teto {MAX_ROUNDS} sem escalation "
                     f"(exige escalada a humano: escalation=pending|resolved)")
 
+            # claims novas SÓ contam como progresso se tiverem evidência (âncora) — qa-critic MÉDIO:
+            # senão a IA estende rodadas inventando claims vazias.
+            new_anchored = {c.get("claim_id") for c in m.get("claims", [])
+                            if c.get("claim_id") and c.get("evidence_sha256")}
+
             # (1) MONOTONICIDADE / quiescência: round>1 precisa de PROGRESSO
             if i > 0:
                 resolves = any(v in RESOLVED and verdicts.get(cid) not in RESOLVED
                                for cid, v in mverdicts.items())
-                new_claim = bool(mclaims - seen_claims)
+                new_claim = bool(new_anchored - declared)
                 new_ev = bool(mevidence - seen_evidence)
                 if not (resolves or new_claim or new_ev):
                     violations.append(
                         f"[{topic[:8]}] msg {rid}: SEM PROGRESSO (nao resolve claim aberta, nao "
-                        f"introduz claim nova, nao traz evidencia nova) = restating/loop — REJEITADO")
+                        f"introduz claim nova ANCORADA, nao traz evidencia nova) = restating/loop — REJEITADO")
 
             # aplica estado
             verdicts.update(mverdicts)
-            seen_claims |= mclaims
+            seen_claims |= new_anchored
+            declared |= mclaims
+            all_verdict_keys |= set(mverdicts.keys())
             seen_evidence |= mevidence
             if m.get("status") == "sealed":
                 sealed = True
 
-        # (2) CONVERGÊNCIA→SELAR: sem claim aberta, o tópico deve estar sealed
-        open_claims = [cid for cid, v in verdicts.items() if v not in RESOLVED]
-        if verdicts and not open_claims and not sealed:
+        # GHOST CLAIMS (qa-critic ALTO): veredito sobre claim_id nunca declarada em claims[]
+        # -> convergencia/seal falso. Rejeita.
+        ghost = all_verdict_keys - declared
+        if ghost:
             violations.append(
-                f"[{topic[:8]}] CONVERGIU (todas as claims resolvidas) mas o topico NAO esta sealed "
-                f"— deve selar (status:sealed) para travar a finalidade")
+                f"[{topic[:8]}] GHOST CLAIM: veredito sobre claim_id nao declarada em claims[]: "
+                f"{sorted(ghost)} — convergencia/seal invalido")
+
+        # (2) CONVERGÊNCIA→SELAR: só considera claims DECLARADAS; sem aberta -> deve estar sealed
+        relevant = {cid: v for cid, v in verdicts.items() if cid in declared}
+        open_claims = [cid for cid, v in relevant.items() if v not in RESOLVED]
+        if relevant and not open_claims and not sealed:
+            violations.append(
+                f"[{topic[:8]}] CONVERGIU (todas as claims declaradas resolvidas) mas o topico NAO "
+                f"esta sealed — deve selar (status:sealed) para travar a finalidade")
 
     return violations
 

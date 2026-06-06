@@ -79,12 +79,23 @@ def run():
              escalation="pending"),
     ]}, expect_ok=True)
 
+    # 9) GHOST CLAIM (qa-critic ALTO): veredito sobre claim nunca declarada em claims[] -> seal falso. FAIL.
+    check("ghost_claim", {"messages": [
+        _msg("r1", "T9", 1, claims=[], verdicts={"fantasma": "ACEITO"}, status="sealed"),
+    ]}, expect_ok=False, must_contain="GHOST CLAIM")
+
+    # 10) Claim NOVA sem evidência não conta como progresso (qa-critic MÉDIO). FAIL.
+    check("claim_nova_sem_evidencia", {"messages": [
+        _msg("r1", "T10", 1, claims=[{"claim_id": "c1", "evidence_sha256": "e1"}], verdicts={"c1": "OPEN"}),
+        _msg("r2", "T10", 2, claims=[{"claim_id": "c2"}], verdicts={"c2": "OPEN"}),  # sem evidence_sha256
+    ]}, expect_ok=False, must_contain="SEM PROGRESSO")
+
     if fails:
         print("FAIL:")
         for f in fails:
             print("  -", f)
         return 1
-    print("OK — 8 casos (gate MORDE: loop, restating, finalidade, teto todos barrados).")
+    print("OK — 10 casos (gate MORDE: loop, restating, finalidade, teto, ghost-claim, claim-sem-evidencia).")
     return 0
 
 
