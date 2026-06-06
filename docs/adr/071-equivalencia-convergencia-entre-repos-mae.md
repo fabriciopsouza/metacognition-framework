@@ -1,6 +1,6 @@
 # ADR-071 — Equivalência-convergência entre repos-mãe (gate por capacidade + HITL-proof)
 
-- Status: **Proposto** (aguarda HITL do dono no merge do PR — não ratificado)
+- Status: **Aceito** (ratificado por HITL no merge — 2026-06-06)
 - Data: 2026-06-06
 - Decisores: dono + squad (architect)
 - Baseado em: recapitulação do dono (sessão 2026-06-06); 2 rodadas de qa-critic adversarial
