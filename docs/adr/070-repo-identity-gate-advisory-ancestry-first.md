@@ -1,6 +1,6 @@
 # ADR-070 — repo-identity-gate (advisory, ancestry-first): classificar o repo atual antes de escrever
 
-- Status: **Proposto** (aguarda HITL do dono no merge do PR — não ratificado)
+- Status: **Aceito** (ratificado por HITL no merge — 2026-06-06)
 - Data: 2026-06-05
 - Decisores: dono + squad (architect)
 - Baseado em: incidente confusão-repos 2026-06-05 (Ação 6); decisão do dono
