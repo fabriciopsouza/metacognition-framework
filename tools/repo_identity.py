@@ -24,6 +24,21 @@ from pathlib import Path
 EXPORT_RE = re.compile(r"^(publish|export)\b.*@\s*[0-9a-f]{7,}", re.IGNORECASE)
 
 
+def _norm_remote(url):
+    """Canonicaliza um remote git p/ 'host/owner/repo' (minúsculo, sem .git) — equipara SSH e HTTPS.
+    Sem isto, `git@github.com:o/r.git` != `https://github.com/o/r` e o master com origin SSH cai em
+    FOREIGN (bug de identidade — o master deixa de ser writable). Domain-agnóstico (qualquer host)."""
+    if not url:
+        return ""
+    u = re.sub(r"\.git$", "", url.strip())
+    m = re.match(r"^[^@/]+@([^:/]+):(.+)$", u)                      # scp-like: git@host:owner/repo
+    if not m:
+        m = re.match(r"^[a-z][a-z0-9+.-]*://(?:[^@/]+@)?([^/]+)/(.+)$", u, re.IGNORECASE)  # scheme://host/owner/repo
+    if m:
+        u = f"{m.group(1)}/{m.group(2)}"
+    return u.rstrip("/").lower()
+
+
 def _git(*args):
     """Roda git e devolve (ok, stdout_strip). Nunca levanta."""
     try:
@@ -78,8 +93,7 @@ def classify():
         if len(parts) == 2:
             behind, ahead = int(parts[0]), int(parts[1])
 
-    remote_matches = bool(canon_remote) and origin.rstrip("/").replace(".git", "") == \
-        canon_remote.rstrip("/").replace(".git", "")
+    remote_matches = bool(canon_remote) and _norm_remote(origin) == _norm_remote(canon_remote)
 
     marker_conflict = False
     # --- decisao: git autoritativo ---
