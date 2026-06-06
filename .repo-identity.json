@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0",
+  "role": "master",
+  "ai_owner": "claude",
+  "canonical_remote": "https://github.com/fabriciopsouza/metacognition-framework",
+  "canonical_branch": "main",
+  "stale_behind_threshold": 50,
+  "note": "Dica corroborante (ADR-070). A AUTORIDADE e a ancestralidade git; em conflito, git vence. Um export/clone que copie este arquivo NAO vira master — o classificador checa origin + merge-base/ahead-behind."
+}

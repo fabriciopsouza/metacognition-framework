@@ -1,6 +1,6 @@
 # ADR-069 — Isolamento por IA (cada IA escreve só nos próprios repos) + descoberta de handoff via hub privado
 
-- Status: **Proposto** (aguarda HITL do dono no merge do PR — não ratificado)
+- Status: **Aceito** (ratificado por HITL no merge — 2026-06-06)
 - Data: 2026-06-05
 - Decisores: dono + squad (architect)
 - Baseado em: handoff cross-AI 2026-06-05 (Opção A+); incidente confusão-repos 2026-06-05; decisão do dono
