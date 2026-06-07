@@ -52,6 +52,30 @@
       "tags": ["cross-ai", "identity", "gate"]
     },
     {
+      "id": "shadow-write-guard",
+      "title": "Write-isolation: NEGA push de shadow E push pra remote != canonical (escreve so no proprio repo; read livre)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/hooks/shadow_write_guard.py",
+      "test": "tools/test_shadow_write_guard.py",
+      "adr": "docs/adr/070-repo-identity-gate-advisory-ancestry-first.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "tags": ["identity", "guard", "shadow", "runtime"]
+    },
+    {
+      "id": "shadow-sync",
+      "title": "Hook que auto-casa o espelho publicado com origin no boot (reset --hard mecanico, so em shadow)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/hooks/shadow_sync.py",
+      "test": "tools/test_shadow_sync.py",
+      "adr": "docs/adr/070-repo-identity-gate-advisory-ancestry-first.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "tags": ["identity", "guard", "shadow", "sync"]
+    },
+    {
       "id": "equivalence-gate",
       "title": "Equivalencia de capacidade entre repos-mae (PROVIDES|JUSTIFIED_ABSENT + hitl_proof)",
       "status": "PROVIDES",
