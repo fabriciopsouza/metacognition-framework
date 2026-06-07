@@ -15,6 +15,11 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.48.0] — 2026-06-06 — Modo por identidade: shadow=USER, master=DEV (ADR-070/072)
+
+### Added
+- **`repo_mode.py` (SessionStart):** decide o modo de operação DETERMINÍSTICO por identidade — `SOMBRA-EXPORT` → **USER** (aplica o framework a um domínio; **não** desenvolve, não trata ADR/WIP, não reconcilia history dev, **não pergunta como resolver sync** — `shadow_sync` já casou); `MASTER-CANÔNICO` → **DEV** (protocolo completo). Default conservador = `user` (na dúvida não desenvolve). Agnóstico de IA/repo (chaveia no role) → vale premium/public de claude/gemini/futura. Injeta as guardas no boot; `start-session` ramifica no modo. Canário `test_repo_mode.py`. **Corrige:** premium rodando protocolo dev + perguntando sync (devia ser user-mode + auto-sync). [CONSOLIDADO]
+
 ## [1.47.0] — 2026-06-06 — Write-isolation por processo + disciplina de shadow + doc-sync mecanizado (ADR-070)
 
 ### Added

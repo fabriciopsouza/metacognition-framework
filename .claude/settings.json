@@ -16,6 +16,16 @@
         "hooks": [
           {
             "type": "command",
+            "command": "cmd /c \"python tools\\repo_mode.py\"",
+            "timeout": 10,
+            "statusMessage": "Modo por identidade: shadow=USER (aplica a dominio), master=DEV (ADR-070/072)"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
             "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude\\hooks\\sync-global.ps1\"",
             "timeout": 30,
             "statusMessage": "Sincronizando framework para ~/.claude/"
