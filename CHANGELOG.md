@@ -15,6 +15,11 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.49.0] — 2026-06-07 — Process-evidence gate: fechamento com evidência (ADR-074)
+
+### Added
+- **ADR-074** — Process-evidence gate em 2 camadas. **Fail-closed determinístico:** `test_release_checkpoint.py` (a versão mais recente do CHANGELOG **deve** ter checkpoint no `history.md`, forward-only) + `test_adr_changelog_sync` (ADR-073) → "release sem fechamento documentado" vira **CI vermelho** (mecaniza o gap recorrente: ADR-069/070/071 fecharam sem checkpoint). **Disciplina+oferta (não fail-closed, honesto):** no `/checkpoint`, ciente do `repo_mode` — DEV oferece execution-report (opt-in) + handoff cross-IA + confirma qa-critic; USER/shadow só oferece opt-in report. Opt-in não se exige. [CONSOLIDADO]
+
 ## [1.48.0] — 2026-06-06 — Modo por identidade: shadow=USER, master=DEV (ADR-070/072)
 
 ### Added

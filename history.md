@@ -9,6 +9,14 @@
 
 ---
 
+## 2026-06-07 — Release v1.49.0: process-evidence gate (ADR-074) + dogfood do fluxo PR-enforçado
+
+> **Process-evidence gate (ADR-074):** fechamento de bloco com evidência em 2 camadas. **Fail-closed:** `test_release_checkpoint` (release atual tem checkpoint no history, forward-only) + `test_adr_changelog_sync` → release sem fechamento = CI vermelho (fecha o gap recorrente 069/070/071). **Disciplina+oferta** (não-fail-closed, honesto): `/checkpoint` oferece execution-report/handoff por `repo_mode` (DEV vs USER); opt-in não se exige.
+>
+> **Validação do fluxo PR-enforçado:** PR #66 (docs server-side) passou pela CI (3 OS) e mergeou via API; depois disso `enforce_admins=true` foi ligado — **agora todo merge em `main`, inclusive do owner, é via PR + CI verde** (nunca commit direto). Bug de CI corrigido no caminho: `test_framework_onboarding` assumia classify=MASTER (falso no checkout raso do CI) → mock determinístico.
+>
+> **Server-side fechado (via API, token PAT do dono em `.env`):** Releases v1.46/47/48 + hub privado `metacognition-hub` + branch protection (require PR + 3 checks CI + sem force-push). **Pendente dono:** wirar CI do hub (`cross_ai_gate`); revogar PAT quando quiser (dono optou por manter `.env` p/ uso contínuo).
+
 ## 2026-06-07 — Continuação: shadow-discipline mecanizada (v1.47/1.48) + fechamento server-side via API (releases/hub/branch-protection)
 
 > Sequência da sessão 2026-06-06. **Mecanismos (cada um com canário, suíte 35 PASS / 0 FAIL):**

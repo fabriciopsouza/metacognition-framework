@@ -312,6 +312,18 @@
       "tags": ["doc-sync", "canary", "closure"]
     },
     {
+      "id": "release-checkpoint-gate",
+      "title": "Process-evidence (fail-closed): release atual do CHANGELOG tem checkpoint no history (forward-only)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/test_release_checkpoint.py",
+      "test": "tools/test_release_checkpoint.py",
+      "adr": "docs/adr/074-process-evidence-gate-fechamento-com-evidencia.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "tags": ["doc-sync", "closure", "process-evidence", "canary"]
+    },
+    {
       "id": "route-gate",
       "title": "Lembrete de rota deterministico 1x/sessao (UserPromptSubmit), fail-open",
       "status": "PARTIAL",

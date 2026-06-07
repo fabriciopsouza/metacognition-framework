@@ -3,6 +3,13 @@
 Registra em history.md o estado atual (compaction + structured note-taking —
 `_shared/metacognition-core`).
 
+## Process-evidence (ADR-074) — fechamento com evidência
+**Fail-closed (CI barra):** se há release novo (versão no CHANGELOG), `test_release_checkpoint` exige checkpoint no history.md; `test_adr_changelog_sync` exige toda ADR Aceito no CHANGELOG. Sem isso → CI vermelho.
+**Oferta (não-fail-closed; ciente do `repo_mode`):**
+- **DEV (master):** ofereça **execution-report** (opt-in, `python tools/execution_report.py --tier owner`) + **handoff cross-IA** se a melhoria vale propagar (`docs/_private/cross-ai/outbox/` → hub) + confirme que o **qa-critic** rodou no bloco.
+- **USER/shadow:** ofereça só o **relatório opt-in** (ADR-062). Não desenvolve, não emite handoff cross-IA.
+Opt-in NÃO se exige (seria desonesto gerar relatório vazio).
+
 ## Formato
 ```
 ## YYYY-MM-DD HH:MM — <título do bloco>
