@@ -76,6 +76,19 @@
       "tags": ["identity", "guard", "shadow", "sync"]
     },
     {
+      "id": "repo-mode-user-vs-dev",
+      "title": "Modo por identidade no boot: shadow=USER (aplica a dominio, nao desenvolve), master=DEV",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/repo_mode.py",
+      "test": "tools/test_repo_mode.py",
+      "adr": "docs/adr/070-repo-identity-gate-advisory-ancestry-first.md",
+      "cross_ai": false,
+      "enforcement": "advisory",
+      "note": "Anuncia o modo (advisory); a TRAVA fisica de 'shadow nao desenvolve' e o shadow-write-guard (fail-closed) + shadow-sync.",
+      "tags": ["identity", "mode", "shadow", "boot"]
+    },
+    {
       "id": "equivalence-gate",
       "title": "Equivalencia de capacidade entre repos-mae (PROVIDES|JUSTIFIED_ABSENT + hitl_proof)",
       "status": "PROVIDES",
