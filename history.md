@@ -9,6 +9,21 @@
 
 ---
 
+## 2026-06-06 — Sessão: índice de capacidades + enforcement declarado + tooling hub cross-IA + fix onboarding (branch `fix/adr-067-onboarding-only-master`)
+
+> **Contexto/causa-raiz (incidente vivo):** o agente reportou que infra cross-IA "não existia" quando `cross_ai_gate`/hub-README/`.mailmap`/handoff real **já existiam** — o dono corrigiu 5×. Faltava índice vivo feature→recurso. Cerne reforçado pelo dono: **todo processo deve ser forçado por mecanismo determinístico, nunca prosa** (recorrente).
+>
+> **Entregue (3 commits na branch, qa-critic adversarial aplicado, run_canaries 31 PASS / 0 FAIL):**
+> - **Bloco A — fix onboarding (ADR-067 EMENDA):** popup usar×desenvolver só dispara no `MASTER-CANÔNICO` (ADR-070), não vaza p/ public/premium/gemini (clones herdavam a assinatura via `export-clean`). Bugfix acoplado: `repo_identity._norm_remote()` normaliza remote SSH↔HTTPS (o master com origin SSH caía em FOREIGN). Testes: `test_framework_onboarding` (+shadow→sem-popup) e novo `test_repo_identity`. Commit `c8418e8`.
+> - **ADR-072 — índice de capacidades:** `capabilities.json` (SSoT, 1 registro/feature, 42 capacidades, JSON zero-dep = mesmo schema dos manifests cross_ai) → `CAPABILITIES.md` **nível-1 (id+title, progressive disclosure p/ não truncar no boot)** + `--show <id>` (drill-down) + `--find <kw>` (busca>scroll) + `--manifest` (equivalência cross-IA) + `--check` (anti-drift). **Garantia além de prosa:** canário `test_capabilities.py` barra **canário órfão** (feature nova sem registro), ponteiro morto, PROVIDES sem canário. Boot lê o índice (start-session passo 0.4). Commit `450969d`.
+> - **ADR-073 — enforcement declarado (cerne prosa→mecanismo):** campo `enforcement` por capacidade; canário **exige** em toda `cross_ai` e **lista `[debito-mecanizacao]`** tudo abaixo de fail-closed/physical → gap prosa-vs-mecanismo auditável. **Tooling hub cross-IA** (`cross_ai_hub.py`: scan zero-dep no boot + manifest/gate + deposit validado pelo anti-loop; eu nunca toco o repo gemini) + `test_cross_ai_hub`. Commit `fc239ca`.
+> - **Config:** `settings.local.json` → `bypassPermissions` + deny absoluto (incl. `*metacognition-gemini*` — isolamento mecânico) + ask em push/merge/pr.
+> - **Dogfood:** handoff cross-IA p/ gemini-master em `docs/_private/cross-ai/outbox/` (claims OPEN do índice/enforcement/hub p/ o gemini criticar e espelhar no repo dele).
+>
+> **Débito de doc reconciliado:** ADR-069/070/071 (Aceito, mergeados 2026-06-06) **não tinham checkpoint nem CHANGELOG** — 2ª ocorrência do padrão "consistency-gate fail-soft não disparou no fechamento". Registrado aqui + entradas de CHANGELOG. **Candidato priorizado (ADR-073 §Pendências):** ratchet do `consistency-gate` fail-soft→fail-closed (process-evidence gate).
+>
+> **Pendências (plano em `docs/PLANO-CROSS-IA.md`):** provisionar hub privado + branch protection + deploy keys + wirar `cross_ai_gate`/`equivalence_gate` como required checks (ações do dono — `gh` ausente, SSH ok). Merge da branch p/ main = gate HITL (ações outward).
+
 ## 2026-06-05 — RELEASE v1.44.0 (ADR-068 Aceito + 2 fixes + eval scaffold)
 
 > **Knowledge-catalog:** camada de retroalimentação do corpus. `knowledge_catalog.py` — parser de relatórios → catálogo estruturado (catalog.json) + BM25 offline stdlib (zero dep) + `session-insights.md` pré-renderizado para injeção no boot (hook lê arquivo, sem spawn Python — anti-Kaspersky). CLI: `--build` / `--recall --context` / `--patterns`. Hook global estendido (ADR-068).
