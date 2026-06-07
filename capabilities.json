@@ -287,6 +287,18 @@
       "tags": ["doc-sync", "gate", "closure"]
     },
     {
+      "id": "adr-changelog-sync",
+      "title": "Canario doc-sync: toda ADR Aceito deve estar no CHANGELOG (mecaniza falha recorrente)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/test_adr_changelog_sync.py",
+      "test": "tools/test_adr_changelog_sync.py",
+      "adr": "docs/adr/030-consistency-gate-auditoria-de-fechamento.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "tags": ["doc-sync", "canary", "closure"]
+    },
+    {
       "id": "route-gate",
       "title": "Lembrete de rota deterministico 1x/sessao (UserPromptSubmit), fail-open",
       "status": "PARTIAL",

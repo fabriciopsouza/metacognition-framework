@@ -76,6 +76,19 @@ Mecaniza a ENTRADA (motivação: incidente AIVI — agente executou tarefa regul
 - **`doc-intake`** (ADR-029): `_shared/doc-intake` + `tools/doc_intake.py` — parse determinístico (pdf/docx/xlsx/pptx/md/txt) → chunk → manifesto com sha256, **offline, sem embeddings**; discovery cita proveniência por chunk+sha. RAG-vetorial = ADR futuro com dep declarada.
 - **`consistency-gate`** (ADR-030): auditoria de fechamento fail-soft (version-sync, adr-status, checkpoint, contagens, **unpushed**, transientes); wirada no docops §Encerramento. + `guia/RESILIENCIA-ACESSO.md` (recovery de conta > chave local).
 
+## Índice de capacidades + write-isolation + doc-sync (v1.46.0 — ADR-072/073/070)
+**Antes de afirmar que algo falta ou (re)projetar, LEIA [`CAPABILITIES.md`](CAPABILITIES.md)** (índice
+vivo feature→{executável, canário, ADR, doc}; nível-1 id+title, drill-down `python tools/build_capabilities.py
+--show <id>`). Fonte: `capabilities.json` (ADR-072); canário `test_capabilities.py` barra **canário órfão**
+(feature nova sem registro) e exige `enforcement` declarado em toda capacidade `cross_ai` (ADR-073 — cerne
+prosa→mecanismo: prosa-only vira **débito de mecanização visível**, nunca silencioso).
+- **Write-isolation (ADR-070, `shadow_write_guard`):** cada repo **escreve só em si** (read livre). Shadow
+  (premium/public) **nunca** empurra; master só empurra pro próprio `canonical_remote`. Provado por canário
+  (push→gemini/premium = DENY). `shadow_sync` auto-casa o espelho com origin (reset --hard só em shadow).
+  `export-clean` propaga índice+guards a todo shadow (prune do cross-IA) a cada publish — **processo, não remendo**.
+- **Doc-sync (canário `test_adr_changelog_sync`):** toda ADR Aceito **deve** estar no CHANGELOG (fail-closed —
+  mecaniza a falha recorrente de fechar ADR sem registrar).
+
 ## Como ler skills
 **Lar único das skills:** `.agent/skills/<nome>/SKILL.md` (processo) e `_shared/<nome>/SKILL.md`
 (núcleo). É AQUI que elas vivem e são editadas — **procure aqui se uma skill "sumiu"**. Carregue o

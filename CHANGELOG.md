@@ -20,6 +20,7 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 ### Added
 - **ADR-072** — Índice de capacidades: `capabilities.json` (SSoT, 1 registro/feature, 42 capacidades, JSON zero-dep) → `CAPABILITIES.md` **nível-1 (id+title, progressive disclosure)** + `--show <id>` (drill-down) + `--find <kw>` + `--manifest` (equivalência cross-IA) + `--check` (anti-drift). Canário `test_capabilities.py` **fail-closed**: barra canário órfão (feature nova sem registro), ponteiro morto, PROVIDES sem canário. Boot lê o índice (anti-reexploração). [CONSOLIDADO]
 - **ADR-073** — Enforcement declarado (cerne prosa→mecanismo): campo `enforcement` por capacidade; canário **exige** em toda `cross_ai` e **lista débito de mecanização** (tudo abaixo de fail-closed/physical) → gap auditável a cada run. **`cross_ai_hub.py`** (scan/manifest/deposit do hub cross-IA, ADR-069) + canário. [CONSOLIDADO]
+- **ADR-070 (write-isolation por processo)** — `shadow_write_guard.py` (PreToolUse): shadow nunca empurra + master só empurra pro próprio `canonical_remote` (read livre, write isolado) — **provado por canário** (push→gemini/premium = DENY, push→origin = ALLOW). `shadow_sync.py` (SessionStart): auto `git reset --hard origin` só em SOMBRA-EXPORT (o "casar mirror" mecânico). `export-clean` roda `build_capabilities --prune` + `test_capabilities` como gate → shadows recebem índice+guards honestos a cada publish, sem cross-IA. Handoff cross-IA ganha paths por claim (âncora). [CONSOLIDADO]
 
 ### Fixed
 - **ADR-067 (EMENDA)** — popup de onboarding usar×desenvolver só dispara no `MASTER-CANÔNICO` (ADR-070), não vaza p/ public/premium/gemini. Bugfix acoplado: `repo_identity._norm_remote()` normaliza remote SSH↔HTTPS (master com origin SSH caía em FOREIGN). [CONFIRMADO]
@@ -32,6 +33,7 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 - **ADR-069** — Isolamento por IA: cada IA escreve só nos próprios repos-mãe; descoberta cross-IA via **hub privado** (date-shard + frontmatter agnóstico). **`cross_ai_gate.py`** = trava física anti-loop (terminação garantida por topic_fingerprint + monotonicidade + selar + teto-por-tópico + finalidade). 10 testes. [CONSOLIDADO]
 - **ADR-070** — repo-identity-gate (advisory, ancestry-first): classifica master|shadow|clone|foreign; git autoritativo, marker como dica. `repo_identity.py` + `export-clean.py` carimba `role=shadow` (trava física). [CONSOLIDADO]
 - **ADR-071** — Equivalência de capacidade entre repos-mãe (PROVIDES|JUSTIFIED_ABSENT + `hitl_proof` formato verificável). `equivalence_gate.py` + 12 testes. [CONSOLIDADO]
+- **Doc-sync retroativo (canário `test_adr_changelog_sync`):** **ADR-056** (consolidação de skills web / injeção + encadeamento) e **ADR-057** (profile web-export-clean / cascata + carimbo) eram Aceito sem menção no CHANGELOG — reconciliados aqui. A partir de agora o canário fail-closed barra ADR Aceito sem entrada (mecaniza a falha recorrente). [CONFIRMADO]
 
 ## [1.44.0] — 2026-06-05 — Knowledge-catalog + RAG léxico offline + fixes (ADR-068)
 
