@@ -34,3 +34,9 @@ Dono pediu repetidamente: o **dogfood** (gerar os relatórios — execution-repo
 ## Implementação (ponteiro)
 
 `tools/test_release_checkpoint.py` (canário fail-closed, auto-descoberto por `run_canaries`); `tools/test_adr_changelog_sync.py` (ADR-073, já existe); a camada de oferta vai no `.agent/workflows/checkpoint.md` (prompt repo_mode-aware). **DONE quando:** release sem checkpoint → CI vermelho; `/checkpoint` oferece os relatórios por modo. Verde no bloco 2026-06-07.
+
+## Emenda (2026-06-07 — correção por crítica do dono: dev-dogfood é DETERMINÍSTICO, não opt-in)
+
+**Motivação (revisão de posição, `[CONFIRMADO]`):** a Decisão original colocou a geração de execution-report + handoff cross-IA como "oferta, não fail-closed (opt-in não se exige)". **O dono corrigiu:** o **opt-in é só a PUBLICAÇÃO pública** (ADR-062/063 — o dono decide publicar telemetria anonimizada no corpus). A **GERAÇÃO do dogfood dev-side num repo-MASTER** (execution-report + handoff cross-IA) é **parte do processo, determinística, não provocada nem convencida**. E **só MASTER (claude/gemini/futuros) gera cross-IA** — shadow nunca.
+
+**Emenda à Decisão:** num repo-master (dev), fechar bloco com release **EXIGE** (fail-closed) os artefatos de dogfood: `test_dev_dogfood.py` (detecta master por `docs/_private/` presente — stripado dos shadows; num shadow PASSA, não cobra cross-IA). CI vermelho num master sem execution-report **ou** sem handoff cross-IA → o agente não pode pular o dogfood "porque o dono não pediu". O **frescor por-release** segue como disciplina do `/checkpoint` (limite honesto); o **EXISTIR** é o piso determinístico que remove o "só gera se provocado". Decisão preservada; camada (a) ganhou o `dev-dogfood-gate`. Auto-aplicado: ESTE bloco gerou os dois artefatos sob o próprio gate.

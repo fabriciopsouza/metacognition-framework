@@ -9,6 +9,12 @@
 
 ---
 
+## 2026-06-07 — Release v1.50.0: dev-dogfood determinístico (ADR-074 emenda) + relatórios da sessão
+
+> **execution-report** (`docs/_private/execution-report-2026-06-07-mega-sessao.md`) + **handoff cross-IA** de lições (`c5ea9415`) gerados — e **mecanizados**: `test_dev_dogfood` (fail-closed, shadow-aware) exige os dois num master, **não opt-in** (correção da minha posição por crítica do dono; opt-in é só a publicação pública). Auto-aplicado: este bloco passou pelo próprio gate.
+>
+> **Conteúdo honesto dos relatórios:** sicofancia (baixa-mas-presente) × crítica genuína; **4 de 5 correções vieram do dono, 1 de mecanismo, 0 de auto-crítica minha** (P11); **admissão: pulei a postura deep-research/squad** (discovery/método-sênior/RRC; qa-critic 1× só) — operei fast-mode; as skills estavam íntegras, eu não as apliquei. **Sugestões:** posture-gate fail-closed + qa-critic emitindo artefato por bloco + gatilho determinístico do método-sênior/RRC. **Maior débito de processo do bloco.**
+
 ## 2026-06-07 — Release v1.49.0: process-evidence gate (ADR-074) + dogfood do fluxo PR-enforçado
 
 > **Process-evidence gate (ADR-074):** fechamento de bloco com evidência em 2 camadas. **Fail-closed:** `test_release_checkpoint` (release atual tem checkpoint no history, forward-only) + `test_adr_changelog_sync` → release sem fechamento = CI vermelho (fecha o gap recorrente 069/070/071). **Disciplina+oferta** (não-fail-closed, honesto): `/checkpoint` oferece execution-report/handoff por `repo_mode` (DEV vs USER); opt-in não se exige.
