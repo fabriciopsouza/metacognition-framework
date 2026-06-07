@@ -1,7 +1,7 @@
 <!-- GERADO por tools/build_capabilities.py a partir de capabilities.json — NAO editar a mao -->
 # CAPABILITIES — indice de capacidades (nivel 1: id + title)
 
-> **46 capacidades** — 41 ✅ PROVIDES · 5 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
+> **47 capacidades** — 42 ✅ PROVIDES · 5 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
 > **Como usar (file-first, boot):** leia esta lista p/ achar o `id`; o registro completo (mecanismo · canario · ADR · doc) vem por **`python tools/build_capabilities.py --show <id>`** ou `grep -A8 '"<id>"' capabilities.json`. Nao reexplore o repo antes disto.
 > **Manutencao:** feature nova -> +1 registro em `capabilities.json` + `python tools/build_capabilities.py`. Canario barra canario orfao (cobertura).
 
@@ -46,6 +46,7 @@
 - 🟡 `prepush-sync-guard` — Guarda de pre-push: evita push sobre base dessincronizada
 - ✅ `project-token-report` — Relatorio de tokens por projeto (custo de sessao)
 - ✅ `regulatory-coverage-gate` — Cobertura de perfis regulados declarados pelo discovery (catalogo agnostico)
+- ✅ `release-checkpoint-gate` — Process-evidence (fail-closed): release atual do CHANGELOG tem checkpoint no history (forward-only)
 - ✅ `reorchestration-gate` — PMO maestro: decisao de re-orquestracao na fronteira de bloco (J6)
 - ✅ `repo-mode-user-vs-dev` — Modo por identidade no boot: shadow=USER (aplica a dominio, nao desenvolve), master=DEV
 - ✅ `repo-sync-boot` — Sync do repo no boot (fetch + ahead/behind + pull seguro) antes de file-first
