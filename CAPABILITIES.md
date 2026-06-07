@@ -1,7 +1,7 @@
 <!-- GERADO por tools/build_capabilities.py a partir de capabilities.json — NAO editar a mao -->
 # CAPABILITIES — indice de capacidades (nivel 1: id + title)
 
-> **47 capacidades** — 42 ✅ PROVIDES · 5 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
+> **48 capacidades** — 43 ✅ PROVIDES · 5 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
 > **Como usar (file-first, boot):** leia esta lista p/ achar o `id`; o registro completo (mecanismo · canario · ADR · doc) vem por **`python tools/build_capabilities.py --show <id>`** ou `grep -A8 '"<id>"' capabilities.json`. Nao reexplore o repo antes disto.
 > **Manutencao:** feature nova -> +1 registro em `capabilities.json` + `python tools/build_capabilities.py`. Canario barra canario orfao (cobertura).
 
@@ -26,6 +26,7 @@
 - 🟡 `consistency-gate` — Auditoria de fechamento (version-sync, adr-status, checkpoint, unpushed), fail-soft
 - ✅ `context-brief-gate` — Contexto inferido vira ancora de pesquisa mecanizada (reparo do discovery)
 - ✅ `delivery-floor-gate` — Piso de entregabilidade ao humano (teste binario de entrega minima)
+- ✅ `dev-dogfood-gate` — Dev-dogfood DETERMINISTA: master fechando bloco DEVE ter execution-report + handoff cross-IA (nao opt-in, shadow-aware)
 - ✅ `discovery-eval` — Discovery com eval executado (nao so prosa de plano)
 - ✅ `doc-intake` — Parse deterministico offline (pdf/docx/xlsx/...) -> chunks + sha256, sem embeddings
 - ✅ `effect-gate` — Action-safety por EFEITO: classifica acao destrutiva e pede confirmacao (T3)

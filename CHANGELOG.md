@@ -15,6 +15,12 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.50.0] — 2026-06-07 — Dev-dogfood determinístico (ADR-074 emenda) + relatórios da sessão
+
+### Added
+- **ADR-074 (EMENDA) — dev-dogfood determinístico, não opt-in:** `test_dev_dogfood.py` (fail-closed, shadow-aware) exige que um repo-MASTER tenha **execution-report + handoff cross-IA** ao fechar bloco. Correção de posição (crítica do dono): opt-in é só a **publicação pública** (ADR-062/063); a **geração** dev-side é exigida. Só MASTER gera cross-IA; shadow PASSA (não cobra). [CONSOLIDADO]
+- **Relatórios da sessão (auto-aplicados sob o próprio gate):** execution-report rico (`docs/_private/execution-report-2026-06-07-mega-sessao.md` — críticas/contracríticas, posições defendidas×acatadas, sicofancia, persistência-em-erro + gatilho da revisão, **admissão da degradação da postura deep-research**, sugestões de melhoria de skills/companions) + handoff cross-IA de lições (`c5ea9415`). [CONSOLIDADO]
+
 ## [1.49.0] — 2026-06-07 — Process-evidence gate: fechamento com evidência (ADR-074)
 
 ### Added

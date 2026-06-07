@@ -324,6 +324,18 @@
       "tags": ["doc-sync", "closure", "process-evidence", "canary"]
     },
     {
+      "id": "dev-dogfood-gate",
+      "title": "Dev-dogfood DETERMINISTA: master fechando bloco DEVE ter execution-report + handoff cross-IA (nao opt-in, shadow-aware)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/test_dev_dogfood.py",
+      "test": "tools/test_dev_dogfood.py",
+      "adr": "docs/adr/074-process-evidence-gate-fechamento-com-evidencia.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "tags": ["doc-sync", "closure", "process-evidence", "cross-ai", "canary"]
+    },
+    {
       "id": "route-gate",
       "title": "Lembrete de rota deterministico 1x/sessao (UserPromptSubmit), fail-open",
       "status": "PARTIAL",
