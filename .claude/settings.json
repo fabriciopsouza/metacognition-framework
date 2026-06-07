@@ -6,6 +6,16 @@
         "hooks": [
           {
             "type": "command",
+            "command": "cmd /c \"python tools\\hooks\\shadow_sync.py\"",
+            "timeout": 30,
+            "statusMessage": "Shadow auto-sync: casa espelho publicado com origin (ADR-070; no-op em master)"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
             "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude\\hooks\\sync-global.ps1\"",
             "timeout": 30,
             "statusMessage": "Sincronizando framework para ~/.claude/"
@@ -95,6 +105,17 @@
             "command": "cmd /c \"python tools\\hooks\\prepush_sync_guard.py || exit /b 0\"",
             "timeout": 20,
             "statusMessage": "Guard de pre-push: barra push sobre base atrasada (ADR-060)"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmd /c \"python tools\\hooks\\shadow_write_guard.py || exit /b 0\"",
+            "timeout": 20,
+            "statusMessage": "Shadow-write-guard: NEGA push de espelho publicado (ADR-070; no-op em master)"
           }
         ]
       },

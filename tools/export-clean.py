@@ -207,6 +207,17 @@ def main(argv):
         print("\nGATE FALHOU: claim de marketing orfao / LIMITS desync no pacote publico.", file=sys.stderr)
         return 1
 
+    # 6a-bis. INDICE DE CAPACIDADES no shadow (ADR-072/070, PROCESSO — nao remendo): poda entradas
+    #   cujo ponteiro foi stripado (ex.: doc em docs/_private/cross-ai) + regenera o CAPABILITIES.md +
+    #   valida (canario). Assim o shadow recebe um indice HONESTO e verde a CADA publish (o premium/
+    #   public ganha index+guards automaticamente, sem cross-IA, conforme o design).
+    if run([py, "tools/build_capabilities.py", "--prune"], cwd=out) != 0:
+        print("\nGATE FALHOU: prune do indice de capacidades para o shadow.", file=sys.stderr)
+        return 1
+    if run([py, "tools/test_capabilities.py"], cwd=out) != 0:
+        print("\nGATE FALHOU: indice de capacidades inconsistente no pacote shadow.", file=sys.stderr)
+        return 1
+
     # 6b. TIER (ADR-049): BASELINE (public/non-admin) remove a camada PREMIUM; a distribuição PREMIUM mantém.
     #     Premium = só EXPERIÊNCIA (proposta proativa + UX premium); análise/discovery/QA/segurança = core (ficam em todas).
     if premium:

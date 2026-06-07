@@ -16,6 +16,7 @@ Uso:
     python tools/build_capabilities.py --manifest [out.json]   # emite manifest de equivalencia
 Sem dependencias externas (stdlib).
 """
+import glob
 import json
 import os
 import sys
@@ -133,6 +134,42 @@ def main(argv):
     except Exception as e:
         print(f"capabilities.json ilegivel: {e}", file=sys.stderr)
         return 1
+
+    if "--prune" in argv:
+        # PROCESSO de publish (ADR-070/072): no shadow (export), docs/_private e outros sao stripados.
+        # Poda entradas cujo ponteiro nao existe MAIS em disco (ex.: doc em docs/_private/cross-ai) e
+        # WAIVA os canarios que embarcam mas ficaram sem capacidade indexada -> indice do shadow honesto
+        # e canario verde, automaticamente, em TODO publish (nao remendo).
+        caps = reg.get("capabilities", [])
+        kept, dropped = [], []
+        for c in caps:
+            miss = [f for f in ("mechanism", "test", "adr", "doc")
+                    if c.get(f) and not os.path.isfile(os.path.join(ROOT, c[f]))]
+            (dropped if miss else kept).append(c)
+        if not isinstance(dropped[0] if dropped else None, str):
+            dropped = [c.get("id") for c in dropped]
+        reg2 = dict(reg)
+        reg2["capabilities"] = kept
+        referenced = {c.get("test") for c in kept if c.get("test")}
+        waivers = [w for w in reg.get("registry_waivers", []) if isinstance(w, dict)]
+        waived = {w.get("file") for w in waivers}
+        self_t = "tools/test_capabilities.py"
+        found = set(glob.glob(os.path.join(ROOT, "tools", "test_*.py")))
+        found |= set(glob.glob(os.path.join(ROOT, "tools", "**", "test_*.py"), recursive=True))
+        for tp in sorted(found):
+            rel = os.path.relpath(tp, ROOT).replace(os.sep, "/")
+            if rel == self_t or rel in referenced or rel in waived:
+                continue
+            waivers.append({"file": rel, "reason": "capacidade podada no shadow (ponteiro stripado, "
+                                                   "ex.: docs/_private); tooling embarca mas nao indexado"})
+        reg2["registry_waivers"] = waivers
+        with open(REGISTRY, "w", encoding="utf-8") as fh:
+            json.dump(reg2, fh, ensure_ascii=False, indent=2)
+        with open(INDEX_MD, "w", encoding="utf-8") as fh:
+            fh.write(render(reg2))
+        print(f"prune (shadow): {len(caps)}->{len(kept)} capacidades; podadas={dropped}; "
+              f"{len(waivers)} waiver(s).")
+        return 0
 
     if "--show" in argv:
         rest = [a for a in argv[argv.index("--show") + 1:] if not a.startswith("--")]
