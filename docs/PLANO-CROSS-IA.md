@@ -37,6 +37,13 @@
   `test_equivalence_gate`). Marcar como **required** na branch protection.
 - Adicionar step `equivalence_gate` com `git verify-commit` do `hitl_proof` (pendência ADR-071).
 
+## Status (2026-06-07 — fechado via API, token PAT pontual do dono)
+Feito por `api.github.com` (sem `gh`; token `repo` lido de `.env` gitignored, não impresso, a revogar):
+- ✅ **GitHub Releases** v1.46.0 / v1.47.0 / v1.48.0 (corpo do CHANGELOG; a vitrine linka os `.zip`).
+- ✅ **Hub privado** `metacognition-hub` criado (auto_init) + estrutura `inbox/` + `archive/` + README (ADR-069).
+- ✅ **Branch protection** em `main`: require PR + required checks (`canários (ubuntu/macos/windows-latest)`) + sem force-push/deleção. **`enforce_admins=false`** (escape do owner até validarmos 1 ciclo de PR verde; depois flipar p/ `true` = "nunca commit direto" pleno).
+- ⏳ **Pendente:** wirar a **CI do hub** (`cross_ai_gate` como required check — precisa copiar o tooling p/ o hub) + `equivalence_gate --git verify-commit`. Deploy keys do publish já funcionam (premium remote avançou no último push).
+
 ## Próxima conversão prosa→mecanismo (candidato a ADR — priorizado pelo débito)
 **Process-evidence gate** — ratchet do `consistency-gate` (hoje `fail-soft`, ADR-030) → **fail-closed
 na CI** no subconjunto: PR de bloco exige (a) veredito de qa-critic, (b) checkpoint no `history.md`,

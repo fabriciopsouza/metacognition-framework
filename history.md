@@ -9,6 +9,16 @@
 
 ---
 
+## 2026-06-07 — Continuação: shadow-discipline mecanizada (v1.47/1.48) + fechamento server-side via API (releases/hub/branch-protection)
+
+> Sequência da sessão 2026-06-06. **Mecanismos (cada um com canário, suíte 35 PASS / 0 FAIL):**
+> - **v1.47.0 (ADR-070 write-isolation):** `shadow_write_guard` (shadow nunca push + master só pro próprio `canonical_remote`; **provado**: push→gemini/premium=DENY) + `shadow_sync` (auto reset --hard só em shadow) + `export-clean --prune` (índice honesto no shadow, sem cross-IA) + `test_adr_changelog_sync` (doc-sync fail-closed; reconciliou ADR-056/057).
+> - **v1.48.0 (ADR-070 repo_mode):** shadow=USER (aplica a domínio, não desenvolve, não pergunta sync), master=DEV — por identidade, agnóstico (premium/public de claude/gemini). Corrige o premium que rodava protocolo dev + perguntava sync.
+>
+> **Fechamento server-side (via `api.github.com`, sem `gh`, token PAT pontual do dono em `.env` gitignored):** Releases v1.46/47/48 + hub privado `metacognition-hub` (inbox/archive/README) + branch protection em `main` (require PR + checks CI + sem force-push; `enforce_admins=false` provisório). Housekeeping: branches mergeadas apagadas.
+>
+> **Dogfood honesto (P11):** o handoff cross-IA + execution-report foram gerados MANUAL (dono pediu) — **ainda não é processo**. Débito priorizado: **process-evidence gate** (fechamento fail-closed exige qa-critic + checkpoint + reports por modo) — próximo bloco, ADR. **Pendente dono:** flipar `enforce_admins=true` após 1 ciclo de PR verde; wirar CI do hub; revogar o PAT + apagar `.env`.
+
 ## 2026-06-06 — Sessão: índice de capacidades + enforcement declarado + tooling hub cross-IA + fix onboarding (branch `fix/adr-067-onboarding-only-master`)
 
 > **Contexto/causa-raiz (incidente vivo):** o agente reportou que infra cross-IA "não existia" quando `cross_ai_gate`/hub-README/`.mailmap`/handoff real **já existiam** — o dono corrigiu 5×. Faltava índice vivo feature→recurso. Cerne reforçado pelo dono: **todo processo deve ser forçado por mecanismo determinístico, nunca prosa** (recorrente).
