@@ -15,6 +15,24 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.46.0] — 2026-06-06 — Índice de capacidades + enforcement declarado (ADR-072/073) + tooling hub cross-IA + fix onboarding
+
+### Added
+- **ADR-072** — Índice de capacidades: `capabilities.json` (SSoT, 1 registro/feature, 42 capacidades, JSON zero-dep) → `CAPABILITIES.md` **nível-1 (id+title, progressive disclosure)** + `--show <id>` (drill-down) + `--find <kw>` + `--manifest` (equivalência cross-IA) + `--check` (anti-drift). Canário `test_capabilities.py` **fail-closed**: barra canário órfão (feature nova sem registro), ponteiro morto, PROVIDES sem canário. Boot lê o índice (anti-reexploração). [CONSOLIDADO]
+- **ADR-073** — Enforcement declarado (cerne prosa→mecanismo): campo `enforcement` por capacidade; canário **exige** em toda `cross_ai` e **lista débito de mecanização** (tudo abaixo de fail-closed/physical) → gap auditável a cada run. **`cross_ai_hub.py`** (scan/manifest/deposit do hub cross-IA, ADR-069) + canário. [CONSOLIDADO]
+
+### Fixed
+- **ADR-067 (EMENDA)** — popup de onboarding usar×desenvolver só dispara no `MASTER-CANÔNICO` (ADR-070), não vaza p/ public/premium/gemini. Bugfix acoplado: `repo_identity._norm_remote()` normaliza remote SSH↔HTTPS (master com origin SSH caía em FOREIGN). [CONFIRMADO]
+
+## [1.45.0] — 2026-06-06 — Cross-IA: isolamento por IA + repo-identity + equivalência (ADR-069/070/071) — reconciliação de doc
+
+> Entradas retroativas (debt): os ADRs foram Aceito/mergeados em 2026-06-06 mas ficaram sem CHANGELOG (consistency-gate fail-soft não disparou no fechamento — registrado no history.md `## Aprendizado`).
+
+### Added
+- **ADR-069** — Isolamento por IA: cada IA escreve só nos próprios repos-mãe; descoberta cross-IA via **hub privado** (date-shard + frontmatter agnóstico). **`cross_ai_gate.py`** = trava física anti-loop (terminação garantida por topic_fingerprint + monotonicidade + selar + teto-por-tópico + finalidade). 10 testes. [CONSOLIDADO]
+- **ADR-070** — repo-identity-gate (advisory, ancestry-first): classifica master|shadow|clone|foreign; git autoritativo, marker como dica. `repo_identity.py` + `export-clean.py` carimba `role=shadow` (trava física). [CONSOLIDADO]
+- **ADR-071** — Equivalência de capacidade entre repos-mãe (PROVIDES|JUSTIFIED_ABSENT + `hitl_proof` formato verificável). `equivalence_gate.py` + 12 testes. [CONSOLIDADO]
+
 ## [1.44.0] — 2026-06-05 — Knowledge-catalog + RAG léxico offline + fixes (ADR-068)
 
 ### Added
