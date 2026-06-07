@@ -16,6 +16,13 @@ sys.path.insert(0, os.path.join(ROOT, "tools"))
 from framework_onboarding import (  # noqa: E402
     is_framework_repo, is_canonical_master, needs_onboarding, mark_onboarded, onboarding_done,
 )
+import repo_identity  # noqa: E402
+
+# Determinismo CI-safe: o checkout raso do CI (actions/checkout) não deixa origin/main como ref
+# completa, então classify() não retorna MASTER-CANONICO no runner. As asserções de MASTER abaixo
+# testam a LÓGICA (marker role=master + writable_master), não o estado git do runner -> mock classify.
+# O teste de SHADOW continua via veto-do-marker (role=shadow), que NÃO chama classify (env-independente).
+repo_identity.classify = lambda: {"verdict": "MASTER-CANONICO", "writable_master": True}
 
 
 def _make_source_signature(root):
