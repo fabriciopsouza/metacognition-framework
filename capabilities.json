@@ -23,7 +23,21 @@
       "adr": "docs/adr/069-isolamento-por-ia-repos-canonicos-hub-handoff.md",
       "doc": "docs/_private/cross-ai/README.md",
       "cross_ai": true,
+      "enforcement": "ci-ready",
       "tags": ["cross-ai", "anti-loop", "gate"]
+    },
+    {
+      "id": "cross-ai-hub-tooling",
+      "title": "Scan/manifest/deposit do hub cross-IA (descoberta no boot + deposit validado pelo gate)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/cross_ai_hub.py",
+      "test": "tools/test_cross_ai_hub.py",
+      "adr": "docs/adr/069-isolamento-por-ia-repos-canonicos-hub-handoff.md",
+      "doc": "docs/_private/cross-ai/README.md",
+      "cross_ai": true,
+      "enforcement": "manual",
+      "tags": ["cross-ai", "hub", "scan", "deposit"]
     },
     {
       "id": "repo-identity-gate",
@@ -34,6 +48,7 @@
       "test": "tools/test_repo_identity.py",
       "adr": "docs/adr/070-repo-identity-gate-advisory-ancestry-first.md",
       "cross_ai": true,
+      "enforcement": "advisory",
       "tags": ["cross-ai", "identity", "gate"]
     },
     {
@@ -45,6 +60,7 @@
       "test": "tools/test_equivalence_gate.py",
       "adr": "docs/adr/071-equivalencia-convergencia-entre-repos-mae.md",
       "cross_ai": true,
+      "enforcement": "ci-ready",
       "tags": ["cross-ai", "equivalence", "gate"]
     },
     {
@@ -55,6 +71,7 @@
       "mechanism": "tools/export-clean.py",
       "adr": "docs/adr/070-repo-identity-gate-advisory-ancestry-first.md",
       "cross_ai": true,
+      "enforcement": "physical",
       "tags": ["cross-ai", "identity", "export"],
       "note": "PARTIAL (qa-critic 2026-06-06): stamp_shadow_identity() nao tem canario dedicado; test_premium_tier nao o exercita. Honestidade > overclaim."
     },
@@ -133,6 +150,7 @@
       "test": "tools/test_gen_exec_doc.py",
       "adr": "docs/adr/062-relatorio-de-execucao-aprendizado-publico-anonimizado.md",
       "cross_ai": true,
+      "enforcement": "fail-soft",
       "tags": ["telemetry", "corpus", "learning"]
     },
     {
@@ -349,6 +367,7 @@
       "test": "tools/test_execution_report.py",
       "adr": "docs/adr/038-execution-report-telemetria.md",
       "cross_ai": true,
+      "enforcement": "fail-soft",
       "tags": ["telemetry", "corpus"]
     },
     {

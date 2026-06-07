@@ -32,6 +32,10 @@ except Exception:
     pass
 
 STATUS_OK = {"PROVIDES", "PARTIAL", "ABSENT", "JUSTIFIED_ABSENT"}
+# enforcement: como o processo e FORCADO (cerne do framework — nunca depender de prosa).
+ENFORCE_OK = {"fail-closed", "ci-ready", "physical", "fail-soft", "advisory", "manual", "prose", "n/a"}
+# abaixo de fail-closed/physical = ainda nao forca de fato -> debito de mecanizacao VISIVEL.
+ENFORCE_WEAK = {"fail-soft", "advisory", "ci-ready", "manual", "prose"}
 KEBAB = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 PTR_FIELDS = ("mechanism", "test", "adr", "doc")
 
@@ -87,6 +91,13 @@ def main():
         if st == "JUSTIFIED_ABSENT" and not c.get("adr"):
             fails.append(f"[{tag}] JUSTIFIED_ABSENT sem adr (justificativa)")
 
+        # (9) ENFORCEMENT (cerne prosa->mecanismo): valor valido se presente; OBRIGATORIO p/ cross_ai.
+        enf = c.get("enforcement")
+        if enf is not None and enf not in ENFORCE_OK:
+            fails.append(f"[{tag}] enforcement invalido: {enf!r} (use {sorted(ENFORCE_OK)})")
+        if c.get("cross_ai") and not enf:
+            fails.append(f"[{tag}] cross_ai exige 'enforcement' declarado (prosa-only nao pode ser invisivel)")
+
     # (6) cross_ai aparece no manifest
     man_ids = {m["capability_id"] for m in bc.manifest(reg)["capabilities"]}
     for c in caps:
@@ -122,7 +133,18 @@ def main():
     except FileNotFoundError:
         fails.append("CAPABILITIES.md ausente (rode build_capabilities.py)")
 
-    print(f"{len(caps)} capacidades; ponteiros vivos; PROVIDES tem canario; cross_ai no manifest; "
+    # DEBITO DE MECANIZACAO (visibilidade — cerne do framework): lista o que ainda NAO forca de fato
+    # (enforcement abaixo de fail-closed/physical). Nunca silencioso. Nao reprova (advisory pode ser
+    # legitimo onde EDR veta hook), mas torna o gap prosa-vs-mecanismo AUDITAVEL.
+    debt = sorted((c.get("id"), c.get("enforcement")) for c in caps
+                  if c.get("enforcement") in ENFORCE_WEAK)
+    if debt:
+        print(f"[debito-mecanizacao] {len(debt)} capacidade(s) ainda nao fail-closed/physical "
+              f"(prosa->mecanismo pendente):")
+        for cid, enf in debt:
+            print(f"  · {cid} — {enf}")
+
+    print(f"{len(caps)} capacidades; ponteiros vivos; PROVIDES tem canario; cross_ai com enforcement; "
           f"indice em sync — {'OK' if not fails else 'FAIL'}")
     for f in fails:
         print("  -", f)
