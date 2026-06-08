@@ -108,6 +108,15 @@ Regras determinísticas para padrões observados ≥2x em method-audit notes. **
 ```
 Critério FALSO → corrigir. Limite 3 reprovações → escalar, reabrir spec/ADR.
 
+## Artefato OBRIGATÓRIO de evidência (ADR-074 emenda 2 — prosa→mecanismo)
+O subagente qa-critic é **read-only** (sem Write); o **orquestrador** canaliza o JSON do veredito
+para `_meta/qa/<bloco>.{json,md}` via `python tools/qa_evidence.py --from-json -` (ou
+`qa_evidence.write_artifact`). Isso mecaniza **"o qa-critic rodou"** — antes era disciplina/prosa
+(maior débito admitido 2026-06-07). O veredito de **fechamento de release** carrega `release="<versão>"`
+**e** o bloco `postura` (ver companion `posture.md`). Gates fail-closed no master:
+`test_qa_evidence.py` (veredito aprovativo existe p/ o release) + `test_posture_gate.py` (postura completa).
+**Carregar `posture.md` ao fechar bloco substantivo** (release / ADR nova / ≥N arquivos).
+
 > **Dois eixos, não três vereditos (reconcilia ADR-018 × ADR-011):** `passou` (bool) é o **veredito**
 > binário do protocolo de turno único; concretiza-se conforme a modalidade ativa (J4 → `APROVADO_LIMPO`
 > ou itera; PC → `APROVADO_LIMPO` ou `REPROVADO_REWIND J_i`). `recomendacao` é o **eixo de ação**

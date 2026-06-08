@@ -1,0 +1,58 @@
+{
+  "bloco": "v1.49-1.50-process-evidence-review",
+  "passou": false,
+  "steelman": "Anonimizacao/consentimento em execution_report.py (learnings_public/publish_learnings) e fail-closed em cascata; validate_external_report usa whitelist estrita por linha; test_adr_changelog_sync corretamente escopado a 'Aceito'.",
+  "problemas": [
+    {
+      "severidade": "alto",
+      "local": "tools/test_release_checkpoint.py:40",
+      "descricao": "'latest in hist' substring livre no arquivo inteiro -> versao em 'Proximo passo' (planejamento) da false-PASS sem checkpoint real",
+      "cenario_de_falha": "CHANGELOG [9.9.9] + history so com 'Proximo passo: lancar v9.9.9' -> PASS (provado)",
+      "fix": "exigir versao em heading datado ## YYYY-MM-DD ... vX.Y.Z com fronteira numerica",
+      "status": "CORRIGIDO"
+    },
+    {
+      "severidade": "medio",
+      "local": "tools/test_release_checkpoint.py:40",
+      "descricao": "sem word-boundary: 1.5.0 casa 11.5.0/1.50.0",
+      "cenario_de_falha": "latest=1.5.0, history menciona v11.5.0 -> PASS (provado)",
+      "fix": "lookaround numerico ao redor da versao",
+      "status": "CORRIGIDO"
+    },
+    {
+      "severidade": "medio",
+      "local": "tools/test_dev_dogfood.py:35-40",
+      "descricao": "piso EXISTIR = glob != []; placeholder de 4 bytes passa",
+      "cenario_de_falha": "report '# x' (4 bytes) -> PASS (provado)",
+      "fix": "min chars + secao markdown; drift validador<->report = debt declarado",
+      "status": "CORRIGIDO (floor min-size+secao; nao acopla validate_owner_report estrito que false-FAIL reports reais)"
+    },
+    {
+      "severidade": "medio",
+      "local": "tools/test_dev_dogfood.py:28-32",
+      "descricao": "master/shadow = 1 booleano isdir(docs/_private); master degradado vira SHADOW->PASS",
+      "cenario_de_falha": "remover docs/_private em master -> SHADOW PASS (provado)",
+      "fix": "cruzar repo_identity.classify(); MASTER sem _private = FAIL",
+      "status": "CORRIGIDO"
+    },
+    {
+      "severidade": "baixo",
+      "local": "tools/test_release_checkpoint.py:38",
+      "descricao": "vers[0] assume 1a ocorrencia = mais recente sem ancora",
+      "cenario_de_falha": "heading [x.y.z] acima da lista",
+      "fix": "ancorar ^## [ a inicio de linha (?m)",
+      "status": "CORRIGIDO"
+    }
+  ],
+  "recomendacao": "corrigir",
+  "verificacoes_executadas": [
+    "python tools/test_dev_dogfood.py -> PASS (2 reports, 3 handoffs)",
+    "python tools/test_release_checkpoint.py -> PASS (v1.50.0 true positive)",
+    "python tools/test_adr_changelog_sync.py -> PASS (70 ADR)",
+    "adversarial A planning-note -> FALSE-PASS provado (corrigido: agora rejeita)",
+    "adversarial B substring 1.5.0/11.5.0 -> FALSE-PASS provado (corrigido)",
+    "adversarial C placeholder 4 bytes -> floor gameavel provado (corrigido)",
+    "adversarial D remocao docs/_private -> shadow single-signal provado (corrigido)"
+  ],
+  "data": "2026-06-08T02:54:55Z"
+}

@@ -31,17 +31,26 @@ def main():
         print(f"RESULTADO: FAIL (CHANGELOG/history ilegivel: {e})")
         return 1
 
-    vers = re.findall(r"## \[(\d+\.\d+\.\d+)\]", chg)
+    vers = re.findall(r"(?m)^## \[(\d+\.\d+\.\d+)\]", chg)
     if not vers:
         print("RESULTADO: FAIL (nenhuma versao no CHANGELOG)")
         return 1
-    latest = vers[0]  # topo do CHANGELOG = release atual
+    latest = vers[0]  # topo do CHANGELOG = release atual (Keep a Changelog: mais novo no topo)
 
-    ok = (latest in hist) or (f"v{latest}" in hist)
+    # Hardening (qa-critic 2026-06-08, achados ALTO/MEDIO): a versao tem de aparecer DENTRO de um
+    # heading de checkpoint (## YYYY-MM-DD ... vX.Y.Z) — NAO em qualquer ponto do corpo. O `latest in
+    # hist` antigo dava FALSE-PASS quando a versao era citada num "Proximo passo: lancar vX" de
+    # planejamento de um bloco anterior (padrao real no history). E exige fronteira numerica:
+    # `1.5.0` nao pode casar `1.50.0`/`11.5.0`. `.` nao cruza newline -> match preso a 1 linha-heading.
+    # fronteira: nem digito/ponto ANTES (1.5.0 != 11.5.0) nem digito/ponto/alfa/hifen DEPOIS
+    # (1.51.0 != 1.51.0-beta — achado BAIXO do process-critic 2026-06-08).
+    pat = re.compile(rf"(?m)^##\s+\d{{4}}-\d{{2}}-\d{{2}}.*?(?<![\d.])v?{re.escape(latest)}(?![\d.\-A-Za-z])")
+    ok = bool(pat.search(hist))
     if ok:
-        print(f"release atual v{latest}: checkpoint presente no history.md — OK")
+        print(f"release atual v{latest}: checkpoint presente no history.md (heading datado) — OK")
     else:
-        print(f"release atual v{latest}: SEM checkpoint no history.md")
+        print(f"release atual v{latest}: SEM checkpoint datado no history.md "
+              f"(mencao fora de heading nao conta — anti false-PASS)")
     print("-" * 50)
     print("RESULTADO:", f"PASS (release v{latest} tem fechamento documentado)" if ok
           else f"FAIL (release v{latest} sem checkpoint — documente o fechamento no history.md)")

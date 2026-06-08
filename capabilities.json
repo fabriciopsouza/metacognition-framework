@@ -11,7 +11,11 @@
       "test": "tools/test_capabilities.py",
       "adr": "docs/adr/072-indice-de-capacidades-registry-derivado.md",
       "cross_ai": false,
-      "tags": ["meta", "discoverability", "anti-drift"]
+      "tags": [
+        "meta",
+        "discoverability",
+        "anti-drift"
+      ]
     },
     {
       "id": "cross-ai-antiloop-gate",
@@ -24,7 +28,11 @@
       "doc": "docs/_private/cross-ai/README.md",
       "cross_ai": true,
       "enforcement": "ci-ready",
-      "tags": ["cross-ai", "anti-loop", "gate"]
+      "tags": [
+        "cross-ai",
+        "anti-loop",
+        "gate"
+      ]
     },
     {
       "id": "cross-ai-hub-tooling",
@@ -37,7 +45,12 @@
       "doc": "docs/_private/cross-ai/README.md",
       "cross_ai": true,
       "enforcement": "manual",
-      "tags": ["cross-ai", "hub", "scan", "deposit"]
+      "tags": [
+        "cross-ai",
+        "hub",
+        "scan",
+        "deposit"
+      ]
     },
     {
       "id": "repo-identity-gate",
@@ -49,7 +62,11 @@
       "adr": "docs/adr/070-repo-identity-gate-advisory-ancestry-first.md",
       "cross_ai": true,
       "enforcement": "advisory",
-      "tags": ["cross-ai", "identity", "gate"]
+      "tags": [
+        "cross-ai",
+        "identity",
+        "gate"
+      ]
     },
     {
       "id": "shadow-write-guard",
@@ -61,7 +78,12 @@
       "adr": "docs/adr/070-repo-identity-gate-advisory-ancestry-first.md",
       "cross_ai": false,
       "enforcement": "fail-closed",
-      "tags": ["identity", "guard", "shadow", "runtime"]
+      "tags": [
+        "identity",
+        "guard",
+        "shadow",
+        "runtime"
+      ]
     },
     {
       "id": "shadow-sync",
@@ -73,7 +95,12 @@
       "adr": "docs/adr/070-repo-identity-gate-advisory-ancestry-first.md",
       "cross_ai": false,
       "enforcement": "fail-closed",
-      "tags": ["identity", "guard", "shadow", "sync"]
+      "tags": [
+        "identity",
+        "guard",
+        "shadow",
+        "sync"
+      ]
     },
     {
       "id": "repo-mode-user-vs-dev",
@@ -86,7 +113,12 @@
       "cross_ai": false,
       "enforcement": "advisory",
       "note": "Anuncia o modo (advisory); a TRAVA fisica de 'shadow nao desenvolve' e o shadow-write-guard (fail-closed) + shadow-sync.",
-      "tags": ["identity", "mode", "shadow", "boot"]
+      "tags": [
+        "identity",
+        "mode",
+        "shadow",
+        "boot"
+      ]
     },
     {
       "id": "equivalence-gate",
@@ -98,7 +130,11 @@
       "adr": "docs/adr/071-equivalencia-convergencia-entre-repos-mae.md",
       "cross_ai": true,
       "enforcement": "ci-ready",
-      "tags": ["cross-ai", "equivalence", "gate"]
+      "tags": [
+        "cross-ai",
+        "equivalence",
+        "gate"
+      ]
     },
     {
       "id": "export-shadow-stamp",
@@ -109,7 +145,11 @@
       "adr": "docs/adr/070-repo-identity-gate-advisory-ancestry-first.md",
       "cross_ai": true,
       "enforcement": "physical",
-      "tags": ["cross-ai", "identity", "export"],
+      "tags": [
+        "cross-ai",
+        "identity",
+        "export"
+      ],
       "note": "PARTIAL (qa-critic 2026-06-06): stamp_shadow_identity() nao tem canario dedicado; test_premium_tier nao o exercita. Honestidade > overclaim."
     },
     {
@@ -121,7 +161,10 @@
       "test": "tools/test_premium_tier.py",
       "adr": "docs/adr/049-tres-distribuicoes-premium-baseline-single-source.md",
       "cross_ai": false,
-      "tags": ["distribution", "premium"]
+      "tags": [
+        "distribution",
+        "premium"
+      ]
     },
     {
       "id": "onboarding-master-gate",
@@ -132,7 +175,11 @@
       "test": "tools/test_framework_onboarding.py",
       "adr": "docs/adr/067-onboarding-popup-primeira-abertura-instala-fecha-abre-projeto.md",
       "cross_ai": false,
-      "tags": ["onboarding", "gate", "identity"]
+      "tags": [
+        "onboarding",
+        "gate",
+        "identity"
+      ]
     },
     {
       "id": "agnostic-core-linter",
@@ -143,7 +190,11 @@
       "test": "tools/test_core_agnostic.py",
       "adr": "docs/adr/020-linter-agnosticismo-nucleo.md",
       "cross_ai": false,
-      "tags": ["agnosticism", "linter", "gate"]
+      "tags": [
+        "agnosticism",
+        "linter",
+        "gate"
+      ]
     },
     {
       "id": "marketing-honesty-gate",
@@ -154,7 +205,11 @@
       "test": "tools/test_marketing_claims.py",
       "adr": "docs/adr/059-gates-de-honestidade-da-vitrine.md",
       "cross_ai": false,
-      "tags": ["honesty", "doc-sync", "gate"]
+      "tags": [
+        "honesty",
+        "doc-sync",
+        "gate"
+      ]
     },
     {
       "id": "limits-catalog",
@@ -165,7 +220,11 @@
       "test": "tools/test_marketing_claims.py",
       "adr": "docs/adr/044-limits-e-marketing-ancorado.md",
       "cross_ai": false,
-      "tags": ["honesty", "catalog", "doc-sync"]
+      "tags": [
+        "honesty",
+        "catalog",
+        "doc-sync"
+      ]
     },
     {
       "id": "knowledge-catalog",
@@ -176,7 +235,11 @@
       "test": "tools/test_knowledge_catalog.py",
       "adr": "docs/adr/068-knowledge-catalog-rag-lexico-insights.md",
       "cross_ai": false,
-      "tags": ["memory", "recall", "boot"]
+      "tags": [
+        "memory",
+        "recall",
+        "boot"
+      ]
     },
     {
       "id": "execution-report",
@@ -188,7 +251,11 @@
       "adr": "docs/adr/062-relatorio-de-execucao-aprendizado-publico-anonimizado.md",
       "cross_ai": true,
       "enforcement": "fail-soft",
-      "tags": ["telemetry", "corpus", "learning"]
+      "tags": [
+        "telemetry",
+        "corpus",
+        "learning"
+      ]
     },
     {
       "id": "web-export",
@@ -199,7 +266,10 @@
       "test": "tools/test_web_export.py",
       "adr": "docs/adr/054-pacote-web-dois-tiers-cascata-como-profile.md",
       "cross_ai": false,
-      "tags": ["distribution", "web"]
+      "tags": [
+        "distribution",
+        "web"
+      ]
     },
     {
       "id": "repo-sync-boot",
@@ -210,7 +280,11 @@
       "test": "tools/test_repo_sync.py",
       "adr": "docs/adr/019-boot-sync-repo.md",
       "cross_ai": false,
-      "tags": ["boot", "sync", "gate"]
+      "tags": [
+        "boot",
+        "sync",
+        "gate"
+      ]
     },
     {
       "id": "effect-gate",
@@ -221,7 +295,11 @@
       "test": "tools/test_effect_gate.py",
       "adr": "docs/adr/039-effect-gate-motor-por-efeito.md",
       "cross_ai": false,
-      "tags": ["safety", "gate", "runtime"]
+      "tags": [
+        "safety",
+        "gate",
+        "runtime"
+      ]
     },
     {
       "id": "mission-gate",
@@ -232,7 +310,11 @@
       "test": "tools/test_mission_gate.py",
       "adr": "docs/adr/022-mission-gate-product-type.md",
       "cross_ai": false,
-      "tags": ["mission", "gate", "runtime"]
+      "tags": [
+        "mission",
+        "gate",
+        "runtime"
+      ]
     },
     {
       "id": "compaction-gate",
@@ -243,7 +325,11 @@
       "test": "tools/test_compaction_gate.py",
       "adr": "docs/adr/021-compaction-gate-precompact.md",
       "cross_ai": false,
-      "tags": ["context", "gate", "runtime"]
+      "tags": [
+        "context",
+        "gate",
+        "runtime"
+      ]
     },
     {
       "id": "overwrite-guard",
@@ -254,7 +340,11 @@
       "test": "tools/test_overwrite_guard.py",
       "adr": "docs/adr/037-action-safety-overwrite-non-session.md",
       "cross_ai": false,
-      "tags": ["safety", "gate", "runtime"]
+      "tags": [
+        "safety",
+        "gate",
+        "runtime"
+      ]
     },
     {
       "id": "sycophancy-canary",
@@ -265,7 +355,10 @@
       "test": "tools/test_sycophancy.py",
       "adr": "docs/adr/041-sicofancia-canario-adversarial.md",
       "cross_ai": false,
-      "tags": ["honesty", "canary"]
+      "tags": [
+        "honesty",
+        "canary"
+      ]
     },
     {
       "id": "reorchestration-gate",
@@ -276,7 +369,10 @@
       "test": "tools/test_reorchestration.py",
       "adr": "docs/adr/045-pmo-maestro-reorquestracao-fronteira-bloco.md",
       "cross_ai": false,
-      "tags": ["process", "gate"]
+      "tags": [
+        "process",
+        "gate"
+      ]
     },
     {
       "id": "doc-intake",
@@ -287,7 +383,10 @@
       "test": "tools/test_doc_intake.py",
       "adr": "docs/adr/029-doc-intake-parse-deterministico-sem-embeddings.md",
       "cross_ai": false,
-      "tags": ["intake", "provenance"]
+      "tags": [
+        "intake",
+        "provenance"
+      ]
     },
     {
       "id": "consistency-gate",
@@ -297,7 +396,11 @@
       "mechanism": "tools/hooks/consistency-gate.ps1",
       "adr": "docs/adr/030-consistency-gate-auditoria-de-fechamento.md",
       "cross_ai": false,
-      "tags": ["doc-sync", "gate", "closure"]
+      "tags": [
+        "doc-sync",
+        "gate",
+        "closure"
+      ]
     },
     {
       "id": "adr-changelog-sync",
@@ -309,7 +412,11 @@
       "adr": "docs/adr/030-consistency-gate-auditoria-de-fechamento.md",
       "cross_ai": false,
       "enforcement": "fail-closed",
-      "tags": ["doc-sync", "canary", "closure"]
+      "tags": [
+        "doc-sync",
+        "canary",
+        "closure"
+      ]
     },
     {
       "id": "release-checkpoint-gate",
@@ -321,7 +428,12 @@
       "adr": "docs/adr/074-process-evidence-gate-fechamento-com-evidencia.md",
       "cross_ai": false,
       "enforcement": "fail-closed",
-      "tags": ["doc-sync", "closure", "process-evidence", "canary"]
+      "tags": [
+        "doc-sync",
+        "closure",
+        "process-evidence",
+        "canary"
+      ]
     },
     {
       "id": "dev-dogfood-gate",
@@ -333,7 +445,13 @@
       "adr": "docs/adr/074-process-evidence-gate-fechamento-com-evidencia.md",
       "cross_ai": false,
       "enforcement": "fail-closed",
-      "tags": ["doc-sync", "closure", "process-evidence", "cross-ai", "canary"]
+      "tags": [
+        "doc-sync",
+        "closure",
+        "process-evidence",
+        "cross-ai",
+        "canary"
+      ]
     },
     {
       "id": "route-gate",
@@ -343,7 +461,11 @@
       "mechanism": "tools/hooks/route-gate.ps1",
       "adr": "docs/adr/027-roteamento-deterministico-e-wiring-global-self-heal.md",
       "cross_ai": false,
-      "tags": ["routing", "gate", "runtime"]
+      "tags": [
+        "routing",
+        "gate",
+        "runtime"
+      ]
     },
     {
       "id": "prepush-sync-guard",
@@ -353,7 +475,11 @@
       "mechanism": "tools/hooks/prepush_sync_guard.py",
       "adr": "docs/adr/060-edr-pode-vetar-hooks-resiliencia-de-sync.md",
       "cross_ai": false,
-      "tags": ["sync", "gate", "git"]
+      "tags": [
+        "sync",
+        "gate",
+        "git"
+      ]
     },
     {
       "id": "skill-contract",
@@ -363,7 +489,11 @@
       "mechanism": "tools/validate_skills.py",
       "adr": "docs/adr/013-contrato-minimo-skill.md",
       "cross_ai": false,
-      "tags": ["skills", "contract", "linter"]
+      "tags": [
+        "skills",
+        "contract",
+        "linter"
+      ]
     },
     {
       "id": "clean-env-gate",
@@ -374,7 +504,10 @@
       "test": "tools/test_clean_env.py",
       "adr": "docs/adr/036-teste-porta-do-usuario-e-ambiente-limpo.md",
       "cross_ai": false,
-      "tags": ["delivery", "gate"]
+      "tags": [
+        "delivery",
+        "gate"
+      ]
     },
     {
       "id": "completeness-gate",
@@ -385,7 +518,10 @@
       "test": "tools/test_completeness.py",
       "adr": "docs/adr/034-completeness-vs-request-gate.md",
       "cross_ai": false,
-      "tags": ["completeness", "gate"]
+      "tags": [
+        "completeness",
+        "gate"
+      ]
     },
     {
       "id": "context-brief-gate",
@@ -396,7 +532,10 @@
       "test": "tools/test_context_brief.py",
       "adr": "docs/adr/051-reparo-discovery-contexto-inferido-pesquisa-ancora-mecanizada.md",
       "cross_ai": false,
-      "tags": ["discovery", "gate"]
+      "tags": [
+        "discovery",
+        "gate"
+      ]
     },
     {
       "id": "delivery-floor-gate",
@@ -407,7 +546,10 @@
       "test": "tools/test_delivery_floor.py",
       "adr": "docs/adr/053-teste-binario-de-entregabilidade-ao-humano.md",
       "cross_ai": false,
-      "tags": ["delivery", "gate"]
+      "tags": [
+        "delivery",
+        "gate"
+      ]
     },
     {
       "id": "discovery-eval",
@@ -418,7 +560,11 @@
       "test": "tools/test_discovery_eval.py",
       "adr": "docs/adr/042-discovery-eval-executado.md",
       "cross_ai": false,
-      "tags": ["discovery", "eval", "canary"]
+      "tags": [
+        "discovery",
+        "eval",
+        "canary"
+      ]
     },
     {
       "id": "entrypoint-tty-gate",
@@ -429,7 +575,11 @@
       "test": "tools/test_entrypoint_no_tty.py",
       "adr": "docs/adr/036-teste-porta-do-usuario-e-ambiente-limpo.md",
       "cross_ai": false,
-      "tags": ["delivery", "gate", "ci"]
+      "tags": [
+        "delivery",
+        "gate",
+        "ci"
+      ]
     },
     {
       "id": "execution-report-builder",
@@ -441,7 +591,10 @@
       "adr": "docs/adr/038-execution-report-telemetria.md",
       "cross_ai": true,
       "enforcement": "fail-soft",
-      "tags": ["telemetry", "corpus"]
+      "tags": [
+        "telemetry",
+        "corpus"
+      ]
     },
     {
       "id": "input-contract-gate",
@@ -452,7 +605,11 @@
       "test": "tools/test_input_contract.py",
       "adr": "docs/adr/033-elicitacao-consultiva-banco-agnostico-linter-de-spec.md",
       "cross_ai": false,
-      "tags": ["spec", "contract", "gate"]
+      "tags": [
+        "spec",
+        "contract",
+        "gate"
+      ]
     },
     {
       "id": "make-index-tool",
@@ -462,7 +619,10 @@
       "mechanism": "tools/make_index.py",
       "test": "tools/test_make_index.py",
       "cross_ai": false,
-      "tags": ["tooling", "index"]
+      "tags": [
+        "tooling",
+        "index"
+      ]
     },
     {
       "id": "nonadmin-profile",
@@ -473,7 +633,10 @@
       "test": "tools/test_nonadmin.py",
       "adr": "docs/adr/047-modo-non-admin-single-source-multi-distribuicao.md",
       "cross_ai": false,
-      "tags": ["non-admin", "resilience"]
+      "tags": [
+        "non-admin",
+        "resilience"
+      ]
     },
     {
       "id": "oracle-bias-canary",
@@ -484,7 +647,10 @@
       "test": "tools/test_oracle_bias.py",
       "adr": "docs/adr/035-anti-vies-oraculo-estabilidade-decisao.md",
       "cross_ai": false,
-      "tags": ["honesty", "canary"]
+      "tags": [
+        "honesty",
+        "canary"
+      ]
     },
     {
       "id": "overclaim-lexicon",
@@ -495,7 +661,10 @@
       "test": "tools/test_overclaim_lexicon.py",
       "adr": "docs/adr/059-gates-de-honestidade-da-vitrine.md",
       "cross_ai": false,
-      "tags": ["honesty", "lexicon"]
+      "tags": [
+        "honesty",
+        "lexicon"
+      ]
     },
     {
       "id": "parity-cross-platform",
@@ -506,7 +675,11 @@
       "test": "tools/test_parity.py",
       "adr": "docs/adr/040-paridade-cross-platform-ci.md",
       "cross_ai": false,
-      "tags": ["ci", "parity", "canary"]
+      "tags": [
+        "ci",
+        "parity",
+        "canary"
+      ]
     },
     {
       "id": "project-token-report",
@@ -517,7 +690,10 @@
       "test": "tools/test_project_report.py",
       "adr": "docs/adr/026-relatorio-tokens-projeto.md",
       "cross_ai": false,
-      "tags": ["telemetry", "cost"]
+      "tags": [
+        "telemetry",
+        "cost"
+      ]
     },
     {
       "id": "regulatory-coverage-gate",
@@ -528,7 +704,11 @@
       "test": "tools/test_regulatory_coverage.py",
       "adr": "docs/adr/043-catalogo-perfis-regulados.md",
       "cross_ai": false,
-      "tags": ["regulatory", "coverage", "gate"]
+      "tags": [
+        "regulatory",
+        "coverage",
+        "gate"
+      ]
     },
     {
       "id": "spec-depth-gate",
@@ -539,7 +719,78 @@
       "test": "tools/test_spec_depth.py",
       "adr": "docs/adr/033-elicitacao-consultiva-banco-agnostico-linter-de-spec.md",
       "cross_ai": false,
-      "tags": ["spec", "gate"]
+      "tags": [
+        "spec",
+        "gate"
+      ]
+    },
+    {
+      "id": "qa-evidence-gate",
+      "title": "qa-evidence (fail-closed): release exige veredito qa-critic aprovativo persistido em _meta/qa/ (ADR-074 emenda 2)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/qa_evidence.py",
+      "test": "tools/test_qa_evidence.py",
+      "adr": "docs/adr/074-process-evidence-gate-fechamento-com-evidencia.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "tags": [
+        "qa",
+        "process-evidence",
+        "closure",
+        "canary"
+      ]
+    },
+    {
+      "id": "posture-gate",
+      "title": "posture-gate (fail-closed): release exige evidencia de postura deep-research/squad (discovery+RRC+metodo-senior) atestada pelo qa-critic adversarial (ADR-074 emenda 3)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/test_posture_gate.py",
+      "test": "tools/test_posture_gate.py",
+      "adr": "docs/adr/074-process-evidence-gate-fechamento-com-evidencia.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "tags": [
+        "posture",
+        "process-evidence",
+        "deep-research",
+        "canary"
+      ]
+    },
+    {
+      "id": "context-budget-gate",
+      "title": "context-budget: decide LER-INTEIRO vs FRACIONAR (doc-intake) p/ fontes grandes (anti-queima de tokens)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/context_budget.py",
+      "test": "tools/test_context_budget.py",
+      "adr": "docs/adr/029-doc-intake-parse-deterministico-sem-embeddings.md",
+      "cross_ai": false,
+      "enforcement": "advisory",
+      "tags": [
+        "context",
+        "tokens",
+        "doc-intake",
+        "canary"
+      ]
+    },
+    {
+      "id": "hitl-proof-verify",
+      "title": "verify_hitl_proofs: CI verifica autenticidade dos hitl_proof via git verify-commit/verify-tag (ADR-071 pendencia)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/verify_hitl_proofs.py",
+      "test": "tools/test_verify_hitl_proofs.py",
+      "adr": "docs/adr/071-equivalencia-convergencia-entre-repos-mae.md",
+      "cross_ai": true,
+      "enforcement": "ci-ready",
+      "tags": [
+        "cross-ai",
+        "hitl",
+        "equivalence",
+        "canary"
+      ]
     }
   ],
   "registry_waivers": [

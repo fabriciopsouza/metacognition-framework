@@ -64,6 +64,25 @@ def main():
     if "from" not in miss or "to" not in miss:
         fails.append("validate_required deveria apontar campos faltantes")
 
+    # boot-scan: resolve path por env e ANUNCIA (item 4 — nunca silencioso)
+    old_env = os.environ.get("CROSS_AI_HUB")
+    try:
+        os.environ["CROSS_AI_HUB"] = hubdir
+        if hub._resolve_hub_path() != hubdir:
+            fails.append("_resolve_hub_path nao resolveu via env CROSS_AI_HUB")
+        rc = hub.main(["x", "boot-scan", "--me", "claude-master"])
+        if rc != 0:
+            fails.append(f"boot-scan exit != 0 ({rc})")
+        # sem hub configurado -> ainda exit 0 (anuncia ausencia, nao quebra boot)
+        os.environ.pop("CROSS_AI_HUB", None)
+        if hub._resolve_hub_path() not in (None, hubdir):  # sem env + sem config files do repo
+            pass
+    finally:
+        if old_env is not None:
+            os.environ["CROSS_AI_HUB"] = old_env
+        else:
+            os.environ.pop("CROSS_AI_HUB", None)
+
     shutil.rmtree(hubdir, ignore_errors=True)
 
     print(f"parse_flat ok; scan(open p/ mim + all) ok; sealed/nao-p-mim excluidos; dedup-seen ok; "

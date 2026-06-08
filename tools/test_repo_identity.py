@@ -10,7 +10,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
-from repo_identity import _norm_remote  # noqa: E402
+from repo_identity import _norm_remote, is_export_shadow  # noqa: E402
 
 try:
     sys.stdout.reconfigure(encoding="utf-8")
@@ -43,8 +43,23 @@ def main():
     if _norm_remote("") != "" or _norm_remote(None) != "":
         fails.append("entrada vazia/None deveria virar '' (fail-safe)")
 
-    print(f"SSH==HTTPS; canônico host/owner/repo; distintos preservados; vazio inerte — "
-          f"{'OK' if not fails else 'FAIL'}")
+    # 6. is_export_shadow — anti-forja (b1) + robusto à ordem FOREIGN (b2) (process-critic 2026-06-08).
+    #    Gates fail-closed dependem disto p/ decidir SKIP; testar os 4 vetores.
+    master = {"marker_role": "master", "writable_master": True, "marker_conflict": False, "is_export_signal": False}
+    if is_export_shadow(master):
+        fails.append("master real nao deveria ser export-shadow (enforce)")
+    forged = {"marker_role": "shadow", "writable_master": False, "marker_conflict": False, "is_export_signal": False}
+    if is_export_shadow(forged):
+        fails.append("b1: carimbo shadow forjado SEM commit de export deveria enforce (nao pular)")
+    genuine = {"marker_role": "shadow", "writable_master": False, "marker_conflict": False, "is_export_signal": True}
+    if not is_export_shadow(genuine):
+        fails.append("b2: shadow genuino (carimbo + commit export) deveria pular, mesmo se verdict=FOREIGN")
+    conflict = {"marker_role": "shadow", "writable_master": False, "marker_conflict": True, "is_export_signal": True}
+    if is_export_shadow(conflict):
+        fails.append("marker_conflict declarado deveria enforce (nao confiar no carimbo)")
+
+    print(f"SSH==HTTPS; canônico host/owner/repo; distintos preservados; vazio inerte; "
+          f"is_export_shadow anti-forja(b1)/robusto-FOREIGN(b2) — {'OK' if not fails else 'FAIL'}")
     for f in fails:
         print("  -", f)
     print("-" * 50)

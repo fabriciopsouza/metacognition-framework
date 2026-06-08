@@ -15,6 +15,22 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.51.0] — 2026-06-08 — qa-evidence + posture-gate + hardening dos gates de processo (ADR-074 emendas 2/3; ADR-071/069)
+
+### Added
+- **ADR-074 emenda 2 — qa-evidence (fail-closed):** `tools/qa_evidence.py` persiste o veredito do qa-critic (subagente read-only) em `_meta/qa/<bloco>.{json,md}`; `test_qa_evidence.py` exige veredito aprovativo p/ o release atual (forward-only, shadow-aware). Mecaniza "o qa-critic rodou" — maior débito admitido em 2026-06-07. [CONSOLIDADO]
+- **ADR-074 emenda 3 — posture-gate (fail-closed):** `test_posture_gate.py` exige `postura` (discovery + RRC PASSA + método-sênior) atestada pelo qa-critic adversarial (anti-JARVIS); gatilho determinístico `fonte_canonica=true → metodo_senior='aplicado'`. Companion `.agent/skills/qa-critic/posture.md`. [CONSOLIDADO]
+- **context-budget (pedido do dono):** `tools/context_budget.py` + canário — decide LER-INTEIRO vs FRACIONAR (doc-intake) p/ fontes grandes; doutrina no `start-session`. Enforcement pleno via hook PreToolUse declarado (Kaspersky veta). [CONSOLIDADO]
+- **ADR-071 (pendência) — `verify_hitl_proofs.py` + canário:** CI verifica autenticidade dos `hitl_proof` via `git verify-commit`/`verify-tag` (fail-closed em assinatura ausente); passo `ci.yml` condicional ao `HUB_MANIFEST`. [CONSOLIDADO]
+- **ADR-069 — cross-ai `boot-scan`:** descoberta automática de handoffs no boot (`cross_ai_hub.py boot-scan` + `_resolve_hub_path`); `start-session` passo 0.6; nunca silencioso. [CONSOLIDADO]
+
+### Fixed
+- **5 false-PASS provados pelo qa-critic adversarial e corrigidos:** `test_release_checkpoint` (substring no arquivo inteiro → versão em "Próximo passo" dava PASS; sem word-boundary `1.5.0`~`11.5.0`); `test_dev_dogfood` (piso `glob != []` gameável por placeholder de 4 bytes; master/shadow por 1 booleano → master degradado virava SHADOW→PASS). Agora: heading datado + fronteira numérica; min-size+seção + cross-check `repo_identity`. [CONFIRMADO]
+- **Modo autosuficiente restaurado:** `~/.claude/framework-mode.json` recriado + `settings.json` global re-aplicado (clobber reincidente; self-heal hook-gated vetado por Kaspersky — method-audit). [CONFIRMADO]
+
+### Reconciliado
+- **Backfill de checkpoints v1.45.0/v1.46.0** no `history.md` (forward-only só gateia o atual; reconstruído do CHANGELOG, append-only). Method-audit notes: doc-intake-não-usado-até-provocado + clobber-do-modo. [CONFIRMADO]
+
 ## [1.50.0] — 2026-06-07 — Dev-dogfood determinístico (ADR-074 emenda) + relatórios da sessão
 
 ### Added
