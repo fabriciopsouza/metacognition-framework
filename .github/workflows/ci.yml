@@ -74,7 +74,10 @@ jobs:
           if [ -n "${HUB_MANIFEST:-}" ] && [ -f "${HUB_MANIFEST}" ]; then
             echo "Hub manifest presente: ${HUB_MANIFEST}"
             python tools/equivalence_gate.py "${HUB_MANIFEST}" --ais claude,gemini
-            python tools/verify_hitl_proofs.py "${HUB_MANIFEST}" --repo "${HUB_REPO:-.}" --require-all
+            # SEM --require-all: pr:/approved-pr: sao formatos VALIDOS (ADR-071 PROOF_RE), verificados
+            # pela API do forge, NAO pelo git -> passam como declarados. So commit:/tag: nao-assinados
+            # derrubam (fail-closed na assinatura, nao na categoria).
+            python tools/verify_hitl_proofs.py "${HUB_MANIFEST}" --repo "${HUB_REPO:-.}"
           else
             echo "[equivalence/HITL] HUB_MANIFEST ausente — verificacao plena requer o hub provisionado"
             echo "no runner (submodulo ou deploy key). Logica validada pelos canarios"

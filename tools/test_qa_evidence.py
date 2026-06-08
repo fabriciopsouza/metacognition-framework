@@ -33,19 +33,20 @@ except Exception:
 
 
 def _is_genuine_shadow():
-    """docs/_private ausente -> shadow legitimo so se repo_identity confirmar (defesa em profundidade,
-    espelha test_dev_dogfood). Fail-soft: repo_identity indisponivel -> trata como shadow (sinal unico)."""
-    if os.path.isdir(os.path.join(ROOT, "docs", "_private")):
-        return False, "docs/_private presente — master"
+    """Este gate cobre artefato COMMITADO (_meta/qa, versionado) — DIFERENTE do test_dev_dogfood
+    (que cobre docs/_private, cofre LOCAL gitignored). Logo NAO pode usar 'docs/_private ausente'
+    como sinal de shadow: na CI do PROPRIO master docs/_private esta ausente (gitignored) mas
+    _meta/qa esta presente -> o gate DEVE disparar. Pula SO em shadow POSITIVO (repo_identity=
+    SOMBRA-EXPORT, carimbado por export-clean). Default = ENFORCE. (Falha de design pega na
+    auto-revisao 2026-06-08: o sinal docs/_private faria o gate nunca disparar na CI do master.)"""
     try:
         sys.path.insert(0, os.path.join(ROOT, "tools"))
         import repo_identity
-        v = repo_identity.classify().get("verdict")
-        if v == "MASTER-CANONICO":
-            return False, f"repo_identity={v} mas docs/_private AUSENTE — master degradado, NAO isento"
-        return True, f"repo_identity={v} / fail-soft — shadow"
-    except Exception as e:
-        return True, f"repo_identity indisponivel ({type(e).__name__}) — fail-soft shadow"
+        if repo_identity.is_export_shadow():
+            return True, "repo_identity.is_export_shadow (carimbo shadow + commit de export) — shadow legitimo"
+    except Exception:
+        pass
+    return False, "nao-shadow (enforce — so export-shadow genuino pula; anti-forja)"
 
 
 def main():
@@ -54,10 +55,6 @@ def main():
         print(f"{why}. PASS (shadow — nao cobra artefato qa-critic).")
         print("RESULTADO: PASS (shadow — sem cobranca de qa-evidence)")
         return 0
-    if why.startswith("repo_identity") and "degradado" in why:
-        print(why)
-        print("RESULTADO: FAIL (master sem docs/_private — estado anomalo)")
-        return 1
 
     try:
         chg = open(os.path.join(ROOT, "CHANGELOG.md"), encoding="utf-8-sig").read()

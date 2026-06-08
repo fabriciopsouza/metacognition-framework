@@ -42,7 +42,9 @@ def main():
     # hist` antigo dava FALSE-PASS quando a versao era citada num "Proximo passo: lancar vX" de
     # planejamento de um bloco anterior (padrao real no history). E exige fronteira numerica:
     # `1.5.0` nao pode casar `1.50.0`/`11.5.0`. `.` nao cruza newline -> match preso a 1 linha-heading.
-    pat = re.compile(rf"(?m)^##\s+\d{{4}}-\d{{2}}-\d{{2}}.*?(?<![\d.])v?{re.escape(latest)}(?![\d.])")
+    # fronteira: nem digito/ponto ANTES (1.5.0 != 11.5.0) nem digito/ponto/alfa/hifen DEPOIS
+    # (1.51.0 != 1.51.0-beta — achado BAIXO do process-critic 2026-06-08).
+    pat = re.compile(rf"(?m)^##\s+\d{{4}}-\d{{2}}-\d{{2}}.*?(?<![\d.])v?{re.escape(latest)}(?![\d.\-A-Za-z])")
     ok = bool(pat.search(hist))
     if ok:
         print(f"release atual v{latest}: checkpoint presente no history.md (heading datado) — OK")

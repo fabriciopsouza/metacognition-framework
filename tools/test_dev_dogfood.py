@@ -48,11 +48,11 @@ def _is_genuine_shadow():
     try:
         sys.path.insert(0, os.path.join(ROOT, "tools"))
         import repo_identity
-        r = repo_identity.classify()
-        v = r.get("verdict")
-        # SHADOW legitimo = export carimbado. MASTER/AMBIGUO sem _private = anomalia (nao isenta).
-        if v == "SOMBRA-EXPORT":
-            return True, f"repo_identity={v} (export carimbado) — shadow legitimo"
+        # SHADOW legitimo = export carimbado COM commit de export (anti-forja b1/b2, process-critic
+        # 2026-06-08). MASTER/AMBIGUO sem _private = anomalia (nao isenta).
+        if repo_identity.is_export_shadow():
+            return True, "repo_identity.is_export_shadow (carimbo + commit de export) — shadow legitimo"
+        v = repo_identity.classify().get("verdict")
         if v == "MASTER-CANONICO":
             return False, f"repo_identity={v} mas docs/_private AUSENTE — master degradado, NAO isento"
         return None, f"repo_identity={v} — ambiguo; cai no fail-soft do sinal unico"

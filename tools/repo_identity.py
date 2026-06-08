@@ -141,6 +141,27 @@ def classify():
     }
 
 
+def is_export_shadow(r=None):
+    """True SO p/ shadow de export GENUINO. Usado pelos gates fail-closed de processo
+    (test_qa_evidence/test_posture_gate/test_dev_dogfood) p/ decidir o SKIP — conservador: na duvida
+    NAO e shadow (enforce). Fecha 2 achados do process-critic (2026-06-08):
+      - b1 (forja): editar o marker role=master->shadow no master real dava SOMBRA-EXPORT e pulava os
+        gates. Discriminador anti-forja = `is_export_signal` (commit '...@<hash>' que SO o export-clean
+        produz). Carimbo 'shadow' SEM commit de export + git parecendo master = suspeito -> enforce.
+      - b2 (false-FAIL): a ordem de `classify()` poe FOREIGN antes de marker_role==shadow; um shadow
+        legitimo com remote de distribuicao proprio cairia em FOREIGN e os gates falhariam na CI dele.
+        Aqui lemos `marker_role` (carimbo fisico do export-clean) direto -> robusto a essa ordem.
+    """
+    r = r or classify()
+    if r.get("marker_role") != "shadow":
+        return False                       # so o carimbo fisico do export-clean conta
+    if r.get("writable_master") or r.get("marker_conflict"):
+        return False                       # git diz master / conflito declarado -> nao e shadow
+    if not r.get("is_export_signal"):
+        return False                       # carimbo shadow sem commit de export = forja suspeita
+    return True
+
+
 def announce_line(r):
     base = f"[repo-identity] {r['verdict']} ({r['confidence']}) -- {r['reason']}"
     if r.get("marker_conflict"):

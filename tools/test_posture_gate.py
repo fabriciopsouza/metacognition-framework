@@ -50,16 +50,16 @@ except Exception:
 
 
 def _is_genuine_shadow():
-    if os.path.isdir(os.path.join(ROOT, "docs", "_private")):
-        return False, "docs/_private presente — master"
+    """Gateia artefato COMMITADO (_meta/qa) — pula SO em SOMBRA-EXPORT positivo; default ENFORCE
+    (na CI do master docs/_private esta ausente mas _meta/qa presente -> gate deve disparar).
+    Mesma correcao de design do test_qa_evidence (auto-revisao 2026-06-08)."""
     try:
         import repo_identity
-        v = repo_identity.classify().get("verdict")
-        if v == "MASTER-CANONICO":
-            return False, f"repo_identity={v} mas docs/_private AUSENTE — master degradado"
-        return True, f"repo_identity={v}/fail-soft — shadow"
-    except Exception as e:
-        return True, f"repo_identity indisponivel ({type(e).__name__}) — fail-soft shadow"
+        if repo_identity.is_export_shadow():
+            return True, "repo_identity.is_export_shadow — shadow legitimo"
+    except Exception:
+        pass
+    return False, "nao-shadow (enforce — so export-shadow genuino pula; anti-forja)"
 
 
 def main():
@@ -68,10 +68,6 @@ def main():
         print(f"{why}. PASS (shadow — nao cobra postura).")
         print("RESULTADO: PASS (shadow — sem cobranca de posture-gate)")
         return 0
-    if "degradado" in why:
-        print(why)
-        print("RESULTADO: FAIL (master sem docs/_private — estado anomalo)")
-        return 1
 
     try:
         chg = open(os.path.join(ROOT, "CHANGELOG.md"), encoding="utf-8-sig").read()
