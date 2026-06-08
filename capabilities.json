@@ -757,6 +757,40 @@
         "deep-research",
         "canary"
       ]
+    },
+    {
+      "id": "context-budget-gate",
+      "title": "context-budget: decide LER-INTEIRO vs FRACIONAR (doc-intake) p/ fontes grandes (anti-queima de tokens)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/context_budget.py",
+      "test": "tools/test_context_budget.py",
+      "adr": "docs/adr/029-doc-intake-parse-deterministico-sem-embeddings.md",
+      "cross_ai": false,
+      "enforcement": "advisory",
+      "tags": [
+        "context",
+        "tokens",
+        "doc-intake",
+        "canary"
+      ]
+    },
+    {
+      "id": "hitl-proof-verify",
+      "title": "verify_hitl_proofs: CI verifica autenticidade dos hitl_proof via git verify-commit/verify-tag (ADR-071 pendencia)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/verify_hitl_proofs.py",
+      "test": "tools/test_verify_hitl_proofs.py",
+      "adr": "docs/adr/071-equivalencia-convergencia-entre-repos-mae.md",
+      "cross_ai": true,
+      "enforcement": "ci-ready",
+      "tags": [
+        "cross-ai",
+        "hitl",
+        "equivalence",
+        "canary"
+      ]
     }
   ],
   "registry_waivers": [

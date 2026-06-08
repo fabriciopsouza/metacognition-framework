@@ -4,7 +4,8 @@ Registra em history.md o estado atual (compaction + structured note-taking —
 `_shared/metacognition-core`).
 
 ## Process-evidence (ADR-074) — fechamento com evidência
-**Fail-closed (CI barra):** se há release novo (versão no CHANGELOG), `test_release_checkpoint` exige checkpoint no history.md; `test_adr_changelog_sync` exige toda ADR Aceito no CHANGELOG. Sem isso → CI vermelho.
+**Fail-closed (CI barra):** se há release novo (versão no CHANGELOG): `test_release_checkpoint` exige checkpoint **em heading datado** no history.md (anti false-PASS de menção em "Próximo passo"); `test_adr_changelog_sync` exige toda ADR Aceito no CHANGELOG; **`test_qa_evidence`** exige veredito qa-critic aprovativo em `_meta/qa/*.json` com `release==versão`; **`test_posture_gate`** exige `postura` (discovery + RRC PASSA + método-sênior) atestada pelo qa-critic adversarial. Sem isso → CI vermelho.
+**Artefato qa-critic (passo do fechamento):** ao rodar o process-critic final, persistir o veredito: `python tools/qa_evidence.py --from-json -` com `release="<versão>"` + bloco `postura` (ver `.agent/skills/qa-critic/posture.md`). `write_artifact` recusa release sem postura válida.
 **Oferta (não-fail-closed; ciente do `repo_mode`):**
 - **DEV (master):** ofereça **execution-report** (opt-in, `python tools/execution_report.py --tier owner`) + **handoff cross-IA** se a melhoria vale propagar (`docs/_private/cross-ai/outbox/` → hub) + confirme que o **qa-critic** rodou no bloco.
 - **USER/shadow:** ofereça só o **relatório opt-in** (ADR-062). Não desenvolve, não emite handoff cross-IA.

@@ -1,7 +1,7 @@
 <!-- GERADO por tools/build_capabilities.py a partir de capabilities.json — NAO editar a mao -->
 # CAPABILITIES — indice de capacidades (nivel 1: id + title)
 
-> **50 capacidades** — 45 ✅ PROVIDES · 5 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
+> **52 capacidades** — 47 ✅ PROVIDES · 5 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
 > **Como usar (file-first, boot):** leia esta lista p/ achar o `id`; o registro completo (mecanismo · canario · ADR · doc) vem por **`python tools/build_capabilities.py --show <id>`** ou `grep -A8 '"<id>"' capabilities.json`. Nao reexplore o repo antes disto.
 > **Manutencao:** feature nova -> +1 registro em `capabilities.json` + `python tools/build_capabilities.py`. Canario barra canario orfao (cobertura).
 
@@ -13,6 +13,7 @@
 - ✅ 🔗 `execution-report` — Relatorio de execucao (telemetria de processo + licoes), opt-in anonimizado
 - ✅ 🔗 `execution-report-builder` — Builder do relatorio de execucao (dois tiers: telemetria processo + anonimizada)
 - 🟡 🔗 `export-shadow-stamp` — Carimbo fisico role=shadow no export (trava contra sombra se passar por master)
+- ✅ 🔗 `hitl-proof-verify` — verify_hitl_proofs: CI verifica autenticidade dos hitl_proof via git verify-commit/verify-tag (ADR-071 pendencia)
 - ✅ 🔗 `repo-identity-gate` — Classificador de identidade de repo (master|shadow|clone|foreign), ancestry-first
 
 ## Nucleo (local ao repo-mae)
@@ -25,6 +26,7 @@
 - ✅ `completeness-gate` — Cobertura escopo-pedido x entrega: quantificador sem criterio em validation falha
 - 🟡 `consistency-gate` — Auditoria de fechamento (version-sync, adr-status, checkpoint, unpushed), fail-soft
 - ✅ `context-brief-gate` — Contexto inferido vira ancora de pesquisa mecanizada (reparo do discovery)
+- ✅ `context-budget-gate` — context-budget: decide LER-INTEIRO vs FRACIONAR (doc-intake) p/ fontes grandes (anti-queima de tokens)
 - ✅ `delivery-floor-gate` — Piso de entregabilidade ao humano (teste binario de entrega minima)
 - ✅ `dev-dogfood-gate` — Dev-dogfood DETERMINISTA: master fechando bloco DEVE ter execution-report + handoff cross-IA (nao opt-in, shadow-aware)
 - ✅ `discovery-eval` — Discovery com eval executado (nao so prosa de plano)

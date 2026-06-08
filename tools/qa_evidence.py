@@ -102,8 +102,14 @@ def validate_postura(postura, for_release=False):
         probs.append("postura.rrc ausente (PASSA|FALHA|N/A: <razao>)")
     elif for_release and not rrc.upper().startswith("PASSA"):
         probs.append(f"postura.rrc='{rrc}' — release exige RRC PASSA")
-    if not str(postura.get("metodo_senior", "")).strip():
+    ms = str(postura.get("metodo_senior", "")).strip()
+    if not ms:
         probs.append("postura.metodo_senior ausente ('aplicado: <path>' | 'N/A: <razao>')")
+    # Gatilho DETERMINISTICO (ADR-009/010 mecanizado): fonte canonica/ADR nova -> metodo-senior
+    # EXIGIDO, nao opcional. `fonte_canonica` e atestado pelo qa-critic adversarial (anti-JARVIS).
+    if postura.get("fonte_canonica") and not ms.lower().startswith("aplicado"):
+        probs.append("postura.fonte_canonica=true (norma/spec/ADR) -> metodo_senior DEVE ser "
+                     "'aplicado: <path>' (gatilho deterministico, nao N/A)")
     return probs
 
 
