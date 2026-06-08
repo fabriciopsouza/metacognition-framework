@@ -139,6 +139,17 @@
             "statusMessage": "Anti-overwrite cego de artefato (overwrite-guard ADR-037)"
           }
         ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmd /c \"python tools\\hooks\\context_budget_gate.py || exit /b 0\"",
+            "timeout": 10,
+            "statusMessage": "Context-budget: anuncia fracionar (doc-intake) em leitura de fonte grande (ADR-029)"
+          }
+        ]
       }
     ],
     "PostToolUse": [

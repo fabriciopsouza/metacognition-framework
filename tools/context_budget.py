@@ -9,9 +9,13 @@ quando provocado (Principio 11 honesto). Este tool e o mecanismo: dada uma fonte
 vs FRACIONAR-VIA-DOC-INTAKE por um limiar de tokens estimados.
 
 LIMITE HONESTO (GAP-3, ADR-044): sem tokenizer real exposto ao agente, estima `chars/4`. E proxy
-(±20-40%), nao contagem exata — declarado, nao mascarado. O enforcement plenamente fail-closed das
-chamadas Read do agente exige um hook PreToolUse(Read) (so em maquina hook-capaz; Kaspersky/non-admin
-veta -> doutrina no start-session). Este tool e chamavel sob demanda e pela discovery (sempre).
+(±20-40%), nao contagem exata — declarado, nao mascarado.
+
+ENFORCEMENT: onde a maquina permite hook, o `tools/hooks/context_budget_gate.py` (PreToolUse Read,
+wirado no `.claude/settings.json`) ANUNCIA na hora da leitura grande (nao-bloqueante — "gates
+anunciados"). Onde o hook nao roda (algumas maquinas com EDR/AAC que vetam — ex. a 9TRP7H4 com
+Kaspersky; NEM TODA maquina tem), fica a doutrina no start-session + este tool chamavel sob demanda
+(e pela discovery). NAO assumir veto de hook sem verificar a maquina.
 
 CLI:
   python tools/context_budget.py <path> [--budget N]   exit 0 = cabe; exit 3 = FRACIONE (use doc_intake)

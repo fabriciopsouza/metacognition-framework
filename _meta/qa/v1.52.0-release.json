@@ -1,0 +1,34 @@
+{
+  "bloco": "v1.52.0-release",
+  "passou": true,
+  "steelman": "context-budget vira hook PreToolUse(Read) real: ANUNCIA (nunca bloqueia) leitura acima do orcamento, fail-open robusto (8 cenarios degenerados testados, sempre exit 0, nunca deny). Wiring com 'cmd /c ... || exit /b 0' = dupla garantia. Correcao honesta da premissa Kaspersky (machine-specific).",
+  "problemas": [
+    {
+      "severidade": "medio",
+      "local": "capabilities.json/settings.json/test_context_budget_gate.py (+test_context_budget.py)",
+      "descricao": "citacao 'ADR-074 emenda 3' colidia com posture-gate (emenda 3 real); ADR correto = 029 (doc-intake), igual a capacidade-irma",
+      "status": "CORRIGIDO: 4 refs -> ADR-029"
+    },
+    {
+      "severidade": "baixo",
+      "local": "tools/hooks/context_budget_gate.py:9",
+      "descricao": "'sem Kaspersky' generico, nao machine-specific (inconsistente com a correcao do bloco)",
+      "status": "CORRIGIDO: reformulado machine-specific (EDR/AAC ex. 9TRP7H4)"
+    }
+  ],
+  "recomendacao": "aprovar_com_ressalvas",
+  "verificacoes_executadas": [
+    "process-critic adversarial: hook fail-open em 8 cenarios (grande/pequeno/json-invalido/path-inexistente/sem-tool_input/dir/stdin-vazio/chave-path) -> sempre exit 0, nunca deny",
+    "settings.json JSON valido; additionalContext shape correto (hookEventName=PreToolUse)",
+    "test_context_budget_gate PASS; test_capabilities PASS (53, sem orfao); test_core_agnostic PASS",
+    "2 ressalvas do critico CORRIGIDAS + re-verificadas: nenhuma colisao ADR-074-emenda-3<->context-budget restante (grep limpo); rrc -> PASSA pos-fix"
+  ],
+  "postura": {
+    "discovery": "inline: resposta a correcao do dono ('neste pc nao temos kaspersky') + feedback doc-intake/fracionar contexto; elicitacao registrada no CHANGELOG Fixed",
+    "rrc": "PASSA",
+    "metodo_senior": "N/A: sem fonte canonica/normativa EXTERNA (mecanismo interno de orcamento de contexto)",
+    "fonte_canonica": false
+  },
+  "release": "1.52.0",
+  "data": "2026-06-08T11:15:00Z"
+}

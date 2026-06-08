@@ -9,6 +9,21 @@
 
 ---
 
+## 2026-06-08 — Release v1.52.0: context-budget vira hook real + restauração da wiring global (correção de premissa "Kaspersky")
+
+Aprovado e funcionando: o dono corrigiu **"neste PC não temos Kaspersky"** — eu havia atribuído (errado) o context-budget doctrine-only e o clobber do modo a "Kaspersky veta hooks". File-first: esta máquina tem `powershell.exe` (5.1), sem `pwsh`; hooks **rodam**. Entregue: **`context_budget_gate.py`** (hook PreToolUse Read, não-bloqueante/fail-open — ANUNCIA fracionar via doc-intake em leitura de fonte grande) wirado no `.claude/settings.json` + canário; move context-budget de advisory → enforcement fail-soft onde hooks rodam. **Wiring global restaurada** (`~/.claude/settings.json` estava `{}`; rodei `sync-global.ps1` + `ensure-global-wiring.ps1` → SessionStart+UserPromptSubmit re-wirados; causa real do "autosuficiente parou", não Kaspersky). Process-critic adversarial: **aprovar_com_ressalvas** — achou citação errada `ADR-074 emenda 3` (colidia com posture-gate; correto = ADR-029, igual à capacidade-irmã) em 4 refs + "Kaspersky" genérico → **corrigidos**, rrc → PASSA. Suíte 42 PASS / 0 FAIL. `_meta/qa/v1.52.0-release.json`.
+
+Nomenclaturas: `context_budget_gate.py` (hook) · enforcement fail-soft (anuncia, não bloqueia).
+Decisões permanentes: sem ADR nova — ADR-029 (doc-intake) é o guarda-chuva; capacidade `context-budget-hook`.
+Próximo passo: dono — clonar `metacognition-hub` (itens 4/6 plenos). Memória corrigida (`feedback-autosuficiente-mode-clobber`: causa = clobber global, não Kaspersky).
+Riscos ativos: onde EDR/AAC veta hook (ex. 9TRP7H4 Kaspersky), context-budget fica doutrina (declarado). WIP: nenhum.
+
+## RRC (ADR-010) — coherence pass
+- Artefatos lidos: CHANGELOG/README/vitrine (1.52.0), `context_budget.py`/`_gate.py`, `.claude/settings.json`, `capabilities.json`/`CAPABILITIES.md`, ADR-029/074, `_meta/qa/v1.52.0-release.json`.
+- Verificações: versões em sync (1.52.0; `build_limits --check` PASS): **PASSA** · Refs cruzadas (citação ADR corrigida 074-emenda-3→029, sem colisão; `test_capabilities` PASS): **PASSA** · Nomenclatura: **PASSA** · Sem contradições: **PASSA** · Contagens (53 capacidades × índice): **PASSA** · Anti-vazamento (`check_core_agnostic` PASS): **PASSA**.
+- Inconsistências corrigidas neste checkpoint: citação ADR (4 refs) + wording Kaspersky (achados do process-critic, EMENDA dentro da junção).
+- Veredito: **PASSA**.
+
 ## 2026-06-08 — Release v1.51.0: qa-evidence + posture-gate + hardening dos gates de processo (ADR-074 emendas 2/3; ADR-071/069)
 
 Aprovado e funcionando: **dois process-critic adversariais isolados** (Sonnet heterogêneo, ADR-018) — o 1º achou **5 false-PASS reais** nos gates v1.49/1.50 (corrigidos), o final (sobre o bloco inteiro) achou **3** (`--require-all` derrubaria `pr:` válido na CI; `is_export_shadow` gameável por forja de marker + false-FAIL de shadow legítimo; regex de versão casava `-beta`) → **todos corrigidos + re-revisados → APROVADO** (`_meta/qa/v1.51.0-release.json`). Suíte: 41 PASS / 6 SKIP / 0 FAIL (objetivo). Mecanismos novos, cada um com canário: **qa-evidence** (`qa_evidence.py` + `test_qa_evidence`, fail-closed: release exige veredito qa-critic aprovativo persistido — mecaniza "o qa-critic rodou"); **posture-gate** (`test_posture_gate`, fail-closed: discovery+RRC+método-sênior atestados pelo crítico adversarial, anti-JARVIS; gatilho determinístico `fonte_canonica→aplicado`); **context-budget** (`context_budget.py`, doc-intake p/ fonte grande — pedido do dono); **hitl-proof verify** (`verify_hitl_proofs.py` + passo CI, ADR-071 pendência); **cross-ai boot-scan** (descoberta de handoffs no boot, nunca silenciosa); **`is_export_shadow`** (anti-forja, repo_identity). Itens fechados: 1a/1b/2/3/4/5/7 do briefing + os 2 feedbacks mid-flight (doc-intake, modo autosuficiente restaurado).

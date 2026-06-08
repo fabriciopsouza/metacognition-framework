@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Canario context_budget (ADR-074 emenda 3 / pedido do dono 2026-06-08): a decisao LER-INTEIRO vs
+"""Canario context_budget (ADR-029 doc-intake / pedido do dono 2026-06-08): a decisao LER-INTEIRO vs
 FRACIONAR e deterministica e correta nas fronteiras. Mecaniza "usar doc-intake p/ contexto maior".
 
 Uso: python tools/test_context_budget.py   (exit 0 PASS; 1 se falha)
