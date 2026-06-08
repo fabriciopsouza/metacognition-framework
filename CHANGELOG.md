@@ -15,6 +15,15 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.52.0] — 2026-06-08 — context-budget vira hook real + restauração da wiring global (correção de premissa "Kaspersky")
+
+### Added
+- **`tools/hooks/context_budget_gate.py` (PreToolUse Read) + canário:** mecaniza "fracionar contexto maior" (pedido do dono) — ANUNCIA na hora da leitura quando a fonte excede o orçamento, recomendando `doc_intake`/leitura cirúrgica. Não-bloqueante ("gates anunciados"), fail-open. Wirado no `.claude/settings.json`. Move `context-budget` de advisory → enforcement fail-soft onde hooks rodam. [CONSOLIDADO]
+
+### Fixed
+- **Correção de premissa (`[CONFIRMADO]`):** a v1.51.0 atribuiu o context-budget doctrine-only e o clobber do modo a "Kaspersky veta hooks" — **errado para máquinas SEM Kaspersky**. A `kaspersky-aac-blocks-hooks` é de OUTRA máquina (9TRP7H4). Onde hooks rodam, o enforcement é real. Docstring do `context_budget.py` corrigida (não assumir veto sem verificar a máquina).
+- **Wiring global restaurada:** `~/.claude/settings.json` estava `{}` (clobber: perdeu mode + hooks de auto-boot ADR-006) e `~/.claude/hooks/` vazio. Restaurado via `sync-global.ps1` + `ensure-global-wiring.ps1` (self-heal ADR-027 rodado à mão). Causa real do "autosuficiente parou" — não Kaspersky.
+
 ## [1.51.0] — 2026-06-08 — qa-evidence + posture-gate + hardening dos gates de processo (ADR-074 emendas 2/3; ADR-071/069)
 
 ### Added
