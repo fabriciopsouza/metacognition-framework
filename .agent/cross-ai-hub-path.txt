@@ -1,0 +1,4 @@
+# Path do hub privado cross-IA clonado (metacognition-hub). Usado por:
+#   python tools/cross_ai_hub.py boot-scan
+# Descomente e ajuste a linha abaixo (ou use env CROSS_AI_HUB, que tem precedencia).
+# Ex.: ~/metacognition-hub

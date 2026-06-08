@@ -156,6 +156,29 @@ def deposit(msgpath, hubdir):
     return 0
 
 
+def _resolve_hub_path():
+    """Resolve o path do hub clonado por config (ordem: env -> ~/.claude -> repo .agent).
+    Retorna o dir existente ou None. Permite boot-scan sem hardcode (agnostico de maquina)."""
+    cand = []
+    env = os.environ.get("CROSS_AI_HUB")
+    if env:
+        cand.append(env)
+    for cfg in (os.path.expanduser("~/.claude/cross-ai-hub-path.txt"),
+                os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                             ".agent", "cross-ai-hub-path.txt")):
+        try:
+            if os.path.isfile(cfg):
+                line = open(cfg, encoding="utf-8-sig").read().strip()
+                if line and not line.startswith("#"):
+                    cand.append(os.path.expanduser(line))
+        except Exception:
+            pass
+    for c in cand:
+        if c and os.path.isdir(c):
+            return c
+    return None
+
+
 def main(argv):
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -182,6 +205,31 @@ def main(argv):
             print(f"📭 nenhum handoff aberto novo p/ {me}.")
         else:
             print(f"📥 {len(novos)} handoff(s) aberto(s) p/ {me} (ler != aceitar — passe pelo qa-critic):")
+            for n in novos:
+                print(f"  - {n['report_id']} de {n['from']} ({n['kind']}) :: {n['path']}")
+        return 0
+
+    if cmd == "boot-scan":
+        # Descoberta AUTOMATICA de handoffs no boot (file-first, ADR-069). Resolve o path do hub
+        # clonado por config -> nunca silencioso: anuncia handoffs OU anuncia que o hub nao esta
+        # configurado (com como configurar). Criterio do item 4: "boot anuncia handoffs".
+        me = opt("--me", "claude-master")
+        hubdir = _resolve_hub_path()
+        if not hubdir:
+            print("📭 [cross-ai boot-scan] hub nao configurado. Para ativar a descoberta de handoffs:")
+            print("   - clone o hub privado (metacognition-hub) e aponte o path em UMA destas fontes:")
+            print("     env CROSS_AI_HUB=<dir>  |  ~/.claude/cross-ai-hub-path.txt  |  .agent/cross-ai-hub-path.txt")
+            return 0
+        if not os.path.isdir(os.path.join(hubdir, "inbox")):
+            print(f"📭 [cross-ai boot-scan] hub configurado ({hubdir}) mas sem inbox/ — clone/sync pendente.")
+            return 0
+        seen_path = opt("--seen") or os.path.join(hubdir, ".cross-ai-seen.json")
+        novos, _ = scan(hubdir, me, seen_path)
+        if not novos:
+            print(f"📭 [cross-ai boot-scan] {hubdir}: nenhum handoff aberto novo p/ {me}.")
+        else:
+            print(f"📥 [cross-ai boot-scan] {len(novos)} handoff(s) aberto(s) p/ {me} "
+                  f"(ler != aceitar — passe pelo qa-critic, ADR-011):")
             for n in novos:
                 print(f"  - {n['report_id']} de {n['from']} ({n['kind']}) :: {n['path']}")
         return 0
