@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "role": "corpus",
+  "ai_owner": "public",
+  "canonical_remote": "https://github.com/fabriciopsouza/metacognition-exec-reports",
+  "canonical_branch": "main",
+  "visibility": "public",
+  "write_policy": "pr-gated-anonymized",
+  "cross_ai_id": "corpus",
+  "purpose": "Corpus PUBLICO de aprendizado ANONIMIZADO (learnings por skill: erros/acertos/reforcos/licoes). Recebe via PR; CI re-valida (whitelist + sensitive-denylist + anti-PII, ADR-052/020/063) e auto-merge so se verde. Layout reports/<pseudonimo>/<ISO-ts>__<exec-id>.md.",
+  "note": "PUBLICO: nada de conteudo de dominio ou PII. So o learnings anonimizado entra; o report FULL fica privado na mae (docs/_private/_intake/)."
+}

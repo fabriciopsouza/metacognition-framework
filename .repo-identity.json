@@ -5,5 +5,9 @@
   "canonical_remote": "https://github.com/fabriciopsouza/metacognition-framework",
   "canonical_branch": "main",
   "stale_behind_threshold": 50,
+  "visibility": "private",
+  "write_policy": "owner-only",
+  "cross_ai_id": "claude-master",
+  "purpose": "Mae Claude: nucleo agnostico + dev do framework. So o Claude escreve; leitura livre. Cross-IA: deposita no hub, le do hub. Nunca escreve em metacognition-gemini.",
   "note": "Dica corroborante (ADR-070). A AUTORIDADE e a ancestralidade git; em conflito, git vence. Um export/clone que copie este arquivo NAO vira master — o classificador checa origin + merge-base/ahead-behind."
 }

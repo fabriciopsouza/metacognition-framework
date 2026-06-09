@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "role": "hub",
+  "ai_owner": "neutral",
+  "canonical_remote": "https://github.com/fabriciopsouza/metacognition-hub",
+  "canonical_branch": "main",
+  "visibility": "private",
+  "write_policy": "pr-gated",
+  "cross_ai_id": "hub",
+  "purpose": "Troca cross-IA neutra. Layout inbox/AAAA/MM/DD + archive/. Ambas as maes depositam via PR no proprio branch; a CI do hub roda cross_ai_gate (anti-loop) e auto-merge so se verde. Ninguem escreve direto no main.",
+  "note": "role=hub cai em AMBIGUO no repo_identity.py de proposito: escrita e PR-gated (branch protection), nunca push direto."
+}
