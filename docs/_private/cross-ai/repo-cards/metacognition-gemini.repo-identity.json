@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "role": "master",
+  "ai_owner": "gemini",
+  "canonical_remote": "https://github.com/fabriciopsouza/metacognition-gemini",
+  "canonical_branch": "main",
+  "stale_behind_threshold": 50,
+  "visibility": "private",
+  "write_policy": "owner-only",
+  "cross_ai_id": "gemini-master",
+  "purpose": "Mae Gemini: nucleo + dev do framework no lado Gemini. So o Gemini escreve; leitura livre. Cross-IA: deposita no hub, le do hub. Nunca escreve em metacognition-framework.",
+  "note": "MODELO gerado pelo claude-master. O Gemini deve commitar isto na raiz do PROPRIO repo (e o dono dele) e ajustar o que divergir. Git vence o marker em conflito (ADR-070)."
+}
