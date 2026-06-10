@@ -15,6 +15,18 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.53.0] — 2026-06-10 — anti-bypass cross-IA: garantias existentes viram sempre-executadas (boot_check, consistency no CI, rules-parity)
+
+> Auditoria dos erros sistêmicos do **Gemini** (relatórios cross-IA) reconciliada com o repo **vivo**: 8 de 12 já eram mecanizados aqui (`test_oracle_bias`, `test_sycophancy`, ADR-036, effect-gate loud-SKIP). O risco real no nosso framework é **bypass, não ausência** — pedido do dono: *"garantias existem → garantir que sejam sempre executadas e não bypassadas"*. Plano lean (régua §0) em `docs/PLANO-ANTI-BYPASS-CROSS-IA.md`. [CONSOLIDADO]
+
+### Added
+- **E1 — `tools/boot_check.py` (emenda ADR-061) + canário `test_boot_check.py`:** self-check de boot **único, em Python (imune ao veto de EDR)**, que funde sync + agnosticismo + boot-scan cross-IA + âncora de versão canônica (anti "versão fantasma" — erro real do boot Gemini); grava `.claude/boot-proof.json` (gitignored) e **carimba os liveness keys** → o banner do route-gate se cala. Wirado no `start-session` §0.7 + `hooks-manifest.json`. Enforcement `manual` (declarado: onde EDR veta hook, não há fail-closed; a alavanca é o nag de liveness não-vetoável). Canário com **frescor** (prova tem de ser desta execução — anti false-PASS de prova velha). [CONSOLIDADO]
+- **E2 — `tools/test_consistency_closing.py` (emenda ADR-030):** as dimensões do `consistency-gate` (hook PS fail-soft vetado → "não disparou em ~7 fechamentos") que **ainda não eram enforçadas** viram **FAIL-CLOSED na suíte CI** (não-vetoável): número de ADR duplicado + ADR citado no CHANGELOG mas ainda `Proposto` (bug recorrente ADR-051). Não duplica `test_release_checkpoint`/`test_adr_changelog_sync`/`test_marketing_claims`; `unpushed`/`transients` ficam advisory. [CONSOLIDADO]
+- **E3 — `tools/check_rules_parity.py` + `test_rules_parity.py` (ADR-075):** anti-drift das **4 regras invioláveis** entre os arquivos de autoridade (mecaniza o erro **#4 do Gemini** — "dual prompt authority / silent drift" — **sem** violar a SSoT §6.5: checa drift entre digestos por referência, não paridade de blocos duplicados). **Dogfood:** o canário achou e reconciliou um drift real (AGENT-FRAMEWORK.md nomeava a 4ª regra como "releitura forçada" vs o canônico "NÃO SEI/nunca-inventar"). [CONSOLIDADO]
+
+### Fixed
+- **`test_compaction_gate.py`:** fixava `cp1252` no decode do stdout do hook PS (frágil em Windows — quebrava em byte `0x9d`); agora `encoding="utf-8", errors="replace"` (determinismo de ambiente — tema do próprio bloco). Surfado pelos arquivos UTF-8 novos.
+
 ## [1.52.0] — 2026-06-08 — context-budget vira hook real + restauração da wiring global (correção de premissa "Kaspersky")
 
 ### Added

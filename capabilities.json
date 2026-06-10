@@ -246,6 +246,23 @@
       ]
     },
     {
+      "id": "rules-parity-guard",
+      "title": "Anti-drift das 4 regras inviolaveis entre arquivos de autoridade (sem violar SSoT §6.5)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/check_rules_parity.py",
+      "test": "tools/test_rules_parity.py",
+      "adr": "docs/adr/075-rules-parity-anti-drift-regras-inviolaveis.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "tags": [
+        "anti-bypass",
+        "anti-drift",
+        "authority",
+        "gate"
+      ]
+    },
+    {
       "id": "limits-catalog",
       "title": "Catalogo LIMITS.md de capacidades provadas (PROVADO|PARCIAL|EM-DESENV), derivado",
       "status": "PROVIDES",
