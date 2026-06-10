@@ -6,8 +6,8 @@ e grava PROVA checavel em .claude/boot-proof.json.
 PORQUE (emenda ADR-061 / plano anti-bypass 2026-06-10): os gates de boot EXISTEM mas sao
 BYPASSAVEIS nesta maquina — hooks PS vetados pelo EDR + passos manuais do start-session pulados
 (falha real 2026-06-08: boot-scan assumido vazio, sem executar). Este script FUNDE esses passos
-espalhados num comando unico (regua §0: funde N->1, NAO adiciona superficie) e deixa PROVA que um
-gate de fechamento pode checar. Nao e hook: o agente RODA no start-session (o banner de liveness
+espalhados num comando unico (regua §0(c): forma executavel UNICA de passos antes manuais-e-skippaveis
+— destrava garantia inalcancavel por prosa; NAO e adicao pura) e deixa PROVA que um gate pode checar. Nao e hook: o agente RODA no start-session (o banner de liveness
 aponta para ele). Fail-soft (exit 0): relata, nao trava o boot. A garantia forte (agnosticismo)
 ja roda fail-closed no CI em paralelo — aqui ela e re-executada como reporte de sessao.
 
@@ -184,7 +184,15 @@ def main(argv):
     for r in results:
         print(f"{glyph.get(r['status'], '?')} {r['name']:18} {r['detail']}")
     print("-" * 50)
-    print(f"RESULTADO: {'OK (todos os gates de boot executados)' if proof['all_ok'] else 'ATENCAO (gate de boot FALHOU — ver acima)'}"
+    skips = [r["name"] for r in results if r["status"] == "skip"]
+    if not proof["all_ok"]:
+        verdict = "ATENCAO (gate de boot FALHOU — ver acima)"
+    elif skips:
+        # honestidade anti-overclaim (achado do process-critic 2026-06-10): skip != executado
+        verdict = f"OK (gates executados; {len(skips)} skip declarado: {', '.join(skips)})"
+    else:
+        verdict = "OK (todos os gates de boot executados)"
+    print(f"RESULTADO: {verdict}"
           f"{'' if session_id else '  [sem --session: liveness nao carimbado]'}")
     return 0  # fail-soft: reporta, nao trava o boot
 

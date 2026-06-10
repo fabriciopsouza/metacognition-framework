@@ -1,0 +1,35 @@
+{
+  "bloco": "v1.53.0-release",
+  "passou": true,
+  "steelman": "Anti-bypass cross-IA: auditoria dos 12 erros sistemicos do Gemini reconciliada com o repo VIVO (8/12 ja mecanizados aqui — test_oracle_bias/test_sycophancy/ADR-036/effect-gate loud-SKIP). Foco correto = bypass, nao ausencia. E1 boot_check funde os passos de boot session-time num comando imune a EDR com prova checavel + frescor (anti false-PASS); E2 porta as dims do consistency-gate vetado para FAIL-CLOSED no CI sem duplicar canarios existentes; E3 mecaniza o erro #4 do Gemini (dual-authority) SEM violar a SSoT §6.5 e achou+reconciliou um drift real ao nascer. Regua §0 respeitada (E3 = §0(c)).",
+  "problemas": [
+    {
+      "severidade": "medio",
+      "local": "tools/boot_check.py:main (linha RESULTADO)",
+      "descricao": "imprimia 'OK (todos os gates executados)' quando cross-ai-boot-scan tinha status=skip (hub nao configurado = padrao) — overclaim, justo o que o bloco combate",
+      "status": "CORRIGIDO: mensagem distingue skip declarado de executado"
+    },
+    {
+      "severidade": "baixo",
+      "local": "tools/boot_check.py:docstring",
+      "descricao": "'funde N->1, NAO adiciona superficie' reivindicava regua §0(a); a justificativa honesta e §0(c) (destrava garantia inalcancavel por prosa)",
+      "status": "CORRIGIDO: docstring cita §0(c), alinhado ao ADR-061 emenda"
+    }
+  ],
+  "recomendacao": "aprovar_com_ressalvas",
+  "verificacoes_executadas": [
+    "process-critic adversarial (Sonnet isolado, heterogeneo): rewind_to=null; limpou adr-{n} match (zero-padding 3 digitos), carimbo de liveness honesto (manifest declara), drift-fix nao e anti-rename, EMENDA so em §Implementacao, contagens em sync",
+    "qa-critic E1 dedicado (Sonnet): achou 2 CRITICO + 1 ALTO reais (env var CLAUDE_CODE_SESSION_ID, false-PASS de prova velha, false-liveness no except) -> TODOS corrigidos + provados (frescor reproduzido: prova STALE -> FAIL; AGENT-FRAMEWORK drift reconciliado)",
+    "E2 provado adversarial: pega ADR duplicado + shipped-Proposto; sem falso-positivo (regex ancorado na linha Status)",
+    "E3 provado: repo real PASS + 3 classes de drift pegas em fixture",
+    "suite run_canaries: 48 PASS apos as 2 correcoes (so faltam os artefatos de fechamento deste release)"
+  ],
+  "postura": {
+    "discovery": "inline+doc: auditoria cross-IA (3 subagentes read-only sobre relatorios Gemini + repo vivo) -> docs/PLANO-ANTI-BYPASS-CROSS-IA.md (gap-analysis 12 erros x guardas vivas); elicitacao do dono ('garantias existem -> sempre executadas, nao bypassadas') incorporada",
+    "rrc": "PASSA",
+    "metodo_senior": "aplicado: mapeamento de fontes (reports Gemini) + verificacao adversarial contra o repo vivo (grep/execucao, nao snapshot) + ataque anti-raso (refutei gaps que se provaram ja-mecanizados) + RRC coherence (versoes/contagens/refs)",
+    "fonte_canonica": false
+  },
+  "release": "1.53.0",
+  "data": "2026-06-10T12:00:00Z"
+}

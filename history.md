@@ -9,6 +9,26 @@
 
 ---
 
+## 2026-06-10 — Release v1.53.0: anti-bypass cross-IA — garantias existentes viram sempre-executadas (boot_check + consistency-CI + rules-parity)
+
+Aprovado e funcionando. Pedido do dono: auditar os **erros sistêmicos do Gemini** (relatórios cross-IA em `~/.gemini/.../metacognition-gemini`) e garantir que **não ocorram aqui** — e que, onde a garantia já existe, ela seja **sempre executada e não bypassada**. **Discovery cross-IA** (3 subagentes read-only sobre os reports + repo vivo) → `docs/PLANO-ANTI-BYPASS-CROSS-IA.md`: **8 de 12 erros do Gemini já eram mecanizados aqui** (`test_oracle_bias`, `test_sycophancy`, ADR-036 porta-do-usuário, effect-gate loud-SKIP) — o risco real é **bypass, não ausência**. Plano lean (régua §0), 3 itens, cada um par-executável:
+- **E1 (emenda ADR-061):** `boot_check.py` — self-check de boot **único, imune a EDR**, funde sync+agnosticismo+boot-scan+versão-canônica, grava `.claude/boot-proof.json` e **carimba liveness** (banner se cala). qa-critic dedicado (Sonnet isolado) achou **2 CRÍTICO + 1 ALTO reais** (env var errada `CLAUDE_CODE_SESSION_ID`; false-PASS de prova velha → canário ganhou **frescor**; false-liveness no except do repo-sync) → todos corrigidos+provados.
+- **E2 (emenda ADR-030):** `test_consistency_closing.py` — as dims do consistency-gate (hook PS **vetado** → "não disparou em ~7 fechamentos") que faltavam viram **FAIL-CLOSED no CI**: ADR nº duplicado + ADR no CHANGELOG ainda Proposto (bug recorrente ADR-051). Sem duplicar canários existentes.
+- **E3 (ADR-075):** `check_rules_parity.py` — anti-drift das 4 regras invioláveis (erro **#4 do Gemini**, dual-authority) **sem violar a SSoT §6.5** (checa drift entre digestos, não duplica blocos). **Dogfood:** achou e reconciliou drift real (AGENT-FRAMEWORK 4ª regra "releitura forçada" → "NÃO SEI/nunca-inventar").
+
+**Process-critic** adversarial (Sonnet isolado) sobre o bloco: `aprovar_com_ressalvas`, **rewind=null** — limpou todos os ataques substantivos (adr-{n} seguro por zero-padding; carimbo de liveness honesto; drift-fix ≠ anti-rename; EMENDA só em §Implementação). 2 achados de **overclaim** (mensagem "todos executados" com skip; docstring §0(a)→(c)) → corrigidos. Drive-by: `test_compaction_gate` UTF-8 pin (fragilidade cp1252 surfada pelos arquivos novos). `_meta/qa/v1.53.0-release.{json,md}`.
+
+Nomenclaturas: `boot_check.py`/`.claude/boot-proof.json` · `boot-check` (liveness key) · `test_consistency_closing.py` · `check_rules_parity.py` (digesto×referência×delegação) · enforcement `manual` (boot, declarado) / `fail-closed` (E2/E3).
+Decisões permanentes: **ADR-075** (rules-parity) Aceito; **emendas** ADR-061 (forma executável do auditor) + ADR-030 (dims fail-closed no CI). Erro #4 Gemini coberto sem importar a duplicação que o causou.
+Próximo passo: **Fase 2** — replicar o gap-analysis no framework Gemini via **handoff cross-IA** (write-isolation ADR-070: não dou push no repo dele). Dono clonar o hub destrava o boot-scan pleno.
+Riscos ativos: enforcement de boot_check é `manual` onde EDR veta hook (declarado; alavanca = nag de liveness não-vetoável). Suíte 50 PASS / 1 SKIP / 0 FAIL. WIP: Fase 2 (handoff Gemini) pendente.
+
+## RRC (ADR-010) — coherence pass
+- Artefatos lidos: CHANGELOG/README/vitrine (1.53.0), boot_check/test_boot_check, test_consistency_closing, check_rules_parity/test_rules_parity, ADR-061/030 (emendas)/075, capabilities.json/CAPABILITIES.md, hooks-manifest, start-session §0.7, `_meta/qa/v1.53.0-release.json`.
+- Verificações: versões em sync (README × CHANGELOG × vitrine = 1.53.0; `test_marketing_claims` PASS): **PASSA** · Refs cruzadas (ADR-075 existe e no CHANGELOG; `test_adr_changelog_sync` PASS): **PASSA** · Nomenclatura: **PASSA** · Sem contradições: **PASSA** · Contagens (56 capacidades × índice; `test_capabilities` PASS): **PASSA** · Anti-vazamento (`check_core_agnostic` PASS): **PASSA**.
+- Inconsistências corrigidas neste checkpoint: 4ª regra invioláveis (AGENT-FRAMEWORK drift, achado pelo próprio E3); 2 overclaims do process-critic.
+- Veredito: **PASSA**.
+
 ## 2026-06-08 — Release v1.52.0: context-budget vira hook real + restauração da wiring global (correção de premissa "Kaspersky")
 
 Aprovado e funcionando: o dono corrigiu **"neste PC não temos Kaspersky"** — eu havia atribuído (errado) o context-budget doctrine-only e o clobber do modo a "Kaspersky veta hooks". File-first: esta máquina tem `powershell.exe` (5.1), sem `pwsh`; hooks **rodam**. Entregue: **`context_budget_gate.py`** (hook PreToolUse Read, não-bloqueante/fail-open — ANUNCIA fracionar via doc-intake em leitura de fonte grande) wirado no `.claude/settings.json` + canário; move context-budget de advisory → enforcement fail-soft onde hooks rodam. **Wiring global restaurada** (`~/.claude/settings.json` estava `{}`; rodei `sync-global.ps1` + `ensure-global-wiring.ps1` → SessionStart+UserPromptSubmit re-wirados; causa real do "autosuficiente parou", não Kaspersky). Process-critic adversarial: **aprovar_com_ressalvas** — achou citação errada `ADR-074 emenda 3` (colidia com posture-gate; correto = ADR-029, igual à capacidade-irmã) em 4 refs + "Kaspersky" genérico → **corrigidos**, rrc → PASSA. Suíte 42 PASS / 0 FAIL. `_meta/qa/v1.52.0-release.json`.
