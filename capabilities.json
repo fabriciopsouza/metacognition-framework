@@ -229,6 +229,23 @@
       ]
     },
     {
+      "id": "consistency-closing-ci",
+      "title": "Consistencia de fechamento FAIL-CLOSED no CI (dim do consistency-gate que o hook PS vetado nao enforcava)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/test_consistency_closing.py",
+      "test": "tools/test_consistency_closing.py",
+      "adr": "docs/adr/030-consistency-gate-auditoria-de-fechamento.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "tags": [
+        "doc-sync",
+        "anti-bypass",
+        "closing",
+        "gate"
+      ]
+    },
+    {
       "id": "limits-catalog",
       "title": "Catalogo LIMITS.md de capacidades provadas (PROVADO|PARCIAL|EM-DESENV), derivado",
       "status": "PROVIDES",
