@@ -32,8 +32,10 @@ def run_hook(pwsh, cwd):
         input=json.dumps(payload),
         capture_output=True,
         text=True,
+        encoding="utf-8",      # pin: PS 5.1 emite no codepage do console; default cp1252 quebra em 0x9d
+        errors="replace",      # nunca crashar o canario por byte de encoding (determinismo de ambiente)
     )
-    out = proc.stdout.strip()
+    out = (proc.stdout or "").strip()
     is_block = False
     if out:
         try:

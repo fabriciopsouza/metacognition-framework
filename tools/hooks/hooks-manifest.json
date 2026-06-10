@@ -12,6 +12,12 @@
       "event": "SessionStart",
       "gate": "agnosticismo do nucleo (ADR-020)",
       "manual": "rode `python tools/check_core_agnostic.py` para checar vazamento de dominio no nucleo"
+    },
+    {
+      "key": "boot-check",
+      "event": "SessionStart (manual, agente roda)",
+      "gate": "self-check de boot consolidado (emenda ADR-061 / plano anti-bypass) — funde sync+agnosticismo+boot-scan+versao num comando, grava prova checavel, carimba os gates que executou",
+      "manual": "rode `python tools/boot_check.py` (UM comando, auto-detecta $env:CLAUDE_CODE_SESSION_ID p/ carimbar o liveness): faz sync+agnosticismo+boot-scan+versao, grava .claude/boot-proof.json e carimba boot-check/check-repo-sync/check-core-agnostic — calando este banner. Sem a env, passe `--session <id>`."
     }
   ]
 }
