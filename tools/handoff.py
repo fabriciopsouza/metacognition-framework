@@ -21,6 +21,7 @@ Uso:
   (sem args: infere o papel do 'Proximo passo' do checkpoint; imprime o pacote pronto-para-colar)
 """
 import argparse
+import json
 import os
 import re
 import subprocess
@@ -33,13 +34,12 @@ try:
 except Exception:
     pass
 
-# IDs reais (ambiente 2026-06): Opus 4.8, Sonnet 4.6, Haiku 4.5, Fable 5.
-MODEL_ID = {
-    "opus": "claude-opus-4-8",
-    "sonnet": "claude-sonnet-4-6",
-    "haiku": "claude-haiku-4-5-20251001",
-    "fable": "claude-fable-5",
-}
+# Politica de modelo = DADO, nao codigo (ADR-078): tools/model-policy.json e a fonte unica
+# (papel+risco -> tier -> model-id). MODEL_ID mantido como alias derivado (compat ADR-076).
+POLICY_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "model-policy.json")
+with open(POLICY_PATH, encoding="utf-8") as _f:
+    POLICY = json.load(_f)
+MODEL_ID = dict(POLICY["model_ids"])
 
 
 def _git(*args):
@@ -126,21 +126,66 @@ def infer_role(proximo):
     return "developer"
 
 
+def _unavailable():
+    """Indisponibilidade SITUACIONAL declarada (nunca sondada — determinismo): env
+    FRAMEWORK_MODELS_UNAVAILABLE=fam1,fam2. Permanente = remover de model_ids no policy."""
+    raw = os.environ.get("FRAMEWORK_MODELS_UNAVAILABLE", "")
+    return {x.strip().lower() for x in raw.split(",") if x.strip()}
+
+
+def _available(fam):
+    return fam in MODEL_ID and fam not in _unavailable()
+
+
+def _tier_model(tier):
+    """Resolve tier -> (familia, nota-de-fallback) caminhando a chain e pulando indisponiveis.
+    Chain esgotada -> ValueError declarado (nunca escolha silenciosa)."""
+    chain = POLICY["tiers"][tier]["chain"]
+    for i, fam in enumerate(chain):
+        if _available(fam):
+            note = "" if i == 0 else f" [fallback: {'/'.join(chain[:i])} indisponivel -> {fam}]"
+            return fam, note
+    raise ValueError(f"tier '{tier}' esgotado: chain {chain} toda indisponivel "
+                     f"(FRAMEWORK_MODELS_UNAVAILABLE={','.join(sorted(_unavailable())) or '-'})")
+
+
+def _heterogeneous(author):
+    """Degrau 2 da escada (ADR-078/018): modelo DIFERENTE do autor, ordem de preferencia vinda da
+    policy (autor tier-alto -> balanced primeiro; senao -> max primeiro). Pula indisponiveis;
+    esgotado -> degrau 3 (mesmo modelo, fresh, DECLARADO)."""
+    pref = POLICY["heterogeneous_preference"]
+    tiers = pref["order_if_high"] if author in pref["high_authors"] else pref["order_otherwise"]
+    seen = []
+    for tier in tiers:
+        for fam in POLICY["tiers"][tier]["chain"]:
+            if fam not in seen:
+                seen.append(fam)
+    for fam in seen:
+        if fam != author and _available(fam):
+            return fam, ""
+    return author, (" [DEGRAU 3 da escada: nenhum modelo distinto disponivel -> mesmo modelo em "
+                    "contexto fresh — DECLARAR no veredito, nunca fingir heterogeneidade]")
+
+
 def suggest_model(next_role, risk, author):
-    """Regra DETERMINISTICA papel+risco -> modelo (ADR-076; heterogeneidade ADR-018)."""
+    """Regra DETERMINISTICA papel+risco -> modelo, lida de model-policy.json (ADR-078; era
+    hardcoded no ADR-076 — politica em 3 fontes divergentes foi o gap P5 da avaliacao 2026-06-11)."""
     role = (next_role or "").lower()
-    if risk in ("high", "regulated", "irreversible"):
-        return "opus", "alto-risco/regulado/irreversivel -> mais capaz (Opus) + gate humano (HITL)"
-    if any(k in role for k in ("qa", "critic", "review", "revis", "verif")):
-        het = "sonnet" if author == "opus" else "opus"
-        return het, f"qa/review -> HETEROGENEO (autor={author}; ADR-018 anti-vies de auto-aprovacao)"
-    if any(k in role for k in ("cross-ai", "cross-ia", "handoff", "gemini")):
-        return "opus", "cross-IA/handoff de coordenacao -> mais capaz (Opus)"
-    if any(k in role for k in ("architect", "arquitet", "discovery", "design", "spec", "plan")):
-        return "opus", "architect/discovery/spec -> mais capaz (Opus)"
-    if any(k in role for k in ("docops", "document", "mechan", "bulk", "format", "lint", "rename", "migrate")):
-        return "sonnet", "mecanico/docops/bulk -> custo-eficiente (Sonnet)"
-    return "sonnet", "default -> Sonnet (equilibrio capacidade/custo)"
+    # robusto a metadados no JSON: so e override se o VALOR resolve a um tier existente
+    risk_tier = POLICY["risk_override"].get(risk or "")
+    if risk_tier in POLICY["tiers"]:
+        fam, fb = _tier_model(risk_tier)
+        return fam, f"alto-risco/regulado/irreversivel -> tier max ({fam}) + gate humano (HITL){fb}"
+    for rule in POLICY["roles"]:
+        if any(k in role for k in rule["match"]):
+            if rule["tier"] == "heterogeneous":
+                het, fb = _heterogeneous(author)
+                return het, (f"qa/review -> HETEROGENEO (autor={author}; ADR-018 anti-vies; "
+                             f"escada completa em model-policy.json){fb}")
+            fam, fb = _tier_model(rule["tier"])
+            return fam, f"{rule['match'][0]} -> tier {rule['tier']} ({fam}): {rule['why']}{fb}"
+    fam, fb = _tier_model(POLICY["default_tier"])
+    return fam, f"default -> tier {POLICY['default_tier']} ({fam}){fb}"
 
 
 def pr_info(branch):

@@ -280,6 +280,23 @@
       ]
     },
     {
+      "id": "model-policy",
+      "title": "Politica de modelo como dado: papel x risco -> tier com chain de fallback + escada de heterogeneidade + indisponibilidade declarada (env)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/model-policy.json",
+      "test": "tools/test_handoff.py",
+      "adr": "docs/adr/078-model-policy-fonte-unica-escada-heterogeneidade.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "tags": [
+        "models",
+        "policy",
+        "heterogeneity",
+        "fallback"
+      ]
+    },
+    {
       "id": "limits-catalog",
       "title": "Catalogo LIMITS.md de capacidades provadas (PROVADO|PARCIAL|EM-DESENV), derivado",
       "status": "PROVIDES",

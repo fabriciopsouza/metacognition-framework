@@ -29,12 +29,20 @@ são instâncias **efêmeras** — não herdam a memória da conversa do Orquest
 Candidatos naturais a subagente: **QA-Critic** (contexto fresh evita viés de
 auto-aprovação) e **explore read-only** (mapeia código/dados sem poluir o principal).
 
-## Heterogeneidade de modelo gerador↔crítico (ADR-018 v1.18.0)
-Isolar o qa-critic não basta: a alavanca que **paga** é rodá-lo em **família de modelo diferente** do
+## Heterogeneidade de modelo gerador↔crítico (ADR-018 v1.18.0; escada ADR-078)
+Isolar o qa-critic não basta: a alavanca que **paga** é rodá-lo em **modelo diferente** do
 developer/gerador — Zhang et al. 2025 (Heter-MAD) mostra que heterogeneidade > número de papéis, e que
-multi-agent debate homogêneo não supera self-consistency. No Claude Code: `Agent(..., model: <distinto
-do gerador>)`. **Priorizar isso sobre qualquer estrutura de debate/Conclave** (reprovado por P6). No
-chat sem troca de modelo, a heterogeneidade fica indisponível — **declarar, não fingir** independência.
+multi-agent debate homogêneo não supera self-consistency. **Priorizar isso sobre qualquer estrutura de
+debate/Conclave** (reprovado por P6).
+
+**Escada de degradação declarada (ADR-078 — fonte única: `tools/model-policy.json`):**
+1. **Família DIFERENTE** via hub cross-IA quando configurado (Gemini revisa bloco Claude e vice-versa
+   — ADR-069). Dentro do Claude Code puro, família≠ é inalcançável (opus/sonnet/haiku/fable = Claude).
+2. **Modelo diferente, mesma família:** `Agent(..., model: <distinto do autor>)` — autor tier-alto
+   (fable/opus) → crítico sonnet; autor sonnet/haiku → crítico no tier max. **Nunca** o mesmo modelo
+   do autor por inércia de frontmatter.
+3. **Mesmo modelo, contexto fresh** — permitido mas **declarado no veredito** ("heterogeneidade
+   indisponível"), nunca silencioso. No chat sem troca de modelo é o degrau forçado — **declarar, não fingir**.
 
 ## ⚠️ Ressalva de ambiente [CONFIRMADO]
 - **Claude Code / SDK:** isolamento **real** (subagente com contexto e tools próprios).

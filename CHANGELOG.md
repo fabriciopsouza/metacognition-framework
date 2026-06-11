@@ -15,6 +15,18 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.57.0] — 2026-06-11 — política de modelo como dado: model-policy.json fonte única + escada de heterogeneidade + fallback de indisponibilidade (ADR-078, F2)
+
+> Fase F2 do plano de melhoria (P5–P7): a política de modelo vivia em **3 fontes divergentes** (suggest_model hardcoded — cego ao tier Fable/Mythos acima de Opus; frontmatter `model: sonnet` fixo; prosa ADR-018) e não tinha resposta para **modelo indisponível** (pergunta do dono em sessão). Régua §0(a): funde 3→1 e REMOVE as regras hardcoded do código. [CONSOLIDADO]
+
+### Added
+- **`tools/model-policy.json` (capability `model-policy`, ADR-078):** fonte única papel×risco→tier (`max`/`balanced`/`economy`/`heterogeneous`), cada tier com **chain de fallback** (max: fable→opus→sonnet · balanced: sonnet→opus→haiku · economy: haiku→sonnet); **escada de heterogeneidade** 3 degraus (família≠ via hub cross-IA > modelo≠ mesma família com preferência data-driven > fresh **declarado**); **indisponibilidade situacional declarada** via `FRAMEWORK_MODELS_UNAVAILABLE=fam1,fam2` — resolução pula indisponíveis e **anota o fallback no output**; chain esgotada → erro declarado (nunca escolha silenciosa). Atualizar modelo novo = editar dado, não código. [CONSOLIDADO]
+
+### Changed
+- **`tools/handoff.py`:** `suggest_model` lê a policy (regras hardcoded **removidas**); papéis mecânicos (docops/bulk) descem a **haiku** (economy — saída gateada por canário, não pelo modelo); decisão/elicitação/cross-IA sobem ao **tier max** (hoje Fable, fallback Opus). `MODEL_ID` vira alias derivado (compat ADR-076).
+- **`tools/test_handoff.py`:** 12 regras de modelo + validação de schema da policy + 5 cenários de indisponibilidade (incl. degrau 3 declarado e chain esgotada → erro). O canário pegou 2 defeitos de design durante o desenvolvimento (preferência heterogênea e expectativa de exaustão) — corrigidos via `heterogeneous_preference` data-driven.
+- **`_meta/subagent-isolation.md` + `.claude/agents/qa-critic.md` + `.agent/workflows/checkpoint.md`:** escada de 3 degraus documentada no lar único; subagente instrui o orquestrador a sobrepor `model:` conforme a policy; checkpoint cita a regra por ponteiro (anti-stale).
+
 ## [1.56.0] — 2026-06-11 — enforcement determinístico de junção e release: version-claim + override de CI + ledger de junções + validation.md em J3 (ADR-077, F1)
 
 > Fase F1 do plano de melhoria (`docs/_private/reports/avaliacao-processo-framework-2026-06-11.md`), motivada pelo caso real v1.55.0: bloco mergeado declarando versão no commit **sem** CHANGELOG/qa-evidence, com CI pulado por admin-merge — nenhum gate fail-closed acordou (todos ancoram no evento "versão nova no CHANGELOG") e as junções J0–J3 não deixam rastro mecânico. Régua §0: **zero ferramenta nova, zero canário novo** — 4 emendas a mecanismos existentes. [CONSOLIDADO]

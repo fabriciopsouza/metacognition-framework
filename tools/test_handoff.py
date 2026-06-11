@@ -27,19 +27,21 @@ P14_SECTIONS = [
     "[P14] Pendencias e premissas herdadas",
 ]
 
-# (next_role, risk, author) -> familia esperada
+# (next_role, risk, author) -> familia esperada (ADR-078: politica lida de model-policy.json;
+# tier max = fable [Mythos-class, acima de Opus], balanced = sonnet, economy = haiku)
 MODEL_CASES = [
-    ("qa-critic", "low", "opus", "sonnet"),   # heterogeneo: autor opus -> sonnet
-    ("qa-critic", "low", "sonnet", "opus"),   # heterogeneo: autor sonnet -> opus
+    ("qa-critic", "low", "opus", "sonnet"),   # heterogeneo: autor tier-alto -> sonnet
+    ("qa-critic", "low", "fable", "sonnet"),  # heterogeneo: autor fable -> sonnet
+    ("qa-critic", "low", "sonnet", "fable"),  # heterogeneo: autor sonnet -> tier max
     ("review", "low", "opus", "sonnet"),
-    ("cross-ai", "low", "opus", "opus"),      # handoff cross-IA -> mais capaz
-    ("handoff gemini", "low", "opus", "opus"),
-    ("architect", "low", "opus", "opus"),     # mais capaz
-    ("discovery", "low", "opus", "opus"),
-    ("docops", "low", "opus", "sonnet"),      # custo-eficiente
-    ("developer", "low", "opus", "sonnet"),   # default
-    ("developer", "high", "opus", "opus"),    # risco sobrepoe papel
-    ("docops", "regulated", "sonnet", "opus"),  # risco sobrepoe papel
+    ("cross-ai", "low", "opus", "fable"),     # handoff cross-IA -> tier max
+    ("handoff gemini", "low", "opus", "fable"),
+    ("architect", "low", "opus", "fable"),    # tier max
+    ("discovery", "low", "opus", "fable"),
+    ("docops", "low", "opus", "haiku"),       # tier economy (mecanico gateado por canario)
+    ("developer", "low", "opus", "sonnet"),   # default = balanced
+    ("developer", "high", "opus", "fable"),   # risco sobrepoe papel -> tier max
+    ("docops", "regulated", "sonnet", "fable"),  # risco sobrepoe papel
 ]
 
 ROLE_CASES = [
@@ -53,6 +55,9 @@ ROLE_CASES = [
 
 def main():
     fails = []
+    # pre-condicao de ambiente (achado BAIXO do process-critic v1.57.0): MODEL_CASES assume
+    # nenhuma indisponibilidade declarada — limpa env herdada (canario roda em processo proprio)
+    os.environ.pop("FRAMEWORK_MODELS_UNAVAILABLE", None)
 
     # (a) roda e emite os campos
     r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "handoff.py")],
@@ -79,6 +84,66 @@ def main():
         got = handoff.infer_role(text)
         if got != expect_role:
             fails.append(f"infer_role({text!r}) = {got}, esperado {expect_role}")
+
+    # (b3) schema da policy (ADR-078): fonte unica integra — tiers resolvem a model_ids,
+    # roles apontam para tiers existentes, escada declarada, risk_override valido.
+    pol = handoff.POLICY
+    for key in ("model_ids", "tiers", "roles", "default_tier", "risk_override", "heterogeneity_ladder"):
+        if key not in pol:
+            fails.append(f"model-policy.json sem chave obrigatoria '{key}'")
+    for tname, t in pol.get("tiers", {}).items():
+        chain = t.get("chain") or []
+        if not chain:
+            fails.append(f"tier '{tname}' sem chain de fallback")
+        for fam in chain:
+            if fam not in pol.get("model_ids", {}):
+                fails.append(f"tier '{tname}': familia '{fam}' na chain sem model_id")
+    for rule in pol.get("roles", []):
+        tr = rule.get("tier")
+        if tr != "heterogeneous" and tr not in pol.get("tiers", {}):
+            fails.append(f"role {rule.get('match')} aponta tier inexistente '{tr}'")
+    if pol.get("default_tier") not in pol.get("tiers", {}):
+        fails.append(f"default_tier '{pol.get('default_tier')}' inexistente")
+    for rk, rv in pol.get("risk_override", {}).items():
+        if not rk.startswith("_") and rv not in pol.get("tiers", {}):
+            fails.append(f"risk_override['{rk}'] aponta tier inexistente '{rv}'")
+    if len(pol.get("heterogeneity_ladder", [])) < 3:
+        fails.append("heterogeneity_ladder incompleta (3 degraus: cross-IA > modelo!=, > fresh declarado)")
+
+    # (b4) fallback de indisponibilidade (ADR-078: declarada via env, nunca sondada/silenciosa)
+    saved_env = os.environ.get("FRAMEWORK_MODELS_UNAVAILABLE")
+    try:
+        os.environ["FRAMEWORK_MODELS_UNAVAILABLE"] = "fable"
+        fam, why = handoff.suggest_model("architect", "low", "opus")
+        if fam != "opus" or "fallback" not in why:
+            fails.append(f"fable indisponivel: architect = {fam} ({why!r}), esperado opus com nota de fallback")
+        os.environ["FRAMEWORK_MODELS_UNAVAILABLE"] = "fable,opus"
+        fam, _ = handoff.suggest_model("discovery", "low", "opus")
+        if fam != "sonnet":
+            fails.append(f"fable+opus indisponiveis: discovery = {fam}, esperado sonnet")
+        fam, _ = handoff.suggest_model("qa-critic", "low", "sonnet")
+        if fam == "sonnet":
+            fails.append("het com fable/opus indisponiveis devolveu o proprio autor sem esgotar haiku")
+        os.environ["FRAMEWORK_MODELS_UNAVAILABLE"] = "fable,opus,haiku"
+        fam, why = handoff.suggest_model("qa-critic", "low", "sonnet")
+        if fam != "sonnet" or "DEGRAU 3" not in why:
+            fails.append(f"het esgotado: = {fam} ({why!r}), esperado degrau 3 DECLARADO (mesmo modelo fresh)")
+        os.environ["FRAMEWORK_MODELS_UNAVAILABLE"] = "fable,opus,sonnet"
+        fam, why = handoff.suggest_model("developer", "low", "opus")
+        if fam != "haiku" or "fallback" not in why:
+            fails.append(f"balanced com sonnet/opus indisponiveis: = {fam} ({why!r}), "
+                         f"esperado haiku com nota de fallback")
+        os.environ["FRAMEWORK_MODELS_UNAVAILABLE"] = "haiku,sonnet"
+        try:
+            handoff.suggest_model("docops", "low", "opus")
+            fails.append("chain economy esgotada deveria levantar erro declarado, nao escolher em silencio")
+        except ValueError:
+            pass
+    finally:
+        if saved_env is None:
+            os.environ.pop("FRAMEWORK_MODELS_UNAVAILABLE", None)
+        else:
+            os.environ["FRAMEWORK_MODELS_UNAVAILABLE"] = saved_env
 
     # (c) determinismo RIGOROSO: congela TAMBEM o estado do repo e a rede (repo_state/pr_info
     # monkeypatch) -> prova que a CAMADA DE FORMATACAO e byte-identica dado o mesmo estado, nao so

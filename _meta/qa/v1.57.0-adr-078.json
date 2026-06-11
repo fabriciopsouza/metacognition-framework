@@ -1,0 +1,51 @@
+{
+  "bloco": "v1.57.0-adr-078",
+  "passou": true,
+  "recomendacao": "aprovar",
+  "problemas": [
+    {
+      "severidade": "alto",
+      "local": "raiz do repo (commit WIP)",
+      "descricao": "R1: 7 arquivos vazios espurios COMMITADOS no WIP (palavras de comandos bash de subagente com '>' fora de aspas). [CORRIGIDO: removidos via amend pre-push; +2 ondas de espurios limpas; higiene de shell registrada em .claude/agents/qa-critic.md + memoria; R3 confirmou raiz limpa]"
+    },
+    {
+      "severidade": "medio",
+      "local": "docs/adr/076 §Decisao",
+      "descricao": "R1: ADR-076 Aceito com regras de modelo hardcoded contraditas por ADR-078, sem anotacao de substituicao. [CORRIGIDO: linha 'Regra de sugestao de modelo do §Decisao: Substituida por ADR-078' no Status do 076; restante do ADR declarado vigente; politica SUPLANTAxEMENDA ADR-011 cumprida]"
+    },
+    {
+      "severidade": "baixo",
+      "local": "tools/test_handoff.py b3",
+      "descricao": "R1: schema validation nao cobria valores de risk_override. [CORRIGIDO: loop valida chaves nao-_ contra tiers]"
+    },
+    {
+      "severidade": "baixo",
+      "local": "tools/test_handoff.py secao b",
+      "descricao": "R1: MODEL_CASES assumia env limpa. [CORRIGIDO: os.environ.pop no inicio de main()]"
+    },
+    {
+      "severidade": "baixo",
+      "local": "tools/model-policy.json risk_override",
+      "descricao": "R1: design smell — metadado 'note' misturado a dados. [CORRIGIDO: '_note' + resolucao por valor-em-tiers (robusto a metadados)]"
+    }
+  ],
+  "verificacoes_executadas": [
+    "R1: python tools/test_handoff.py -> PASS (12 regras, 5 cenarios indisponibilidade, deterministico)",
+    "R1: python tools/handoff.py --next-role architect -> fable (tier max); com FRAMEWORK_MODELS_UNAVAILABLE=fable -> opus com nota de fallback declarada",
+    "R1: python tools/handoff.py --next-role qa-critic --author fable -> sonnet (degrau 2)",
+    "R1: python tools/run_canaries.py -> 47 PASS / 1 SKIP / 4 FAIL (todos expected pre-gate: consistency/posture/qa-evidence/release-checkpoint do 1.57.0)",
+    "R1: _heterogeneous(fable)->sonnet, (sonnet)->fable, (haiku)->fable, ('gemini')->fable; risk=note/None caem no role logic; POLICY_PATH CWD-independente; chain esgotada -> ValueError loud; b4 finally exception-safe",
+    "R1: python tools/test_capabilities.py -> PASS (59, model-policy fail-closed)",
+    "R2: fixes 2-5 confirmados no codigo (ADR-076 anotado; b3 valida risk_override; env pop; _note robusto); test_handoff PASS; test_capabilities PASS",
+    "R3: git status --porcelain -uall -> raiz limpa, so mudancas legitimas do bloco; veredito final aprovar/0 problemas"
+  ],
+  "steelman": "3 fontes divergentes de politica de modelo genuinamente fundidas em 1 arquivo de dados; logica de tier/heterogeneidade/indisponibilidade correta em todos os edge cases investigados (risk=None/note, autor desconhecido, chain esgotada loud, degrau 3 declarado); determinismo preservado (env declarada, nunca sondada); canario pegou 2 defeitos de design em dev e o processo de 3 rounds pegou contaminacao de artefato que git add -A engoliria.",
+  "release": "1.57.0",
+  "postura": {
+    "discovery": "inline: Eixo 2 do relatorio docs/_private/reports/avaliacao-processo-framework-2026-06-11.md (P5-P7) + pergunta do dono em sessao ('fallback para modelos indisponiveis?') incorporada como mecanismo de indisponibilidade declarada; gap das 3 fontes documentado file-first",
+    "rrc": "PASSA",
+    "metodo_senior": "N/A: tooling interno do framework, sem fonte canonica/normativa externa (precedente v1.54.0); alternativa 'sondagem de API' rejeitada com razao explicita (nao-determinismo)",
+    "fonte_canonica": false
+  },
+  "data": "2026-06-11T19:14:03Z"
+}

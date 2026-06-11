@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "note": "FONTE UNICA da politica de modelo por papel+risco (ADR-078). Antes vivia em 3 lugares divergentes: suggest_model hardcoded (so opus/sonnet, cego ao tier acima), frontmatter dos subagentes (sonnet fixo) e prosa (ADR-018). Consumidores: tools/handoff.py (sugestao de modelo no Pacote P14), orquestrador ao spawnar subagente (Agent model:<id>), _meta/subagent-isolation.md (escada). Atualizar modelo novo = editar AQUI (dado), nao codigo. Canario: test_handoff.py valida schema + regras.",
+  "model_ids": {
+    "fable": "claude-fable-5",
+    "opus": "claude-opus-4-8",
+    "sonnet": "claude-sonnet-4-6",
+    "haiku": "claude-haiku-4-5-20251001"
+  },
+  "tiers": {
+    "max": {
+      "chain": ["fable", "opus", "sonnet"],
+      "why": "tier mais capaz disponivel (Mythos-class > Opus); cadeia degrada na ordem"
+    },
+    "balanced": {
+      "chain": ["sonnet", "opus", "haiku"],
+      "why": "equilibrio capacidade/custo; indisponivel -> sobe p/ opus antes de descer p/ haiku (qualidade > custo)"
+    },
+    "economy": {
+      "chain": ["haiku", "sonnet"],
+      "why": "mecanico/bulk validado por canario Python, nao pelo modelo"
+    }
+  },
+  "unavailability": {
+    "how": "indisponibilidade SITUACIONAL (modelo deprecado, plano sem acesso, API fora) e DECLARADA, nao sondada: env FRAMEWORK_MODELS_UNAVAILABLE=fam1,fam2 (sessao) ou remover de model_ids (permanente). Resolucao caminha a chain do tier pulando indisponiveis e DECLARA o fallback usado no output. Mantem determinismo: entrada = arquivo + env explicita, nunca probe de rede.",
+    "exhausted": "chain inteira indisponivel -> erro declarado (nunca escolha silenciosa); heterogeneous esgotado -> degrau 3 da escada (mesmo modelo, contexto fresh, DECLARADO no veredito)"
+  },
+  "roles": [
+    {
+      "match": ["qa", "critic", "review", "revis", "verif"],
+      "tier": "heterogeneous",
+      "why": "ADR-018 anti-vies de auto-aprovacao: modelo distinto do autor (ver heterogeneity_ladder)"
+    },
+    {
+      "match": ["cross-ai", "cross-ia", "handoff", "gemini"],
+      "tier": "max",
+      "why": "coordenacao cross-IA -> mais capaz"
+    },
+    {
+      "match": ["architect", "arquitet", "discovery", "design", "spec", "plan"],
+      "tier": "max",
+      "why": "decisao/elicitacao -> mais capaz (custo do erro a montante > custo do token)"
+    },
+    {
+      "match": ["docops", "document", "mechan", "bulk", "format", "lint", "rename", "migrate"],
+      "tier": "economy",
+      "why": "saida mecanica gateada por canarios; julgamento nao desce de balanced"
+    }
+  ],
+  "default_tier": "balanced",
+  "heterogeneous_preference": {
+    "high_authors": ["fable", "opus"],
+    "order_if_high": ["balanced", "max", "economy"],
+    "order_otherwise": ["max", "balanced", "economy"],
+    "why": "autor tier-alto -> critico balanced (sonnet) basta e e barato; autor balanced/economy -> critico tier max (anti-vies exige distinto, capacidade compensa)"
+  },
+  "risk_override": {
+    "high": "max",
+    "regulated": "max",
+    "irreversible": "max",
+    "_note": "chaves sem prefixo _ sao riscos -> tier; risco sobrepoe papel + exige gate humano (HITL)"
+  },
+  "heterogeneity_ladder": [
+    "1. familia DIFERENTE via hub cross-IA quando configurado (Gemini revisa bloco Claude e vice-versa — ADR-069)",
+    "2. modelo diferente, MESMA familia: autor max/balanced -> critico no degrau distinto mais capaz disponivel (autor fable/opus -> sonnet; autor sonnet/haiku -> fable, fallback opus)",
+    "3. mesmo modelo, contexto fresh — PERMITIDO mas DECLARADO no veredito ('heterogeneidade indisponivel'), nunca silencioso (ADR-018: declarar, nao fingir)"
+  ]
+}
