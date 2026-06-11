@@ -58,7 +58,7 @@
     "high": "max",
     "regulated": "max",
     "irreversible": "max",
-    "note": "risco sobrepoe papel + exige gate humano (HITL)"
+    "_note": "chaves sem prefixo _ sao riscos -> tier; risco sobrepoe papel + exige gate humano (HITL)"
   },
   "heterogeneity_ladder": [
     "1. familia DIFERENTE via hub cross-IA quando configurado (Gemini revisa bloco Claude e vice-versa — ADR-069)",

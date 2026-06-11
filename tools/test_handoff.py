@@ -55,6 +55,9 @@ ROLE_CASES = [
 
 def main():
     fails = []
+    # pre-condicao de ambiente (achado BAIXO do process-critic v1.57.0): MODEL_CASES assume
+    # nenhuma indisponibilidade declarada — limpa env herdada (canario roda em processo proprio)
+    os.environ.pop("FRAMEWORK_MODELS_UNAVAILABLE", None)
 
     # (a) roda e emite os campos
     r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "handoff.py")],
@@ -101,6 +104,9 @@ def main():
             fails.append(f"role {rule.get('match')} aponta tier inexistente '{tr}'")
     if pol.get("default_tier") not in pol.get("tiers", {}):
         fails.append(f"default_tier '{pol.get('default_tier')}' inexistente")
+    for rk, rv in pol.get("risk_override", {}).items():
+        if not rk.startswith("_") and rv not in pol.get("tiers", {}):
+            fails.append(f"risk_override['{rk}'] aponta tier inexistente '{rv}'")
     if len(pol.get("heterogeneity_ladder", [])) < 3:
         fails.append("heterogeneity_ladder incompleta (3 degraus: cross-IA > modelo!=, > fresh declarado)")
 

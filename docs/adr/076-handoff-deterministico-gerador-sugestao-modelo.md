@@ -1,6 +1,7 @@
 # ADR 076 — Handoff cross-sessão DETERMINÍSTICO: gerador do Pacote P14 a partir do estado do repo + sugestão de modelo
 
 - Status: **Aceito** (2026-06-11 — gate: **qa-critic adversarial** (Sonnet isolado) com 7 achados corrigidos + **suíte local verde** 50+ canários; CI do GitHub Actions **billing-blocked** nesta conta → validação pela suíte cross-platform local, não pelo runner) · Data: 2026-06-11 · Decisores: dono + squad
+- **Regra de sugestão de modelo do §Decisão: Substituída por ADR-078** (`tools/model-policy.json` — papel×risco→tier com chain de fallback; "Opus/Sonnet" hardcoded deixou de ser a regra). O gerador P14 e o restante deste ADR permanecem vigentes.
 - Onda: determinismo de fechamento/handoff · Tipo: **adição** justificada pela régua §0(c) — destrava garantia inalcançável por prosa (mecaniza o template P14 que existia mas era preenchido à mão) + remove o modo de falha "handoff improviso".
 - Relaciona: ADR-012 (Pacote de handoff P14 / princípio 14 — o **template** que este ADR mecaniza), ADR-016 (digest/compaction — o handoff é superset), ADR-018 (heterogeneidade de modelo — base da regra de sugestão). Pedido do dono: *"ausência de handoffs claros ao fim de cada bloco… em auto-execução, automações e passagens cross-model (inclusive sugerir qual modelo) — tudo determinístico"*.
 

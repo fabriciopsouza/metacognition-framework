@@ -9,6 +9,28 @@
 
 ---
 
+## 2026-06-11 — Release v1.57.0: política de modelo como dado — model-policy.json + escada de heterogeneidade + fallback de indisponibilidade (ADR-078, fase F2)
+
+Aprovado e funcionando. **F2 do plano** (P5–P7): `tools/model-policy.json` **fonte única** papel×risco→tier (3 fontes divergentes fundidas — hardcode do `suggest_model`, frontmatter fixo, prosa ADR-018); **chains de fallback por tier** (max: fable→opus→sonnet · balanced: sonnet→opus→haiku · economy: haiku→sonnet); **escada de heterogeneidade** 3 degraus (família≠ via hub cross-IA > modelo≠ com preferência data-driven > fresh DECLARADO); **indisponibilidade situacional declarada** via `FRAMEWORK_MODELS_UNAVAILABLE` (pergunta do dono em sessão, incorporada — fallback anotado no output; chain esgotada → erro loud, nunca escolha silenciosa). Papéis mecânicos → haiku; decisão/elicitação → tier max (hoje Fable). ADR-076 anotado (regra de modelo Substituída por ADR-078; gerador P14 vigente). Régua §0(a): hardcode removido ≥ policy adicionada.
+
+**Process-critic (Sonnet isolado, 3 rounds J4 — iteração dentro da junção, ADR-011):** R1 `corrigir` (1 ALTO + 1 MÉDIO + 3 BAIXO) → fixes → R2 confirmou substantivos → R3 `aprovar`/0. Evidência: `_meta/qa/v1.57.0-adr-078.{json,md}`. Ledger J0–J4 do bloco em `junctions/v1.57.0-adr-078.jsonl` (dogfood do ADR-077).
+
+Nomenclaturas: `model-policy` (capability #59) · tier max/balanced/economy · `FRAMEWORK_MODELS_UNAVAILABLE` · `heterogeneous_preference`.
+Decisões permanentes: **ADR-078** Aceito (política como dado; sondagem de API rejeitada por não-determinismo — indisponibilidade é DECLARADA).
+Próximo passo: **F3** (P8 — testes "N/A" justificado no ledger J3 + rule SE/ENTÃO; depende do merge do ledger P3) e **F4** (P9–P12 dieta de contexto; P9/P12 exigem ADR própria de remoção). Aceite F3: rule nova + caso no canário.
+Riscos ativos: CI billing-blocked (PRs #78/#79/F2 empilhados aguardam merge do dono, ordem 78→79→F2); **incidente ambiente**: comandos bash de subagentes com `->` fora de aspas criam arquivos vazios espúrios na raiz (3 ondas, ~20 arquivos, 7 chegaram a commit e foram removidos via amend) — mitigado em `.claude/agents/qa-critic.md` + memória; candidato a guard mecânico (advisory raiz-limpa no consistency-gate) na F4.
+RE-ORQUESTRAÇÃO: prosseguir (F3/F4 conforme plano; F3 bloqueado até merge de #79).
+
+## RRC (ADR-010) — coherence pass
+- Artefatos lidos: CHANGELOG (1.57.0), README:11, guia/web/index.html, ADR-078, ADR-076 (anotação), model-policy.json, handoff.py, test_handoff.py, subagent-isolation.md, qa-critic.md (agente), checkpoint.md, capabilities.json/CAPABILITIES.md (59), `_meta/qa/v1.57.0-adr-078.json`, ledger.
+- Verificações: versões em sync (README × CHANGELOG × vitrine = 1.57.0): **PASSA** · Refs cruzadas (ADR-078 Aceito + no CHANGELOG; ADR-076↔078 reconciliadas): **PASSA** · Nomenclatura: **PASSA** · Sem contradições (regra de modelo tem 1 lar só): **PASSA** · Contagens (59 capacidades; 12 regras de modelo; 3 degraus): **PASSA** · Anti-vazamento: **PASSA**.
+- Inconsistências corrigidas neste checkpoint: 5 achados do process-critic (acima) + 3 ondas de espúrios.
+- Veredito: **PASSA**.
+
+## Aprendizado (append desta sessão)
+- **[2026-06-11] Method-audit (ambiente / contaminação de artefato):** comandos Bash de subagentes (e possivelmente do orquestrador) com `->` fora de aspas criam **arquivos vazios espúrios na raiz** (`>` = redirect; ~20 arquivos em 3 ondas; 7 COMMITADOS e removidos via amend). `git add -A` engole tudo — o process-critic R1 do F2 pegou a contaminação. · **Causa-raiz:** higiene de quoting não declarada nos prompts de subagente; nenhum guard de raiz-limpa. · **Proposta (lean):** higiene registrada no agente qa-critic (feito); 2ª ocorrência confirmada → candidato a advisory "arquivos vazios untracked na raiz" no consistency-gate (F4).
+- **[2026-06-11] Method-audit (operação destrutiva sem WIP protegido):** `git reset --hard HEAD~1` na prova negativa do P1 **apagou edições não-commitadas** do próprio bloco (re-trabalho de ~10 min). · **Causa-raiz:** prova negativa com commit sintético sem commitar WIP antes; effect-gate não barra reset (não é push). · **Proposta (lean):** disciplina já adotada na sessão (WIP commit antes de qualquer operação destrutiva); sem regra nova (régua §0 — classe já coberta por action-safety T2/T3 se wirada a reset; avaliar na F4 se recorrer).
+
 ## 2026-06-11 — Release v1.56.0: enforcement determinístico de junção e release (ADR-077, fase F1 do plano de melhoria)
 
 Aprovado e funcionando. **F1 do plano** (`docs/_private/reports/avaliacao-processo-framework-2026-06-11.md`), motivado pelo caso real v1.55.0: **P1** version-claim fail-closed em `test_consistency_closing.py` (commit que declara versão sem heading no CHANGELOG → suíte vermelha; regra híbrida v-prefixo + contexto de versão, validada sem FP em 200 commits + prova negativa exit 1) · **P2** override de CI registrado (advisory gh no canário + rule SE/ENTÃO **#10** no qa-critic — contagem atualizada 9→10) · **P3** ledger de junções `qa_evidence.py --junction` → `_meta/qa/junctions/<bloco>.jsonl` (forward-only na escrita; `--rewind` explícito; corrupção fail-closed) wirado em `/handoff` + pmo SKILL; capability `junction-ledger` (#58) · **P4** J3 exige `--validation` existente OU `--justificativa` (fecha o "se aplicável" silencioso). Régua §0: zero ferramenta nova, zero canário novo.

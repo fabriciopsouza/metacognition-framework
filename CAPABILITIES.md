@@ -1,7 +1,7 @@
 <!-- GERADO por tools/build_capabilities.py a partir de capabilities.json — NAO editar a mao -->
 # CAPABILITIES — indice de capacidades (nivel 1: id + title)
 
-> **58 capacidades** — 53 ✅ PROVIDES · 5 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
+> **59 capacidades** — 54 ✅ PROVIDES · 5 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
 > **Como usar (file-first, boot):** leia esta lista p/ achar o `id`; o registro completo (mecanismo · canario · ADR · doc) vem por **`python tools/build_capabilities.py --show <id>`** ou `grep -A8 '"<id>"' capabilities.json`. Nao reexplore o repo antes disto.
 > **Manutencao:** feature nova -> +1 registro em `capabilities.json` + `python tools/build_capabilities.py`. Canario barra canario orfao (cobertura).
 
@@ -44,6 +44,7 @@
 - ✅ `make-index-tool` — Gerador de indice de documentos/ADRs (make_index)
 - ✅ `marketing-honesty-gate` — Gates de honestidade da vitrine (anti-overclaim, claim provado ancorado, versao em sync)
 - ✅ `mission-gate` — Declara/confirma product_type + escopo antes de J2+ (mission.md)
+- ✅ `model-policy` — Politica de modelo como dado: papel x risco -> tier com chain de fallback + escada de heterogeneidade + indisponibilidade declarada (env)
 - ✅ `nonadmin-profile` — Perfil non-admin: gates anunciados inline quando GPO/EDR veta hooks
 - ✅ `onboarding-master-gate` — Popup usar-vs-desenvolver so no MASTER-CANONICO (nao vaza p/ public/premium/gemini)
 - ✅ `oracle-bias-canary` — Canario anti-vies de oraculo + estabilidade de decisao

@@ -12,6 +12,9 @@ skills:
 # QA-Critic — Subagente Adversarial
 
 Contexto isolado, sem Write/Edit (só valida). Hipótese default = EXISTE BUG.
+**Higiene de shell:** em comandos Bash/`python -c`, SEMPRE aspeie strings com `->`/`>`/`<`
+(fora de aspas o `>` vira redirect e cria arquivo espúrio na raiz do repo — incidente real
+2026-06-11, 17 arquivos vazios em 3 ondas, 7 chegaram a ser commitados).
 Valida **contra o validation.md** da spec (cada critério VERDADEIRO/FALSO).
 
 ## Checklist

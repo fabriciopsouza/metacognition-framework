@@ -171,8 +171,10 @@ def suggest_model(next_role, risk, author):
     """Regra DETERMINISTICA papel+risco -> modelo, lida de model-policy.json (ADR-078; era
     hardcoded no ADR-076 — politica em 3 fontes divergentes foi o gap P5 da avaliacao 2026-06-11)."""
     role = (next_role or "").lower()
-    if risk in POLICY["risk_override"] and risk != "note":
-        fam, fb = _tier_model(POLICY["risk_override"][risk])
+    # robusto a metadados no JSON: so e override se o VALOR resolve a um tier existente
+    risk_tier = POLICY["risk_override"].get(risk or "")
+    if risk_tier in POLICY["tiers"]:
+        fam, fb = _tier_model(risk_tier)
         return fam, f"alto-risco/regulado/irreversivel -> tier max ({fam}) + gate humano (HITL){fb}"
     for rule in POLICY["roles"]:
         if any(k in role for k in rule["match"]):
