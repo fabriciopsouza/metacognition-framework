@@ -15,6 +15,21 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.58.0] — 2026-06-11 — RCA do wiring de hooks (bash!) + dieta de contexto + rule #11 + cadência de poda (ADR-079/080, F3+F4)
+
+> Fecha o plano de melhoria (F3+F4). Descoberta central: **o harness executa hooks via bash** — o wrapper próprio `cmd /c "…"` quebrava o aninhamento de aspas e caía em **cmd interativo executando o payload JSON como comandos** (RCA dos ~33 arquivos espúrios em 4 ondas E dos gates "inertes" atribuídos ao EDR: **os hooks python não executavam por wiring**). [CONSOLIDADO]
+
+### Fixed
+- **`.claude/settings.json` (ADR-079, EMENDA ADR-060):** 12 comandos de hook reescritos na forma bash-correta (`python tools/hooks/x.py`, barras normais; fallback `|| powershell -File "…"`; `|| true` no lugar de `exit /b 0`). Validado ao vivo: os gates de runtime passaram a executar de fato. [CONSOLIDADO]
+
+### Added
+- **Dim raiz-limpa em `test_consistency_closing.py` (ADR-079):** arquivo RASTREADO na raiz com 0 bytes e sem extensão = destroço de shell → FAIL (untracked → advisory). Dogfood imediato: pegou 13 destroços dentro do próprio commit que o introduziu. [CONSOLIDADO]
+- **Rule #11 no qa-critic (P8/ADR-080):** código executável com testes ausentes e justificativa genérica no ledger J3 ("trivial"/"N/A" sem motivo; >2 arquivos sem teste) → REPROVADO; `product_type` executável exige smoke do entrypoint (gate da aplicação). Fecha a cláusula mais frouxa da cadeia spec-driven. [CONSOLIDADO]
+- **Cadência de poda (P11/ADR-080):** a cada 5 releases, o J6 do PMO revisa a telemetria 17-B (`sem-disparo`) e propõe fusão/remoção via ADR — a régua §0 aplicada a si mesma. [CONSOLIDADO]
+
+### Changed
+- **Dieta de contexto (P9/P12, ADR-080):** `CLAUDE.md` 12.7KB→5KB e `AGENTS.md` 6.6KB→3.5KB (regra-operacional + ponteiro; história vive na ADR; `check_rules_parity` PASS) · rules SE/ENTÃO do qa-critic movidas ao companion **`rules.md`** (11 rules; SKILL 13→9KB; carga obrigatória em J4/PC). ~9.5KB a menos por turno + ~4KB por ativação do qa-critic. [CONSOLIDADO]
+
 ## [1.57.0] — 2026-06-11 — política de modelo como dado: model-policy.json fonte única + escada de heterogeneidade + fallback de indisponibilidade (ADR-078, F2)
 
 > Fase F2 do plano de melhoria (P5–P7): a política de modelo vivia em **3 fontes divergentes** (suggest_model hardcoded — cego ao tier Fable/Mythos acima de Opus; frontmatter `model: sonnet` fixo; prosa ADR-018) e não tinha resposta para **modelo indisponível** (pergunta do dono em sessão). Régua §0(a): funde 3→1 e REMOVE as regras hardcoded do código. [CONSOLIDADO]

@@ -25,8 +25,9 @@ Ver .agent/rules/ (todas referenciam _shared/).
   gate só explícito com custo informado (ADR-051). Output-style ≠ processo (ADR-028).
 - **Modos de execução (ADR-005):** default · avançado · autosuficiente (ratchet forward-only,
   `~/.claude/framework-mode.json`). Detalhe: `_shared/execution-modes/SKILL.md`.
-- **NON-ADMIN (ADR-047):** sem hooks (GPO/EDR), o agente declara e aplica os gates inline
-  (ROTA · mission · action-safety · ler-antes-de-sobrescrever). Detalhe: `guia/MODO-NON-ADMIN.md`.
+- **NON-ADMIN — gates anunciados (ADR-047):** sem hooks (GPO/EDR), o agente anuncia, declara e
+  aplica os gates inline (ROTA · mission · action-safety · ler-antes-de-sobrescrever).
+  Detalhe: `guia/MODO-NON-ADMIN.md`.
 - **Auto-boot global (ADR-006):** owner do `origin` em `~/.claude/squad-owners.txt` acorda o squad;
   pular via `.claude/session.lock`.
 - **Régua §0 (ADR-007):** adição pura rejeitada — só (a) funde/remove ≥ adiciona, (b) reduz

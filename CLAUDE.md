@@ -30,8 +30,9 @@ Por projeto preencha só `docs/briefing.md` + `.agent/rules/00-glossario.md`.
   Output-style governa TOM, nunca o processo (ADR-028).
 - **Modos de execução (ADR-005):** default · avançado · autosuficiente, ratchet forward-only
   em `~/.claude/framework-mode.json`. Detalhe: `_shared/execution-modes/SKILL.md`.
-- **Modo NON-ADMIN (ADR-047):** onde GPO/EDR veta hooks, o agente **declara e aplica inline**
-  cada gate (ROTA · mission/product_type · action-safety por efeito · ler-antes-de-sobrescrever).
+- **Modo NON-ADMIN — gates anunciados (ADR-047):** onde GPO/EDR veta hooks, o agente **anuncia,
+  declara e aplica inline** cada gate (ROTA · mission/product_type · action-safety por efeito ·
+  ler-antes-de-sobrescrever).
   Detalhe: `guia/MODO-NON-ADMIN.md`.
 - **Auto-boot global (ADR-006):** squad acorda quando owner do `origin` bate com
   `~/.claude/squad-owners.txt`. Pular: `.claude/session.lock` (projeto) ou `~/.claude/session.lock`.

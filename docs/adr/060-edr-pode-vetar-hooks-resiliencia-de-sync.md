@@ -1,6 +1,7 @@
 # ADR 060 — EDR pode vetar hooks numa máquina admin → resiliência de sync em camadas (não-PowerShell + fallback)
 
 - Status: **Aceito** (2026-06-04 — gate de aceite: CI verde 3 SOs + qa-critic; verificação na máquina deferida pelo dono) · Data: 2026-06-04 · Decisores: dono + squad (architect/developer)
+- **EMENDA (2026-06-11, ADR-079):** o padrão de wiring `cmd /c "python … || powershell …"` foi **substituído** pela forma bash-direta (`python tools/hooks/x.py || powershell … -File "….ps1"`) — o harness executa hooks via **bash** e o wrapper próprio quebrava (cmd interativo executando o payload; gates mortos por wiring, sintoma antes atribuído ao EDR). O porte Python (decisão central deste ADR) permanece vigente.
 - Onda: resiliência de runtime (alvo v1.42.0) · Tipo: **adição reconciliada** (preserva ADR-019; não revoga hooks). Atende: incidente Kaspersky AAC na máquina 9TRP7H4.
 - Relaciona: ADR-019 (sync no boot = mecanismo), ADR-027 (route-gate), ADR-047 (modo non-admin / gates anunciados), ADR-005 (modos de execução).
 
