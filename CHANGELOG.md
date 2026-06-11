@@ -15,6 +15,22 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.55.0] — 2026-06-11 — hooks de runtime imunes ao veto de EDR: 4 hooks PS → Python com fallback (emenda ADR-060)
+
+> Continuação do anti-veto EDR (ADR-060/061). Os 4 hooks de runtime que ainda eram Pure-PS (vetáveis por Kaspersky/GPO) ganham porta Python 1:1 + fallback PS. **Fechamento retroativo (falha de processo declarada):** o bloco entrou na main via PR #77 **sem esta entrada, sem qa-evidence e com CI pulado por admin-merge** (Actions billing-blocked) — nenhum gate fail-closed disparou porque todos ancoram no evento "versão nova no CHANGELOG". OVERRIDE registrado no `history.md`; o gap originou a proposta P1 (canário version-claim) do relatório `docs/_private/reports/avaliacao-processo-framework-2026-06-11.md`. [CONSOLIDADO]
+
+### Added
+- **`tools/hooks/{compaction_gate,effect_gate,mission_gate,overwrite_guard}.py` (emenda ADR-060):** porta 1:1 dos hooks `.ps1` correspondentes — onde o EDR veta PowerShell, o hook roda em Python (caminho validado na máquina afetada em 2026-06-08, escapa ao AAC). [CONSOLIDADO]
+
+### Changed
+- **`.claude/settings.json`:** 5 wirings (`mission-gate`, `effect-gate`, `overwrite-guard` ×2 Pre+Post, `compaction-gate`) passam ao padrão ADR-060 `cmd /c "python tools\hooks\xxx.py || powershell ... xxx.ps1"` (Python-first + PS fallback).
+- **`capabilities.json`:** `mechanism` de `effect-gate`, `mission-gate`, `compaction-gate`, `overwrite-guard`: `.ps1` → `.py`.
+- **Canários `test_{compaction_gate,effect_gate,mission_gate,overwrite_guard,repo_sync}.py`:** `find_runner()` Python-first (suíte roda mesmo onde pwsh é vetado); `test_repo_sync.py` ganha `main()` completo.
+
+### Fixed
+- **DEADLOCK da suíte (`run_canaries.py` + `test_repo_sync.py`):** o tty-guard do hook `check_repo_sync.py` (`if not isatty(): stdin.read()`) **bloqueia para sempre** quando o stdin é pipe herdado que não fecha — `run_hook` do teste não passava stdin → `run_canaries` pendurava a suíte inteira (2 travamentos reproduzidos em 2026-06-11; o claim "código correto" do execution-report do bloco valia só para execução direta com stdin fechado). Fix: `stdin=subprocess.DEVNULL` no `run_hook` do teste **e** no runner (fecha a classe: canário nunca espera stdin interativo) + `encoding="utf-8", errors="replace"` no runner (reader-threads decodificavam output dos canários em cp1252 → `UnicodeDecodeError` cosmético). Achado do fechamento retroativo, fora do veredito original do process-critic — re-check cirúrgico (rule #7) aplicado.
+- **`test_repo_sync.py`:** `UnicodeEncodeError` em terminal Windows cp1252 (prints com checkmarks) → `sys.stdout.reconfigure(encoding="utf-8", errors="replace")` (mesmo padrão do fix `test_compaction_gate` em v1.53.0). Achado BAIXO do process-critic retroativo deste fechamento.
+
 ## [1.54.0] — 2026-06-11 — handoff cross-sessão DETERMINÍSTICO: gerador do Pacote P14 + sugestão de modelo (ADR-076)
 
 > Pedido do dono: a **ausência de handoff claro ao fim de cada bloco** deve ser tratada **deterministicamente em qualquer situação** — auto-execução, automações (cron) e passagens cross-model (fechar + abrir nova sessão com outro modelo, **inclusive sugerindo qual modelo**). File-first: o Pacote P14 (ADR-012) existia como **template preenchido à mão**, condicional e sem sugestão de modelo (o próprio ADR-012 admite "Gap 8 — handoff improviso"). [CONSOLIDADO]

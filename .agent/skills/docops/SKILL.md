@@ -34,6 +34,8 @@ Sem CHANGELOG + dicionário (se aplicável) + ADR aceito (se havia) → não fec
 Rodar o **consistency-gate** (ADR-030) antes de fechar release:
 `powershell -NoProfile -ExecutionPolicy Bypass -File tools/hooks/consistency-gate.ps1`
 — version-sync, ADR-status, checkpoint no history, unpushed, transientes, **execution-report presente** (7ª dim, ADR-062).
+Onde o EDR veta PS (hook não roda — ADR-060/061): as dims fail-closed já rodam via
+`python tools/test_consistency_closing.py` (suíte/CI); as demais (unpushed, transientes), checar manualmente.
 Tratar as inconsistências (ou registrá-las como débito declarado) antes do PR de release.
 Gerar o **execution-report** (ADR-038/052/062) do bloco **e ao fim de sessão** — auto, não sob cobrança:
 `python tools/execution_report.py --from-transcripts`

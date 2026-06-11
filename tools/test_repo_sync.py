@@ -11,6 +11,11 @@ Uso: python tools/test_repo_sync.py   (exit 0 se todos OK; 1 caso contrário; SK
 """
 import json, os, shutil, subprocess, sys, tempfile
 
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HOOK_PY = os.path.join(ROOT, "tools", "hooks", "check_repo_sync.py")
 HOOK_PS = os.path.join(ROOT, ".claude", "hooks", "check-repo-sync.ps1")
@@ -41,7 +46,9 @@ def run_hook(runner, project_dir):
         cmd = [exe, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", hook]
     else:
         cmd = [exe, hook]
-    p = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
+    # stdin=DEVNULL: o hook le stdin quando nao-tty (SessionStart JSON); pipe herdado aberto = deadlock
+    p = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", env=env,
+                       stdin=subprocess.DEVNULL)
     ctx = ""
     out = (p.stdout or "").strip()
     if out:
