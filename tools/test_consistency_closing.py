@@ -15,7 +15,13 @@ Aqui ficam as dims do consistency-gate AINDA nao enforcadas em lugar nenhum:
   (1) numero de ADR DUPLICADO (dim 'contagens')
   (2) ADR citado no CHANGELOG (= mudanca entregue) mas ainda `Status: Proposto` — bug RECORRENTE
       (ADR-051 mergeado-como-Proposto; complementa o sentido inverso do adr_changelog_sync).
-Dims nao-decidiveis no CI (unpushed: CI e pos-push; transients _intake) sao ADVISORY: informa, nao reprova.
+  (3) VERSION-CLAIM (P1/ADR-077): commit recente que declara `vX.Y.Z` na mensagem DEVE ter heading
+      `## [X.Y.Z]` no CHANGELOG — o INVERSO do adr_changelog_sync. Fecha o Escape A do caso real
+      v1.55.0 (2026-06-11): bloco mergeado declarando versao no commit sem entrada no CHANGELOG ->
+      NENHUM gate de release acordou (todos ancoram no evento "versao nova no CHANGELOG").
+      Janela: ultimos 200 commits (forward-only; provado sem falso-positivo na historia real).
+Dims nao-decidiveis no CI (unpushed: CI e pos-push; transients _intake; CI-override via gh — P2/ADR-077)
+sao ADVISORY: informa, nao reprova.
 
 Uso: python tools/test_consistency_closing.py   (exit 0 PASS; 1 se falha)
 """
@@ -68,7 +74,59 @@ def main():
         fails.append(f"{name} citado no CHANGELOG (entregue) mas ainda Status: Proposto "
                      f"(flip para Aceito ou remova do CHANGELOG — bug recorrente ADR-051)")
 
+    # (3) version-claim (P1/ADR-077): vX.Y.Z em mensagem de commit recente -> heading no CHANGELOG.
+    # fail-soft se git indisponivel (mesma postura das advisories); fail-CLOSED quando decidivel.
+    claimed_missing = []
+    try:
+        log = subprocess.run(["git", "-C", ROOT, "log", "--format=%s", "-200"],
+                             capture_output=True, text=True, encoding="utf-8", errors="replace")
+        if log.returncode == 0 and log.stdout:
+            heads = set(re.findall(r"(?m)^## \[(\d+\.\d+\.\d+)\]", chg))
+            # claim = vX.Y.Z em qualquer posicao; X.Y.Z sem prefixo SO conta com contexto de versao
+            # no subject (changelog/release/vers/bump) — evita falso-positivo tipo "python 3.12.1"
+            # (achado MEDIO do process-critic v1.56.0; hibrido validado sem FP em 200 commits reais).
+            ctx = re.compile(r"(?i)changelog|release|vers|bump")
+            for subj in log.stdout.splitlines():
+                claims = set(re.findall(r"\bv(\d+\.\d+\.\d+)\b", subj))
+                if ctx.search(subj):
+                    claims |= set(re.findall(r"\b(\d+\.\d+\.\d+)\b", subj))
+                for v in claims:
+                    if v not in heads and v not in claimed_missing:
+                        claimed_missing.append(v)
+    except Exception:
+        pass
+    for v in claimed_missing:
+        fails.append(f"commit recente declara v{v} mas o CHANGELOG NAO tem heading [{v}] — "
+                     f"version-claim sem entrada = fechamento pulado (P1/ADR-077; caso real v1.55.0)")
+
     # --- ADVISORY (nao reprova): dims que o CI nao decide ---
+    # (4) CI-override (P2/ADR-077): ultimo PR mergeado com check vermelho/pulado -> exige rastro
+    # OVERRIDE: no history.md (ADR-051: override com custo/consequencia, nunca silencioso).
+    # Best-effort via gh (rede/auth) — advisory por construcao.
+    try:
+        pr = subprocess.run(["gh", "pr", "list", "--state", "merged", "--limit", "1",
+                             "--json", "number,statusCheckRollup"],
+                            capture_output=True, text=True, encoding="utf-8", errors="replace",
+                            timeout=15)
+        if pr.returncode == 0 and pr.stdout.strip():
+            import json as _json
+            items = _json.loads(pr.stdout)
+            if items:
+                checks = items[0].get("statusCheckRollup") or []
+                bad = [c for c in checks if str(c.get("conclusion", "")).upper()
+                       not in ("SUCCESS", "NEUTRAL", "SKIPPED", "")]
+                if bad:
+                    hist = ""
+                    try:
+                        hist = open(os.path.join(ROOT, "history.md"), encoding="utf-8-sig").read()
+                    except Exception:
+                        pass
+                    if "OVERRIDE" not in hist:
+                        print(f"[advisory] PR #{items[0].get('number')} mergeado com check nao-verde "
+                              f"e SEM 'OVERRIDE:' no history.md (ADR-051/P2: override declarado, "
+                              f"nunca silencioso)")
+    except Exception:
+        pass
     try:
         cnt = subprocess.run(["git", "-C", ROOT, "rev-list", "--count", "@{upstream}..HEAD"],
                              capture_output=True, text=True).stdout.strip()
@@ -82,12 +140,13 @@ def main():
         if leftover:
             print(f"[advisory] {len(leftover)} transiente(s) em docs/_intake/ (remover no fechamento): {', '.join(leftover)}")
 
-    print(f"{len(nums)} ADR(s); duplicatas: {len(dups)}; entregue-mas-Proposto: {len(proposto_shipped)} — "
-          f"{'OK' if not fails else 'FAIL'}")
+    print(f"{len(nums)} ADR(s); duplicatas: {len(dups)}; entregue-mas-Proposto: {len(proposto_shipped)}; "
+          f"version-claim sem heading: {len(claimed_missing)} — {'OK' if not fails else 'FAIL'}")
     for f in fails:
         print("  -", f)
     print("-" * 50)
-    print("RESULTADO:", "PASS (fechamento consistente: sem duplicata de ADR; nada entregue ainda Proposto)"
+    print("RESULTADO:", "PASS (fechamento consistente: sem duplicata de ADR; nada entregue ainda "
+          "Proposto; todo version-claim tem entrada no CHANGELOG)"
           if not fails else f"FAIL ({len(fails)})")
     return 1 if fails else 0
 

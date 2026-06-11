@@ -793,6 +793,23 @@
       ]
     },
     {
+      "id": "junction-ledger",
+      "title": "Ledger de juncoes J0-J6 (rastro mecanico do gate PASS por juncao; forward-only + J3 exige validation.md ou justificativa)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/qa_evidence.py",
+      "test": "tools/test_qa_evidence.py",
+      "adr": "docs/adr/077-enforcement-deterministico-juncao-release.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "tags": [
+        "qa",
+        "process-evidence",
+        "junctions",
+        "ledger"
+      ]
+    },
+    {
       "id": "qa-evidence-gate",
       "title": "qa-evidence (fail-closed): release exige veredito qa-critic aprovativo persistido em _meta/qa/ (ADR-074 emenda 2)",
       "status": "PROVIDES",

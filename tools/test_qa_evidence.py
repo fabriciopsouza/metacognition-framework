@@ -49,6 +49,62 @@ def _is_genuine_shadow():
     return False, "nao-shadow (enforce — so export-shadow genuino pula; anti-forja)"
 
 
+def _test_junction_ledger():
+    """Casos do ledger de juncoes (P3/P4, ADR-077) — self-contained em tempdir, nao toca o repo."""
+    import tempfile
+    sys.path.insert(0, os.path.join(ROOT, "tools"))
+    import qa_evidence
+    fails = []
+    with tempfile.TemporaryDirectory() as td:
+        saved = qa_evidence.QA_DIR
+        qa_evidence.QA_DIR = td
+        try:
+            def expect_ok(label, **kw):
+                try:
+                    qa_evidence.append_junction("bloco-t", **kw)
+                except ValueError as e:
+                    fails.append(f"{label}: recusou indevidamente ({e})")
+
+            def expect_fail(label, **kw):
+                try:
+                    qa_evidence.append_junction("bloco-t", **kw)
+                    fails.append(f"{label}: aceitou indevidamente (deveria recusar)")
+                except ValueError:
+                    pass
+
+            expect_ok("J0 inicial", junction="J0", artefato="a", evidencia="PASS: e")
+            expect_ok("J1 forward", junction="J1", artefato="a", evidencia="PASS: e")
+            expect_ok("J1 repetida (within-junction)", junction="J1", artefato="a", evidencia="round 2")
+            expect_fail("J0 regressao sem rewind", junction="J0", artefato="a", evidencia="e")
+            expect_ok("J0 com rewind explicito", junction="J0", artefato="a", evidencia="e", rewind=True)
+            expect_fail("J3 sem validation/justificativa", junction="J3", artefato="a", evidencia="e")
+            expect_ok("J3 com justificativa", junction="J3", artefato="a", evidencia="e",
+                      justificativa="doc-only, sem codigo executavel")
+            expect_fail("juncao invalida", junction="J9", artefato="a", evidencia="e")
+            expect_fail("evidencia vazia", junction="J4", artefato="a", evidencia="  ")
+            led = os.path.join(td, "junctions", "bloco-t.jsonl")
+            # corrupcao -> fail-closed (nao zera forward-only em silencio)
+            with open(led, "a", encoding="utf-8") as f:
+                f.write("{nao-e-json\n")
+            expect_fail("ledger corrompido recusa append", junction="J4", artefato="a", evidencia="e")
+            with open(led, encoding="utf-8") as f:
+                good = [x for x in f if x.strip() and not x.startswith("{nao")]
+            with open(led, "w", encoding="utf-8") as f:
+                f.writelines(good)
+            if not os.path.isfile(led):
+                fails.append("ledger jsonl nao foi criado")
+            else:
+                lines = [json.loads(x) for x in open(led, encoding="utf-8") if x.strip()]
+                if len(lines) != 5:
+                    fails.append(f"ledger com {len(lines)} linhas (esperado 5 registros aceitos)")
+        finally:
+            qa_evidence.QA_DIR = saved
+    for f in fails:
+        print("  - [junction-ledger]", f)
+    print(f"junction-ledger (P3/P4 ADR-077): {'OK (10 casos)' if not fails else 'FAIL'}")
+    return not fails
+
+
 def main():
     shadow, why = _is_genuine_shadow()
     if shadow:
@@ -87,9 +143,12 @@ def main():
     else:
         print(f"release atual v{latest}: SEM artefato qa-critic aprovativo (release==v{latest} + "
               f"recomendacao em {sorted(APPROVING)}) em _meta/qa/")
+    ledger_ok = _test_junction_ledger()
+    ok = ok and ledger_ok
     print("-" * 50)
-    print("RESULTADO:", f"PASS (release v{latest} tem evidencia qa-critic)" if ok
-          else f"FAIL (release v{latest} sem veredito qa-critic aprovativo — qa-critic e processo, nao opt-in)")
+    print("RESULTADO:", f"PASS (release v{latest} tem evidencia qa-critic; junction-ledger OK)" if ok
+          else f"FAIL (release v{latest}: evidencia qa-critic ausente OU junction-ledger quebrado — "
+               f"qa-critic e processo, nao opt-in)")
     return 0 if ok else 1
 
 

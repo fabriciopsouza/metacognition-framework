@@ -15,6 +15,16 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.56.0] — 2026-06-11 — enforcement determinístico de junção e release: version-claim + override de CI + ledger de junções + validation.md em J3 (ADR-077, F1)
+
+> Fase F1 do plano de melhoria (`docs/_private/reports/avaliacao-processo-framework-2026-06-11.md`), motivada pelo caso real v1.55.0: bloco mergeado declarando versão no commit **sem** CHANGELOG/qa-evidence, com CI pulado por admin-merge — nenhum gate fail-closed acordou (todos ancoram no evento "versão nova no CHANGELOG") e as junções J0–J3 não deixam rastro mecânico. Régua §0: **zero ferramenta nova, zero canário novo** — 4 emendas a mecanismos existentes. [CONSOLIDADO]
+
+### Added
+- **P1 — dim version-claim em `test_consistency_closing.py` (fail-closed):** todo `vX.Y.Z` citado em mensagem de commit recente (janela 200) DEVE ter heading `## [X.Y.Z]` no CHANGELOG — o inverso do `adr-changelog-sync`; mata o Escape A. Provado sem falso-positivo em 200 commits reais + prova negativa (claim sintético → FAIL exit 1). [CONSOLIDADO]
+- **P2 — override de CI registrado:** advisory no mesmo canário (último PR mergeado com check não-verde sem `OVERRIDE:` no history → aviso) + **rule SE/ENTÃO #10** no qa-critic (CI pulado sem override declarado = REPROVADO; ADR-051 mecanizado p/ admin-merge). [CONSOLIDADO]
+- **P3 — ledger de junções (`qa_evidence.py --junction`, capability `junction-ledger`):** 1 linha JSONL por gate PASS em `_meta/qa/junctions/<bloco>.jsonl` (junção, artefato, evidência, timestamp), **forward-only validado na escrita** (regressão exige `--rewind` explícito). J0–J3 deixam de ser prosa pura; o process-critic audita a dim (iv) contra o ledger. Wirado em `/handoff` + pmo SKILL. Canário: 10 casos em `test_qa_evidence.py` (incl. **corrupção do JSONL → fail-closed**, achado do process-critic). [CONSOLIDADO]
+- **P4 — validation.md como pré-condição de J3:** registro de J3 no ledger **exige** `--validation <path existente>` OU `--justificativa` explícita — fecha o "se aplicável" silencioso (cláusula mais frouxa da cadeia spec-driven). [CONSOLIDADO]
+
 ## [1.55.0] — 2026-06-11 — hooks de runtime imunes ao veto de EDR: 4 hooks PS → Python com fallback (emenda ADR-060)
 
 > Continuação do anti-veto EDR (ADR-060/061). Os 4 hooks de runtime que ainda eram Pure-PS (vetáveis por Kaspersky/GPO) ganham porta Python 1:1 + fallback PS. **Fechamento retroativo (falha de processo declarada):** o bloco entrou na main via PR #77 **sem esta entrada, sem qa-evidence e com CI pulado por admin-merge** (Actions billing-blocked) — nenhum gate fail-closed disparou porque todos ancoram no evento "versão nova no CHANGELOG". OVERRIDE registrado no `history.md`; o gap originou a proposta P1 (canário version-claim) do relatório `docs/_private/reports/avaliacao-processo-framework-2026-06-11.md`. [CONSOLIDADO]

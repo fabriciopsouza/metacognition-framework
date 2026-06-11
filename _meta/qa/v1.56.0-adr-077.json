@@ -1,0 +1,47 @@
+{
+  "bloco": "v1.56.0-adr-077",
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "problemas": [
+    {
+      "severidade": "medio",
+      "local": "tools/test_consistency_closing.py (regex version-claim)",
+      "descricao": "version-claim regex capturava apenas versoes com prefixo 'v' (vX.Y.Z); commit 'CHANGELOG 1.56.0' sem prefixo NAO era capturado — blind spot real e nao declarado no ADR. [CORRIGIDO pelo orquestrador pre-merge: regra hibrida — vX.Y.Z em qualquer posicao; X.Y.Z sem prefixo conta quando o subject tem contexto de versao (changelog/release/vers/bump); validada sem falso-positivo em 200 commits reais; risco residual declarado nas Consequencias do ADR-077]"
+    },
+    {
+      "severidade": "baixo",
+      "local": "tools/qa_evidence.py (loop de leitura do JSONL)",
+      "descricao": "Corrupcao do JSONL bypassava forward-only: linhas ilegiveis deixavam last=None e regressao era aceita sem --rewind, sem caso de teste. [CORRIGIDO pelo orquestrador pre-merge: linha nao-JSON -> ValueError fail-closed ('investigue/restaure antes de registrar') + caso 10 no canario test_qa_evidence]"
+    },
+    {
+      "severidade": "baixo",
+      "local": "_meta/qa/junctions/v1.56.0-adr-077.jsonl linha 3 (J2)",
+      "descricao": "J2 PASS declarado com 'Aceito condicionado ao gate qa-critic' enquanto ADR-077 estava Proposto — o criterio binario de J2 e Status: Aceito. Esperado no fluxo (flip pos-gate, padrao do framework); ADR-077 flipado a Aceito apos este veredito com os 2 achados acionaveis corrigidos."
+    }
+  ],
+  "verificacoes_executadas": [
+    "python tools/test_qa_evidence.py -> FAIL(1) expected pre-gate (release v1.56.0 sem artefato qa-critic — este veredito o cria); junction-ledger OK (9 casos no momento da revisao; 10 apos fix de corrupcao)",
+    "python tools/test_consistency_closing.py -> FAIL(1) expected pre-gate (ADR-077 Proposto + CHANGELOG citando; resolve com flip a Aceito pos-gate)",
+    "python tools/test_capabilities.py -> PASS (58 capacidades, ponteiros vivos, cross_ai enforcement)",
+    "python tools/run_canaries.py -> 47 PASS / 1 SKIP / 4 FAIL (consistency_closing, posture_gate, qa_evidence, release_checkpoint — todos expected pre-gate)",
+    "precedencia de operadores ok_val em qa_evidence.py: testada com None/empty/nonexistent/existing — CORRETO (hipotese de bug REFUTADA)",
+    "corrupcao JSONL bypass: testada manualmente — J0 aceito apos JSONL corrompido (bypass confirmado; corrigido para fail-closed pos-veredito)",
+    "version-claim regex: testada contra 20 commits reais — capturava v-prefixadas; NAO capturava '1.56.0' sem prefixo (corrigido para regra hibrida pos-veredito)",
+    "gh pr list --state merged --limit 1: PR #77 com 6 checks FAILURE; OVERRIDE presente em history.md -> advisory P2 suprimido corretamente",
+    "contagem 10 rules em qa-critic SKILL: CONFIRMADO; grep '9 rules' em arquivos vivos: apenas historico (esperado)",
+    "capabilities.json 58 entradas + junction-ledger (enforcement=fail-closed) + CAPABILITIES.md em sync: CONFIRMADO",
+    "README/guia/web/index.html = 1.56.0: CONFIRMADO",
+    "ADR-077 cita 7 arquivos de implementacao corretos: CONFIRMADO",
+    "dogfood ledger J0-J3 presente (4 entradas, J3 com justificativa): CONFIRMADO",
+    "discovery artefato docs/_private/reports/avaliacao-processo-framework-2026-06-11.md com F1/P1-P4: CONFIRMADO (18815 chars)"
+  ],
+  "steelman": "Implementacao lean e correta: 4 emendas a mecanismos existentes sem ferramenta nova, aderente a regua §0. P1 (version-claim) fecha o Escape A com regex provada em 200 commits. P2 (advisory CI-override) e corretamente advisory por construcao (rede/auth) e suprime quando OVERRIDE presente. P3 (ledger forward-only) e P4 (J3 precondition) funcionam conforme spec: operadores de precedencia corretos, casos de teste cobrem invariantes centrais, dogfood J0-J3 honesto. Docs em sync (58 caps, 10 rules, 1.56.0 everywhere). Os 4 canarios failing sao expected pre-gate.",
+  "release": "1.56.0",
+  "postura": {
+    "discovery": "inline: docs/_private/reports/avaliacao-processo-framework-2026-06-11.md secao F1 (Eixo 1, P1-P4 com criterio binario); elicitado: escopo tooling-only, sem fonte regulatoria externa, regua §0 aplicada",
+    "rrc": "PASSA",
+    "metodo_senior": "N/A: ADR interna de tooling sem fonte canonica externa — mesmo criterio do precedente v1.54.0 (fonte_canonica=false, N/A aceito para tooling proprio sem norma/spec oficial externa)",
+    "fonte_canonica": false
+  },
+  "data": "2026-06-11T18:41:36Z"
+}
