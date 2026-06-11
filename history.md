@@ -9,6 +9,26 @@
 
 ---
 
+## 2026-06-11 — Release v1.58.0: RCA do wiring de hooks (bash!) + dieta de contexto + rule #11 + cadência de poda (ADR-079/080, F3+F4 — fecha o plano de melhoria)
+
+Aprovado e funcionando. **Descoberta central (ADR-079):** o harness executa hooks via **/usr/bin/bash** — o wrapper próprio `cmd /c "…"` quebrava o aninhamento de aspas e caía em **cmd interativo executando o payload JSON** (RCA [CONFIRMADO por reprodução do banner + erro do harness] dos ~33 arquivos espúrios em 4 ondas E dos gates "inertes" antes atribuídos ao EDR: **os hooks python não executavam por wiring**). Fix: 12 comandos na forma bash (barras normais, `|| true`, fallback PS aspeado) — **validado AO VIVO**: gates de runtime executando de fato pela primeira vez nesta máquina. + dim **raiz-limpa** no `test_consistency_closing` (tracked 0-byte sem extensão na raiz = FAIL; pegou 13 destroços no 1º disparo). EMENDA no ADR-060 (sintoma "EDR vetou" relido). **ADR-080 (dieta de contexto):** CLAUDE.md 12.7→5KB · AGENTS.md 6.6→3.5KB (regra-operacional + ponteiro; `check_rules_parity`/`check_core_agnostic` PASS) · rules SE/ENTÃO → companion `rules.md` (**11 rules**, +#11: testes ausentes com justificativa genérica no ledger J3 = REPROVADO) · **cadência de poda** no J6 (a cada 5 releases, telemetria 17-B `sem-disparo` → propor fusão/remoção via ADR).
+
+**Process-critic (Sonnet isolado, 2 rounds J4):** R1 `corrigir` — pegou **regressão real da dieta** (palavra-chave do `test_nonadmin` removida) + 2 BAIXO → fixes → R2 aprovativo, e **flagrou fix declarado-mas-não-efetivado** (paths PS; anti-false-PASS do próprio orquestrador — corrigido com verificação real). Evidência: `_meta/qa/v1.58.0-adr-079-080.{json,md}`. Ledger J0–J4 no junction-ledger.
+
+**OVERRIDE (ADR-051 / rule #10 — declarado ANTES do ato):** o dono autorizou explicitamente ("continue até pr + merge") o **merge da pilha #78→#79→#80→#81 com CI billing-blocked** via admin-merge. Custo/consequência: sem validação remota do Actions; cada bloco foi validado pela **suíte local cross-platform** (51 PASS / 1 SKIP / 0 FAIL por bloco) + qa-critic adversarial com evidência persistida. Tags v1.55.0–v1.58.0 criadas nos merge-commits.
+
+Nomenclaturas: forma-bash de hook (sem wrapper próprio) · dim raiz-limpa · companion `rules.md` · cadência de poda J6.
+Decisões permanentes: **ADR-079** Aceito (RCA + guard) · **ADR-080** Aceito (dieta; P9/P12 aprovados pelo dono via "Siga até o final"). EMENDA ADR-060.
+Próximo passo: pós-merge — observar 1 sessão nova (boot deve vir SEM banners cmd e SEM espúrios; liveness deve calar com hooks executando); F-next candidato: advisory de espúrios em PostToolUse e poda do 1º ciclo (release ~1.62).
+Riscos ativos: diagnóstico "harness=bash" é desta instalação (outras podem variar — forma escolhida é a mais portátil); sessões antigas pré-fix ainda geram espúrios até reload (guard raiz-limpa cobre).
+RE-ORQUESTRAÇÃO: prosseguir (merge da pilha + tags; plano F0–F4 COMPLETO).
+
+## RRC (ADR-010) — coherence pass
+- Artefatos lidos: CHANGELOG (1.58.0), README, vitrine, ADR-079/080/060-EMENDA, CLAUDE.md/AGENTS.md pós-dieta, rules.md (11), qa-critic SKILL (ponteiro), pmo J6, settings.json (16 comandos), test_consistency_closing, `_meta/qa/v1.58.0-*.json`, ledger.
+- Verificações: versões em sync (README × CHANGELOG × vitrine = 1.58.0): **PASSA** · Refs cruzadas (079/080 Aceito + CHANGELOG; EMENDA 060→079): **PASSA** · Nomenclatura: **PASSA** · Sem contradições (CLAUDE×AGENTS×skills; parity PASS): **PASSA** · Contagens (11 rules; 16 comandos sendo 12 ex-wrapper; 59 capacidades): **PASSA** · Anti-vazamento: **PASSA**.
+- Inconsistências corrigidas neste checkpoint: regressão nonadmin + paths PS (achados do process-critic).
+- Veredito: **PASSA**.
+
 ## 2026-06-11 — Release v1.57.0: política de modelo como dado — model-policy.json + escada de heterogeneidade + fallback de indisponibilidade (ADR-078, fase F2)
 
 Aprovado e funcionando. **F2 do plano** (P5–P7): `tools/model-policy.json` **fonte única** papel×risco→tier (3 fontes divergentes fundidas — hardcode do `suggest_model`, frontmatter fixo, prosa ADR-018); **chains de fallback por tier** (max: fable→opus→sonnet · balanced: sonnet→opus→haiku · economy: haiku→sonnet); **escada de heterogeneidade** 3 degraus (família≠ via hub cross-IA > modelo≠ com preferência data-driven > fresh DECLARADO); **indisponibilidade situacional declarada** via `FRAMEWORK_MODELS_UNAVAILABLE` (pergunta do dono em sessão, incorporada — fallback anotado no output; chain esgotada → erro loud, nunca escolha silenciosa). Papéis mecânicos → haiku; decisão/elicitação → tier max (hoje Fable). ADR-076 anotado (regra de modelo Substituída por ADR-078; gerador P14 vigente). Régua §0(a): hardcode removido ≥ policy adicionada.

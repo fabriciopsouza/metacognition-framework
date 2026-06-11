@@ -48,6 +48,9 @@ decisão de re-orquestração registrada no `history.md`:
 **NÃO é round-trip por gate** (isso é custo+loop+gargalo — rejeitado): o intra-bloco é forward-only
 (circuit-breaker do ADR-011). J6 é o ponto — entre blocos — onde o PMO re-prioriza/reativa/injeta escopo
 de forma bounded. `tools/check_reorchestration.py` audita que o último bloco registrou a decisão.
+**Cadência de poda (P11/ADR-080 — régua §0 aplicada a si mesma):** a cada **5 releases**, a decisão J6
+inclui revisar `history.md ## Telemetria` 17-B: regra/gate classe `andaime` com `sem-disparo` ≥ 5–10 →
+**propor fusão/remoção via ADR** (o framework só adicionava; remover por evidência agora tem cadência).
 
 ## Saída
 STATUS · PRÓXIMO PASSO · PERGUNTA (máx. 1) · (fim de bloco) **RE-ORQUESTRAÇÃO** (J6).

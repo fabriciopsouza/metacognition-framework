@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cmd /c \"python tools\\hooks\\shadow_sync.py\"",
+            "command": "python tools/hooks/shadow_sync.py",
             "timeout": 30,
             "statusMessage": "Shadow auto-sync: casa espelho publicado com origin (ADR-070; no-op em master)"
           }
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cmd /c \"python tools\\repo_mode.py\"",
+            "command": "python tools/repo_mode.py",
             "timeout": 10,
             "statusMessage": "Modo por identidade: shadow=USER (aplica a dominio), master=DEV (ADR-070/072)"
           }
@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude\\hooks\\sync-global.ps1\"",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/hooks/sync-global.ps1\"",
             "timeout": 30,
             "statusMessage": "Sincronizando framework para ~/.claude/"
           }
@@ -36,7 +36,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude\\hooks\\check-execution-mode.ps1\"",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/hooks/check-execution-mode.ps1\"",
             "timeout": 10,
             "statusMessage": "Verificando modo de execucao do framework"
           }
@@ -46,9 +46,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cmd /c \"python tools\\hooks\\check_repo_sync.py || powershell.exe -NoProfile -ExecutionPolicy Bypass -File .claude\\hooks\\check-repo-sync.ps1\"",
+            "command": "python tools/hooks/check_repo_sync.py || powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/hooks/check-repo-sync.ps1\"",
             "timeout": 30,
-            "statusMessage": "Verificando sincronizacao do repo com origin (ADR-019/060: python->powershell)"
+            "statusMessage": "Verificando sincronizacao do repo com origin (ADR-019/060/079: python -> fallback PS)"
           }
         ]
       },
@@ -56,9 +56,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cmd /c \"python tools\\hooks\\check_core_agnostic_hook.py || powershell.exe -NoProfile -ExecutionPolicy Bypass -File .claude\\hooks\\check-core-agnostic.ps1\"",
+            "command": "python tools/hooks/check_core_agnostic_hook.py || powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/hooks/check-core-agnostic.ps1\"",
             "timeout": 20,
-            "statusMessage": "Verificando agnosticismo do nucleo (ADR-020/061: python->powershell)"
+            "statusMessage": "Verificando agnosticismo do nucleo (ADR-020/061/079: python -> fallback PS)"
           }
         ]
       },
@@ -66,7 +66,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude\\hooks\\inject-start-session.ps1\"",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/hooks/inject-start-session.ps1\"",
             "timeout": 10,
             "statusMessage": "Ativando auto-boot do squad (delete .claude/session.lock se nao quiser)"
           }
@@ -76,7 +76,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cmd /c \"python tools\\hooks\\mission_gate.py || powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\\hooks\\mission-gate.ps1\"",
+            "command": "python tools/hooks/mission_gate.py || powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"tools/hooks/mission-gate.ps1\"",
             "timeout": 10,
             "statusMessage": "Verificando product_type/escopo (mission-gate ADR-022)"
           }
@@ -88,7 +88,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"tools\\hooks\\route-gate.ps1\"",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"tools/hooks/route-gate.ps1\"",
             "timeout": 10,
             "statusMessage": "Roteamento determinístico (route-gate ADR-027)"
           }
@@ -101,7 +101,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cmd /c \"python tools\\hooks\\effect_gate.py || powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\\hooks\\effect-gate.ps1\"",
+            "command": "python tools/hooks/effect_gate.py || powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"tools/hooks/effect-gate.ps1\"",
             "timeout": 10,
             "statusMessage": "Gate de acoes destrutivas por efeito (effect-gate ADR-015)"
           }
@@ -112,7 +112,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cmd /c \"python tools\\hooks\\prepush_sync_guard.py || exit /b 0\"",
+            "command": "python tools/hooks/prepush_sync_guard.py || true",
             "timeout": 20,
             "statusMessage": "Guard de pre-push: barra push sobre base atrasada (ADR-060)"
           }
@@ -123,7 +123,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cmd /c \"python tools\\hooks\\shadow_write_guard.py || exit /b 0\"",
+            "command": "python tools/hooks/shadow_write_guard.py || true",
             "timeout": 20,
             "statusMessage": "Shadow-write-guard: NEGA push de espelho publicado (ADR-070; no-op em master)"
           }
@@ -134,7 +134,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cmd /c \"python tools\\hooks\\overwrite_guard.py || powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\\hooks\\overwrite-guard.ps1\"",
+            "command": "python tools/hooks/overwrite_guard.py || powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"tools/hooks/overwrite-guard.ps1\"",
             "timeout": 10,
             "statusMessage": "Anti-overwrite cego de artefato (overwrite-guard ADR-037)"
           }
@@ -145,7 +145,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cmd /c \"python tools\\hooks\\context_budget_gate.py || exit /b 0\"",
+            "command": "python tools/hooks/context_budget_gate.py || true",
             "timeout": 10,
             "statusMessage": "Context-budget: anuncia fracionar (doc-intake) em leitura de fonte grande (ADR-029)"
           }
@@ -158,7 +158,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cmd /c \"python tools\\hooks\\overwrite_guard.py || powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\\hooks\\overwrite-guard.ps1\"",
+            "command": "python tools/hooks/overwrite_guard.py || powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"tools/hooks/overwrite-guard.ps1\"",
             "timeout": 10,
             "statusMessage": "Registro de arquivos lidos/criados na sessao (overwrite-guard ADR-037)"
           }
@@ -170,7 +170,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cmd /c \"python tools\\hooks\\compaction_gate.py || powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\\hooks\\compaction-gate.ps1\"",
+            "command": "python tools/hooks/compaction_gate.py || powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"tools/hooks/compaction-gate.ps1\"",
             "timeout": 10,
             "statusMessage": "Verificando digest antes de compactar (ADR-021)"
           }

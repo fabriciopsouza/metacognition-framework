@@ -76,31 +76,13 @@ gate humano antes do "final".
 Nomes aderem ao glossário · edge cases · DIV/0 explícito · agregação no nível certo ·
 performance aceitável · nenhuma dependência/rename sem ADR · doc proporcional.
 
-## Padrões SE/ENTÃO recorrentes (derivados de method-audit — ADR-011 v1.12.1)
+## Padrões SE/ENTÃO recorrentes — companion `rules.md` (progressive disclosure, ADR-080)
 
-Regras determinísticas para padrões observados ≥2x em method-audit notes. **Aplicar ANTES da revisão adversarial aberta** (estes são bounce binário; mindset adversarial mantida para bugs novos não-listados).
-
-1. **SE** contagem ("N passos", "N seções", "N itens", "N edits") tem valores diferentes em ≥2 arquivos do mesmo bloco **PARA A MESMA ENTIDADE NOMEADA** (ex.: "9 passos do método sênior" deve ser 9 em SKILL+CLAUDE+AGENTS+companion; NÃO confundir com contagens de conceitos distintos coexistentes — "6 junções J0-J5" vs "5 dimensões de coerência RRC" são CORRETOS porque entidades diferentes) · **ENTÃO** REPROVADO com instrução: "varrer toda doc por stale counts da entidade X antes de re-submeter". Fonte: rounds 1-3 v1.10.0/11.0/12.0.
-
-2. **SE** termo aparece com sentidos contraditórios no mesmo doc (oxímoros tipo "cascata cirúrgica" quando cascata e cirúrgico foram declarados mutuamente exclusivos) · **ENTÃO** REPROVADO com instrução: "escolher 1 dos 2 termos OU separar conceitos com labels distintas". Fonte: round 1 v1.12.0.
-
-3. **SE** STATUS-field de ADR cresce > 3 linhas após qa-critic rounds (acumulando narrativa de findings) · **ENTÃO** condensar; detalhe vai pra CHANGELOG/history.md. Fonte: padrão observado em ADR-009/010/011.
-
-4. **SE** polish post-release adiciona surface estrutural (Mermaid, seção nova, refactor skill/workflow > 5 linhas) e foi auto-classificado "não-bloco" · **ENTÃO** É bloco — process-critic mandatório, não auto-classificável. Fonte: method-audit 2026-05-29T22:30.
-
-5. **SE** rascunho cita exemplos didáticos de domínio (ALCOA+, ANP, GAMP, etc.) em arquivo NÃO-rotulado como exemplo (`docs/specs/exemplos/` é exceção) · **ENTÃO** REPROVADO — violação princípio 12 mesmo como "exemplo". Fonte: round 4 v1.11.0 (§05 README detecção pelo dono). Esta regra ganhou **enforcement executável**: `tools/check_core_agnostic.py` (ADR-020) varre o núcleo a cada boot/CI. <!-- lint-agnostic:allow esta linha É a definição da regra de detecção; cita normas para descrevê-las -->
-
-6. **SE** o autor detectou anomalia/divergência/conflito-de-fontes E resolveu por default (escolheu uma fonte como autoritativa) sem citar **causa-raiz (fonte + mecanismo)** · **ENTÃO** REPROVADO com instrução: "RCA obrigatório (causa + mecanismo) ANTES de resolver; resolver por default sem causa-raiz = violação de processo sênior". Fonte: ADR-012 v1.13.0 (case real: detecção-sem-ação foi o defeito de processo mais grave da sessão analisada — o agente VIU a anomalia, CLASSIFICOU, e DISPENSOU). Pattern domain-agnóstico: vale para conflito código×spec, fonte×fonte, dado×regra, etc.
-
-7. **SE** existe artefato novo (arquivo `*.py`/`*.md`/etc.) no diff entre último PASS do process-critic (J4) e momento atual DENTRO do mesmo bloco · **ENTÃO** process-critic **re-disparo cirúrgico mandatório** sobre artefato novo (não bloco inteiro — lean). Princípio 13 e rule #4 cobrem polish post-release e bloco-novo; este cobre **artefato novo intra-bloco pós-J4** (gap identificado em process-critic round 1 ADR-012). Pattern domain-agnóstico: aplica a qualquer extensão de entrega que crie superfície nova sem re-validação.
-
-8. **SE** a entrega é **produto recorrente** (software/dado/pipeline/relatório-ferramenta) e o pedido tem **quantificador de escopo** ("cada X", "todos", "mês a mês", "acumulado", "ano inteiro", "intervalo") · **ENTÃO** rodar `tools/check_completeness.py <spec_dir>` antes do PASS (J4): quantificador do pedido sem critério binário no `validation.md` = REPROVADO (entrega cobre subconjunto do pedido). Mecaniza item 2 do plano de remediação v2 (ADR-034); pattern domain-agnóstico. Para `product_type` de software, somam-se os gates de **porta-do-usuário** e **ambiente-limpo** (ADR-036, no `evals-engineer` da app SW/dados).
-
-9. **SE** um termo de domínio é mapeado para um **campo-fonte de nome ambíguo** (existem colunas-irmãs: ex. um componente vs. o total) · **ENTÃO** o mapeamento termo→coluna é **decisão registrada** (não inferência): rodar `tools/check_field_mapping.py <spec_dir>` — linha de mapeamento sem **confirmação + justificativa** = REPROVADO. **Princípio (duvidar e verificar):** a confirmação registra a DECISÃO, **não prova a correção** — a própria **fonte/oráculo pode estar errada** (ex.: dado errado preenchido numa coluna). Logo, o anti-viés é **verificar contra a fonte primária**, não deferir a quem confirmou. Julgamento adversarial (não-mecanizável): antes de aceitar que bateu o oráculo, responder por escrito *"que outra interpretação de campo produziria este mesmo número?"* **E** *"a própria fonte/oráculo pode estar errada — verifiquei contra a primária?"* (**bater valor ≠ validar semântica**); **abandonar um resultado já validado exige prova numérica** registrada (de que o anterior OU o oráculo estava errado) — reverter por rótulo/palavra/autoridade = REPROVADO. Mecaniza item 3 (ADR-035); **sicofância** (aprovar o número bonito) provada por `test_sycophancy.py` (ADR-041). Pattern domain-agnóstico.
-
-10. **SE** o bloco foi (ou será) mergeado com check de CI vermelho/pulado (admin-merge, billing, infra) **E** não existe linha `OVERRIDE:` no `history.md` declarando motivo + custo + consequência (ADR-051) · **ENTÃO** REPROVADO com instrução: "registrar o override declarado ANTES do fechamento — fail-closed que é pulado sem rastro é fail-open". Fonte: caso real v1.55.0 (PR #77 admin-merge por billing, sem rastro; mecanizado como advisory em `test_consistency_closing.py` dim 4 — P2/ADR-077). Pattern domain-agnóstico: vale para qualquer gate humano/automático contornado por via administrativa.
-
-**Fechamento — Mindset adversarial mantida** para bugs novos não-listados: hipótese default = EXISTE BUG. Estas 10 rules SE/ENTÃO são complemento determinístico (catch recorrente), NÃO substituto da revisão aberta adversarial. Rules emergem de method-audit confirmado (≥2 ocorrências) ou gap isolado high-signal (princípio 11 honesto).
+**Carregar OBRIGATORIAMENTE o companion `rules.md` (vizinho) ao operar em J4 ou PC** — ele é o
+lar único das **11 rules determinísticas** derivadas de method-audit (ADR-011 v1.12.1), aplicadas
+ANTES da revisão adversarial aberta (bounce binário). Mesmo padrão dos companions do discovery
+(ADR-003): a SKILL fica curta; o detalhe vive ao lado, carregado sob demanda. Rule nova entra
+no companion (método-audit ≥2 ocorrências ou gap high-signal), e a contagem citada aqui sobe junto.
 
 ## Output (JSON)
 ```json

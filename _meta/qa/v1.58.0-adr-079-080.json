@@ -1,0 +1,49 @@
+{
+  "bloco": "v1.58.0-adr-079-080",
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "problemas": [
+    {
+      "severidade": "alto",
+      "local": "CLAUDE.md (dieta) + test_nonadmin.py",
+      "descricao": "R1: REGRESSAO da dieta — canario test_nonadmin exige 'anuncia/anunciados' na doutrina NON-ADMIN de CLAUDE.md/AGENTS.md; a dieta removeu a palavra-chave. [CORRIGIDO: 'gates anunciados' restaurado em ambos; test_nonadmin PASS confirmado em R2]"
+    },
+    {
+      "severidade": "baixo",
+      "local": ".claude/settings.json (4 comandos PS-only)",
+      "descricao": "R1/R2: paths PS-only com backslash vs forward-slash dos fallbacks (cosmetico, zero impacto funcional). R2 flagrou que o fix declarado NAO tinha sido efetivado (replace nao casava por camadas de escape). [CORRIGIDO pos-R2 com verificacao real: script sem camadas de escape, 4 ocorrencias substituidas, 0 restantes, JSON valido]"
+    },
+    {
+      "severidade": "baixo",
+      "local": "docs/adr/079 + 080 Status",
+      "descricao": "R1: ADRs Proposto citados no CHANGELOG (esperado pre-gate). [CORRIGIDO: flip a Aceito pos-gate; test_consistency_closing + test_adr_changelog_sync PASS em R2]"
+    },
+    {
+      "severidade": "baixo",
+      "local": "docs/adr/079 §Decisao ('12 comandos')",
+      "descricao": "R2 INFORMATIVO: '12 comandos' refere o subconjunto que tinha wrapper cmd /c; o settings tem 16 no total (12 + 4 PS-only). Tecnicamente correto; anotado para evitar confusao futura."
+    }
+  ],
+  "verificacoes_executadas": [
+    "R1: git diff bd080c3..HEAD -> 21 arquivos; raiz do HEAD limpa (git ls-tree)",
+    "R1: python tools/run_canaries.py -> 46 PASS / 1 SKIP / 5 FAIL (4 expected pre-gate + 1 REGRESSAO test_nonadmin pega pelo gate)",
+    "R1: settings.json — 16 comandos sintaxe bash valida; todos os .py/.ps1 citados existem",
+    "R1: comparacao CLAUDE.md/AGENTS.md pre vs pos-dieta — nenhuma regra operacional perdida ALEM da palavra-chave nonadmin; 4 inviolaveis intactas",
+    "R1: rules.md = 11 rules (1-10 identicas ao SKILL antigo + #11 nova); contagem consistente",
+    "R2: python tools/test_nonadmin.py -> PASS (fix do ALTO confirmado)",
+    "R2: python tools/test_consistency_closing.py -> PASS (76 ADRs; 0 duplicatas; 0 entregue-Proposto; 0 version-claim orfao)",
+    "R2: python tools/test_adr_changelog_sync.py -> PASS (76/76)",
+    "R2: python tools/check_rules_parity.py -> PASS; python tools/check_core_agnostic.py -> PASS (40 arquivos)",
+    "R2: RRC atestado — versoes 1.58.0 em sync (README/CHANGELOG/index.html); refs ADR-079/080/060-EMENDA validas; 11 rules consistente; sem contradicao CLAUDE x AGENTS x skills",
+    "pos-R2: _fix_paths.py -> 'ocorrencias: 3 1' -> 'JSON valido; restantes: 0 0' (padronizacao efetivada COM verificacao)"
+  ],
+  "steelman": "O bloco entrega a descoberta mais importante do projeto ate agora: os gates de runtime estavam mortos por wiring quebrado (wrapper cmd /c sob harness bash), com RCA evidenciado (banner reproduzido + erro revelando /usr/bin/bash) e correcao validada AO VIVO — hooks executando pela primeira vez na maquina. A dieta de contexto remove ~9.5KB/turno sem perder regra operacional, e o gate adversarial funcionou como projetado: R1 capturou uma regressao real da dieta antes do release e R2 flagrou um fix declarado-mas-nao-efetivado (anti-false-PASS do proprio orquestrador).",
+  "release": "1.58.0",
+  "postura": {
+    "discovery": "inline: Eixos 3/5/6 do relatorio avaliacao 2026-06-11 + RCA em-sessao (bash) — confirmado por reproducao do banner e diagnostico do harness; causa raiz validada ao vivo com hooks executando pela primeira vez",
+    "rrc": "PASSA — versoes 1.58.0 em sync (README linha 11 / CHANGELOG heading / index.html); refs cruzadas ADR-079/080/060-EMENDA validas e rastreaveis; contagem 11 rules consistente; sem contradicao semantica entre CLAUDE x AGENTS x skills (check_rules_parity + check_core_agnostic PASS)",
+    "metodo_senior": "N/A: bloco e infra/correcao de wiring + dieta de contexto — sem fonte canonica/normativa externa citada; discovery inline via RCA observacional e auditoria de relatorio interno",
+    "fonte_canonica": false
+  },
+  "data": "2026-06-11T22:19:14Z"
+}
