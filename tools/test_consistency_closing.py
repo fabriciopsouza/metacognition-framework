@@ -74,6 +74,25 @@ def main():
         fails.append(f"{name} citado no CHANGELOG (entregue) mas ainda Status: Proposto "
                      f"(flip para Aceito ou remova do CHANGELOG — bug recorrente ADR-051)")
 
+    # (3b) raiz-limpa (ADR-079): arquivo RASTREADO na raiz, 0 bytes e sem extensao = destroço de
+    # shell (caso real 2026-06-11: payload de hook executado por cmd interativo criou ~20 arquivos;
+    # 8 chegaram a commit). Fail-closed: nao ha arquivo legitimo nesse formato na raiz.
+    try:
+        ls = subprocess.run(["git", "-C", ROOT, "ls-files"], capture_output=True, text=True,
+                            encoding="utf-8", errors="replace")
+        for fn in (ls.stdout or "").splitlines():
+            if "/" in fn or "\\" in fn or "." in fn:
+                continue
+            fp = os.path.join(ROOT, fn)
+            try:
+                if os.path.isfile(fp) and os.path.getsize(fp) == 0:
+                    fails.append(f"arquivo rastreado VAZIO e sem extensao na raiz: '{fn}' — destroço "
+                                 f"de shell commitado (ADR-079); remova com git rm")
+            except OSError:
+                continue
+    except Exception:
+        pass
+
     # (3) version-claim (P1/ADR-077): vX.Y.Z em mensagem de commit recente -> heading no CHANGELOG.
     # fail-soft se git indisponivel (mesma postura das advisories); fail-CLOSED quando decidivel.
     claimed_missing = []
@@ -132,6 +151,15 @@ def main():
                              capture_output=True, text=True).stdout.strip()
         if cnt.isdigit() and int(cnt) > 0:
             print(f"[advisory] {cnt} commit(s) nao-pushado(s) (recovery real = conta GitHub; push antes de fechar)")
+    except Exception:
+        pass
+    try:
+        stray = [f for f in os.listdir(ROOT)
+                 if "." not in f and os.path.isfile(os.path.join(ROOT, f))
+                 and os.path.getsize(os.path.join(ROOT, f)) == 0]
+        if stray:
+            print(f"[advisory] {len(stray)} arquivo(s) vazio(s) sem extensao na raiz (destroço de "
+                  f"shell? — ADR-079): {', '.join(sorted(stray))} — remover antes do commit")
     except Exception:
         pass
     intake = os.path.join(ROOT, "docs", "_intake")
