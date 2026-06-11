@@ -15,6 +15,15 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.58.1] — 2026-06-11 — boot barato e correto: STATUS por geradores determinísticos + fix da heurística stale do history + higiene do `## Em aberto`
+
+> PATCH (correção de doc, sem feature). Motivado pela observação de campo da sessão `9f01bd9e` (Opus 4.8): boot de master custou ~9.6k tokens de output com comandos ad-hoc, 1 retry de encoding e **1 extração errada** (regex no `## Em aberto` reportou "vazio" com itens FECHADOS presentes); e a instrução do roteador ("history últimas 30 linhas") ficou stale quando o history virou mais-novo-primeiro — quem a seguisse leria telemetria velha, não o checkpoint. [CONSOLIDADO]
+
+### Fixed
+- **`AGENT-FRAMEWORK.md` §2.B:** "history.md (últimas 30 linhas)" → **checkpoint do TOPO** (mais-novo-primeiro; preferir `tools/handoff.py`) — heurística pré-datava o layout atual.
+- **`.agent/workflows/start-session.md`:** passo 1 lê o **checkpoint do topo** (1 Read `limit≈30`, nunca o arquivo inteiro); passo 3 — **STATUS vem dos geradores determinísticos** `boot_check.py` + `handoff.py` (output ~0, sem regex ad-hoc); history direto só por exceção declarada (retomada profunda · auditoria · method-audit). Boot de master estimado em ~2–3k de output (era ~9.6k).
+- **`history.md ## Em aberto`:** 8 itens já-FECHADOS removidos (duplicavam checkpoints e poluíam o `handoff.py`) + doutrina de higiene na própria seção (fechado sai; checkpoint é o registro). Backlog trigger-gated ganha os itens da observação de campo (corrida do 1º prompt do liveness · cascata p/ shadows).
+
 ## [1.58.0] — 2026-06-11 — RCA do wiring de hooks (bash!) + dieta de contexto + rule #11 + cadência de poda (ADR-079/080, F3+F4)
 
 > Fecha o plano de melhoria (F3+F4). Descoberta central: **o harness executa hooks via bash** — o wrapper próprio `cmd /c "…"` quebrava o aninhamento de aspas e caía em **cmd interativo executando o payload JSON como comandos** (RCA dos ~33 arquivos espúrios em 4 ondas E dos gates "inertes" atribuídos ao EDR: **os hooks python não executavam por wiring**). [CONSOLIDADO]

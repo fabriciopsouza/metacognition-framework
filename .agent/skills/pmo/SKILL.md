@@ -28,7 +28,7 @@ Orquestra o squad, mantém o escopo, força releitura de documentação, previne
 retrabalho. NUNCA escreve código de produção — SEMPRE delega.
 
 ## Sequência ao ativar
-1. Ler: AGENTS.md → .agent/rules/*.md → docs/briefing.md → history.md (últimas 30).
+1. Ler: AGENTS.md → .agent/rules/*.md → docs/briefing.md → history.md (**checkpoint do TOPO** — mais-novo-primeiro; preferir `tools/boot_check.py` + `tools/handoff.py` p/ STATUS).
 2. Reformular o pedido em 1 frase.
 3. Classificar afirmações (via `_shared`).
 4. Decidir: claro → abordagem em 3 linhas → delegar; ambíguo → UMA pergunta.

@@ -18,7 +18,8 @@ Execute o **protocolo canônico de abertura de sessão** do framework, seguindo
    vs `@{upstream}`/`origin/main`. Atrás e seguro → `git pull --ff-only`; atrás e inseguro → avisar e
    **não afirmar estado** até resolver. *File-first sem fetch lê retrato congelado.*
 2. **Ler:** `AGENTS.md` → `.agent/rules/*.md` → `docs/briefing.md` → `history.md`
-   (últimas 30 + `## Em aberto` + `## Aprendizado`).
+   (**checkpoint do TOPO** — arquivo é mais-novo-primeiro; 1 Read `limit≈30` do início, nunca
+   inteiro. STATUS preferencial via `python tools/boot_check.py` + `python tools/handoff.py`).
 3. **Reconciliar WIP:** cruzar `## Em aberto` do `history.md` com branches do git e ADRs em `Proposto`.
 4. **Retrospective gate:** revisar o último bloco entregue desde o último PASS do process-critic
    (checklist binário adversarial — assumir que há gap).
