@@ -45,3 +45,9 @@ saída limpa); leituras de arquivo usam `-Encoding UTF8` (senão `Versão`→`Ve
 - Ponteiro: branch `feat/v1.22.0-entrada-deterministica` · `2026-05-31` · grep `consistency-gate`
 - Artefatos: `tools/hooks/consistency-gate.ps1` (UTF-8 BOM; `-RepoDir`, `-Json`; exit = nº de issues).
   Canário = a própria execução contra o repo (gate repo-aware). Invocação wirada: `.agent/skills/docops/SKILL.md` §Encerramento. Planejado (não wirado): `/checkpoint`, retrospective gate (start-session §2.5).
+
+## EMENDA 2026-06-10 (plano anti-bypass cross-IA, item E2) — dims CI-decidíveis viram FAIL-CLOSED
+
+**Motivação (falha real, execution-report 2026-06-08 + pedido do dono "garantias existem → sempre executadas, não bypassadas"):** o gate é **fail-soft** E é **hook PowerShell** → vetado pelo Kaspersky nesta máquina (ADR-047/060) → **"não disparou em ~7 fechamentos"**. Mecanismo existe ≠ enforça.
+
+**Mecanismo:** `tools/test_consistency_closing.py` — canário Python **FAIL-CLOSED na suíte CI** (não-vetoável; roda no `run_canaries.py` em 3 SOs) que porta as dimensões do consistency-gate **ainda não enforçadas em lugar nenhum**: (1) **número de ADR duplicado** (dim `contagens`); (2) **ADR citado no CHANGELOG (entregue) mas ainda `Status: Proposto`** — o bug recorrente ADR-051, sentido inverso do `test_adr_changelog_sync`. **Não duplica** (régua §0): checkpoint→`test_release_checkpoint`, ADR-Aceito→CHANGELOG→`test_adr_changelog_sync`, versão→`test_marketing_claims`. As dims não-decidíveis no CI (`unpushed` — CI é pós-push; `transients`) ficam **ADVISORY** (informa, não reprova). O hook PS fail-soft permanece como espelho humano no `/checkpoint`; a **enforcement** agora vive na suíte. Emenda a §Implementação; não suplanta a decisão original.

@@ -18,6 +18,23 @@
       ]
     },
     {
+      "id": "boot-self-check",
+      "title": "Self-check de boot consolidado (sync+agnosticismo+boot-scan+versao) com prova checavel",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/boot_check.py",
+      "test": "tools/test_boot_check.py",
+      "adr": "docs/adr/061-auditor-de-liveness-anti-falha-silenciosa-de-hooks.md",
+      "cross_ai": false,
+      "enforcement": "manual",
+      "tags": [
+        "boot",
+        "anti-bypass",
+        "liveness",
+        "determinism"
+      ]
+    },
+    {
       "id": "cross-ai-antiloop-gate",
       "title": "Trava fisica anti-loop da troca cross-IA (terminacao garantida)",
       "status": "PROVIDES",
@@ -208,6 +225,40 @@
       "tags": [
         "honesty",
         "doc-sync",
+        "gate"
+      ]
+    },
+    {
+      "id": "consistency-closing-ci",
+      "title": "Consistencia de fechamento FAIL-CLOSED no CI (dim do consistency-gate que o hook PS vetado nao enforcava)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/test_consistency_closing.py",
+      "test": "tools/test_consistency_closing.py",
+      "adr": "docs/adr/030-consistency-gate-auditoria-de-fechamento.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "tags": [
+        "doc-sync",
+        "anti-bypass",
+        "closing",
+        "gate"
+      ]
+    },
+    {
+      "id": "rules-parity-guard",
+      "title": "Anti-drift das 4 regras inviolaveis entre arquivos de autoridade (sem violar SSoT §6.5)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/check_rules_parity.py",
+      "test": "tools/test_rules_parity.py",
+      "adr": "docs/adr/075-rules-parity-anti-drift-regras-inviolaveis.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "tags": [
+        "anti-bypass",
+        "anti-drift",
+        "authority",
         "gate"
       ]
     },

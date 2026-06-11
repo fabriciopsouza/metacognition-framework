@@ -121,7 +121,7 @@ ADR: [`docs/adr/002-discovery-process-mapping-v160.md`](docs/adr/002-discovery-p
 Escape para metacognição pura (mesmo com squad instalado): debug simples,
 explicação conceitual, tarefa que não muda código, override "responde direto".
 Nesse modo, só as 4 regras invioláveis seguem ativas — todas referenciando
-`_shared/` (classificação, anti-rename, file-first, releitura forçada).
+`_shared/` (classificação, anti-rename, file-first, NÃO SEI/nunca-inventar).
 
 ---
 
