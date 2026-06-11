@@ -15,25 +15,31 @@ import sys
 import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-HOOK = os.path.join(ROOT, "tools", "hooks", "compaction-gate.ps1")
+HOOK_PY = os.path.join(ROOT, "tools", "hooks", "compaction_gate.py")
+HOOK_PS = os.path.join(ROOT, "tools", "hooks", "compaction-gate.ps1")
 
 
-def find_pwsh():
+def find_runner():
+    """Python-first (ADR-060 pattern). Falls back to PS if Python port absent."""
+    if os.path.isfile(HOOK_PY):
+        return (sys.executable, HOOK_PY, False)
     for exe in ("pwsh", "powershell"):
         if shutil.which(exe):
-            return exe
+            return (exe, HOOK_PS, True)
     return None
 
 
-def run_hook(pwsh, cwd):
+def run_hook(runner, cwd):
+    exe, hook, is_ps = runner
     payload = {"trigger": "auto", "cwd": cwd}
+    cmd = [exe, "-NoProfile", "-NonInteractive", "-File", hook] if is_ps else [exe, hook]
     proc = subprocess.run(
-        [pwsh, "-NoProfile", "-NonInteractive", "-File", HOOK],
+        cmd,
         input=json.dumps(payload),
         capture_output=True,
         text=True,
-        encoding="utf-8",      # pin: PS 5.1 emite no codepage do console; default cp1252 quebra em 0x9d
-        errors="replace",      # nunca crashar o canario por byte de encoding (determinismo de ambiente)
+        encoding="utf-8",
+        errors="replace",
     )
     out = (proc.stdout or "").strip()
     is_block = False
@@ -46,9 +52,9 @@ def run_hook(pwsh, cwd):
 
 
 def main():
-    pwsh = find_pwsh()
-    if not pwsh:
-        print("SKIP: pwsh/powershell ausente no PATH — canary nao executado.", file=sys.stderr)
+    runner = find_runner()
+    if not runner:
+        print("SKIP: pwsh/powershell ausente e hook Python nao encontrado — canary nao executado.", file=sys.stderr)
         return 0
     fails = 0
     with tempfile.TemporaryDirectory() as d:
@@ -72,7 +78,7 @@ def main():
             ("history.md sem checkpoint", nochk_dir, True),
         ]
         for desc, cwd, expect_block in cases:
-            got = run_hook(pwsh, cwd)
+            got = run_hook(runner, cwd)
             ok = got == expect_block
             verb = "block" if got else "allow"
             exp = "block" if expect_block else "allow"

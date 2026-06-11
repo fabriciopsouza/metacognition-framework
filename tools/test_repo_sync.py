@@ -12,7 +12,8 @@ Uso: python tools/test_repo_sync.py   (exit 0 se todos OK; 1 caso contrário; SK
 import json, os, shutil, subprocess, sys, tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-HOOK = os.path.join(ROOT, ".claude", "hooks", "check-repo-sync.ps1")
+HOOK_PY = os.path.join(ROOT, "tools", "hooks", "check_repo_sync.py")
+HOOK_PS = os.path.join(ROOT, ".claude", "hooks", "check-repo-sync.ps1")
 
 
 def have(exe):
@@ -23,12 +24,24 @@ def git(cwd, *args):
     return subprocess.run(["git", "-C", cwd, *args], capture_output=True, text=True)
 
 
-def run_hook(pwsh, project_dir):
+def find_runner():
+    """Python-first (ADR-060 pattern): check_repo_sync.py ja existe como porta definitiva."""
+    if os.path.isfile(HOOK_PY):
+        return (sys.executable, HOOK_PY, False)
+    for exe in ("pwsh", "powershell"):
+        if shutil.which(exe):
+            return (exe, HOOK_PS, True)
+    return None
+
+
+def run_hook(runner, project_dir):
+    exe, hook, is_ps = runner
     env = dict(os.environ, CLAUDE_PROJECT_DIR=project_dir)
-    # encoding=utf-8 + errors=replace: o hook emite UTF-8 (emoji ⚠️/✅); sem isso o Python no
-    # Windows decodifica como cp1252 e crasha (UnicodeDecodeError -> stdout None). qa-critic ADR-019.
-    p = subprocess.run([pwsh, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", HOOK],
-                       capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
+    if is_ps:
+        cmd = [exe, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", hook]
+    else:
+        cmd = [exe, hook]
+    p = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
     ctx = ""
     out = (p.stdout or "").strip()
     if out:
@@ -62,23 +75,23 @@ def advance_origin(work):
 
 
 def main():
-    if not (have("git") and (have("pwsh") or have("powershell"))):
-        print("SKIP: git ou pwsh ausente.", file=sys.stderr); return 0
-    pwsh = shutil.which("pwsh") or shutil.which("powershell")
+    runner = find_runner()
+    if not runner or not have("git"):
+        print("SKIP: git ou runner (python/pwsh) ausente.", file=sys.stderr); return 0
     fails = 0
     tmp = tempfile.mkdtemp(prefix="reposync_")
     try:
         work, clone = setup_pair(tmp)
 
         # C3 em dia
-        ctx = run_hook(pwsh, clone)
+        ctx = run_hook(runner, clone)
         ok = (ctx == "")
         print(("OK  " if ok else "FAIL") + " C3 em-dia -> silencioso"); fails += 0 if ok else 1
 
         # C1 limpo e atrás -> auto-atualiza
         advance_origin(work)
         git(clone, "fetch", "-q")  # garante que o ref remoto existe; o hook refaz fetch
-        ctx = run_hook(pwsh, clone)
+        ctx = run_hook(runner, clone)
         ok = "AUTO-ATUALIZADO" in ctx
         print(("OK  " if ok else "FAIL") + " C1 limpo+atras -> auto-atualiza  | ctx=" + repr(ctx[:60])); fails += 0 if ok else 1
         # e de fato atualizou?
@@ -89,7 +102,7 @@ def main():
         # C2 sujo e atrás -> avisa, não atualiza
         advance_origin(work)
         open(os.path.join(clone, "f.txt"), "a").write("dirty-local\n")  # suja o tree
-        ctx = run_hook(pwsh, clone)
+        ctx = run_hook(runner, clone)
         ok = ("NAO auto-atualizei" in ctx) and ("RASTREADAS" in ctx)
         print(("OK  " if ok else "FAIL") + " C2 modif-rastreada+atras -> avisa sem mexer  | ctx=" + repr(ctx[:70])); fails += 0 if ok else 1
         behind2 = git(clone, "rev-list", "--count", "HEAD..origin/main").stdout.strip()
@@ -101,7 +114,7 @@ def main():
         open(os.path.join(c4, "local.txt"), "w").write("commit local\n")
         git(c4, "add", "."); git(c4, "commit", "-q", "-m", "local-only")  # diverge
         advance_origin(w4)  # origin tb avança → históricos divergem
-        ctx = run_hook(pwsh, c4)
+        ctx = run_hook(runner, c4)
         ok = ("DIVERGIU" in ctx) and ("NAO auto-atualizei" in ctx)
         print(("OK  " if ok else "FAIL") + " C4 divergiu(nao-ff) -> avisa DIVERGIU, sem pull  | ctx=" + repr(ctx[:70])); fails += 0 if ok else 1
         behind4 = git(c4, "rev-list", "--count", "HEAD..origin/main").stdout.strip()
@@ -112,7 +125,7 @@ def main():
         w5, c5 = setup_pair(os.path.join(tmp, "u5"))
         advance_origin(w5)
         open(os.path.join(c5, "minha-nota.txt"), "w").write("nota local untracked\n")  # untracked apenas
-        ctx = run_hook(pwsh, c5)
+        ctx = run_hook(runner, c5)
         ok = "AUTO-ATUALIZADO" in ctx
         print(("OK  " if ok else "FAIL") + " C5 untracked-only+atras -> AUTO-ATUALIZA  | ctx=" + repr(ctx[:60])); fails += 0 if ok else 1
         behind5 = git(c5, "rev-list", "--count", "HEAD..origin/main").stdout.strip()

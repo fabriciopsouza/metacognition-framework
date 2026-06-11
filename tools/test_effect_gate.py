@@ -16,7 +16,8 @@ import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-HOOK = os.path.join(ROOT, "tools", "hooks", "effect-gate.ps1")
+HOOK_PY = os.path.join(ROOT, "tools", "hooks", "effect_gate.py")
+HOOK_PS = os.path.join(ROOT, "tools", "hooks", "effect-gate.ps1")
 
 # (descrição, tool, command, decisão_esperada ∈ {deny, ask, allow})
 CASES = [
@@ -71,18 +72,24 @@ CASES = [
 ]
 
 
-def find_pwsh():
+def find_runner():
+    """Python-first (ADR-060 pattern)."""
+    if os.path.isfile(HOOK_PY):
+        return (sys.executable, HOOK_PY, False)
     for exe in ("pwsh", "powershell"):
         if shutil.which(exe):
-            return exe
+            return (exe, HOOK_PS, True)
     return None
 
 
-def run_hook(pwsh, tool, command):
+def run_hook(runner, tool, command):
+    exe, hook, is_ps = runner
     payload = {"tool_name": tool, "tool_input": {"command": command} if command else {}}
+    cmd = [exe, "-NoProfile", "-NonInteractive", "-File", hook] if is_ps else [exe, hook]
     proc = subprocess.run(
-        [pwsh, "-NoProfile", "-NonInteractive", "-File", HOOK],
+        cmd,
         input=json.dumps(payload), capture_output=True, text=True,
+        encoding="utf-8", errors="replace",
     )
     out = proc.stdout.strip()
     if not out:
@@ -99,13 +106,13 @@ def run_hook(pwsh, tool, command):
 
 
 def main():
-    pwsh = find_pwsh()
-    if not pwsh:
-        print("SKIP: pwsh/powershell ausente no PATH — canary nao executado.", file=sys.stderr)
+    runner = find_runner()
+    if not runner:
+        print("SKIP: pwsh/powershell ausente e hook Python nao encontrado — canary nao executado.", file=sys.stderr)
         return 0
     fails = 0
     for desc, tool, cmd, expect in CASES:
-        got = run_hook(pwsh, tool, cmd)
+        got = run_hook(runner, tool, cmd)
         ok = got == expect
         if not ok:
             fails += 1
