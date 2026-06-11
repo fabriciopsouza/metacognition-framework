@@ -32,3 +32,6 @@ docs/_private/_catalog/
 
 # Permissoes pessoais (nao distribuir) — ADR-005/047
 .claude/settings.local.json
+
+# Config cross-IA com paths absolutos por maquina (nunca distribuir — ADR-069/070)
+.claude/cross-ai-repos.json
