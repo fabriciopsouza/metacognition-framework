@@ -38,7 +38,8 @@ Teste binário (herda P14): a próxima sessão começa sem perguntar nada de vol
 **Gerador DETERMINÍSTICO do Pacote P14 (ADR-076 — prosa→mecanismo do template acima):** ao fechar o
 bloco rode `python tools/handoff.py` — emite os 5 campos P14 **do estado do repo** (versão, branch/commit/PR,
 não-pushado, `## Em aberto`, próximo passo, 5 arquivos recentes) **+ sugestão de modelo** por regra
-papel+risco (qa/review → heterogêneo; architect/discovery → Opus; mecânico → Sonnet; alto-risco → Opus+HITL).
+papel+risco lida de **`tools/model-policy.json`** (fonte única, ADR-078: qa/review → heterogêneo pela
+escada; decisão/elicitação → tier max; mecânico → tier economy; alto-risco sobrepõe → tier max + HITL).
 Mesmo comando vale em **auto-execução, automação (cron) e passagem cross-model** — não é mais preenchido à
 mão (mata o "Gap 8 — handoff improviso" do ADR-012). `--next-role`/`--risk`/`--author` ajustam; `--write` grava.
 
