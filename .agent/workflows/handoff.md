@@ -47,4 +47,13 @@ artefato-gate: <link/path>
 critério binário: [PASSA] — <evidência objetiva>
 ```
 
+**E registra o gate no ledger (P3/ADR-077 — rastro mecânico, 1 linha):**
+```
+python tools/qa_evidence.py --junction <J_n> --bloco <id-do-bloco> --artefato <path> --evidencia "<critério + prova>"
+```
+O ledger (`_meta/qa/junctions/<bloco>.jsonl`) valida forward-only na escrita (regressão exige
+`--rewind` explícito — rewind cascata do PC) e **J3 exige `--validation <validation.md>` OU
+`--justificativa`** (P4 — fecha o "se aplicável" silencioso). O process-critic audita a dim (iv)
+"process compliance" contra este ledger, não contra prosa.
+
 Se autor não declarar PASS, ou se PMO adversarial bouncer → autor itera mesma junção até PASS. **Não há atalho.**

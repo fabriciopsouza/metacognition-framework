@@ -39,7 +39,7 @@ retrabalho. NUNCA escreve código de produção — SEMPRE delega.
 (`_shared/high-stakes-gate`).
 
 ## Junção-check adversarial (ADR-011 v1.12.0)
-PMO aplica **junction-critic adversarial em J0-J3** com checklist binário declarado em `/handoff` workflow. Hipótese default = há bug; força evidência objetiva do critério PASS antes de autorizar forward. Bounce binário se gate FAIL — autor itera mesma junção (não é reprovação substantiva, é gate). J4 e PC ficam com `qa-critic` em subagente isolado (modelo diferente, profundidade adversarial maior).
+PMO aplica **junction-critic adversarial em J0-J3** com checklist binário declarado em `/handoff` workflow. Hipótese default = há bug; força evidência objetiva do critério PASS antes de autorizar forward. Bounce binário se gate FAIL — autor itera mesma junção (não é reprovação substantiva, é gate). J4 e PC ficam com `qa-critic` em subagente isolado (modelo diferente, profundidade adversarial maior). **Todo PASS autorizado deixa rastro no ledger** (`qa_evidence.py --junction` — P3/ADR-077; comando no `/handoff` workflow): junção sem linha no ledger = gate não aplicado, e o process-critic trata como FAIL de process compliance.
 
 ## Maestro de bloco — J6 re-orquestração (ADR-045, emenda ao ADR-011)
 Após o **process-critic** emitir `APROVADO_LIMPO` (fim de BLOCO), o controle volta ao PMO para **UMA**

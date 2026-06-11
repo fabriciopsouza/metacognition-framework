@@ -39,6 +39,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 QA_DIR = os.path.join(ROOT, "_meta", "qa")
 REQUIRED = ["bloco", "passou", "recomendacao", "problemas", "verificacoes_executadas"]
 APPROVING = {"aprovar", "aprovar_com_ressalvas"}
+# Ledger de juncoes (P3/ADR-077): ordem canonica do fluxo bicelular (ADR-011 + J6/ADR-045).
+JUNCTION_ORDER = {"J0": 0, "J1": 1, "J2": 2, "J3": 3, "J4": 4, "J5": 5, "PC": 6, "J6": 7}
 
 try:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -132,11 +134,84 @@ def write_artifact(verdict, when=None):
     return jpath, mpath
 
 
+def append_junction(bloco, junction, artefato, evidencia,
+                    validation=None, justificativa=None, rewind=False, when=None):
+    """Ledger de juncoes (P3/P4, ADR-077): 1 linha JSONL por gate PASS declarado em /handoff.
+
+    Da rastro mecanico a J0-J3 (antes prosa pura) e materia-prima objetiva a dim (iv)
+    'process compliance' do process-critic. Regras:
+      - forward-only (ADR-011): juncao anterior a ultima registrada exige rewind=True
+        (rewind cascata do PC e legitimo; regressao silenciosa nao e);
+      - J3 (P4): exige validation (path EXISTENTE de validation.md) OU justificativa
+        explicita — fecha a clausula frouxa 'testes/spec se aplicavel' sem registro.
+    Retorna o path do ledger. Levanta ValueError em violacao (fail-closed)."""
+    j = str(junction).upper().strip()
+    if j not in JUNCTION_ORDER:
+        raise ValueError(f"juncao invalida '{junction}' — validas: {sorted(JUNCTION_ORDER)}")
+    if not str(bloco).strip():
+        raise ValueError("bloco vazio")
+    if not str(evidencia).strip():
+        raise ValueError("evidencia vazia (criterio binario + prova objetiva — ADR-011)")
+    if j == "J3":
+        ok_val = validation and os.path.isfile(os.path.join(ROOT, validation)) \
+            or (validation and os.path.isfile(validation))
+        if not ok_val and not (justificativa and str(justificativa).strip()):
+            raise ValueError("J3 exige --validation <validation.md existente> OU --justificativa "
+                             "explicita (P4/ADR-077: 'se aplicavel' sem registro = REPROVADO)")
+    led_dir = os.path.join(QA_DIR, "junctions")
+    os.makedirs(led_dir, exist_ok=True)
+    path = os.path.join(led_dir, _slug(bloco) + ".jsonl")
+    last = None
+    if os.path.isfile(path):
+        for line in open(path, encoding="utf-8"):
+            line = line.strip()
+            if line:
+                try:
+                    last = json.loads(line).get("junction")
+                except Exception:
+                    continue
+    if last in JUNCTION_ORDER and JUNCTION_ORDER[j] < JUNCTION_ORDER[last] and not rewind:
+        raise ValueError(f"forward-only violado: ultima juncao registrada {last}, tentando {j} "
+                         f"sem --rewind (rewind cascata do PC deve ser explicito — ADR-011)")
+    rec = {"junction": j, "bloco": bloco, "artefato": artefato or "", "evidencia": evidencia,
+           "data": when or _now_iso()}
+    if validation:
+        rec["validation"] = validation
+    if justificativa:
+        rec["justificativa"] = justificativa
+    if rewind:
+        rec["rewind"] = True
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+    return path
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description="Persiste veredito qa-critic em _meta/qa/ (ADR-074).")
     ap.add_argument("--from-json", help="arquivo JSON do veredito, ou '-' para stdin")
     ap.add_argument("--list", action="store_true", help="lista artefatos existentes")
+    ap.add_argument("--junction", help="registra gate PASS de juncao (J0..J5|PC|J6) no ledger (ADR-077)")
+    ap.add_argument("--bloco", help="id do bloco (com --junction)")
+    ap.add_argument("--artefato", default="", help="path/link do artefato-gate (com --junction)")
+    ap.add_argument("--evidencia", default="", help="criterio binario + prova objetiva (com --junction)")
+    ap.add_argument("--validation", help="path do validation.md (exigido em J3, ou --justificativa)")
+    ap.add_argument("--justificativa", help="justificativa explicita quando J3 sem validation.md")
+    ap.add_argument("--rewind", action="store_true", help="declara rewind cascata (permite voltar juncao)")
     args = ap.parse_args(argv)
+
+    if args.junction:
+        if not args.bloco:
+            ap.error("--junction exige --bloco")
+        try:
+            path = append_junction(args.bloco, args.junction, args.artefato, args.evidencia,
+                                   validation=args.validation, justificativa=args.justificativa,
+                                   rewind=args.rewind)
+        except ValueError as e:
+            print(f"[junction-ledger] RECUSADO: {e}")
+            return 1
+        print(f"[junction-ledger] registrado: {args.junction} de '{args.bloco}' -> "
+              f"{os.path.relpath(path, ROOT)}")
+        return 0
 
     if args.list:
         if not os.path.isdir(QA_DIR):
