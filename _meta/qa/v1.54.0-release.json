@@ -1,0 +1,58 @@
+{
+  "bloco": "v1.54.0-release",
+  "passou": true,
+  "steelman": "Gerador deterministico do Pacote de handoff P14 (ADR-076) a partir do estado do repo + sugestao de modelo por regra papel+risco. Mecaniza o template P14 que existia mas era preenchido a mao (Gap 8 do ADR-012), e e universal (auto-exec/automacao/cross-model). Timestamp vem da data do commit HEAD (nao Date.now). Canario prova determinismo rigoroso (estado congelado -> saida byte-identica) + 11 regras de modelo + safety do campo Acesso.",
+  "problemas": [
+    {
+      "severidade": "alto",
+      "local": "tools/handoff.py:build (campo P14 Acesso)",
+      "descricao": "unpushed='?' (branch sem upstream) caia no guard que excluia '?' -> render 'nada pendente' FALSO; P14 Acesso e safety-critical (receptor pode perder trabalho)",
+      "status": "CORRIGIDO: '?' agora declara 'estado de push DESCONHECIDO'; canario cobre"
+    },
+    {
+      "severidade": "medio",
+      "local": "tools/handoff.py:suggest_model",
+      "descricao": "infer_role produzia 'cross-ai' mas suggest_model nao tinha regra -> caia no default Sonnet (handoff cross-IA e coordenacao pesada)",
+      "status": "CORRIGIDO: regra cross-ai/handoff -> Opus; canario cobre"
+    },
+    {
+      "severidade": "medio",
+      "local": "ADR-076/CHANGELOG (headline 'DETERMINISTICO') + test_handoff",
+      "descricao": "campo PR via gh pr view depende de rede/auth -> nao byte-identico entre maquinas; canario de determinismo nao congelava o estado do repo (so ausencia de wall-clock)",
+      "status": "CORRIGIDO: ADR escopa 'deterministico' aos campos git-derivados (PR=anotacao best-effort); canario monkeypatch congela repo_state+pr_info -> prova byte-identidade"
+    },
+    {
+      "severidade": "baixo",
+      "local": "tools/handoff.py:suggest_model",
+      "descricao": "substring 'doc' casava 'docker'",
+      "status": "CORRIGIDO: 'doc' -> 'docops'/'document'"
+    },
+    {
+      "severidade": "baixo",
+      "local": "docs/adr/076:Status",
+      "descricao": "Status=Aceito citava 'CI verde' mas o CI esta billing-blocked",
+      "status": "CORRIGIDO: Status honesto (qa-critic + suite local; CI billing-blocked)"
+    },
+    {
+      "severidade": "baixo",
+      "local": "qa-critic (falso-positivo)",
+      "descricao": "qa-critic (cutoff ago/2025) marcou claude-fable-5 como ID inexistente; o ambiente desta sessao lista Fable 5 como modelo atual -> alegacao do critico esta desatualizada",
+      "status": "NAO-ALTERADO: anti-oracle-bias — nao 'corrigir' valor correto por conhecimento stale do revisor; fable nunca e SUGERIDO (so possivel valor de --author)"
+    }
+  ],
+  "recomendacao": "aprovar_com_ressalvas",
+  "verificacoes_executadas": [
+    "qa-critic adversarial (Sonnet isolado): 1 ALTO + 2 MEDIO + 4 BAIXO; 5 reais corrigidos + 1 falso-positivo (fable) refutado com fonte (env da sessao)",
+    "determinismo rigoroso provado: canario congela repo_state+pr_info -> build() byte-identico; timestamp=data do commit HEAD (nao wall-clock)",
+    "safety P14: unpushed='?' -> 'DESCONHECIDO' (nunca 'nada pendente'); coberto por canario",
+    "suite run_canaries: handoff PASS; faltam so os artefatos de fechamento deste release"
+  ],
+  "postura": {
+    "discovery": "doc: file-first (ADR-012 P14 template + checkpoint.md + cross_ai_hub + grep tools/) -> 3 gaps confirmados (condicional/prosa/sem-modelo); elicitacao do dono via AskUserQuestion (construir via squad + regra papel+risco)",
+    "rrc": "PASSA",
+    "metodo_senior": "N/A: feature interna de tooling (handoff), sem fonte canonica/normativa EXTERNA",
+    "fonte_canonica": false
+  },
+  "release": "1.54.0",
+  "data": "2026-06-11T12:00:00Z"
+}
