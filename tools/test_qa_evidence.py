@@ -83,6 +83,14 @@ def _test_junction_ledger():
             expect_fail("juncao invalida", junction="J9", artefato="a", evidencia="e")
             expect_fail("evidencia vazia", junction="J4", artefato="a", evidencia="  ")
             led = os.path.join(td, "junctions", "bloco-t.jsonl")
+            # corrupcao -> fail-closed (nao zera forward-only em silencio)
+            with open(led, "a", encoding="utf-8") as f:
+                f.write("{nao-e-json\n")
+            expect_fail("ledger corrompido recusa append", junction="J4", artefato="a", evidencia="e")
+            with open(led, encoding="utf-8") as f:
+                good = [x for x in f if x.strip() and not x.startswith("{nao")]
+            with open(led, "w", encoding="utf-8") as f:
+                f.writelines(good)
             if not os.path.isfile(led):
                 fails.append("ledger jsonl nao foi criado")
             else:
@@ -93,7 +101,7 @@ def _test_junction_ledger():
             qa_evidence.QA_DIR = saved
     for f in fails:
         print("  - [junction-ledger]", f)
-    print(f"junction-ledger (P3/P4 ADR-077): {'OK (9 casos)' if not fails else 'FAIL'}")
+    print(f"junction-ledger (P3/P4 ADR-077): {'OK (10 casos)' if not fails else 'FAIL'}")
     return not fails
 
 

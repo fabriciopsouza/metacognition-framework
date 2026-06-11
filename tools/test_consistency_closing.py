@@ -82,8 +82,15 @@ def main():
                              capture_output=True, text=True, encoding="utf-8", errors="replace")
         if log.returncode == 0 and log.stdout:
             heads = set(re.findall(r"(?m)^## \[(\d+\.\d+\.\d+)\]", chg))
+            # claim = vX.Y.Z em qualquer posicao; X.Y.Z sem prefixo SO conta com contexto de versao
+            # no subject (changelog/release/vers/bump) — evita falso-positivo tipo "python 3.12.1"
+            # (achado MEDIO do process-critic v1.56.0; hibrido validado sem FP em 200 commits reais).
+            ctx = re.compile(r"(?i)changelog|release|vers|bump")
             for subj in log.stdout.splitlines():
-                for v in re.findall(r"\bv(\d+\.\d+\.\d+)\b", subj):
+                claims = set(re.findall(r"\bv(\d+\.\d+\.\d+)\b", subj))
+                if ctx.search(subj):
+                    claims |= set(re.findall(r"\b(\d+\.\d+\.\d+)\b", subj))
+                for v in claims:
                     if v not in heads and v not in claimed_missing:
                         claimed_missing.append(v)
     except Exception:

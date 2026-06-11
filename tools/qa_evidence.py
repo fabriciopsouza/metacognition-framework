@@ -169,7 +169,10 @@ def append_junction(bloco, junction, artefato, evidencia,
                 try:
                     last = json.loads(line).get("junction")
                 except Exception:
-                    continue
+                    # fail-closed em corrupcao (achado BAIXO do process-critic v1.56.0): linha
+                    # iliegivel zeraria o forward-only silenciosamente — recusar e mandar investigar.
+                    raise ValueError(f"ledger corrompido ({os.path.basename(path)}: linha nao-JSON) — "
+                                     f"investigue/restaure antes de registrar nova juncao")
     if last in JUNCTION_ORDER and JUNCTION_ORDER[j] < JUNCTION_ORDER[last] and not rewind:
         raise ValueError(f"forward-only violado: ultima juncao registrada {last}, tentando {j} "
                          f"sem --rewind (rewind cascata do PC deve ser explicito — ADR-011)")

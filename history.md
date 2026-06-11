@@ -9,6 +9,24 @@
 
 ---
 
+## 2026-06-11 — Release v1.56.0: enforcement determinístico de junção e release (ADR-077, fase F1 do plano de melhoria)
+
+Aprovado e funcionando. **F1 do plano** (`docs/_private/reports/avaliacao-processo-framework-2026-06-11.md`), motivado pelo caso real v1.55.0: **P1** version-claim fail-closed em `test_consistency_closing.py` (commit que declara versão sem heading no CHANGELOG → suíte vermelha; regra híbrida v-prefixo + contexto de versão, validada sem FP em 200 commits + prova negativa exit 1) · **P2** override de CI registrado (advisory gh no canário + rule SE/ENTÃO **#10** no qa-critic — contagem atualizada 9→10) · **P3** ledger de junções `qa_evidence.py --junction` → `_meta/qa/junctions/<bloco>.jsonl` (forward-only na escrita; `--rewind` explícito; corrupção fail-closed) wirado em `/handoff` + pmo SKILL; capability `junction-ledger` (#58) · **P4** J3 exige `--validation` existente OU `--justificativa` (fecha o "se aplicável" silencioso). Régua §0: zero ferramenta nova, zero canário novo.
+
+**Process-critic (Sonnet isolado; autor Fable — heterogeneidade "modelo≠, família=", ADR-018):** `aprovar_com_ressalvas` → 1 MÉDIO (regex só-v-prefixo; corrigido com regra híbrida) + 1 BAIXO (corrupção do JSONL zerava forward-only; corrigido fail-closed + caso 10 no canário) + 1 BAIXO esperado (J2 pré-flip). Refutou a hipótese de bug de precedência em `ok_val` (testada). Evidência: `_meta/qa/v1.56.0-adr-077.{json,md}` com postura. **Dogfood:** as junções J0–J4 DESTE bloco estão no próprio ledger (`junctions/v1.56.0-adr-077.jsonl`).
+
+Nomenclaturas: `junction-ledger` · version-claim "regra híbrida" · rule #10 (CI pulado sem OVERRIDE).
+Decisões permanentes: **ADR-077** Aceito (4 emendas a mecanismos existentes; hook PreToolUse rejeitado como mecanismo primário — vetável por EDR).
+Próximo passo: **F2** — `model-policy.json` fonte única (papel×risco→tier; escada de heterogeneidade declarada; economy tier p/ papéis mecânicos), ADR própria, PR independente. Aceite: handoff.py lê policy; canário valida o JSON; subagentes recebem model do policy.
+Riscos ativos: CI billing-blocked (validação local; PRs #78/F1 aguardam decisão de merge do dono); FP residual do version-claim declarado no ADR-077; F3 depende do merge de P3.
+RE-ORQUESTRAÇÃO: prosseguir (F2 conforme plano).
+
+## RRC (ADR-010) — coherence pass
+- Artefatos lidos: CHANGELOG (1.56.0), README:11, guia/web/index.html, ADR-077, qa-critic SKILL (10 rules), pmo SKILL, handoff.md, qa_evidence.py, test_qa_evidence.py, test_consistency_closing.py, capabilities.json/CAPABILITIES.md (58), `_meta/qa/v1.56.0-adr-077.json`, ledger junctions.
+- Verificações: versões em sync (README × CHANGELOG × vitrine = 1.56.0): **PASSA** · Refs cruzadas (ADR-077 Aceito + no CHANGELOG; arquivos citados existem): **PASSA** · Nomenclatura: **PASSA** · Sem contradições: **PASSA** · Contagens em sync (58 capacidades; 10 rules; 10 casos): **PASSA** · Anti-vazamento: **PASSA**.
+- Inconsistências corrigidas neste checkpoint: regex híbrida + corrupção fail-closed (achados do process-critic).
+- Veredito: **PASSA**.
+
 ## 2026-06-11 — Release v1.55.0: 4 hooks PS → Python (emenda ADR-060) — FECHAMENTO RETROATIVO + avaliação do framework
 
 Aprovado e funcionando. **Duas partes:** (1) fechamento retroativo do bloco v1.55.0 (commit `7225df6`, port 1:1 de `compaction_gate`/`effect_gate`/`mission_gate`/`overwrite_guard` PS→Python + 5 wirings Python-first no settings + capabilities mechanism + canários `find_runner()`), que havia entrado na main via PR #77 **sem fechamento**; (2) avaliação completa do framework a pedido do dono → `docs/_private/reports/avaliacao-processo-framework-2026-06-11.md` (12 propostas P1–P12, plano F0–F4; esta entrada É o F0).
