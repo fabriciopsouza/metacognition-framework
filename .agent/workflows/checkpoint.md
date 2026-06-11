@@ -35,6 +35,13 @@ estendido com campos de compaction + carimbo de faixa — superset, não artefat
 **Formato: `docs/specs/_template-digest/digest.md`** (fonte única; não relistar campos aqui).
 Teste binário (herda P14): a próxima sessão começa sem perguntar nada de volta?
 
+**Gerador DETERMINÍSTICO do Pacote P14 (ADR-076 — prosa→mecanismo do template acima):** ao fechar o
+bloco rode `python tools/handoff.py` — emite os 5 campos P14 **do estado do repo** (versão, branch/commit/PR,
+não-pushado, `## Em aberto`, próximo passo, 5 arquivos recentes) **+ sugestão de modelo** por regra
+papel+risco (qa/review → heterogêneo; architect/discovery → Opus; mecânico → Sonnet; alto-risco → Opus+HITL).
+Mesmo comando vale em **auto-execução, automação (cron) e passagem cross-model** — não é mais preenchido à
+mão (mata o "Gap 8 — handoff improviso" do ADR-012). `--next-role`/`--risk`/`--author` ajustam; `--write` grava.
+
 > **ADR-011 (v1.12.0):** `/checkpoint` é **save-point + gate RRC** (ADR-010 §ii) — NÃO invoca process-critic adversarial automaticamente. Process-critic (qa-critic adversarial em subagente isolado, com poder de rewind cascata) é mandatório no FINAL DE BLOCO APROVADO (release, ADR aceito, spec fechada, feature delivered) e on-demand sob escalação do dono. **Backstop opcional em /checkpoint** ativado explicitamente pelo dono ("rode process-critic agora") — não default.
 
 ## Aprendizado (ex-G9 / ADR-007)

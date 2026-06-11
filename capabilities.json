@@ -263,6 +263,23 @@
       ]
     },
     {
+      "id": "handoff-generator",
+      "title": "Gerador deterministico do Pacote de handoff P14 do estado do repo + sugestao de modelo (papel+risco)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/handoff.py",
+      "test": "tools/test_handoff.py",
+      "adr": "docs/adr/076-handoff-deterministico-gerador-sugestao-modelo.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "tags": [
+        "handoff",
+        "determinism",
+        "cross-session",
+        "model-suggestion"
+      ]
+    },
+    {
       "id": "limits-catalog",
       "title": "Catalogo LIMITS.md de capacidades provadas (PROVADO|PARCIAL|EM-DESENV), derivado",
       "status": "PROVIDES",

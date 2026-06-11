@@ -15,6 +15,13 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.54.0] — 2026-06-11 — handoff cross-sessão DETERMINÍSTICO: gerador do Pacote P14 + sugestão de modelo (ADR-076)
+
+> Pedido do dono: a **ausência de handoff claro ao fim de cada bloco** deve ser tratada **deterministicamente em qualquer situação** — auto-execução, automações (cron) e passagens cross-model (fechar + abrir nova sessão com outro modelo, **inclusive sugerindo qual modelo**). File-first: o Pacote P14 (ADR-012) existia como **template preenchido à mão**, condicional e sem sugestão de modelo (o próprio ADR-012 admite "Gap 8 — handoff improviso"). [CONSOLIDADO]
+
+### Added
+- **`tools/handoff.py` + canário `test_handoff.py` (ADR-076):** gera o **Pacote de handoff P14 DETERMINISTICAMENTE do estado do repo** (versão=CHANGELOG; branch/commit/PR=git/gh; não-pushado/não-commitado=git; pendências=`history.md ## Em aberto`+ADRs Proposto; próximo passo=último checkpoint; 5 arquivos recentes=git; timestamp=data do commit HEAD — **não `Date.now`**) **+ sugestão de modelo por regra papel+risco** (qa/review → **heterogêneo** família≠autor, anti-viés ADR-018; architect/discovery → **Opus**; docops/mecânico → **Sonnet**; **alto-risco/regulado/irreversível → Opus + gate humano**). Mesmo comando em **auto-exec, automação e cross-model**. Mecaniza o template P14 (prosa→mecanismo, régua §0) e mata o Gap 8 do ADR-012. Wirado no `/checkpoint` (fechamento). Canário: 6 campos P14 + 9 regras de modelo + inferência de papel + **determinismo** (mesmos inputs → mesma saída). [CONSOLIDADO]
+
 ## [1.53.0] — 2026-06-10 — anti-bypass cross-IA: garantias existentes viram sempre-executadas (boot_check, consistency no CI, rules-parity)
 
 > Auditoria dos erros sistêmicos do **Gemini** (relatórios cross-IA) reconciliada com o repo **vivo**: 8 de 12 já eram mecanizados aqui (`test_oracle_bias`, `test_sycophancy`, ADR-036, effect-gate loud-SKIP). O risco real no nosso framework é **bypass, não ausência** — pedido do dono: *"garantias existem → garantir que sejam sempre executadas e não bypassadas"*. Plano lean (régua §0) em `docs/PLANO-ANTI-BYPASS-CROSS-IA.md`. [CONSOLIDADO]

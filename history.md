@@ -9,6 +9,25 @@
 
 ---
 
+## 2026-06-11 — Release v1.54.0: handoff cross-sessão DETERMINÍSTICO (gerador do Pacote P14 + sugestão de modelo) — ADR-076
+
+Aprovado e funcionando. Pedido do dono: a **ausência de handoff claro ao fim de cada bloco** deve ser **determinística em qualquer situação** — auto-execução, automação (cron) e passagem cross-model (fechar + abrir nova sessão com outro modelo, **inclusive sugerir qual modelo**). **Discovery (file-first):** o Pacote P14 (ADR-012) existia como **template preenchido à mão**, condicional (só quando discovery declarava "alimenta outra sessão") e **sem sugestão de modelo** — o próprio ADR-012 admite "Gap 8: handoff improviso". Não havia `tools/handoff.py`.
+
+**Entregue (ADR-076):** `tools/handoff.py` — gera o Pacote P14 **deterministicamente do estado do repo** (versão=CHANGELOG · branch/commit/PR=git/gh · não-pushado=git · pendências=`## Em aberto`+ADRs Proposto · próximo passo=último checkpoint · 5 recentes=git · **timestamp=data do commit HEAD, não `Date.now`**) **+ sugestão de modelo** por regra papel+risco (qa/review → heterogêneo família≠autor [ADR-018]; cross-IA/architect/discovery → Opus; docops/mecânico → Sonnet; **alto-risco → Opus+HITL**). Mesmo comando em auto-exec/automação/cross-model. Wirado no `/checkpoint`. Canário: 6 campos P14 + 11 regras de modelo + inferência de papel + **determinismo rigoroso** (estado congelado → saída byte-idêntica).
+
+**qa-critic** adversarial (Sonnet isolado): 1 ALTO + 2 MÉDIO + 3 BAIXO → **5 reais corrigidos** (unpushed='?' rendia "nada pendente" FALSO no P14 Acesso → "DESCONHECIDO"; cross-ai sem regra de modelo → Opus; "determinístico" overclaim do campo PR-via-rede → escopado aos campos git; 'doc'→'docker'; Status honesto re: CI billing-blocked) **+ 1 falso-positivo refutado** (o crítico, cutoff ago/2025, marcou `claude-fable-5` como inexistente; o ambiente desta sessão lista Fable 5 como atual → **anti-oracle-bias: não "corrigi" valor correto por conhecimento stale do revisor**). `_meta/qa/v1.54.0-release.{json,md}`.
+
+Nomenclaturas: `tools/handoff.py` (`build`/`suggest_model`/`infer_role`/`repo_state`) · regra papel+risco · campo P14 Acesso "DESCONHECIDO".
+Decisões permanentes: **ADR-076** (handoff determinístico + sugestão de modelo) Aceito. Não suplanta ADR-012 (mecaniza o template P14 dele).
+Próximo passo: **Fase 2 cross-IA** (replicar o gap-analysis anti-bypass + o handoff no framework Gemini via handoff cross-IA — write-isolation ADR-070, sem push no repo dele); dono clonar o hub destrava boot-scan pleno. Aceite: handoff cross-IA depositado no outbox; Gemini aplica no próprio master.
+Riscos ativos: campo PR do handoff é anotação best-effort (gh/rede), não byte-idêntico cross-máquina (declarado; campos git-derivados são determinísticos). CI do Actions billing-blocked nesta conta → validação pela suíte local cross-platform. Suíte 51 PASS / 1 SKIP / 0 FAIL. WIP: Fase 2 cross-IA pendente.
+
+## RRC (ADR-010) — coherence pass
+- Artefatos lidos: CHANGELOG/README/vitrine (1.54.0), handoff.py/test_handoff.py, ADR-076, checkpoint.md (wiring), capabilities.json/CAPABILITIES.md (57), `_meta/qa/v1.54.0-release.json`, ADR-012 (template P14 mecanizado).
+- Verificações: versões em sync (README × CHANGELOG × vitrine = 1.54.0; `test_marketing_claims` PASS): **PASSA** · Refs cruzadas (ADR-076 existe e no CHANGELOG; `test_adr_changelog_sync` PASS): **PASSA** · Nomenclatura: **PASSA** · Sem contradições: **PASSA** · Contagens (57 capacidades × índice; `test_capabilities` PASS): **PASSA** · Anti-vazamento (`check_core_agnostic` PASS): **PASSA**.
+- Inconsistências corrigidas neste checkpoint: 5 achados do qa-critic (acima).
+- Veredito: **PASSA**.
+
 ## 2026-06-10 — Release v1.53.0: anti-bypass cross-IA — garantias existentes viram sempre-executadas (boot_check + consistency-CI + rules-parity)
 
 Aprovado e funcionando. Pedido do dono: auditar os **erros sistêmicos do Gemini** (relatórios cross-IA em `~/.gemini/.../metacognition-gemini`) e garantir que **não ocorram aqui** — e que, onde a garantia já existe, ela seja **sempre executada e não bypassada**. **Discovery cross-IA** (3 subagentes read-only sobre os reports + repo vivo) → `docs/PLANO-ANTI-BYPASS-CROSS-IA.md`: **8 de 12 erros do Gemini já eram mecanizados aqui** (`test_oracle_bias`, `test_sycophancy`, ADR-036 porta-do-usuário, effect-gate loud-SKIP) — o risco real é **bypass, não ausência**. Plano lean (régua §0), 3 itens, cada um par-executável:
