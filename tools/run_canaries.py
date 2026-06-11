@@ -53,7 +53,12 @@ def main(argv):
             [sys.executable, path],
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             cwd=ROOT,
+            # canario NUNCA espera stdin interativo: pipe herdado aberto = suite pendurada
+            # (caso real 2026-06-11: test_repo_sync -> hook check_repo_sync.read(stdin) deadlock)
+            stdin=subprocess.DEVNULL,
         )
         out = (proc.stdout or "") + (proc.stderr or "")
         is_skip = proc.returncode == 0 and "SKIP" in out and "PASS" not in out.upper()

@@ -9,6 +9,28 @@
 
 ---
 
+## 2026-06-11 — Release v1.55.0: 4 hooks PS → Python (emenda ADR-060) — FECHAMENTO RETROATIVO + avaliação do framework
+
+Aprovado e funcionando. **Duas partes:** (1) fechamento retroativo do bloco v1.55.0 (commit `7225df6`, port 1:1 de `compaction_gate`/`effect_gate`/`mission_gate`/`overwrite_guard` PS→Python + 5 wirings Python-first no settings + capabilities mechanism + canários `find_runner()`), que havia entrado na main via PR #77 **sem fechamento**; (2) avaliação completa do framework a pedido do dono → `docs/_private/reports/avaliacao-processo-framework-2026-06-11.md` (12 propostas P1–P12, plano F0–F4; esta entrada É o F0).
+
+**OVERRIDE declarado (ADR-051, registro retroativo):** o merge do PR #77 foi feito com CI vermelho por **billing do GitHub Actions** (não por código), via `enforce_admins` desabilitado→reabilitado. Custo/consequência: nenhum gate fail-closed rodou no merge; o fechamento (CHANGELOG/qa-evidence/checkpoint/tag) ficou pendente até esta entrada. Causa-raiz (RCA, rule #6): a malha fail-closed ancora no evento "versão nova no CHANGELOG" — sem a entrada, nenhum gate acorda; admin-merge não deixa rastro de override. Mitigação proposta: P1 (canário version-claim) + P2 (override de CI registrado) — Fase F1.
+
+**Process-critic retroativo (Sonnet isolado; autor Fable — heterogeneidade "modelo≠, família=", declarada ADR-018):** `passou=true`, `aprovar_com_ressalvas` → 2 BAIXO, **ambos corrigidos pré-commit**: BOM introduzido pela sessão no `guia/web/index.html` (removido, bytes verificados) + `UnicodeEncodeError` cp1252 no `test_repo_sync.py` (pré-existente; `reconfigure utf-8`, padrão v1.53.0, CHANGELOG §Fixed). Evidência: `_meta/qa/v1.55.0-release.{json,md}` com postura (discovery inline justificado · RRC PASSA · método-sênior N/A: sem fonte canônica nova · fonte_canonica=false).
+
+**Achado pós-veredito (orquestrador) + re-check cirúrgico rule #7 (2º qa-critic Sonnet isolado, `aprovar`, 0 problemas):** **DEADLOCK real da suíte** — tty-guard do `check_repo_sync.py` (`stdin.read()` em pipe herdado que não fecha) pendurava `run_canaries` em `test_repo_sync` (2 travamentos reproduzidos; o "código correto" do execution-report do bloco valia só com stdin fechado). Fix classe-inteira: `stdin=DEVNULL` + `encoding utf-8` no runner e no `run_hook` do teste. Prova comportamental: suíte que deadlockava agora fecha **51 PASS · 1 SKIP · 0 FAIL** (2 execuções limpas).
+
+Nomenclaturas: F0–F4 (fases do plano de melhoria) · P1–P12 (propostas) · "version-claim canary" (P1).
+Decisões permanentes: fechamento retroativo escolhido sobre reclassificação (commit já declara v1.55.0 na main; reescrever história = força-push vetado). Housekeeping: `Python/` (dir vazio acidental) removido; docops §Encerramento ganha fallback Python do consistency-gate (H4).
+Próximo passo: **F1** — ADR nova + P1 (version-claim em `test_consistency_closing`) + P2 (override de CI) + P3 (ledger de junções em `qa_evidence`) + P4 (validation.md pré-condição J3), via PR. Aceite: canários novos PASS + suíte verde + PR aberto.
+Riscos ativos: CI do Actions segue billing-blocked → validação pela suíte local (mesmo risco declarado em v1.54.0); herdado: Fase 2 cross-IA pendente (hub não clonado).
+RE-ORQUESTRAÇÃO: prosseguir (F1 conforme plano aprovado pelo dono — "Seguir").
+
+## RRC (ADR-010) — coherence pass
+- Artefatos lidos: CHANGELOG (1.55.0+1.54.0), README:11, guia/web/index.html (6 refs), `_meta/qa/v1.55.0-release.json`, docops SKILL, test_repo_sync.py, ADR-060, capabilities.json/CAPABILITIES.md (57), execution-report + avaliação em docs/_private/reports/.
+- Verificações: versões em sync (README × CHANGELOG × vitrine = 1.55.0; zero 1.54.0 órfão fora de histórico): **PASSA** · Refs cruzadas (ADR-060 Aceito e no CHANGELOG; relatório citado existe): **PASSA** · Nomenclatura consistente: **PASSA** · Sem contradições semânticas: **PASSA** · Contagens em sync (57 capacidades; 4 hooks portados = 4 mechanisms): **PASSA** · Anti-vazamento cross-projeto: **PASSA**.
+- Inconsistências corrigidas neste checkpoint: BOM index.html + encoding test_repo_sync (achados do process-critic).
+- Veredito: **PASSA**.
+
 ## 2026-06-11 — Release v1.54.0: handoff cross-sessão DETERMINÍSTICO (gerador do Pacote P14 + sugestão de modelo) — ADR-076
 
 Aprovado e funcionando. Pedido do dono: a **ausência de handoff claro ao fim de cada bloco** deve ser **determinística em qualquer situação** — auto-execução, automação (cron) e passagem cross-model (fechar + abrir nova sessão com outro modelo, **inclusive sugerir qual modelo**). **Discovery (file-first):** o Pacote P14 (ADR-012) existia como **template preenchido à mão**, condicional (só quando discovery declarava "alimenta outra sessão") e **sem sugestão de modelo** — o próprio ADR-012 admite "Gap 8: handoff improviso". Não havia `tools/handoff.py`.
