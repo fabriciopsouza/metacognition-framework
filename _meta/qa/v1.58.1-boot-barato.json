@@ -1,0 +1,39 @@
+{
+  "bloco": "v1.58.1-boot-barato",
+  "passou": true,
+  "recomendacao": "aprovar",
+  "problemas": [
+    {
+      "severidade": "alto",
+      "local": ".claude/commands/start-session.md:21",
+      "descricao": "R1: referencia stale 'ultimas 30' no slash command invocado pelo usuario — caminho de execucao real contradizendo a correcao do workflow. [CORRIGIDO: checkpoint do TOPO + STATUS via boot_check/handoff; R2 validou sintaxe e sentido]"
+    },
+    {
+      "severidade": "medio",
+      "local": ".agent/skills/pmo/SKILL.md:31",
+      "descricao": "R1: mesma referencia stale na skill do PMO. [CORRIGIDO + R2 validou]"
+    },
+    {
+      "severidade": "baixo",
+      "local": "history.md:5 (header)",
+      "descricao": "R1: header descrevia 'le ultimas 30 linhas' — factualmente errado pos-patch. [CORRIGIDO: header documenta mais-novo-primeiro + secoes; R2 validou]"
+    }
+  ],
+  "verificacoes_executadas": [
+    "R1: git diff main..HEAD — 6 arquivos; unico hunk do history dentro de ## Em aberto (ZERO checkpoint datado tocado)",
+    "R1: spot-check v1.21.1 e AIVI — fechamentos cobertos por checkpoints datados (nenhuma informacao perdida na limpeza)",
+    "R1: grep 'ultimas 30' — 3 referencias ATIVAS nao corrigidas encontradas (a propria razao do round)",
+    "R1: test_consistency_closing PASS · check_rules_parity PASS · test_marketing_claims PASS (1.58.1 em sync) · handoff.py sem itens FECHADA e versao 1.58.1 · test_release_checkpoint FAIL esperado pre-checkpoint",
+    "R2: grep 'ultimas 30' — restantes APENAS historicas/descritivas (CHANGELOG x2, ADR-004); ZERO em caminho de instrucao ativo",
+    "R2: check_rules_parity PASS; leitura dos 3 trechos corrigidos — sintaxe e sentido preservados"
+  ],
+  "steelman": "O nucleo da correcao esta certo: o layout mais-novo-primeiro tornava 'ultimas 30' genuinamente danosa (leria telemetria velha) e o caso real da sessao 9f01bd9e (regex reportando Em aberto vazio com itens presentes) justifica os geradores deterministicos. A limpeza do Em aberto e higiene legitima do WIP-limit (ADR-007) sem perda de informacao. R1 pegou exatamente o tipo de gap que a propria rule #1 (stale counts/refs da mesma entidade em multiplos arquivos) preve — o slash command e a skill do PMO eram caminhos ativos divergentes.",
+  "release": "1.58.1",
+  "postura": {
+    "discovery": "observacao de campo sessao 9f01bd9e (boot caro + extracao errada) + conversa com dono; escopo doc-only circunscrito, sem ADR (PATCH)",
+    "rrc": "PASSA — versoes 1.58.1 em sync (README/CHANGELOG/vitrine); sem instrucao ativa stale (inconsistencia de R1 resolvida nas 3 localizacoes); sem contradicao start-session x roteador x CLAUDE x pmo; checkpoints intactos",
+    "metodo_senior": "N/A: doc interno sem fonte canonica externa",
+    "fonte_canonica": false
+  },
+  "data": "2026-06-11T23:07:13Z"
+}

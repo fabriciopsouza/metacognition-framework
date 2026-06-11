@@ -1,13 +1,31 @@
 # history.md — Registro append-only do framework
 
-> Single-writer = orquestrador (PMO). Append-only. Cada entrada com timestamp ISO.
-> Formalizado pelo ADR-007 (v1.9.0). Já era referenciado pelo `AGENT-FRAMEWORK.md` §2.B
-> (sequência de ativação do squad lê últimas 30 linhas).
+> Single-writer = orquestrador (PMO). Checkpoints append-only, **mais-novo-primeiro** (o estado
+> atual é o checkpoint do TOPO; `## Em aberto` é WIP mutável; `## Aprendizado` append-only no fim).
+> Formalizado pelo ADR-007 (v1.9.0); boot lê o checkpoint do topo via `AGENT-FRAMEWORK.md` §2.B.
 >
 > 3 seções: histórico cronológico de checkpoints (formato em `.agent/workflows/checkpoint.md`),
 > `## Em aberto` (WIP — ex-G11), `## Aprendizado` (fracassos — ex-G9, com firewall).
 
 ---
+
+## 2026-06-11 — Release v1.58.1 (PATCH): boot barato e correto — STATUS determinístico + fix da heurística stale + higiene do Em aberto
+
+Aprovado e funcionando. Motivado pela **observação de campo** (sessão `9f01bd9e`, Opus 4.8): boot de master custou ~9.6k de output com comandos ad-hoc, 1 retry de encoding e 1 extração ERRADA (regex no `## Em aberto` → "vazio" com itens presentes); e "history últimas 30 linhas" ficou stale com o layout mais-novo-primeiro (a letra da regra mandava ler telemetria velha). **Entregue:** start-session passo 1 = checkpoint do TOPO (1 Read `limit≈30` do início, nunca inteiro) · passo 3 = **STATUS via `boot_check.py` + `handoff.py`** (determinístico; history direto só por exceção declarada) · roteador §2.B corrigido · `## Em aberto` limpo (8 FECHADOS removidos, doutrina de higiene na seção, backlog ganha corrida-do-1º-prompt e cascata-shadows) · bump 1.58.1. Boot de master estimado ~2–3k de output. **Validação de campo positiva do ADR-079 na mesma conversa:** carimbos do liveness gravados pela sessão nova (`9f01bd9e` @ 19:47:30) + hook `context-budget` disparando ao vivo nos meus Reads.
+
+**qa-critic (Sonnet isolado, 2 rounds):** R1 `corrigir` — pegou **3 referências stale ativas que o patch deixou** (slash command do usuário ALTA · pmo SKILL MÉDIA · header do history BAIXA; rule #1 em ação: mesma entidade divergente em múltiplos arquivos) → fixes → R2 `aprovar`/0, RRC PASSA. Evidência: `_meta/qa/v1.58.1-boot-barato.{json,md}`. Ledger J0/J1/J3/J4 (J2 pulado: PATCH doc-only sem ADR — forward-only permite avanço).
+
+Nomenclaturas: "checkpoint do TOPO" · "boot barato" (STATUS determinístico).
+Decisões permanentes: nenhuma ADR nova (PATCH); doutrina de higiene do `## Em aberto` registrada na própria seção.
+Próximo passo: nenhum WIP — backlog 100% trigger-gated (ver `## Em aberto`). Sugestão de cadência: boots rotineiros em haiku (handoff já sugere).
+Riscos ativos: corrida do 1º prompt do liveness (cosmética, auto-cura; no backlog) · cascata p/ shadows pendente de decisão do dono.
+RE-ORQUESTRAÇÃO: prosseguir (nada ativo; aguardar trigger ou pedido do dono).
+
+## RRC (ADR-010) — coherence pass
+- Artefatos lidos: start-session.md (workflow + slash command), AGENT-FRAMEWORK.md §2.B, pmo SKILL, history (header + Em aberto + checkpoints intactos), CHANGELOG (1.58.1), README, vitrine, handoff.py output.
+- Verificações: versões em sync (1.58.1 ×3): **PASSA** · Refs cruzadas: **PASSA** · Nomenclatura: **PASSA** · Sem contradições (zero "últimas 30" em caminho ativo — grep R2): **PASSA** · Contagens: **PASSA** · Anti-vazamento: **PASSA**.
+- Inconsistências corrigidas neste checkpoint: 3 referências stale (achados R1).
+- Veredito: **PASSA**.
 
 ## 2026-06-11 — Release v1.58.0: RCA do wiring de hooks (bash!) + dieta de contexto + rule #11 + cadência de poda (ADR-079/080, F3+F4 — fecha o plano de melhoria)
 
@@ -631,16 +649,15 @@ Riscos ativos: nenhum bloqueante. Risco residual ADR-010 §Riscos (detector de v
 
 > WIP atual (ex-G11). Reconciliar com branches do git e ADRs em status `Proposto` no `/start-session` (modo squad).
 
-- **[2026-05-31 · FECHADA] v1.21.1 — consolidação pós-v1.21.0 (PRs #22–#28, cada um no gate humano)** — site (links GitHub renderizados, **GitHub Pages** no ar, Release; seções Segurança/Riscos/Construção; gates binários; cards de valor tokens/telemetria/método; share; **reestruturação IA** enxugada), chat-web **v4.3**, ergonomia (**`/start-session` comando** — ADR-024; "iniciar" alternativa; não-rígido), **autoria transparente** (LICENSE/NOTICE/`check_attribution` — **ADR-025**, refuta mecanismo oculto/spyware), **relatório de tokens** (`project_report` — **ADR-026**). `main`=`4afeba2`, **tag `v1.21.1` + Release**. Gate consolidado verde (7 checks). qa-critic pegou overclaims reais (segurança/honestidade) → corrigidos; `check_attribution`/`project_report` pegaram bugs ao rodar (dogfooding). **Política nova:** parar no PR; merge = gate humano — [[feedback_pr_human_gate_merge]]. **Recusado (teste do dono):** vigilância oculta/phone-home — ADR-025 §refutado.
-- **[2026-05-30 · FECHADA] v1.21.0 — runtime hooks + entrega de produto + chat-web/site (ADR-021/022/023)** — mergeado em `main` via **PR #20** (`6e22936`→`74a1f3d`: hooks compaction/mission + app dominio-software + web + version sync) **+ PR #21** (`c31f0cb`→`11e0083`: chat-web PROMPT v4.3 + GUIA-EQUIPE §12 + site-hub + PITCH.md + index sem jargão ADR). `main`=`18ab0c3`, **tag `v1.21.0`** no origin. qa-critic Sonnet isolado R1 REPROVADO→R2 APROVADO; gate pós-merge 5/5 verde. **Nota:** #20 mergeado cedo (antes dos commits de docs) → #21 completou; lição registrada no checkpoint.
-- **[2026-05-30 · FECHADA] Reconciliação pós-merge série v1.14.x→v1.19.0 + ADR-020** — PR #18 mergeado em `main` (`2a8947f`, `--merge` preserva commits atômicos). Dívidas #1/#2/#3/#4/#5/#6 fechadas + **v1.20.0** (ADR-020 linter de agnosticismo, prosa→mecanismo do Princípio 12) após qa-critic round 2 (1 MÉD + 3 BAIXO). **Tags v1.14.0→v1.20.0 todas no origin** (dívida de tags da série inteira fechada). 5/5 gates verdes no main mergeado. 1 commit por item (reversível isolado).
-- **[2026-05-30 · fechadas] v1.14.0→v1.19.0** — série "da prosa ao mecanismo" mergeada em `main` (ADR-013..019); gate humano das PRs empilhadas #11→#17 passado; `main`=`c866f95`. Tags retroativas sendo criadas na reconciliação (antes ausentes — Debt #3). CHANGELOG até `[1.19.0]`.
-- *(v1.13.0 FECHADA em 2026-05-29 — ADR-012 Aceito após qa-critic round 1; handoff cross-sessão + drift sync + qa-critic rules #6/#7).*
-- *(v1.11.0/v1.12.0/v1.12.1 fechadas em 2026-05-29 — merges `bd64b08`/`fb637ac`/`8fb044f` + tags `v1.11.0`/`v1.12.0`/`v1.12.1`).*
-- **[2026-05-27/28 · fechado] AIVI fechamento** — PR #20 mergeado em master de `LIMITES-BATENTES-RECALC` (commit `10ecf0b`, 2026-05-28). REQ-001..011 implementadas + gate BABET 2025 = 0 (delta 0.000000) + 3 pendências runtime fechadas. Validação framework SSOT F0-F4 concluída.
-- **[2026-06-04 · FECHADA em v1.42.0] Honestidade da vitrine (ADR-059) + resiliência de sync a EDR (ADR-060) + auditor de liveness (ADR-061)** — Mergeados e Aceitos em v1.42.0. **Pendência permanente (não-código):** exclusão do Kaspersky `.claude\hooks\*` (decisão do dono). Deferidos: porte sync-global/framework-boot; F4 eval LLM-as-judge = EMERGENTE.
+> **Higiene v1.58.1:** itens FECHADOS saem desta seção (o fechamento já vive nos checkpoints datados
+> acima — aqui era duplicação que poluía o `handoff.py` e enganou um boot em 2026-06-11). Item só
+> entra/permanece se está ABERTO; fechar = remover daqui + checkpoint registra.
+
+- *(nenhum WIP aberto — plano F0–F4 fechado em v1.58.0, 2026-06-11)*
+- **Pendência permanente (não-código, dono/TI):** exclusão do Kaspersky `.claude\hooks\*` (afeta só os hooks .ps1 remanescentes; ADR-060/079).
 - **Backlog ativo (trigger-gated, NÃO WIP):**
-  - ~~ADR-010 §Pendências: templates `_template-research/research-brief.md` + `_template/requirements.md` ganham seção `## Escopo declarado pelo discovery`~~ **FECHADO em 2026-05-29 pós-merge v1.12.0** — ambos templates ganharam a seção em commit polish + diagrama Mermaid em ADR-011 §Topologia.
+  - Corrida do 1º prompt do liveness (route-gate dispara antes do carimbo dos SessionStart; banner se auto-cura no 2º prompt — observado 2026-06-11 sessão `9f01bd9e`) — trigger: incomodar o dono OU 3ª ocorrência reportada. Candidato: tolerar carimbo < N min de outra sessão.
+  - Cascata v1.55.0–v1.58.1 para os shadows via `export-clean` — trigger: decisão de publicação do dono.
   - ADR-011 §Pendências: Alternativa 2 (rewind cirúrgico) — trigger: caso real onde cascata é custosa.
   - ADR-011 §Pendências: validation.md projeto × release convergir templates — trigger: ficar pesado manter separado.
   - Item D4 (cross-platform hooks Linux/macOS port) — trigger: user em PC não-Windows pedir.

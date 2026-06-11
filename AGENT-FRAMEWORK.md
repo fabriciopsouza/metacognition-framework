@@ -76,7 +76,8 @@ Sequência de ativação (orquestração — conteúdo próprio do roteador):
 1. VERIFICAR ARTEFATOS  → SQUAD.md, docs/briefing.md, .agent/rules/00-glossario.md
 2. SE FALTAR CRÍTICO    → instalar via SQUAD.md / criar briefing ou glossário antes
 3. CARREGAR E DELEGAR   → AGENTS.md → SQUAD.md → .agent/rules/*.md → briefing →
-                          history.md (últimas 30 linhas) → ativar skill PMO
+                          history.md (checkpoint do TOPO — arquivo é mais-novo-
+                          primeiro; preferir `tools/handoff.py`) → ativar skill PMO
 4. ROTEAR POR CONFIANÇA → alta confiança operacional = orquestrador-trabalhador
                           linear; baixa confiança/regulado = multi-agente
                           reflexivo c/ hand-off bloqueado até revisão humana
