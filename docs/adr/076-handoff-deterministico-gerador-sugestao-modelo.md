@@ -1,0 +1,27 @@
+# ADR 076 — Handoff cross-sessão DETERMINÍSTICO: gerador do Pacote P14 a partir do estado do repo + sugestão de modelo
+
+- Status: **Aceito** (2026-06-11 — gate: **qa-critic adversarial** (Sonnet isolado) com 7 achados corrigidos + **suíte local verde** 50+ canários; CI do GitHub Actions **billing-blocked** nesta conta → validação pela suíte cross-platform local, não pelo runner) · Data: 2026-06-11 · Decisores: dono + squad
+- Onda: determinismo de fechamento/handoff · Tipo: **adição** justificada pela régua §0(c) — destrava garantia inalcançável por prosa (mecaniza o template P14 que existia mas era preenchido à mão) + remove o modo de falha "handoff improviso".
+- Relaciona: ADR-012 (Pacote de handoff P14 / princípio 14 — o **template** que este ADR mecaniza), ADR-016 (digest/compaction — o handoff é superset), ADR-018 (heterogeneidade de modelo — base da regra de sugestão). Pedido do dono: *"ausência de handoffs claros ao fim de cada bloco… em auto-execução, automações e passagens cross-model (inclusive sugerir qual modelo) — tudo determinístico"*.
+
+## Contexto
+
+O Pacote de handoff P14 (ADR-012) existe como **template** (`docs/specs/_template-digest/digest.md`) com 5 campos canônicos incluindo "Prompt pronto-para-colar". **File-first (2026-06-11)** mostrou 3 gaps: (1) **condicional** — só obrigatório quando o discovery declara "alimenta outra sessão" (passo 6e); em auto-execução/automação **não é emitido por padrão**; (2) **prosa** — o agente preenche o template à mão (o próprio ADR-012 admite "Gap 8 — handoff improviso"); (3) **sem sugestão de modelo** — nomeia o papel, não o modelo. Não há `tools/handoff.py`. O fechamento tem gates fail-closed determinísticos (release-checkpoint/qa-evidence/posture) mas eles **gateiam release, não geram handoff**.
+
+## Decisão (1 frase ativa)
+
+Criar `tools/handoff.py` (+ canário `test_handoff.py`) que **gera o Pacote P14 DETERMINISTICAMENTE a partir do estado do repo** (versão=topo do CHANGELOG; branch/commit/PR=git/gh; não-pushado/não-commitado=git; pendências=`history.md ## Em aberto` + ADRs Proposto; próximo passo=último checkpoint; 5 arquivos recentes=git; timestamp=data do commit HEAD — **não `Date.now`**) **+ uma sugestão de modelo por regra papel+risco** (ADR-018): qa/review → **heterogêneo** (família ≠ autor, anti-viés de auto-aprovação); architect/discovery/spec → **Opus** (mais capaz); docops/mecânico/bulk → **Sonnet** (custo-eficiente); **alto-risco/regulado/irreversível sobrepõe o papel → Opus + gate humano**. O único slot de julgamento ("o que produzir") é **derivado** do "Próximo passo: <tarefa+critério>" do checkpoint. **Universal:** o mesmo comando roda em auto-execução, automação (cron) e passagem cross-model.
+
+## Alternativas consideradas
+
+1. **Manter o template P14 preenchido à mão (status quo).** Condicional, prosa, sem modelo, não emitido em automação. É o gap (Gap 8 do ADR-012). **Rejeitada.**
+2. **LLM gera o handoff a cada fecho.** Não-determinístico (mesmo estado → handoffs diferentes), custa tokens, e é justamente a prosa que falha. **Rejeitada** (o pedido é determinismo).
+3. **Gerador Python determinístico do estado do repo + regra de modelo (ESCOLHIDA).** Mesmo estado → mesmo handoff; roda em qualquer contexto (auto/cron/cross-model); mecaniza o template existente (régua §0: não cria artefato paralelo — emite o formato P14/digest já canônico). Limite: o conteúdo semântico do "produzir" é derivado do checkpoint (esqueleto), não inventado.
+
+## Consequências
+
+**Positivas:** handoff deixa de ser improviso/condicional — **sempre emitível** por um comando, idêntico em auto-exec/automação/cross-model; a sugestão de modelo (antes ausente) vira regra auditável; mata o "Gap 8" do ADR-012. **Determinístico e testável** (`test_handoff.py`: 6 campos P14 + 9 regras de modelo + inferência de papel + igualdade de saída com mesmos inputs). **Negativas/limite (declarado):** a **qualidade** do "Próximo passo" herdada depende do checkpoint anterior (lixo entra → lixo sai) — o gerador estrutura, não inventa objetivo; a regra de modelo é **heurística por papel** (não prova que o modelo é o ótimo — é uma recomendação auditável, ajustável); ponteiros (CHANGELOG/history/adr) são convenção deste repo (método agnóstico, config não). **Escopo honesto do "determinístico" (ressalva do qa-critic):** os **campos P14 derivados de git** (versão, branch/commit, não-pushado, pendências, recentes, timestamp=data do commit) são determinísticos e **byte-idênticos** dado o mesmo estado do repo — provado por canário com estado congelado. **O campo PR é anotação best-effort via `gh pr view`** (rede/auth) e **não é byte-idêntico entre máquinas** (degrada para "(sem PR)") — é anotação, não compromete os campos git-derivados. **Safety P14 (achado ALTO corrigido):** sem upstream, o campo Acesso declara "estado de push DESCONHECIDO" — nunca "nada pendente" (que seria falso e poderia custar trabalho ao receptor).
+
+## Implementação (ponteiro)
+
+- Artefatos: `tools/handoff.py` (gerador; `build(next_role,risk,author,ts)` testável + `suggest_model`/`infer_role`) + `tools/test_handoff.py` (canário fail-closed). Registrado em `capabilities.json` (`handoff-generator`, fail-closed). Wirado no fechamento: `.agent/workflows/checkpoint.md` (o Pacote P14 passa a ser **gerado**, não preenchido à mão) + `.agent/skills/docops/SKILL.md` §Encerramento. Roda em automação via o mesmo comando (cron/scheduled). Suíte: `run_canaries.py`.
