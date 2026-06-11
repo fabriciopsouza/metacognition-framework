@@ -76,7 +76,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"tools\\hooks\\mission-gate.ps1\"",
+            "command": "cmd /c \"python tools\\hooks\\mission_gate.py || powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\\hooks\\mission-gate.ps1\"",
             "timeout": 10,
             "statusMessage": "Verificando product_type/escopo (mission-gate ADR-022)"
           }
@@ -101,7 +101,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"tools\\hooks\\effect-gate.ps1\"",
+            "command": "cmd /c \"python tools\\hooks\\effect_gate.py || powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\\hooks\\effect-gate.ps1\"",
             "timeout": 10,
             "statusMessage": "Gate de acoes destrutivas por efeito (effect-gate ADR-015)"
           }
@@ -134,7 +134,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"tools\\hooks\\overwrite-guard.ps1\"",
+            "command": "cmd /c \"python tools\\hooks\\overwrite_guard.py || powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\\hooks\\overwrite-guard.ps1\"",
             "timeout": 10,
             "statusMessage": "Anti-overwrite cego de artefato (overwrite-guard ADR-037)"
           }
@@ -158,7 +158,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"tools\\hooks\\overwrite-guard.ps1\"",
+            "command": "cmd /c \"python tools\\hooks\\overwrite_guard.py || powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\\hooks\\overwrite-guard.ps1\"",
             "timeout": 10,
             "statusMessage": "Registro de arquivos lidos/criados na sessao (overwrite-guard ADR-037)"
           }
@@ -170,7 +170,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"tools\\hooks\\compaction-gate.ps1\"",
+            "command": "cmd /c \"python tools\\hooks\\compaction_gate.py || powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\\hooks\\compaction-gate.ps1\"",
             "timeout": 10,
             "statusMessage": "Verificando digest antes de compactar (ADR-021)"
           }

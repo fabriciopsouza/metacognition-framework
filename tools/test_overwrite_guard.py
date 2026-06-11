@@ -20,21 +20,31 @@ import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HOOKS = os.path.join(ROOT, "tools", "hooks")
+PY = os.path.join(HOOKS, "overwrite_guard.py")
 PS1 = os.path.join(HOOKS, "overwrite-guard.ps1")
 SH = os.path.join(HOOKS, "overwrite-guard.sh")
 
 
-def find_pwsh():
+def find_runner():
+    """Python-first (ADR-060 pattern)."""
+    if os.path.isfile(PY):
+        return (sys.executable, PY, False)
     for exe in ("pwsh", "powershell"):
         if shutil.which(exe):
-            return exe
+            return (exe, PS1, True)
     return None
 
 
-def run_ps1(pwsh, payload, manifest):
+def run_ps1(runner_or_pwsh, payload_data, manifest):
+    """Compatibilidade: aceita runner-tuple (novo) ou exe string (legado)."""
+    if isinstance(runner_or_pwsh, tuple):
+        exe, hook, is_ps = runner_or_pwsh
+        cmd = [exe, "-NoProfile", "-NonInteractive", "-File", hook] if is_ps else [exe, hook]
+    else:
+        cmd = [runner_or_pwsh, "-NoProfile", "-NonInteractive", "-File", PS1]
     env = dict(os.environ, OVERWRITE_GUARD_MANIFEST=manifest)
-    p = subprocess.run([pwsh, "-NoProfile", "-NonInteractive", "-File", PS1],
-                       input=json.dumps(payload), capture_output=True, text=True, env=env)
+    p = subprocess.run(cmd, input=json.dumps(payload_data), capture_output=True,
+                       text=True, encoding="utf-8", errors="replace", env=env)
     return p.returncode
 
 
@@ -50,10 +60,11 @@ def payload(event, tool, fp, cwd, sid="sess-canary"):
 
 
 def main():
-    pwsh = find_pwsh()
-    if not pwsh:
-        print("SKIP: pwsh/powershell ausente — canário não executado (CI prova).", file=sys.stderr)
+    runner = find_runner()
+    if not runner:
+        print("SKIP: pwsh/powershell ausente e hook Python nao encontrado — canario nao executado (CI prova).", file=sys.stderr)
         return 0
+    pwsh = runner  # alias para compatibilidade com chamadas run_ps1(pwsh, ...)
     bash = shutil.which("bash")
     jq = shutil.which("jq")
     # .sh e hook POSIX; no Windows (git-bash) recebe paths backslash fora do contrato. Paridade
