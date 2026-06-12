@@ -714,3 +714,22 @@ Riscos ativos: nenhum bloqueante. Risco residual ADR-010 §Riscos (detector de v
 - qa-critic adversarial isolado/heterogêneo — salva-vidas — S — sem-disparo:0 (pegou false-PASS real em O0, O1, O2, O3; em v1.21.0 pegou ALTO template↔hook que 3 testes verdes do gerador escondiam)
 - contrato mínimo (validate_skills) — operacional — S — sem-disparo:0 (gate 7/7 em cada onda)
 - file-first — salva-vidas — S — sem-disparo:0 (violado no bootstrap → ver Aprendizado 2026-05-30)
+
+---
+
+## 2026-06-11 — Test Session: `/start-session` Protocol Validation (parallel run)
+
+> Teste de validação do protocolo de abertura de sessão enquanto sessão paralela rodando. Transcript completo em `docs/_private/sessions/test-session-2026-06-11-start-session.md`.
+
+**Entregue (read-only session):** Full boot protocol executed (ADR-019/020/024/061):
+- **Sync:** origin/main atualizado (21 commits pulled, 4 releases integrated v1.55.0–v1.58.0)
+- **Core-agnostic:** PASS (sem vazamento de norma no núcleo)
+- **Liveness gates:** todos carimbed (sync + agnosticismo + boot-scan + versão canônica)
+- **Proof:** `.claude/boot-proof.json` gravado; ADR-061 banner silenced
+- **Status:** v1.58.0 main operacional; no active WIP; next = observar sessão paralela (real)
+
+**Token telemetry (estimado):** ~22.650 tokens (95% input/leitura, 5% output); precision telemetry requer hooks+hub clonado.
+
+**Aprendizado:** Gate context-budget disparou em history.md (29k+ tokens) → cirurgical read via offset/limit confirmou valor de doc-intake (ADR-029) para arquivos GRANDES locais; framework-interno usa Read, externo usa doc-intake.
+
+RE-ORQUESTRAÇÃO: sessão paralela ativa; este teste documenta boot-state válido nesta máquina (Kaspersky/non-admin, hooks inertes). Sem novos ADRs/débito. Sessão de teste encerrada.
