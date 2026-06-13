@@ -67,7 +67,7 @@ try {
     # 2.5 [ADR-061] AUDITOR DE LIVENESS (anti falha-silenciosa). O route-gate NAO e bloqueavel pelo
     # Kaspersky (so LE arquivo + injeta texto; NAO spawna processo/rede) e roda TODO turno. Le o
     # manifesto de hooks auditados + os carimbos .claude/.hooklive/<key>; qualquer hook cujo carimbo
-    # != session atual NAO rodou (provavel veto EDR) -> DECLARA + da o fallback manual. Sem session_id
+    # != session atual NAO rodou (causa nao verificada: timing async, hook nao cabeado, ou veto EDR onde houver) -> DECLARA + da o fallback manual. Sem session_id
     # nao audita (degrada gracioso, sem falso-alarme). Auto-resolvente: cala quando o carimbo bate.
     $syncNudge = ''
     try {
@@ -85,9 +85,9 @@ try {
                     }
                 }
                 if ($inert.Count -gt 0) {
-                    $syncNudge = "# [liveness ADR-061] Gate(s) possivelmente vetados por EDR (declarado, NAO silencioso):`n`n" +
+                    $syncNudge = "# [liveness ADR-061] Gate(s) sem carimbo desta sessao (causa NAO verificada — declarado, NAO silencioso):`n`n" +
                         ($inert -join "`n") +
-                        "`n`n(Se voce acabou de abrir a sessao pode ser timing — reaparece ate o carimbo bater. Exclusao do Kaspersky por pasta ``.claude\hooks\*`` resolve de vez.)`n`n"
+                        "`n`n(Carimbo ausente ou de sessao anterior. Causas possiveis, em ordem de probabilidade: (1) timing — hook async ainda pendente numa sessao recem-aberta (reaparece ate o carimbo bater); (2) hook nao cabeado em settings; (3) veto de EDR, SO onde houver (ex.: Kaspersky -> excluir ``.claude\hooks\*``). NAO assuma EDR por default — VERIFIQUE a causa.)`n`n"
                 }
             }
         }
