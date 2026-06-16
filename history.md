@@ -688,7 +688,7 @@ Riscos ativos: nenhum bloqueante. Risco residual ADR-010 §Riscos (detector de v
 - **Pendência permanente (não-código, dono/TI):** exclusão do Kaspersky `.claude\hooks\*` (afeta só os hooks .ps1 remanescentes; ADR-060/079).
 - **Backlog ativo (trigger-gated, NÃO WIP):**
   - Corrida do 1º prompt do liveness (route-gate dispara antes do carimbo dos SessionStart; banner se auto-cura no 2º prompt — observado 2026-06-11 sessão `9f01bd9e`) — trigger: incomodar o dono OU 3ª ocorrência reportada. Candidato: tolerar carimbo < N min de outra sessão.
-  - Cascata v1.55.0–v1.58.1 para os shadows via `export-clean` — trigger: decisão de publicação do dono.
+  - Cascata v1.55.0–v1.60.0 para os shadows via `export-clean` — trigger: decisão de publicação do dono.
   - ADR-011 §Pendências: Alternativa 2 (rewind cirúrgico) — trigger: caso real onde cascata é custosa.
   - ADR-011 §Pendências: validation.md projeto × release convergir templates — trigger: ficar pesado manter separado.
   - Item D4 (cross-platform hooks Linux/macOS port) — trigger: user em PC não-Windows pedir.
