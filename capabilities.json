@@ -913,6 +913,23 @@
       ]
     }
     ,{
+      "id": "web-bundles-coaches",
+      "title": "Coaches cross-IA (planejamento em Gemini/ChatGPT) gerados do dado com canario de drift fail-closed",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/build_web_bundles.py",
+      "test": "tools/test_web_bundles.py",
+      "adr": "docs/adr/083-cross-ai-web-bundles-coaches.md",
+      "cross_ai": true,
+      "enforcement": "fail-closed",
+      "tags": [
+        "cross-ai",
+        "web-bundles",
+        "planning",
+        "bmad-integration"
+      ]
+    }
+    ,{
       "id": "author-tier-gate",
       "title": "Gate de tier-autor da sessao: detecta modelo ativo (transcript) + alerta LOUD se autor < baseline (ADR-082)",
       "status": "PROVIDES",
