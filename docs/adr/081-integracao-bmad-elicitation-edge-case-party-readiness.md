@@ -1,7 +1,7 @@
 # ADR 081 — Integração seletiva de padrões BMAD-METHOD: elicitação avançada, edge-case-hunter, party-mode e readiness gate
 
 - Status: **Aceito** (2026-06-16 — gate: qa-critic adversarial no bloco) · Data: 2026-06-16 · Decisores: dono (pedido explícito de integração determinística) + squad
-- Onda: exploração comparativa BMAD-METHOD (49k stars) × metacognition-framework · Tipo: **adição** pela régua §0(c) — destrava casos de uso não cobertos (elicitação estruturada + cobertura de edge cases + exploração multi-persona + gate de prontidão pré-dev) sem duplicar o que já existe
+- Onda: exploração comparativa BMAD-METHOD (49k stars) × metacognition-framework · Tipo: **adição autorizada pelo dono** (pedido explícito de integração). **Régua §0 (ADR-007):** adição pura — nenhuma das 3 cláusulas mecânicas de §0 (funde/remove, reduz tokens, destrava-eval-editando) se aplica diretamente. O que satisfaz §0 aqui é a **autorização explícita do dono + a disciplina de rejeição documentada** (5 padrões BMAD recusados por baixo ganho/sobreposição — ver seção "O que NÃO foi integrado"), não uma das cláusulas (a)/(b)/(c). Override de §0 declarado, não silencioso (rule #10 / ADR-051).
 - Relaciona: ADR-003 (companions), ADR-007 (régua §0), ADR-010 (agnosticismo), ADR-011 (qa-bicelular), ADR-080 (dieta)
 
 ## Contexto
@@ -26,7 +26,7 @@ Convergência filosófica detectada: `bmad-investigate` usa `Confirmed/Deduced/H
 
 **(B1)** Criar skill `.agent/skills/party-mode/SKILL.md`; ativada pelo PMO ou dono para decisões arquiteturais, retrospectives e exploração com perspectivas conflitantes; heterogeneidade de modelo quando ambiente permite.
 
-**(B2)** Criar skill `.agent/skills/readiness-gate/SKILL.md`; gate pré-developer (junção J2.5) que valida alinhamento entre requirements.md, UX spec e decisões do architect antes de avançar para implementação.
+**(B2)** Criar skill `.agent/skills/readiness-gate/SKILL.md`; gate pré-developer (verificação dentro de J2, entre J2 e J3 — NÃO é junção numerada do ledger) que valida alinhamento entre requirements.md, UX spec e decisões do architect antes de avançar para implementação.
 
 **(B3)** Adicionar `spec_kernel` (5 campos: Why / Capabilities / Constraints / Non-goals / Success signal) ao template `docs/specs/_template/requirements.md` como seção HEAD opcional — comprime intent para skills downstream sem substituir o requirements.md sênior.
 
@@ -46,7 +46,7 @@ Convergência filosófica detectada: `bmad-investigate` usa `Confirmed/Deduced/H
 
 ## Consequências
 
-**Positivas:** discovery ganha arsenal de 69 métodos sem mudar o fluxo; qa-critic ganha cobertura mecânica de paths (complementar, não substituto); PMO ganha modo de exploração multi-persona; gate pré-developer reduz retrabalho de implementação. **Negativas/limite (declarado):** 4 novos SKILL.md + 1 companion = +5 arquivos no repo; nenhum altera núcleo (_shared/); régua §0 satisfeita por destravar casos não-cobertos.
+**Positivas:** discovery ganha arsenal de 69 métodos sem mudar o fluxo; qa-critic ganha cobertura mecânica de paths (complementar, não substituto); PMO ganha modo de exploração multi-persona; gate pré-developer reduz retrabalho de implementação. **Negativas/limite (declarado):** 4 novos SKILL.md + 1 companion = +5 arquivos no repo; nenhum altera núcleo (_shared/); régua §0 satisfeita por **autorização do dono + rejeição documentada** (não por cláusula mecânica). **Wiring (resolvido nesta release):** `edge-case-hunter` → `qa-critic/SKILL.md`; `advanced-elicitation` → `discovery/SKILL.md` (passo 4 anti-raso) + `architect/SKILL.md` (passo 2); `readiness-gate` → `architect/SKILL.md` (passo 6, J2→J3) + `pmo/SKILL.md`; `party-mode` → `architect` + `pmo`. Nenhum dos quatro é mais soft-orphan — cada um tem handoff explícito de um role-skill, além do auto-trigger por description.
 
 ## Implementação (ponteiro)
 

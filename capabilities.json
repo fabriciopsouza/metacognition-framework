@@ -912,6 +912,91 @@
         "canary"
       ]
     }
+    ,{
+      "id": "author-tier-gate",
+      "title": "Gate de tier-autor da sessao: detecta modelo ativo (transcript) + alerta LOUD se autor < baseline (ADR-082)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/hooks/check_author_tier.py",
+      "test": "tools/test_author_tier.py",
+      "adr": "docs/adr/082-baseline-de-autor-relativo-gate-tier-sessao.md",
+      "cross_ai": false,
+      "enforcement": "fail-soft",
+      "tags": [
+        "models",
+        "baseline",
+        "boot",
+        "heterogeneity"
+      ]
+    }
+    ,{
+      "id": "advanced-elicitation",
+      "title": "Elicitacao avancada com 69 metodos estruturados (companion menu interativo)",
+      "status": "PARTIAL",
+      "enforcement": "prose",
+      "ai_owner": "claude",
+      "mechanism": ".agent/skills/advanced-elicitation/SKILL.md",
+      "test": null,
+      "adr": "docs/adr/081-integracao-bmad-elicitation-edge-case-party-readiness.md",
+      "cross_ai": false,
+      "tags": [
+        "elicitation",
+        "discovery",
+        "methods",
+        "bmad-integration"
+      ]
+    }
+    ,{
+      "id": "edge-case-hunter",
+      "title": "Percurso mecanico exaustivo de paths nao tratados — output JSON verificavel",
+      "status": "PARTIAL",
+      "enforcement": "prose",
+      "ai_owner": "claude",
+      "mechanism": ".agent/skills/edge-case-hunter/SKILL.md",
+      "test": null,
+      "adr": "docs/adr/081-integracao-bmad-elicitation-edge-case-party-readiness.md",
+      "cross_ai": false,
+      "tags": [
+        "qa",
+        "edge-cases",
+        "code-review",
+        "bmad-integration"
+      ]
+    }
+    ,{
+      "id": "party-mode",
+      "title": "Exploracao multi-perspectiva com personas em conflito deliberado",
+      "status": "PARTIAL",
+      "enforcement": "prose",
+      "ai_owner": "claude",
+      "mechanism": ".agent/skills/party-mode/SKILL.md",
+      "test": null,
+      "adr": "docs/adr/081-integracao-bmad-elicitation-edge-case-party-readiness.md",
+      "cross_ai": false,
+      "tags": [
+        "exploration",
+        "personas",
+        "brainstorming",
+        "bmad-integration"
+      ]
+    }
+    ,{
+      "id": "readiness-gate",
+      "title": "Gate pre-developer: valida alinhamento requirements+ADR antes de J3",
+      "status": "PARTIAL",
+      "enforcement": "prose",
+      "ai_owner": "claude",
+      "mechanism": ".agent/skills/readiness-gate/SKILL.md",
+      "test": null,
+      "adr": "docs/adr/081-integracao-bmad-elicitation-edge-case-party-readiness.md",
+      "cross_ai": false,
+      "tags": [
+        "qa",
+        "gate",
+        "pre-dev",
+        "bmad-integration"
+      ]
+    }
   ],
   "registry_waivers": [
     {

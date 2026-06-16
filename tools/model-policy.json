@@ -19,7 +19,18 @@
     "economy": {
       "chain": ["haiku", "sonnet"],
       "why": "mecanico/bulk validado por canario Python, nao pelo modelo"
+    },
+    "baseline": {
+      "chain": ["opus", "sonnet", "haiku"],
+      "why": "tier do BASELINE DE AUTOR = modelo padrao/standard atual (hoje opus; fable=preview/situacional, NAO o standard diario). Papel autoral roda aqui; critico/docops descem abaixo. ADR-082 (emenda ADR-078)."
     }
+  },
+  "baseline_author": {
+    "model": "opus",
+    "_comment": "BASELINE DE AUTOR = o modelo PADRAO/recomendado/standard disponivel atual. Hoje 'opus' (fable e preview/situacional, nao o standard diario). RELATIVO e EVOLUTIVO: quando fable/mythos/+ virar o default/standard, promover 'model' AQUI (editar DADO, nunca hardcode em codigo) -> opus/sonnet descem para critico/docops automaticamente. Papeis autorais rodam >= baseline; critico/QA e docops-mecanico rodam ABAIXO do baseline (heterogeneidade barata + custo). Autor < baseline COM baseline disponivel = PROIBIDO silencioso: so desce com FRAMEWORK_MODELS_UNAVAILABLE declarado, e ANUNCIA o downgrade.",
+    "author_roles": ["orchestrator", "developer", "architect", "discovery", "docops-generative"],
+    "enforced_by": "tools/boot_check.py:check_author_tier (session-time, banner LOUD se autor<baseline); subagent dispatch via role 'developer'->tier 'baseline'",
+    "harness_limit": "o framework NAO troca o modelo INTERATIVO da sessao (controle do harness / comando /model); ele DETECTA + ANUNCIA + EXIGE troca. Mesma classe de limite declarada no ADR-078 (trava fisica exige recurso do harness)."
   },
   "unavailability": {
     "how": "indisponibilidade SITUACIONAL (modelo deprecado, plano sem acesso, API fora) e DECLARADA, nao sondada: env FRAMEWORK_MODELS_UNAVAILABLE=fam1,fam2 (sessao) ou remover de model_ids (permanente). Resolucao caminha a chain do tier pulando indisponiveis e DECLARA o fallback usado no output. Mantem determinismo: entrada = arquivo + env explicita, nunca probe de rede.",
@@ -45,6 +56,11 @@
       "match": ["docops", "document", "mechan", "bulk", "format", "lint", "rename", "migrate"],
       "tier": "economy",
       "why": "saida mecanica gateada por canarios; julgamento nao desce de balanced"
+    },
+    {
+      "match": ["developer", "implement", "author", "autor", "produz", "orchestr", "orquestr"],
+      "tier": "baseline",
+      "why": "papel AUTORAL roda no baseline (= modelo padrao/standard); custo do erro a montante > custo do token (ADR-082). Subagente developer spawnado < baseline = proibido; risco sobrepoe p/ tier max."
     }
   ],
   "default_tier": "balanced",

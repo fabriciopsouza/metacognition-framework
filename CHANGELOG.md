@@ -15,6 +15,33 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.59.0] — 2026-06-16 — Integração seletiva BMAD-METHOD: advanced-elicitation + edge-case-hunter + party-mode + readiness-gate (ADR-081)
+
+> MINOR (4 skills novas + 1 template update + 1 companion). Exploração comparativa do BMAD-METHOD (v6.8.0, 49k stars) identificou 4 padrões com ganho líquido positivo não cobertos pelo metacognition. Extraídos e implementados como skills nativas — passam pelos gates do metacognition nativamente. [CONFIRMADO — qa-critic adversarial 2 rounds por bloco]
+
+### Added
+- **`.agent/skills/advanced-elicitation/`** (SKILL.md + companion `methods.md`): 69 métodos de pensamento estruturado organizados por categoria (core, risk, collaboration, competitive, creative, framing, research, retrospective, technical) com menu interativo 1–5/r/a/x; ativa no discovery ou sob demanda; classificação epistêmica obrigatória em claims novos; integra com party-mode para métodos colaborativos.
+- **`.agent/skills/edge-case-hunter/`** (SKILL.md): percurso mecânico exaustivo de branches e condições de contorno; output JSON canonicamente verificável `{location, trigger_condition, guard_snippet, potential_consequence}`; heurística objetiva de trigger no qa-critic (≥2 condicionais aninhados | loop não-trivial | handler multi-branch | >3 retornos); ortogonal ao qa-critic (método vs postura).
+- **`.agent/skills/party-mode/`** (SKILL.md): múltiplas personas em conversa real com conflito deliberado; contrarian injection automático quando todos concordam; suporte a spawn paralelo/sequencial via `Agent(model: <distinto>)` (ADR-078); integra com advanced-elicitation para métodos colaborativos.
+- **`.agent/skills/readiness-gate/`** (SKILL.md): gate pré-developer (dentro de J2) com checklist binário R/A/X/O — valida alinhamento requirements.md + ADR antes de avançar para J3; veredito PRONTO_PARA_DEV | BLOQUEADO sem "aprovar com ressalvas"; rewind para architect declarado.
+- **`docs/specs/_template/requirements.md`**: seção `## Spec Kernel — HEAD` (opcional) com 5 campos compactos Why/Capabilities/Constraints/Non-goals/Success signal para consumo rápido por skills downstream; Success signal aponta para validation.md quando existir.
+- **`docs/adr/081-...`**: ADR-081 Aceito — registra decisão de integração seletiva com o que foi rejeitado e por quê (régua §0 aplicada).
+- **`capabilities.json`**: +4 entradas (advanced-elicitation, edge-case-hunter, party-mode, readiness-gate; status PARTIAL/prose — débito de mecanização declarado por skills markdown sem canário Python).
+
+### Changed
+- **`qa-critic/SKILL.md`**: +ponteiro para edge-case-hunter com heurística objetiva de trigger na seção "Checklist mínimo".
+
+### Notes
+- O que foi explicitamente REJEITADO (régua §0): bmad-shard-doc (sobreposição doc-intake), bmad-investigate (sobreposição explorer + classificação epistêmica), bmad-correct-course/sprint/retro (scope produto-específico), web bundles (ADR-069 já cobre o protocolo), agentes PM/UX como papéis separados (squad já tem equivalência com mais rigor).
+- Convergência filosófica detectada: `Confirmed/Deduced/Hypothesized` (BMAD-investigate) ≡ `CONFIRMADO/INFERIDO/DESCONHECIDO` (metacognition) — validação independente de 49k usuários.
+
+### Added — ADR-082 (baseline de autor + gate de tier da sessão)
+> Nasceu da própria falha deste bloco: a sessão rodou inteira em **Sonnet** como autor e o auto-review (mesmo modelo) carimbou um gate VERMELHO como verde. Só foi pego quando o dono trocou para **Opus**. Diagnóstico: o `model-policy.json` só governava o **dispatch de subagente** — o modelo da **sessão principal** (autor) era do harness e **nenhum gate o auditava**; pior, `developer` nem estava nas `roles` (caía em `balanced`=Sonnet). [CONFIRMADO]
+- **`tools/model-policy.json`:** bloco `baseline_author` (RELATIVO/evolutivo — baseline = modelo padrão/standard atual = `opus` hoje; quando Fable/Mythos virar standard, promove-se aqui e Opus/Sonnet descem para crítico) + tier `baseline` + role `developer`/autoral → `baseline`. **Autor roda ≥ baseline; crítico/QA e docops-mecânico < baseline.**
+- **`tools/boot_check.py`:** `detect_session_model()` (auto-detecta o modelo ATIVO lendo o transcript JSONL da sessão) + `check_author_tier()` no boot — banner LOUD se autor < baseline disponível.
+- **`tools/hooks/check_author_tier.py`** (UserPromptSubmit) + **`.claude/settings.json` `"model": "opus"`:** alerta per-turn + novas sessões lançam no baseline ("trocar automaticamente"). **Limite declarado:** o framework não força troca de sessão JÁ rodando (harness); detecta + alerta + lança novas no baseline.
+- **ADR-082** Aceito (emenda ADR-078). `capabilities.json`: `author-tier-gate` (+1, fail-soft).
+
 ## [1.58.1] — 2026-06-11 — boot barato e correto: STATUS por geradores determinísticos + fix da heurística stale do history + higiene do `## Em aberto`
 
 > PATCH (correção de doc, sem feature). Motivado pela observação de campo da sessão `9f01bd9e` (Opus 4.8): boot de master custou ~9.6k tokens de output com comandos ad-hoc, 1 retry de encoding e **1 extração errada** (regex no `## Em aberto` reportou "vazio" com itens FECHADOS presentes); e a instrução do roteador ("history últimas 30 linhas") ficou stale quando o history virou mais-novo-primeiro — quem a seguisse leria telemetria velha, não o checkpoint. [CONSOLIDADO]

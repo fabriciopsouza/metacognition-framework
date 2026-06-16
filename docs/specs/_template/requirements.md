@@ -10,6 +10,18 @@
 - **Recorte:** <ano | regional | total | n/a>
 - **Confiança da tarefa:** ALTA | MÉDIA | BAIXA  → governa o roteamento (ver `rules/04`)
 
+## Spec Kernel — HEAD (opcional; ADR-081 / padrão bmad-spec)
+
+> 5 campos compactos consumidos por skills downstream (architect, developer, qa-critic) sem precisar ler o requirements inteiro. Preencher ao fechar a elicitação. **Não substitui o requirements completo** — é um resumo executável.
+
+- **Why:** <o problema concreto que este caso resolve — 1–2 frases>
+- **Capabilities:** <o que o sistema/entrega será capaz de fazer — lista curta>
+- **Constraints:** <limites não-negociáveis (técnicos / negócio / regulatórios)>
+- **Non-goals:** <o que explicitamente não está no escopo — evitar escopo-deslizante>
+- **Success signal:** <condição objetiva binária de "pronto" — quando `validation.md` existir, citar o critério de PASS correspondente em vez de redefinir aqui>
+
+---
+
 ## Escopo declarado pelo discovery (ADR-010 — obrigatório quando há sinal de contexto especializado)
 
 > Lote temático do passo 6 do `discovery/SKILL.md`. **Modo A (Transcribe-mode determinístico):** se briefing tem declaração nominal+ubíqua+stakeholder+sem-contradição → transcrever do briefing (citar trechos). **Modo B (Interview-mode, default):** preencher abaixo via elicitação com dono.

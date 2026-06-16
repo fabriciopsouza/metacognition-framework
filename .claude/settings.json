@@ -1,5 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "model": "opus",
   "hooks": {
     "SessionStart": [
       {
@@ -91,6 +92,16 @@
             "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"tools/hooks/route-gate.ps1\"",
             "timeout": 10,
             "statusMessage": "Roteamento determinístico (route-gate ADR-027)"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python tools/hooks/check_author_tier.py || true",
+            "timeout": 10,
+            "statusMessage": "Tier-autor: alerta se a sessao roda abaixo do baseline (ADR-082)"
           }
         ]
       }

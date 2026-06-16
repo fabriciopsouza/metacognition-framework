@@ -1,0 +1,32 @@
+{
+  "passou": true,
+  "release": "1.59.0",
+  "bloco": "v1.59.0-bmad-integration",
+  "juncao": "PC",
+  "problemas": [],
+  "verificacoes_executadas": [
+    "pass_criteria binarios verificados para advanced-elicitation (3 criterios)",
+    "pass_criteria binarios verificados para edge-case-hunter (JSON parseable + escopo percorrido)",
+    "pass_criteria binarios verificados para party-mode (2 personas distintas + conflito + sintese)",
+    "pass_criteria binarios verificados para readiness-gate (veredito PRONTO/BLOQUEADO sem ressalvas)",
+    "qa-critic/SKILL.md: ponteiro edge-case-hunter com heuristica objetiva confirmado",
+    "capabilities.json: JSON valido, 63 capacidades, ponteiros vivos, PASS test_capabilities",
+    "CHANGELOG.md: ADR-081 Aceito mencionado em [1.59.0]",
+    "canarios: test_adr_changelog_sync PASS, test_capabilities PASS"
+  ],
+  "recomendacao": "aprovar",
+  "postura": {
+    "heterogeneidade": "REAL e completa: BLOCO A+B inicial = Sonnet (auto-review, R1/R2); fixes + ADR-082 + model-mechanism = Opus 4.8 (R3, author=baseline); process-critic final HETEROGENEO = Sonnet via Agent(subagent qa-critic, model:sonnet) — autor Opus -> critico tier inferior, exatamente a escada ADR-078/082 que este bloco encoda. A heterogeneidade que faltava no v1.59.0 inicial foi APLICADA de fato no fechamento.",
+    "rounds": 4,
+    "r4_sonnet_heterogeneo": "recomendacao=corrigir. Critico Sonnet (heterogeneo) pegou 1 ALTO + 3 MEDIO que o auto-review Opus teria racionalizado: (ALTO) o gate author-tier NASCEU de false-PASS mas nao tinha canario do proprio comportamento de warn -> se order.index invertesse, 51 canarios passariam e a falha original recorreria. FIX: tools/test_author_tier.py (6 asserts, guard anti-inversao fable->ok). (MEDIO) RESULTADO do boot_check escondia warn atras de 'OK' -> FIX OK-COM-ALERTA. (MEDIO) divergencia hook vs boot no modelo desconhecido -> documentada. (MEDIO) party-mode pass_criteria subjetivo -> reescrito p/ proxies verificaveis. (BAIXO) J2.5 no titulo -> corrigido. Canarios pos-fix: 52 PASS / 1 SKIP / 0 FAIL (53 total).",
+    "r1_sonnet_blocos_A_e_B": "REPROVADO (auto-review mesmo-modelo) — 5 issues critico/alto encontrados e corrigidos antes do R2",
+    "r2_sonnet_blocos_A_e_B": "APROVADO_LIMPO (auto-review mesmo-modelo — viragem de auto-aprovacao NAO neutralizada por heterogeneidade)",
+    "r3_opus_processcritic": "REPROVADO->CORRIGIDO. Opus heterogeneo pegou o que o auto-review Sonnet nao pegou: (1) DEFEITO DETERMINISTICO — artefato qa gravado com release='v1.59.0' enquanto o gate compara contra '1.59.0' (sem prefixo v) -> test_qa_evidence+test_posture_gate VERMELHOS, mas o R2 Sonnet declarou '50 PASS/0 FAIL'; (2) FRAMING regua §0 errado no ADR-081 (citava §0(c)=destrava-eval-editando-existente; real=adicao autorizada-pelo-dono com lista-de-rejeicao comprovando disciplina §0); (3) heterogeneidade declarada 'indisponivel' por Sonnet era na verdade DISPONIVEL via Agent(subagent qa-critic, model distinto) — ADR-078. Fixes aplicados pelo Opus.",
+    "canarios_estado_real": "v-prefix (R3 Opus): 49->51 PASS. ADR-082 + author-tier canary (R4 Sonnet): 52 PASS / 1 SKIP / 0 FAIL (53 canarios). Zero FAIL no fechamento.",
+    "soft_orphans_declarados": "advanced-elicitation, party-mode, readiness-gate referenciados so por docs/ADR — nenhum role-skill existente (discovery/architect/pmo) faz handoff. Auto-trigger por description e o mecanismo, mas wiring explicito fica como follow-up (nao-bloqueante).",
+    "discovery": "N/A: bloco de integracao — spec derivada da analise comparativa BMAD feita nesta sessao (inline); sem requirements.md de feature",
+    "rrc": "PASSA apos fix Opus: ADR-081 no CHANGELOG; capabilities.json +4 PARTIAL/prose (test_capabilities PASS); qa-critic/SKILL.md com ponteiro; v-prefix corrigido; framing §0 corrigido",
+    "metodo_senior": "N/A: bloco de skills/docs sem feature de produto — sem fonte normativa externa a verificar"
+  },
+  "data": "2026-06-16T18:44:16Z"
+}

@@ -96,9 +96,7 @@ _(party-mode disponível para métodos colaborativos)_
 
 ## Integração com party-mode
 
-Métodos colaborativos (categoria `collaboration`, `competitive`) se beneficiam do `party-mode` ativo.
-Quando party-mode está disponível: avisar o dono e oferecer spawn das personas relevantes antes de executar.
-Sem party-mode: o agente vocaliza as perspectivas — válido, porém menos independente.
+Métodos das categorias `collaboration` e `competitive` (ex.: Debate Club Showdown, Red Team vs Blue Team, Stakeholder Round Table) se beneficiam do `party-mode` ativo. Quando estes métodos são selecionados: avisar o dono e oferecer ativar `party-mode` para executar com personas reais em vez de perspectivas vocalizadas pelo agente único. Sem party-mode: agente único vocaliza — válido, porém com menor independência cognitiva; declarar.
 
 ## Output
 
