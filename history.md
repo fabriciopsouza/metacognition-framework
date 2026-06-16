@@ -9,6 +9,20 @@
 
 ---
 
+## 2026-06-16 — Release v1.60.0 (MINOR): Coaches cross-IA (web-bundles) — ferramental e determinístico (ADR-083)
+
+Aprovado e funcionando. Conclui o mapa de integração BMAD (item deferido em v1.59.0). Pedido do dono: "incluindo artefatos cross ai" + **"ferramental, não prosa, determinismo"** — entregue como pipeline gerado-e-gateado, não markdown solto. **Entregue:** `web-bundles/coaches.json` (fonte única, 6 coaches como DADO: brainstorming/product-brief/prd/prfaq/ux/market-research) + `tools/build_web_bundles.py` (builder determinístico, reusa `web_export.load_map`/`phrase`/`main_version` — sem duplicar, régua §0) → 6 `web-bundles/<id>.md` autocontidos para colar como Gem/GPT/Projeto + `tools/test_web_bundles.py` (canário FAIL-CLOSED: determinismo + drift + ghost-file + anti-JARVIS). Mesmo molde gerado+committed+canário do par `build_capabilities`/`test_capabilities`. Bump README+vitrine 1.58.1→1.60.0 (o bump ficou pendente no v1.59.0).
+
+**QA heterogêneo (autor Opus 4.8 → process-critic Sonnet via `Agent(model:sonnet)`, escada ADR-082 — já o padrão normal):** R1 `aprovar_com_ressalvas` — Sonnet pegou 2 MEDIO de **cobertura do canário** (não bug nominal): (1) **ghost-file** (coach removido do JSON deixa `.md` órfão não-detectado pelo check==rebuild); (2) **empty-array** (`coaches.json` truncado a `[]` passava com 0 coaches = false-PASS) + 3 BAIXO. R2: todas corrigidas (assert manifesto não-vazio + ghost-file **provado** com órfão temporário + try/except no render + README no gate anti-JARVIS). Evidência: `_meta/qa/v1.60.0-cross-ai-web-bundles.{json,md}`. **Canários: 53 PASS / 1 SKIP / 0 FAIL.**
+
+Nomenclaturas: "coaches cross-IA" · "web-bundles" · "builder gerado+committed+canário".
+Decisões permanentes: **ADR-083** Aceito (coaches cross-IA como builder+manifesto+canário). Encerra o mapa de integração BMAD (ALTA/MÉDIA entregues em v1.59.0; deferido cross-AI entregue aqui; BAIXA rejeitados documentados no ADR-081).
+Próximo passo: nenhum WIP — mapa BMAD concluído. Backlog trigger-gated.
+Riscos ativos: author-floor é loud-alert (opção b do dono), não hard-stop — sessão viva em Sonnet ainda depende de disciplina/banner (limite harness declarado ADR-082); cascata shadows pendente (decisão do dono).
+RE-ORQUESTRAÇÃO: prosseguir (mapa BMAD fechado; aguardar trigger ou pedido do dono).
+
+---
+
 ## 2026-06-16 — Release v1.59.0 (MINOR): Integração seletiva BMAD-METHOD — advanced-elicitation + edge-case-hunter + party-mode + readiness-gate (ADR-081)
 
 Aprovado e funcionando. Motivado por análise comparativa do BMAD-METHOD (v6.8.0, 49k stars) identificando 4 padrões com ganho líquido positivo não cobertos pelo metacognition. Extraídos e implementados como skills nativas — passam pelos gates do metacognition nativamente (ADRs, qa-critic, history.md). **Entregue:** (BLOCO A/ALTA) `advanced-elicitation` com 69 métodos estruturados em companion `methods.md` (ADR-003) + menu interativo com loop 1–5/r/a/x; `edge-case-hunter` com percurso mecânico exaustivo, output JSON verificável e heurística de trigger objetiva no qa-critic. (BLOCO B/MÉDIA) `party-mode` com conflito deliberado e contrarian injection; `readiness-gate` gate pré-developer com checklist R/A/X/O binário; Spec Kernel HEAD no requirements template; `capabilities.json` +4 PARTIAL/prose. O que foi rejeitado (régua §0): shard-doc, investigate, correct-course/sprint/retro, web bundles, agentes PM/UX como papéis separados.

@@ -15,6 +15,18 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.60.0] — 2026-06-16 — Coaches cross-IA (web-bundles): planejamento em Gemini/ChatGPT, ferramental e determinístico (ADR-083)
+
+> MINOR (conclui o mapa de integração BMAD — item deferido em v1.59.0). Pedido do dono: "incluindo artefatos cross ai" + "ferramental, não prosa, determinismo". Entregue como pipeline gerado-e-gateado (não markdown solto), no mesmo molde de `build_capabilities`/`test_capabilities`. [CONFIRMADO]
+
+### Added
+- **`web-bundles/coaches.json`** (fonte única): 6 coaches como DADO — brainstorming, product-brief, prd, prfaq, ux, market-and-industry-research. Cada um carrega o núcleo do método (classificar confiança · file-first-por-pergunta · anti-raso sênior · ressalva anti-JARVIS) + elicitação em lotes + template do artefato + handoff para o IDE.
+- **`tools/build_web_bundles.py`**: builder DETERMINÍSTICO (reusa `web_export.load_map`/`phrase`/`main_version` — sem duplicar, régua §0) → gera `web-bundles/<id>.md` autocontidos para colar como Gem (Gemini) / Custom GPT (ChatGPT) / Projeto (Claude.ai). `--check` = modo drift.
+- **`tools/test_web_bundles.py`**: canário FAIL-CLOSED — determinismo (2 builds idênticos) + sem-drift (committed == rebuild) + seções obrigatórias + gate anti-JARVIS herdado.
+- **`web-bundles/README.md`**: instruções de deploy (planejamento flat-rate no web LLM, implementação metered no IDE).
+- **ADR-083** Aceito. `capabilities.json`: `web-bundles-coaches` (+1, cross_ai, fail-closed).
+- **README.md:** Versão 1.58.1 → 1.60.0 (o bump de README ficou pendente no v1.59.0; corrigido aqui — os coaches carimbam a versão do README).
+
 ## [1.59.0] — 2026-06-16 — Integração seletiva BMAD-METHOD: advanced-elicitation + edge-case-hunter + party-mode + readiness-gate (ADR-081)
 
 > MINOR (4 skills novas + 1 template update + 1 companion). Exploração comparativa do BMAD-METHOD (v6.8.0, 49k stars) identificou 4 padrões com ganho líquido positivo não cobertos pelo metacognition. Extraídos e implementados como skills nativas — passam pelos gates do metacognition nativamente. [CONFIRMADO — qa-critic adversarial 2 rounds por bloco]

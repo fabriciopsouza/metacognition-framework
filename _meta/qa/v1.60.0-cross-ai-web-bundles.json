@@ -1,0 +1,29 @@
+{
+  "passou": true,
+  "release": "1.60.0",
+  "bloco": "v1.60.0-cross-ai-web-bundles",
+  "juncao": "PC",
+  "problemas": [],
+  "verificacoes_executadas": [
+    "build_web_bundles deterministico (2 builds identicos) — test_web_bundles PASS",
+    "drift fail-closed: committed == rebuild (--check); ghost-file PROVADO (orfao -> FAIL, removido -> PASS)",
+    "empty-manifest false-PASS fechado (assert len(coaches)>=1)",
+    "anti-JARVIS gate sobre os 6 coaches + README web-bundles",
+    "6 secoes obrigatorias em cada coach .md; versao v1.60.0 carimbada em todos",
+    "ADR-083 no CHANGELOG (test_adr_changelog_sync) + capabilities web-bundles-coaches (test_capabilities)",
+    "vitrine + README bumpados 1.58.1->1.60.0 (test_marketing_claims PASS)",
+    "reuso de web_export sem duplicacao (regua 0)"
+  ],
+  "recomendacao": "aprovar",
+  "postura": {
+    "heterogeneidade": "autor=Opus 4.8 (baseline); process-critic=Sonnet via Agent(model:sonnet) — escada ADR-078/082 (autor tier-max -> critico tier inferior). Heterogeneidade real, padrao agora normal pos-ADR-082.",
+    "rounds": 2,
+    "r1_sonnet_heterogeneo": "recomendacao=aprovar_com_ressalvas. Sonnet pegou 2 MEDIO (cobertura do canario, nao bug nominal): (1) ghost-file — coach removido do JSON deixa .md orfao nao-detectado pelo check==rebuild; (2) empty-array — coaches.json truncado a [] passava com 0 coaches (false-PASS). + 3 BAIXO (check tautologico, crash em campo ausente, README fora do escopo anti-JARVIS).",
+    "r2_opus_fix": "TODAS as ressalvas corrigidas em test_web_bundles.py: +assert len(coaches)>=1; +ghost-file (disk .md - manifesto, PROVADO com orfao temporario); +try/except no render (diagnostico limpo); +README no gate anti-JARVIS; check tautologico substituido por disk==built_ids.",
+    "canarios_estado_real": "v1.60.0: 53 PASS / 1 SKIP / 0 FAIL apos fixes (test_marketing_claims, test_web_bundles e os 3 release-closing verdes).",
+    "discovery": "N/A: bloco de tooling cross-IA — fonte = item deferido do mapa BMAD (ADR-081) + pedido explicito do dono; sem requirements.md de feature",
+    "rrc": "PASSA: ADR-083 no CHANGELOG; capabilities web-bundles-coaches (fail-closed); vitrine+README 1.60.0; 6 coaches consistentes em coaches.json/README/canario; reuso web_export declarado",
+    "metodo_senior": "N/A: bloco de tooling/docs sem feature de produto regulado — sem fonte normativa externa"
+  },
+  "data": "2026-06-16T20:30:00Z"
+}

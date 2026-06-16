@@ -1,7 +1,7 @@
 <!-- GERADO por tools/build_capabilities.py a partir de capabilities.json — NAO editar a mao -->
 # CAPABILITIES — indice de capacidades (nivel 1: id + title)
 
-> **64 capacidades** — 55 ✅ PROVIDES · 9 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
+> **65 capacidades** — 56 ✅ PROVIDES · 9 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
 > **Como usar (file-first, boot):** leia esta lista p/ achar o `id`; o registro completo (mecanismo · canario · ADR · doc) vem por **`python tools/build_capabilities.py --show <id>`** ou `grep -A8 '"<id>"' capabilities.json`. Nao reexplore o repo antes disto.
 > **Manutencao:** feature nova -> +1 registro em `capabilities.json` + `python tools/build_capabilities.py`. Canario barra canario orfao (cobertura).
 
@@ -15,6 +15,7 @@
 - 🟡 🔗 `export-shadow-stamp` — Carimbo fisico role=shadow no export (trava contra sombra se passar por master)
 - ✅ 🔗 `hitl-proof-verify` — verify_hitl_proofs: CI verifica autenticidade dos hitl_proof via git verify-commit/verify-tag (ADR-071 pendencia)
 - ✅ 🔗 `repo-identity-gate` — Classificador de identidade de repo (master|shadow|clone|foreign), ancestry-first
+- ✅ 🔗 `web-bundles-coaches` — Coaches cross-IA (planejamento em Gemini/ChatGPT) gerados do dado com canario de drift fail-closed
 
 ## Nucleo (local ao repo-mae)
 
