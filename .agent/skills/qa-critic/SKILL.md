@@ -76,6 +76,8 @@ gate humano antes do "final".
 Nomes aderem ao glossário · edge cases · DIV/0 explícito · agregação no nível certo ·
 performance aceitável · nenhuma dependência/rename sem ADR · doc proporcional.
 
+**Segunda passagem com `edge-case-hunter` (ADR-081):** quando o diff/arquivo revisado contém ≥1 de: (a) ≥2 condicionais aninhados; (b) loop com saída não trivial; (c) handler de erro multi-branch; (d) função com >3 retornos distintos — invocar `edge-case-hunter` após o adversarial geral. Output JSON salvo em `_meta/qa/<bloco>-edge-cases.json`.
+
 ## Padrões SE/ENTÃO recorrentes — companion `rules.md` (progressive disclosure, ADR-080)
 
 **Carregar OBRIGATORIAMENTE o companion `rules.md` (vizinho) ao operar em J4 ou PC** — ele é o

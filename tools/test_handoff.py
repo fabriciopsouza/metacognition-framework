@@ -39,7 +39,7 @@ MODEL_CASES = [
     ("architect", "low", "opus", "fable"),    # tier max
     ("discovery", "low", "opus", "fable"),
     ("docops", "low", "opus", "haiku"),       # tier economy (mecanico gateado por canario)
-    ("developer", "low", "opus", "sonnet"),   # default = balanced
+    ("developer", "low", "opus", "opus"),     # papel autoral -> tier baseline (= opus hoje; ADR-082)
     ("developer", "high", "opus", "fable"),   # risco sobrepoe papel -> tier max
     ("docops", "regulated", "sonnet", "fable"),  # risco sobrepoe papel
 ]
@@ -109,6 +109,25 @@ def main():
             fails.append(f"risk_override['{rk}'] aponta tier inexistente '{rv}'")
     if len(pol.get("heterogeneity_ladder", [])) < 3:
         fails.append("heterogeneity_ladder incompleta (3 degraus: cross-IA > modelo!=, > fresh declarado)")
+
+    # (b3.1) baseline_author (ADR-082): autor da SESSAO >= baseline; relativo/evolutivo, guardado por canario
+    ba = pol.get("baseline_author")
+    if not isinstance(ba, dict):
+        fails.append("model-policy.json sem bloco 'baseline_author' (ADR-082)")
+    else:
+        bm = (ba.get("model") or "").lower()
+        if bm not in pol.get("model_ids", {}):
+            fails.append(f"baseline_author.model '{bm}' sem model_id correspondente")
+        if "baseline" not in pol.get("tiers", {}):
+            fails.append("baseline_author exige tier 'baseline' (autor roda nele)")
+        elif pol["tiers"]["baseline"]["chain"][0].lower() != bm:
+            fails.append(f"tier baseline.chain[0] '{pol['tiers']['baseline']['chain'][0]}' != baseline_author.model '{bm}' (devem coincidir)")
+        if not ba.get("author_roles"):
+            fails.append("baseline_author.author_roles vazio (quais papeis sao autorais)")
+    # papel autoral developer DEVE resolver ao baseline (nao mais ao default balanced)
+    fam_dev, _ = handoff.suggest_model("developer", "low", "opus")
+    if fam_dev != (ba.get("model") if isinstance(ba, dict) else None):
+        fails.append(f"developer (autoral) = {fam_dev}, esperado baseline {ba.get('model') if isinstance(ba, dict) else '?'}")
 
     # (b4) fallback de indisponibilidade (ADR-078: declarada via env, nunca sondada/silenciosa)
     saved_env = os.environ.get("FRAMEWORK_MODELS_UNAVAILABLE")

@@ -52,6 +52,9 @@ perguntado. Este papel encarna esse método — não um catálogo de domínios, 
 4. **Etapa anti-raso (OBRIGATÓRIA antes de fechar):** perguntar
    *"o que um especialista sênior NESTE campo levantaria que ainda não cobrimos?"*
    — e responder essa pergunta proativamente, trazendo à tona o não-pedido.
+   **Ferramenta:** para aprofundar uma seção rasa, ativar `advanced-elicitation` (ADR-081) —
+   menu de 69 métodos estruturados (Source Triangulation p/ claims, Assumption Audit p/ premissas,
+   Pre-mortem p/ riscos, Stakeholder Round Table p/ perspectivas). Retorna a seção enriquecida.
 5. **Anti-alucinação:** nunca inventar requisito, número ou nome. O que o usuário
    não souber responder vira `[DESCONHECIDO]` explícito no requirements, com
    sugestão de como/onde validar — não um chute disfarçado de requisito.

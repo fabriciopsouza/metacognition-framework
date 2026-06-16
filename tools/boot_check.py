@@ -111,6 +111,78 @@ def check_version_sanity():
                       f"(DECLARE estas, nao invente)", "stamps": []}
 
 
+def detect_session_model(transcript_path=""):
+    """Auto-detecta o modelo ATIVO da sessao SEM cooperacao do agente: le o ULTIMO turn assistant do
+    transcript JSONL (campo `message.model`/`model`). Path vem do hook (transcript_path) OU e derivado
+    de CLAUDE_CODE_SESSION_ID em ~/.claude/projects/*/<sid>.jsonl. Determinismo: le arquivo local,
+    nunca probe de rede. '' se nao encontrar (-> gate emite 'declare', nunca falso-OK)."""
+    import glob
+    path = transcript_path
+    if not path:
+        sid = os.environ.get("CLAUDE_CODE_SESSION_ID") or os.environ.get("CLAUDE_SESSION_ID") or ""
+        if not sid:
+            return ""
+        cands = glob.glob(os.path.join(os.path.expanduser("~"), ".claude", "projects", "*", sid + ".jsonl"))
+        if not cands:
+            return ""
+        path = max(cands, key=os.path.getmtime)
+    model = ""
+    try:
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                m = re.search(r'"model"\s*:\s*"([^"]+)"', line)
+                if m and m.group(1) not in ("<synthetic>", ""):
+                    model = m.group(1)  # mantem o ULTIMO -> modelo do turn mais recente
+    except Exception:
+        return ""
+    return model
+
+
+def check_author_tier(author_model=""):
+    """Gate de TIER-AUTOR da sessao (ADR-082): o modelo da sessao principal NAO e governado pelo
+    model-policy.json (e do harness/`/model`) — esta era a cegueira que deixou Sonnet virar autor em
+    silencio e auto-aprovar um gate vermelho (v1.59.0). Aqui o baseline de autor e LIDO do dado e
+    comparado ao modelo-autor detectado; autor < baseline COM baseline disponivel -> banner LOUD.
+    Determinismo: entrada = arg/env declarada, nunca probe de rede. Fail-soft (nunca trava o boot)."""
+    try:
+        pol = json.load(open(os.path.join(ROOT, "tools", "model-policy.json"), encoding="utf-8"))
+    except Exception as e:  # noqa: BLE001
+        return {"name": "author-tier", "status": "warn",
+                "detail": f"model-policy.json ilegivel ({e}) — baseline de autor nao verificado", "stamps": []}
+    ba = pol.get("baseline_author", {})
+    baseline = (ba.get("model") or "").lower()
+    # ordem de capacidade (desc) data-driven: max -> balanced -> economy, dedup
+    order = []
+    for t in ("max", "balanced", "economy"):
+        for fam in pol.get("tiers", {}).get(t, {}).get("chain", []):
+            if fam not in order:
+                order.append(fam)
+    unavailable = {x.strip().lower() for x in os.environ.get("FRAMEWORK_MODELS_UNAVAILABLE", "").split(",") if x.strip()}
+    baseline_avail = baseline and baseline not in unavailable
+    am = (author_model or os.environ.get("CLAUDE_CODE_MODEL") or os.environ.get("ANTHROPIC_MODEL")
+          or os.environ.get("CLAUDE_MODEL") or detect_session_model()).lower()
+    fam = ""
+    for f, mid in pol.get("model_ids", {}).items():
+        if f in am or str(mid).lower() in am:
+            fam = f
+            break
+    crit = "Sonnet/Haiku so como CRITICO/docops, nunca como autor com baseline disponivel (ADR-082)."
+    if not fam:
+        return {"name": "author-tier", "status": "warn",
+                "detail": f"modelo-autor da sessao NAO detectado — DECLARE. Baseline de autor = {baseline or '?'}. "
+                          f"Se a sessao roda < baseline com baseline disponivel, troque (/model {baseline}) "
+                          f"ou declare indisponibilidade. {crit}", "stamps": []}
+    if baseline_avail and fam in order and baseline in order and order.index(fam) > order.index(baseline):
+        return {"name": "author-tier", "status": "warn",
+                "detail": f"AUTOR rodando em '{fam}' ABAIXO do baseline '{baseline}' (disponivel). "
+                          f"TROQUE: /model {baseline} — ou declare {baseline} indisponivel "
+                          f"(FRAMEWORK_MODELS_UNAVAILABLE). {crit}", "stamps": []}
+    return {"name": "author-tier", "status": "ok",
+            "detail": f"autor='{fam}' >= baseline='{baseline}'"
+                      + ("" if baseline_avail else f" (baseline {baseline} DECLARADO indisponivel -> downgrade ok)"),
+            "stamps": []}
+
+
 CHECKS = [check_repo_sync, check_core_agnostic, check_cross_ai_boot_scan, check_version_sanity]
 
 
@@ -175,7 +247,14 @@ def main(argv):
     session_id = (session_id or os.environ.get("CLAUDE_CODE_SESSION_ID")
                   or os.environ.get("CLAUDE_SESSION_ID") or "")
 
+    author_model = ""
+    if "--author-model" in argv:
+        i = argv.index("--author-model")
+        if i + 1 < len(argv):
+            author_model = argv[i + 1]
+
     results = run_checks()
+    results.append(check_author_tier(author_model))  # ADR-082: tier-autor da sessao (arg/env)
     stamp_liveness(session_id, results)
     proof = write_proof(session_id, results)
 
@@ -185,8 +264,13 @@ def main(argv):
         print(f"{glyph.get(r['status'], '?')} {r['name']:18} {r['detail']}")
     print("-" * 50)
     skips = [r["name"] for r in results if r["status"] == "skip"]
+    warns = [r["name"] for r in results if r["status"] == "warn"]
     if not proof["all_ok"]:
         verdict = "ATENCAO (gate de boot FALHOU — ver acima)"
+    elif warns:
+        # honestidade anti-overclaim (process-critic heterogeneo Sonnet 2026-06-16): warn NAO pode
+        # se esconder atras de 'OK' na linha-resumo que a CI le. author-tier<baseline aparece AQUI.
+        verdict = f"OK-COM-ALERTA ({len(warns)} warn: {', '.join(warns)} — ver acima; ex.: author-tier abaixo do baseline)"
     elif skips:
         # honestidade anti-overclaim (achado do process-critic 2026-06-10): skip != executado
         verdict = f"OK (gates executados; {len(skips)} skip declarado: {', '.join(skips)})"

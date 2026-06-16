@@ -38,6 +38,12 @@ retrabalho. NUNCA escreve código de produção — SEMPRE delega.
 `.agent/rules/04-confidence-routing.md`: alta → linear; baixa/regulado → reflexivo
 (`_shared/high-stakes-gate`).
 
+## Skills de apoio (ADR-081 — ativar sob demanda, não são papéis do squad)
+- **`advanced-elicitation`** — aprofundar qualquer artefato com 69 métodos estruturados (delegável pelo discovery/architect ou direto a pedido do dono).
+- **`party-mode`** — exploração multi-perspectiva com personas em conflito (decisão arquitetural, retrospective, validação de spec; útil quando há concordância demais/groupthink).
+- **`readiness-gate`** — entre architect (J2) e developer (J3): valida alinhamento requirements+ADR antes de implementar. Rotear para ele ANTES de delegar ao developer em blocos com ADR + requirements formais.
+- **`edge-case-hunter`** — segunda passagem mecânica do qa-critic em código com branching (o qa-critic invoca; ver heurística na sua SKILL).
+
 ## Junção-check adversarial (ADR-011 v1.12.0)
 PMO aplica **junction-critic adversarial em J0-J3** com checklist binário declarado em `/handoff` workflow. Hipótese default = há bug; força evidência objetiva do critério PASS antes de autorizar forward. Bounce binário se gate FAIL — autor itera mesma junção (não é reprovação substantiva, é gate). J4 e PC ficam com `qa-critic` em subagente isolado (modelo diferente, profundidade adversarial maior). **Todo PASS autorizado deixa rastro no ledger** (`qa_evidence.py --junction` — P3/ADR-077; comando no `/handoff` workflow): junção sem linha no ledger = gate não aplicado, e o process-critic trata como FAIL de process compliance.
 
