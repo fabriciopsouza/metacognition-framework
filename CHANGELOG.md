@@ -15,6 +15,23 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.62.0] — 2026-06-17 — Princípio de núcleo P15 (determinismo-primeiro + porta) + re-avaliação BMAD org-wide por recast (ADR-085)
+
+[CONSOLIDADO] · [CONFIRMADO]
+
+### Adicionado
+- **AGENT-FRAMEWORK §6 Princípio 15** — *determinismo-primeiro; prosa só pela PORTA; HITL por modo*: toda capacidade que decide/produz artefato busca mecanismo determinístico (tool + canário) primeiro; prosa/parada-e-orientação só pela porta (julgamento irredutível **E** ferramenta não captura), senão é débito. HITL é por modo (default/avançado = HITL; `autosuficiente` = autônomo). Detalhe operacional em `_shared/output-format` Parte A.1; enforcement reusa o placar de débito-mecanização (`tools/test_capabilities.py`).
+- **Fase divergente de elicitação** — catálogo `advanced-elicitation` ganha 7 métodos (#70–76, recast do `bmad-module-creative-intelligence-suite`/CIS) + eixo de seleção por fase (gerar→divergente · refinar→convergente) + fallback parada-e-orientação. Canário fail-closed novo `tools/test_elicitation_catalog.py` → capacidade sai do débito `prose` para `fail-closed`.
+
+### Mudado
+- **§6 P10 (emenda):** postura de adoção de padrão externo — adoção comprovada ⇒ presumir competência (descartar só com **defeito provado**); §0 sobrevive como ônus para adicionar ao núcleo.
+- **§6 P12 (emenda):** veículo (software/dados/ciência) **≠** especificidade; separação núcleo×app por **FORMA-vs-CONTEÚDO** (ADR-046), não por origem.
+
+### Decisões
+- **ADR-085 Aceito** — re-avaliação BMAD org-wide (13/13 repos com fonte citada); software como **veículo** do fim agnóstico; integração por **recast** (forma → núcleo). Recasts **B** (risk-score), **C** (tuning-loop), **D** (WDS), **H** (automator → modo autônomo) declarados como blocos futuros. Mantém P12 (teste forma-vs-conteúdo); evolução do `check_core_agnostic.py` é pré-requisito declarado de (B).
+
+QA: qa-critic heterogêneo (autor Opus → Sonnet, worktree isolado) — PASS *aprovar_com_ressalvas* (3 rodadas; ledger em `_meta/qa/junctions/`). Suite: 54 PASS / 1 SKIP / 0 FAIL.
+
 ## [1.61.0] — 2026-06-16 — Sync de boot agora mede defasagem vs a branch de INTEGRAÇÃO (baseline ortogonal ao `@{upstream}`) + nudge persistente (ADR-084)
 
 > MINOR (correção de bug recorrente que estende mecanismo existente). Nasceu de falha em sessão real: numa feature branch, o sync de boot reportou "em dia" (vs o próprio upstream) estando **6 commits atrás de `origin/main`** — o agente operou um retrato congelado e quase recomendou um merge obsoleto. Reincidência do modo de falha do ADR-019 (method-audit 2026-05-30, "41 commits atrás de main"); o canário antigo não pegava porque exercia só a topologia *na main* (onde `@{upstream}` ≡ `origin/main`). [CONFIRMADO — canários C6/C7 PASS]

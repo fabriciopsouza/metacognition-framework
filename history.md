@@ -9,6 +9,21 @@
 
 ---
 
+## 2026-06-17 — Release v1.62.0 (MINOR): Princípio de núcleo P15 (determinismo-primeiro + porta) + re-avaliação BMAD org-wide por recast (ADR-085)
+
+Aprovado e funcionando. **Nasceu de pendência retomada pelo dono** (re-avaliação BMAD: ADR-081 analisou 1/13 repos sem citar fonte) e escalou para correção de princípio, cada nível corrigindo um "encolhimento de escopo" meu: rejeição-por-reflexo → modo-único (HITL) → skill-única. **Entregue (A):** fase divergente de elicitação — +7 métodos (#70–76, recast do `bmad-module-creative-intelligence-suite`/CIS) no catálogo `advanced-elicitation` + eixo de seleção por fase + fallback parada-e-orientação + canário fail-closed `tools/test_elicitation_catalog.py` (capacidade saiu de `prose` → `fail-closed`). **Codificação de núcleo:** §6 **P15** (determinismo-primeiro; prosa só pela PORTA; HITL por modo) + emendas **P10** (adoção de padrão externo: presumir competência, provar bug p/ rejeitar, §0 sobrevive) e **P12** (veículo≠especificidade; forma-vs-conteúdo, mantém agnosticismo). Lar operacional `_shared/output-format` A.1; wire no placar débito-mecanização. Sweep BMAD 13/13 com fonte (`gh api`), fechando a falha de auditoria do ADR-081.
+
+**QA heterogêneo (autor Opus → qa-critic Sonnet, ADR-078):** 3 rodadas. R1 **autodestruiu** trabalho não-commitado via `git checkout` (lição: commitar antes / worktree isolado — memória `qa-critic-git-checkout-destroys-uncommitted`). R2 (worktree) pegou 2 buracos no anti-JARVIS + INFERIDO do CIS + distinção #76↔#9. R3 (worktree) pegou duplicação SSoT P15↔A.1 (codifiquei "não duplicar" duplicando) + ADR Proposto governando §6 — ambos corrigidos. PASS aprovar_com_ressalvas. Ledger: `_meta/qa/junctions/adr-085-a-cis-divergente.jsonl`.
+
+Nomenclaturas: "fase divergente × convergente" · "porta" (fallback determinismo→prosa) · "forma-vs-conteúdo" · "veículo ≠ especificidade" · "HITL por modo" · "recast".
+Decisões permanentes: **ADR-085 Aceito** (software=veículo do fim agnóstico; integração por recast; P15+emendas P10/P12). Capability `advanced-elicitation` **estendida** (prose→fail-closed; +0 nova capability, régua §0).
+Próximo passo: blocos futuros declarados — **ADR de evolução do `check_core_agnostic.py`** (forma-vs-conteúdo, **bloqueador de (B)**) → (B) risk-score → (C) tuning-loop → (H) estudar automator p/ modo autônomo. PR #91 aberto.
+Riscos ativos: o teste forma-vs-conteúdo ainda é prosa no linter (mecanização = o ADR pré-requisito de B); P15 é hook-mediado — sob EDR depende de disciplina (esta sessão expôs: pulei o qa-evidence até o dono cobrar).
+**RRC:** ADR-085 no CHANGELOG ✓ · capability estendida (test_capabilities PASS) ✓ · README/web-bundles 1.62.0 ✓ · canário novo = regressão-guard ✓ · suite 54 PASS/0 FAIL ✓.
+RE-ORQUESTRAÇÃO: prosseguir aos blocos futuros sob demanda do dono (ADR do linter antes de B).
+
+---
+
 ## 2026-06-16 — Release v1.61.0 (MINOR): Sync de boot mede defasagem vs a branch de INTEGRAÇÃO (baseline ortogonal ao `@{upstream}`) + nudge persistente (ADR-084)
 
 Aprovado e funcionando. **Nasceu de falha em sessão real:** numa feature branch (`docs/test-session-2026-06-11`), o `boot_check`/`check_repo_sync` reportou "sync ok / em dia" estando **6 commits atrás de `origin/main`** — porque media defasagem só contra `@{upstream}` (o espelho da própria branch, 0 atrás), nunca contra a branch de integração. O agente operou um retrato congelado (framework já em v1.60.0) e quase recomendou um merge obsoleto. **Reincidência do modo de falha do ADR-019** (method-audit 2026-05-30, "41 commits atrás de main"); o canário antigo não pegava porque exercia só a topologia *na main* (onde `@{upstream}` ≡ `origin/main`) — *validou o caminho feliz da topologia errada*.

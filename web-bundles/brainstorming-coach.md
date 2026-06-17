@@ -1,4 +1,4 @@
-# Brainstorming Coach — Coach cross-IA do Framework Metacognitivo · v1.61.0
+# Brainstorming Coach — Coach cross-IA do Framework Metacognitivo · v1.62.0
 
 > GERADO de `web-bundles/coaches.json` por `tools/build_web_bundles.py` — **nao editar a mao**.
 > Cole isto como instrucao de um **Gem** (Gemini), **Custom GPT** (ChatGPT) ou **Projeto** (Claude.ai).

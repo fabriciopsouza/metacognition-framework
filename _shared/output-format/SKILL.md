@@ -40,7 +40,7 @@ tabelas só quando comparam algo de fato.
 
 Antes de entregar QUALQUER capacidade que **decide ou produz artefato**: o mecanismo é **determinístico** (tool + canário fail-closed) sempre que alcançável. Prosa/template/parada-e-orientação é fallback **só pela PORTA**: (a) o julgamento é **irredutível** E (b) está provado que a ferramenta **não captura**. Fora disso, prosa = débito (`enforcement: prose` no `capabilities.json`), não solução.
 
-Declarar, por capacidade: `{parte determinística | parte prosa-pela-porta | fallback stop-and-guide}`. A **parada-e-orientação** (parar o fluxo e pedir a decisão ao humano em vez de adivinhar) é o fallback canônico — **determinística na forma** (é um gate), prosa só no conteúdo da decisão. Não é só de uma skill: vale para todo skill/tool/gate (núcleo uma vez, referenciado — nunca copiado).
+Declarar, por capacidade: `{parte determinística | parte prosa-pela-porta | fallback stop-and-guide}`. **Lar canônico da declaração:** o campo `enforcement` de cada registro em `capabilities.json` (`fail-closed`/`physical` = determinístico; `prose`/`fail-soft` = débito visível na lista "débito-mecanização" do `tools/test_capabilities.py`) — não se repete a declaração em cada SKILL.md. A **parada-e-orientação** (parar o fluxo e pedir a decisão ao humano em vez de adivinhar) é o fallback canônico — **determinística na forma** (é um gate), prosa só no conteúdo da decisão; é **degradação graciosa, não duplicata** (não-incho). Não é só de uma skill: vale para todo skill/tool/gate (núcleo uma vez, referenciado — nunca copiado).
 
 ## Parte B — Checklist único de validação (antes de entregar)
 

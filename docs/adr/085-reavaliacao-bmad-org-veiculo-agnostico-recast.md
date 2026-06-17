@@ -1,6 +1,6 @@
 # ADR 085 — Re-avaliação BMAD org-wide: software/dados/ciência como VEÍCULO do fim agnóstico + integração por RECAST (não por absorção de técnica)
 
-- Status: **Proposto** (2026-06-17 — aguarda gate: qa-critic adversarial + escolha §0 do dono de QUAIS recast construir) · Decisores: dono (3 correções de princípio nesta sessão) + squad
+- Status: **Aceito** (2026-06-17 — gate: qa-critic heterogêneo R3 PASS *aprovar_com_ressalvas* em worktree isolado; princípios ratificados pelo dono via "siga") · Decisores: dono (correções de princípio nesta sessão) + squad. **Implementação:** bloco (A) — fase divergente de elicitação — entregue + P15/emendas codificados; recasts (B risk-score · C tuning-loop · D WDS · H automator→modo-autônomo) declarados como blocos FUTUROS, não construídos aqui.
 - Tipo: **correção de princípio + emenda** (não adição pura). Régua §0 (ADR-007): a parte que **suplanta** a seção "O que NÃO foi integrado e por quê" do ADR-081 não adiciona — *edita um julgamento existente que o dono declarou inválido*. Cada integração proposta abaixo declara seu próprio enquadramento §0 (a maioria **estende** skill/tool existente; nenhuma é adição pura sem ganho). Override de §0 por **autorização explícita do dono**, declarado (rule #10 / ADR-051).
 - Relaciona: **ADR-081** (suplanta a seção de rejeição), ADR-007 (régua §0), ADR-010/020 (agnosticismo), ADR-011/045 (QA bicelular), ADR-072/073 (anti-reinvenção), ADR-077 (qa-evidence), ADR-080 (dieta), ADR-083 (cross-AI web-bundles)
 
