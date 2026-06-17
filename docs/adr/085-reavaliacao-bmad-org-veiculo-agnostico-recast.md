@@ -39,6 +39,22 @@ Resultado: *especificidade* morre como motivo de rejeição; *§0* sobrevive com
 
 Tensão real: "determinismo em tudo" e "prosa como fallback" se contradizem se o fallback não tiver critério — vira escotilha de fuga que engole a regra (vetor de acreção que a dieta/ADR-080 combate). **Porta obrigatória:** prosa/template/parada-e-orientação só é admissível quando **(a)** a decisão é irredutivelmente de julgamento humano **E (b)** está demonstrado que uma ferramenta determinística não captura o critério. Caso contrário é §0-accretion disfarçada. **Observação que dissolve metade da tensão:** "parada e orientação" feita certa **já é determinística no nosso idioma** — é um *gate file-first* (para o fluxo + injeta instrução fixa), idêntico aos hooks route-gate/mission-gate. Logo, todo recast abaixo busca **gate/tool determinístico primeiro**; cai para template/prosa só pela porta acima, declarando o motivo.
 
+## Generalização — estes princípios são do NÚCLEO, não de uma skill (resposta ao dono 2026-06-17)
+
+O dono apontou: *"não é só numa skill — tudo o que falo se aplica a tudo ou quase tudo"*. Correto. As correções desta sessão **não são patches de `advanced-elicitation`** — são **doutrina framework-wide**. Eu as vinha aplicando localmente (modo de falha "encolher o escopo": rejeição-por-reflexo → modo-único → skill-única, a mesma falha em escalas diferentes). Elevadas aqui a princípio de núcleo; a skill foi só a **primeira instância** (prova de aplicabilidade), não a sede.
+
+**Os 5 princípios (sede canônica na aceitação: `AGENT-FRAMEWORK.md` §6 numerado + detalhe único em `_shared` + enforcement pelo placar já existente):**
+
+1. **Determinismo-primeiro, prosa só pela PORTA.** Toda capacidade que **decide ou produz artefato** busca mecanismo determinístico (tool + canário fail-closed) primeiro. Prosa/template/parada-e-orientação só quando **(a)** o julgamento é irredutível **E (b)** provado que a ferramenta não captura. Fronteira ("quase tudo") = a porta. *Não-bloqueia leitura pura/chat.*
+2. **Método + prosa são complementares, não incho.** Toda capacidade declara `{parte determinística | parte prosa-pela-porta | fallback stop-and-guide}`. Prosa é a **degradação graciosa**, não duplicata do método.
+3. **Veículo ≠ especificidade; teste FORMA-vs-CONTEÚDO** (refino do P12, não revogação). Forma agnóstica → núcleo; conteúdo de domínio → app/blueprint.
+4. **Estudar o que funciona; provar bug para rejeitar; §0 sobrevive para adoção.** Adoção alta ⇒ presumir competência (descartar só com defeito provado); mas adicionar ao núcleo ainda exige ganho líquido + recast.
+5. **HITL é por MODO, não global** (ADR-005). default/avançado = HITL; `autosuficiente` = autônomo — onde os padrões de autonomia-que-funciona (ex.: automator, recast H) melhoram a operação sem remover HITL dos outros modos.
+
+**SSoT / não-bloat (o erro a evitar):** estes vão ao núcleo **uma vez** e são **referenciados**, jamais copiados por skill (cópia = violação §0/dieta — o oposto do pedido). **Enforcement reusa o que já existe:** o placar `enforcement: fail-closed × prose` + a lista "débito-mecanização" do `tools/test_capabilities.py` já é a métrica; falta nomear a doutrina por trás dela. **Implicação retroativa:** as 16 capacidades hoje em débito (prose/fail-soft) passam a ter um princípio explícito que governa quando o débito é legítimo (porta) e quando é só dívida a pagar.
+
+> **Escopo deste ADR:** registra os princípios como **Proposto**. A codificação no núcleo (`AGENT-FRAMEWORK.md` §6 + `_shared` + eventual reforço do canário) é o **próximo bloco**, não feito aqui — para não bulldozar trave (§6 governa tudo) sem o aceite do dono. É a **generalização de que (A) foi a primeira instância**.
+
 ## Sweep org-wide — fonte autoritativa (fecha a falha de auditoria 1/13)
 
 Fonte: `gh api orgs/bmad-code-org/repos` + leitura de conteúdo dos READMEs/docs citados por URL raw. Coletado 2026-06-17. Confiança da coluna "fonte" = **CONFIRMADO** (API/arquivo lido); coluna "veredito" = **INFERIDO** (julgamento §0).
