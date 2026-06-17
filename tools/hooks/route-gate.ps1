@@ -93,6 +93,37 @@ try {
         }
     } catch { }
 
+    # 2.6 [ADR-084] Defasagem persistente vs a branch de INTEGRACAO (origin/main): o boot grava
+    # .stale-vs-main quando a branch esta atras. Aqui REPETIMOS por-turno (prepended a $syncNudge,
+    # que flui p/ todo caminho de saida) ate a branch ser atualizada OU o atraso reconhecido — fecha
+    # o modo de falha "agente passa batido por um status de boot". Re-verifica BARATO (local, sem fetch).
+    try {
+        $staleFile = Join-Path $cwd '.claude\.stale-vs-main'
+        if (Test-Path $staleFile) {
+            $base = ''
+            # NB: parse no escopo principal (NAO ForEach-Object — assignment la fica no escopo-filho e $base externo ficaria '').
+            $baseLine = (Get-Content $staleFile -ErrorAction SilentlyContinue | Where-Object { $_ -match '^base=' } | Select-Object -First 1)
+            if ($baseLine -match '^base=(.+)$') { $base = $Matches[1] }
+            $ackFile = Join-Path $cwd '.claude\.stale-vs-main.ack'
+            if ($base) {
+                $cnt = (git -C $cwd rev-list --count "HEAD..$base" 2>$null)
+                if ($cnt) {  # so age se o git respondeu -> nunca limpa por erro
+                    if ($cnt -eq '0' -or $cnt -eq 0) {
+                        Remove-Item -Force -ErrorAction SilentlyContinue $staleFile, $ackFile  # branch atualizada -> resolve
+                    } else {
+                        $ack = ''
+                        if (Test-Path $ackFile) { $ack = ((Get-Content $ackFile -Raw -ErrorAction SilentlyContinue) -replace '\s','') }
+                        $curSha = (git -C $cwd rev-parse --short $base 2>$null)
+                        if (-not $ack -or $ack -ne $curSha) {  # nao reconhecido p/ a baseline ATUAL -> nudge
+                            $staleNudge = "# [ADR-084] RETRATO CONGELADO — $cnt commit(s) atras de ``$base```n`nVoce NAO esta no topo do framework. NAO afirme estado/versao nem edite o nucleo antes de resolver.`n- Resolver: ``git rebase $base`` (ou merge).`n- Reconhecer o risco (silencia ate ``$base`` avancar de novo): ``git rev-parse --short $base > .claude/.stale-vs-main.ack``.`n- Desativar nudges da sessao: criar ``.claude/session.lock``.`n`n"
+                            $syncNudge = $staleNudge + $syncNudge
+                        }
+                    }
+                }
+            }
+        }
+    } catch { }
+
     # 3. Triviais não merecem rota (saudações, "ok", "obrigado", confirmações curtas).
     #    Heurística conservadora: < 12 chars úteis OU só pontuação/ack comum.
     $trimmed = ($prompt -replace '\s+', ' ').Trim()

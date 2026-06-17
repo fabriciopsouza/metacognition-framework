@@ -358,17 +358,19 @@
     },
     {
       "id": "repo-sync-boot",
-      "title": "Sync do repo no boot (fetch + ahead/behind + pull seguro) antes de file-first",
+      "title": "Sync do repo no boot: dim.1 vs proprio upstream (pull seguro) + dim.2 ORTOGONAL vs branch de integracao (origin/HEAD) com marker persistente repetido por-turno (ADR-084)",
       "status": "PROVIDES",
       "ai_owner": "claude",
       "mechanism": "tools/hooks/check_repo_sync.py",
       "test": "tools/test_repo_sync.py",
-      "adr": "docs/adr/019-boot-sync-repo.md",
+      "adr": "docs/adr/084-defasagem-vs-branch-de-integracao-baseline-ortogonal.md",
       "cross_ai": false,
+      "note": "ADR-019/060 cobriam apenas defasagem vs @{upstream}; numa feature branch isso reporta 'em dia' mesmo N commits atras de origin/main (regressao 2026-06-16). ADR-084 adiciona a dimensao ortogonal (baseline = origin/HEAD, agnostica) + nudge persistente via route-gate (canarios C6/C7).",
       "tags": [
         "boot",
         "sync",
-        "gate"
+        "gate",
+        "baseline-drift"
       ]
     },
     {

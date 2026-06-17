@@ -21,6 +21,10 @@ output/
 .claude/.repo-sync-marker
 .claude/boot-proof.json
 
+# ADR-084: marker de defasagem vs branch de integracao + ack (por branch/maquina — nunca versionar)
+.claude/.stale-vs-main
+.claude/.stale-vs-main.ack
+
 # ADR-064: staging local de relatorios anonimizados (gerado, nao versionar no repo-fonte)
 telemetry/learnings-public/
 

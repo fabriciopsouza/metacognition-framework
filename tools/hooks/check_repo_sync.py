@@ -60,6 +60,110 @@ def stamp_liveness(cwd, key, session_id):
         pass
 
 
+STALE_MARKER = os.path.join(".claude", ".stale-vs-main")
+STALE_ACK = os.path.join(".claude", ".stale-vs-main.ack")
+
+
+def resolve_baseline(cwd):
+    """Branch de integracao (ADR-084) de forma AGNOSTICA (ADR-020): a default branch do remoto
+    via origin/HEAD, com fallback origin/main -> origin/master. Hardcodar 'main' feriria o nucleo
+    agnostico. Retorna '' se indeterminada (sem remoto) -> caller degrada silencioso."""
+    ref, rc = git(cwd, "symbolic-ref", "--quiet", "refs/remotes/origin/HEAD")
+    if rc == 0 and ref.startswith("refs/remotes/"):
+        return ref[len("refs/remotes/"):]
+    for cand in ("origin/main", "origin/master"):
+        _, rc = git(cwd, "rev-parse", "--verify", "--quiet", cand)
+        if rc == 0:
+            return cand
+    return ""
+
+
+def _clear_stale(cwd):
+    for f in (os.path.join(cwd, STALE_MARKER), os.path.join(cwd, STALE_ACK)):
+        try:
+            os.remove(f)
+        except OSError:
+            pass
+
+
+def baseline_staleness(cwd, sid, upstream):
+    """Dimensao ORTOGONAL ao @{upstream} (ADR-084). O gap do method-audit: uma feature branch pode
+    estar 0 atras do PROPRIO upstream (origin/feat) e ainda assim N atras da branch de integracao
+    (origin/main) = retrato congelado do framework. Mede HEAD..baseline; escreve/limpa o marker
+    persistente (.stale-vs-main) que o route-gate repete por-turno ate resolver/reconhecer.
+    Retorna o texto de aviso ('' se em dia/indeterminado). Roda DEPOIS do auto-pull (HEAD ja movido)."""
+    marker = os.path.join(cwd, STALE_MARKER)
+    base = resolve_baseline(cwd)
+    if not base:
+        return ""
+    if base == upstream:
+        # Branch de integracao E o proprio upstream (ex.: estou NA main) -> a dimensao 1 ja cobre.
+        # Mudanca cirurgica: nada de marker aqui (preserva C1-C5). Limpa marker orfao de outra branch.
+        _clear_stale(cwd)
+        return ""
+    cnt, rc = git(cwd, "rev-list", "--count", f"HEAD..{base}")
+    if rc != 0:
+        return ""
+    behind_base = int(cnt or "0")
+    if behind_base == 0:
+        _clear_stale(cwd)  # resolvido (branch atualizada) -> limpa marker E ack
+        return ""
+    base_sha, _ = git(cwd, "rev-parse", "--short", base)
+    cur, _ = git(cwd, "rev-parse", "--abbrev-ref", "HEAD")
+    try:
+        os.makedirs(os.path.join(cwd, ".claude"), exist_ok=True)
+        with open(marker, "w", encoding="utf-8") as f:
+            f.write(f"behind={behind_base}\nbase={base}\nbase_sha={base_sha}\nsession={sid or ''}\n")
+    except OSError:
+        pass
+    return (f"⚠️ Voce esta {behind_base} commit(s) ATRAS de `{base}` (branch `{cur}`). "
+            f"O framework MOVEU desde que esta branch saiu: voce le um RETRATO CONGELADO. "
+            f"NAO afirme estado/versao nem edite codigo do nucleo antes de `git rebase {base}` "
+            f"(ou merge). Persistido em `.claude/.stale-vs-main` -> o route-gate REPETE por-turno "
+            f"ate (a) atualizar a branch ou (b) reconhecer: "
+            f"`git rev-parse --short {base} > .claude/.stale-vs-main.ack`.")
+
+
+def sync_upstream(cwd, upstream):
+    """Dimensao 1 (ADR-019/060): sincronia vs o PROPRIO upstream da branch, com auto-pull --ff-only
+    quando seguro. Retorna o corpo do aviso ('' se em dia). NAO emite/exit aqui (composicao no main)."""
+    counts, rc = git(cwd, "rev-list", "--left-right", "--count", f"{upstream}...HEAD")
+    if rc != 0 or not counts:
+        return ""
+    parts = counts.split()
+    behind = int(parts[0])
+    ahead = int(parts[1]) if len(parts) > 1 else 0
+    if behind == 0:
+        return ""
+
+    # Esta atras. Seguro auto-atualizar? SEM modificacoes RASTREADAS (untracked nao bloqueia -
+    # --ff-only e a trava final) E fast-forward (HEAD ancestral do upstream).
+    dirty, _ = git(cwd, "status", "--porcelain", "--untracked-files=no")
+    is_clean = (dirty == "")
+    ff_possible = False
+    if is_clean:
+        _, anc_rc = git(cwd, "merge-base", "--is-ancestor", "HEAD", upstream)
+        ff_possible = (anc_rc == 0)
+
+    if is_clean and ff_possible:
+        _, pull_rc = git(cwd, "pull", "--ff-only", "--quiet")
+        new_behind, _ = git(cwd, "rev-list", "--count", f"HEAD..{upstream}")
+        if pull_rc == 0 and new_behind == "0":
+            return (f"✅ Repo estava {behind} commit(s) atras de `{upstream}` e foi AUTO-ATUALIZADO "
+                    f"(fast-forward, sem modificacoes rastreadas). Agora em dia. Reconcilie WIP "
+                    f"sobre o estado novo.")
+        return (f"⚠️ Tentei auto-atualizar (estava {behind} atras de `{upstream}`) mas "
+                f"`pull --ff-only` NAO concluiu (rc={pull_rc}). Rode `git pull` manual e verifique "
+                f"ANTES de reconciliar WIP.")
+    if not is_clean:
+        motivo, acao = "working tree com modificacoes RASTREADAS", "commit ou stash, depois `git pull`"
+    else:
+        motivo, acao = "historico DIVERGIU (nao-fast-forward)", f"rebase/merge manual de `{upstream}`"
+    return (f"⚠️ Repo esta {behind} commit(s) atras de `{upstream}` (e {ahead} a frente). "
+            f"NAO auto-atualizei: {motivo}. **Antes de reconciliar WIP / afirmar estado:** {acao}. "
+            f"Operar agora = ler retrato congelado.")
+
+
 def main():
     try:
         sys.stdout.reconfigure(encoding="utf-8")
@@ -82,44 +186,16 @@ def main():
 
         git(cwd, "fetch", "--quiet")  # sempre (read-only, seguro)
 
-        counts, rc = git(cwd, "rev-list", "--left-right", "--count", f"{upstream}...HEAD")
-        if rc != 0 or not counts:
-            emit("")
-        parts = counts.split()
-        behind = int(parts[0])
-        ahead = int(parts[1]) if len(parts) > 1 else 0
+        # Dimensao 1: sincronia vs o proprio upstream (pode AUTO-PULL e mover HEAD).
+        upstream_msg = sync_upstream(cwd, upstream)
+        # Dimensao 2 (ORTOGONAL, ADR-084): defasagem vs a branch de integracao (origin/HEAD),
+        # medida DEPOIS do auto-pull. Pega o caso feature-branch-em-dia-mas-atras-do-main.
+        baseline_msg = baseline_staleness(cwd, sid, upstream)
 
-        if behind == 0:
-            emit("")  # em dia -> silencioso
-
-        # Esta atras. Seguro auto-atualizar? SEM modificacoes RASTREADAS (untracked nao bloqueia -
-        # --ff-only e a trava final) E fast-forward (HEAD ancestral do upstream).
-        dirty, _ = git(cwd, "status", "--porcelain", "--untracked-files=no")
-        is_clean = (dirty == "")
-        ff_possible = False
-        if is_clean:
-            _, anc_rc = git(cwd, "merge-base", "--is-ancestor", "HEAD", upstream)
-            ff_possible = (anc_rc == 0)
-
-        if is_clean and ff_possible:
-            _, pull_rc = git(cwd, "pull", "--ff-only", "--quiet")
-            new_behind, _ = git(cwd, "rev-list", "--count", f"HEAD..{upstream}")
-            if pull_rc == 0 and new_behind == "0":
-                emit(f"# Repo sync (ADR-019/060)\n✅ Repo estava {behind} commit(s) atras de "
-                     f"`{upstream}` e foi AUTO-ATUALIZADO (fast-forward, sem modificacoes rastreadas). "
-                     f"Agora em dia. Reconcilie WIP sobre o estado novo.")
-            else:
-                emit(f"# Repo sync (ADR-019/060)\n⚠️ Tentei auto-atualizar (estava {behind} "
-                     f"atras de `{upstream}`) mas `pull --ff-only` NAO concluiu (rc={pull_rc}). "
-                     f"Rode `git pull` manual e verifique ANTES de reconciliar WIP.")
-        else:
-            if not is_clean:
-                motivo, acao = "working tree com modificacoes RASTREADAS", "commit ou stash, depois `git pull`"
-            else:
-                motivo, acao = "historico DIVERGIU (nao-fast-forward)", f"rebase/merge manual de `{upstream}`"
-            emit(f"# Repo sync (ADR-019/060)\n⚠️ Repo esta {behind} commit(s) atras de "
-                 f"`{upstream}` (e {ahead} a frente). NAO auto-atualizei: {motivo}. **Antes de "
-                 f"reconciliar WIP / afirmar estado:** {acao}. Operar agora = ler retrato congelado.")
+        bodies = [m for m in (upstream_msg, baseline_msg) if m]
+        if not bodies:
+            emit("")  # em dia nas duas dimensoes -> silencioso
+        emit("# Repo sync (ADR-019/060/084)\n" + "\n\n".join(bodies))
     except Exception as e:
         sys.stderr.write(f"[check_repo_sync] warning (nao-bloqueante): {e}\n")
         sys.exit(0)

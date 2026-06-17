@@ -66,7 +66,7 @@
 - ✅ `release-checkpoint-gate` — Process-evidence (fail-closed): release atual do CHANGELOG tem checkpoint no history (forward-only)
 - ✅ `reorchestration-gate` — PMO maestro: decisao de re-orquestracao na fronteira de bloco (J6)
 - ✅ `repo-mode-user-vs-dev` — Modo por identidade no boot: shadow=USER (aplica a dominio, nao desenvolve), master=DEV
-- ✅ `repo-sync-boot` — Sync do repo no boot (fetch + ahead/behind + pull seguro) antes de file-first
+- ✅ `repo-sync-boot` — Sync do repo no boot: dim.1 vs proprio upstream (pull seguro) + dim.2 ORTOGONAL vs branch de integracao (origin/HEAD) com marker persistente repetido por-turno (ADR-084)
 - 🟡 `route-gate` — Lembrete de rota deterministico 1x/sessao (UserPromptSubmit), fail-open
 - ✅ `rules-parity-guard` — Anti-drift das 4 regras inviolaveis entre arquivos de autoridade (sem violar SSoT §6.5)
 - ✅ `shadow-sync` — Hook que auto-casa o espelho publicado com origin no boot (reset --hard mecanico, so em shadow)

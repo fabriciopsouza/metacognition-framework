@@ -37,6 +37,26 @@ fi
 [ -f "$CWD/.claude/session.lock" ] && emit_silent
 [ -f "$HOME/.claude/session.lock" ] && emit_silent
 
+# [ADR-084] Defasagem persistente vs a branch de integração: o boot grava .stale-vs-main quando a
+# branch está atrás de origin/main. Aqui REPETIMOS por-turno (até trivial) até a branch ser atualizada
+# OU o atraso ser reconhecido — fecha o modo de falha "agente passa batido por um status de boot".
+STALE_FILE="$CWD/.claude/.stale-vs-main"
+if [ -f "$STALE_FILE" ]; then
+  BASE="$(sed -n 's/^base=//p' "$STALE_FILE" 2>/dev/null | head -1)"
+  # Re-verifica BARATO (local, sem fetch): só age se o git respondeu (CNT não-vazio) -> nunca limpa por erro.
+  if [ -n "$BASE" ] && CNT="$(git -C "$CWD" rev-list --count "HEAD..$BASE" 2>/dev/null)" && [ -n "$CNT" ]; then
+    if [ "$CNT" = "0" ]; then
+      rm -f "$STALE_FILE" "$CWD/.claude/.stale-vs-main.ack" 2>/dev/null  # branch atualizada -> resolve
+    else
+      ACK="$(tr -d '[:space:]' < "$CWD/.claude/.stale-vs-main.ack" 2>/dev/null)"
+      CUR_SHA="$(git -C "$CWD" rev-parse --short "$BASE" 2>/dev/null)"
+      if [ -z "$ACK" ] || [ "$ACK" != "$CUR_SHA" ]; then  # não reconhecido p/ a baseline ATUAL -> nudge
+        emit_route "$(printf '# [ADR-084] RETRATO CONGELADO — %s commit(s) atrás de `%s`\n\nVocê NÃO está no topo do framework. NÃO afirme estado/versão nem edite o núcleo antes de resolver.\n- Resolver: `git rebase %s` (ou merge).\n- Reconhecer o risco (silencia até `%s` avançar de novo): `git rev-parse --short %s > .claude/.stale-vs-main.ack`.\n- Desativar nudges da sessão: criar `.claude/session.lock`.' "$CNT" "$BASE" "$BASE" "$BASE" "$BASE")"
+      fi
+    fi
+  fi
+fi
+
 # Triviais não merecem rota.
 TRIMMED="$(printf '%s' "$PROMPT" | tr -s '[:space:]' ' ' | sed 's/^ //;s/ $//')"
 [ "${#TRIMMED}" -lt 12 ] && emit_silent
