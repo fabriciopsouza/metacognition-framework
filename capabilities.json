@@ -1004,6 +1004,25 @@
       ]
     }
     ,{
+      "id": "autonomy-retry-policy",
+      "title": "Dial retry/escalate por MODO (ADR-087): HITL escala na 1a falha; autosuficiente auto-retenta subindo a escada de modelo ate budget, escala por ultimo",
+      "status": "PROVIDES",
+      "enforcement": "fail-closed",
+      "ai_owner": "claude",
+      "mechanism": "tools/autonomy_policy.py",
+      "test": "tools/test_autonomy_policy.py",
+      "adr": "docs/adr/087-autosuficiente-retry-budget-escalacao-ultima.md",
+      "cross_ai": false,
+      "tags": [
+        "autonomy",
+        "execution-modes",
+        "retry",
+        "hitl",
+        "bmad-integration",
+        "canary"
+      ]
+    }
+    ,{
       "id": "edge-case-hunter",
       "title": "Percurso mecanico exaustivo de paths nao tratados — output JSON verificavel",
       "status": "PARTIAL",
