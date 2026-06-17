@@ -956,7 +956,7 @@
       "ai_owner": "claude",
       "mechanism": ".agent/skills/advanced-elicitation/SKILL.md",
       "test": "tools/test_elicitation_catalog.py",
-      "adr": "docs/adr/085-reavaliacao-bmad-org-veiculo-agnostico-recast.md",
+      "adr": "docs/adr/081-integracao-bmad-elicitation-edge-case-party-readiness.md",
       "cross_ai": false,
       "tags": [
         "elicitation",

@@ -94,7 +94,7 @@
 | 73 | divergente | Incubation | Afastar-se deliberadamente do problema após carregamento intenso — delega ao processamento não-consciente; retomar depois com captura imediata do que emergiu. Técnica de processo (temporal), não de conteúdo | imersão → afastamento → retomada → captura |
 | 74 | divergente | Stream of Consciousness | Gerar sem parar e sem editar por período fixo — suspende o crítico interno que poda ideias cedo demais; separa geração de avaliação | tempo fixo → escrita contínua sem filtro → mineração posterior |
 | 75 | divergente | Future Press Release | Escrever o anúncio do sucesso futuro como se já tivesse acontecido (data, manchete, resultado) — força concretude sobre o estado-alvo e revela o que precisa ser verdade. Distinto do #55 (Hindsight retrospectivo) e do #37 (What If hipotético): aqui o alvo é gerar a visão de sucesso concreta | data futura → manchete de sucesso → detalhes → requisitos implicados |
-| 76 | divergente | Brainwriting | Ideação silenciosa e paralela antes de qualquer discussão, depois construir sobre as contribuições — evita ancoragem e dominância do primeiro/mais-alto. Combina com party-mode | rodada silenciosa → trocar → construir → convergir |
+| 76 | divergente | Brainwriting | Ideação silenciosa e paralela antes de qualquer discussão, depois construir sobre as contribuições — evita ancoragem e dominância do primeiro/mais-alto. Distinto do #9 (Stakeholder Round Table, debate verbal): aqui a geração é silenciosa e precede a discussão. Combina com party-mode | rodada silenciosa → trocar → construir → convergir |
 
 ---
 
