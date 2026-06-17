@@ -15,6 +15,20 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.65.0] — 2026-06-17 — A segurança do GitHub Actions SEM GHA: gate de merge por canários locais (ADR-088)
+
+[CONSOLIDADO] · [CONFIRMADO]
+
+### Adicionado
+- **`tools/post_canary_status.py`** (BYO-CI) — reconecta a suíte de canários LOCAL (`run_canaries.py`, o gate real que o GHA apenas *disparava*) à trava de merge do GitHub: posta um commit-status `canarios-local` = `success` **somente** com 0 FAIL; senão `failure`. Atrelado ao SHA + resultado real; `--dry-run` sem rede. **Mesmo modelo do GHA** (required status check), driver local. Sempre no HEAD (= o que foi testado; sem `--sha` arbitrário).
+- **`tools/test_post_canary_status.py`** — canário fail-closed (parse_repo ancorado + fail-closed em host falso; decide_state 0=success/!=0=failure; dry-run sem-rede via monkeypatch — **não roda a suíte**, evita recursão). +1 capability `byo-ci-gate` (PROVIDES, fail-closed).
+- **Branch protection** de `main` re-exige o status `canarios-local` (restaura o enforcement de merge que o required-check MORTO do GHA — removido — dava falsamente).
+
+### Decisões
+- **ADR-088 Aceito** — "segurança do GHA sem GHA". Trade-off declarado vs GHA: 1 OS (não a matriz 3-OS; coberto em parte por `test_rules_parity`) + auto-atestação (não infra neutra) — aceitável para repo de dono único; bloqueia merge ACIDENTAL de vermelho.
+
+QA: qa-critic heterogêneo (Sonnet, worktree isolado) — pegou bug MÉDIO de segurança (`parse_repo` com `re.search` não-ancorado aceitava host falso `notgithub.com/github.com/…`) → **corrigido** (regex ancorada + caso no canário) + removido `--sha` (dissociação). Recursão do canário (run→test→run) verificada ausente. Suite: 56 PASS / 1 SKIP / 0 FAIL.
+
 ## [1.64.0] — 2026-06-17 — Parameter Tuning Loop no catálogo de elicitação (recast C do ADR-085)
 
 [CONSOLIDADO] · [CONFIRMADO]

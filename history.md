@@ -9,6 +9,21 @@
 
 ---
 
+## 2026-06-17 — Release v1.65.0 (MINOR): A segurança do GHA SEM GHA — gate de merge por canários locais (ADR-088)
+
+Aprovado. **Nasceu da pergunta do dono** ("conseguimos atender a segurança do GHA sem ele? não quebrar o que funciona; melhorar com o que agrega") após eu remover o required-check morto do GHA da branch protection (para destravar merges; a CI de GHA estava vermelha na main pré-existente — "não usamos github actions"). **Insight:** a "segurança do GHA" e a suíte de canários são a MESMA coisa (o `ci.yml` rodava `run_canaries.py`); o GHA era só um driver morto. **Entregue:** `tools/post_canary_status.py` (BYO-CI) — roda a suíte e posta commit-status `canarios-local` verde SÓ com 0 FAIL; **branch protection re-exige esse context** → restaura o enforcement de merge no nível do GitHub, driver local. Canário `test_post_canary_status.py` (parse_repo ancorado, decide_state, dry-run sem-rede via monkeypatch). +1 capability `byo-ci-gate`.
+
+**Bug de design pego e corrigido na própria sessão:** o canário v1 rodava a suíte inteira → **recursão** (run_canaries → test_post_canary_status → run_canaries → explosão de subprocessos); matei a task e reescrevi com monkeypatch in-process. **QA heterogêneo (Sonnet, worktree):** pegou bug MÉDIO de segurança — `parse_repo` com `re.search` não-ancorado aceitava host falso (`notgithub.com/github.com/…`) → corrigido (regex ancorada + caso no canário) + removido `--sha` (dissociação sha≠HEAD). PASS aprovar_com_ressalvas.
+
+Nomenclaturas: "BYO-CI" · "canarios-local" (context) · "auto-atestação" · "driver morto vs gate vivo".
+Decisões permanentes: **ADR-088 Aceito**. Capability `byo-ci-gate` nova (fail-closed). Branch protection: required-check `canarios-local` (substitui os 3 de GHA removidos).
+Próximo passo: **(H) ADR-087 (#94)** aguarda ratificação do dono. (B') oracle de cobertura deferido.
+Riscos ativos: trade-off vs GHA declarado — 1 OS (parcial: `test_rules_parity`) + auto-atestação (repo de dono único). Se a CI neutra voltar, rodar `post_canary_status` num runner neutro.
+**RRC:** ADR-088 no CHANGELOG ✓ · capability nova (test_capabilities PASS) ✓ · README+vitrine+web-bundles 1.65.0 ✓ · canário novo = guard (recursão-safe) ✓ · suite 56 PASS/0 FAIL ✓ · branch protection re-armada.
+RE-ORQUESTRAÇÃO: segurança restaurada; aguardar ratificação de (H) ou pedido do dono.
+
+---
+
 ## 2026-06-17 — Release v1.64.0 (MINOR): Parameter Tuning Loop no catálogo (recast C do ADR-085)
 
 Aprovado. **Modo autônomo** (continuação de "siga demais direções"). **Entregue (C):** método #77 `Parameter Tuning Loop` no catálogo `advanced-elicitation` — calibração de parâmetros contra alvos com red-flags (modelar→isolar/junto/escala→medir-vs-alvo→iterar); veículo dados/análise, forma agnóstica → núcleo; recast do balance/certification testing do `bmad-module-game-dev-studio`. [INFERIDO] da fonte. Catálogo: 77 métodos; canário `test_elicitation_catalog.py` PASS (contígua 1–77).
