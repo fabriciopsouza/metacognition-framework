@@ -986,6 +986,24 @@
       ]
     }
     ,{
+      "id": "byo-ci-gate",
+      "title": "Gate de merge dirigido pelos canarios LOCAIS (BYO-CI) — a seguranca do GHA sem GHA: posta commit-status verde so com 0 FAIL; branch protection exige o context",
+      "status": "PROVIDES",
+      "enforcement": "fail-closed",
+      "ai_owner": "claude",
+      "mechanism": "tools/post_canary_status.py",
+      "test": "tools/test_post_canary_status.py",
+      "adr": "docs/adr/088-byo-ci-gate-canarios-local-sem-github-actions.md",
+      "cross_ai": false,
+      "tags": [
+        "ci",
+        "gate",
+        "merge",
+        "deterministic",
+        "canary"
+      ]
+    }
+    ,{
       "id": "edge-case-hunter",
       "title": "Percurso mecanico exaustivo de paths nao tratados — output JSON verificavel",
       "status": "PARTIAL",
