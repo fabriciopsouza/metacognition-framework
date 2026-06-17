@@ -9,6 +9,23 @@
 
 ---
 
+## 2026-06-16 — Release v1.61.0 (MINOR): Sync de boot mede defasagem vs a branch de INTEGRAÇÃO (baseline ortogonal ao `@{upstream}`) + nudge persistente (ADR-084)
+
+Aprovado e funcionando. **Nasceu de falha em sessão real:** numa feature branch (`docs/test-session-2026-06-11`), o `boot_check`/`check_repo_sync` reportou "sync ok / em dia" estando **6 commits atrás de `origin/main`** — porque media defasagem só contra `@{upstream}` (o espelho da própria branch, 0 atrás), nunca contra a branch de integração. O agente operou um retrato congelado (framework já em v1.60.0) e quase recomendou um merge obsoleto. **Reincidência do modo de falha do ADR-019** (method-audit 2026-05-30, "41 commits atrás de main"); o canário antigo não pegava porque exercia só a topologia *na main* (onde `@{upstream}` ≡ `origin/main`) — *validou o caminho feliz da topologia errada*.
+
+**Entregue:** dimensão 2 ORTOGONAL em `check_repo_sync.py` + `.claude/hooks/check-repo-sync.ps1` (paridade) — mede `HEAD..<baseline>` com baseline **agnóstica (ADR-020)** via `origin/HEAD`→`origin/main`→`origin/master`; guarda cirúrgica `base==upstream` preserva C1–C5 idênticos; não auto-pula a baseline (não se faz ff de main numa feature branch) — grava marker persistente `.claude/.stale-vs-main`. `route-gate.sh` + `route-gate.ps1` (paridade) **repetem o nudge por-turno** até a branch ser atualizada (re-verificação barata local) OU o atraso ser reconhecido (`ack` com sha da baseline, invalidado quando a baseline avança) — fecha "agente passa batido por um status de boot". Canários **C6** (topologia do bug → AVISA + marker) e **C7** (atualizada → marker removido) reproduzem a regressão.
+
+**QA heterogêneo (autor Opus 4.8 → process-critic Sonnet via `Agent(model:sonnet)`, escada ADR-082):** R1 FAIL — Sonnet pegou 1 **MÉDIO** (o `check-repo-sync.ps1` fallback limpava o marker quando `git rev-list` falhava — `cntBase` vazio→`behindBase=0`→`Remove-Item` — violando o invariante "nunca limpar por erro de git", presente no `.py` e no `route-gate.ps1`) + 1 BAIXO (campo `session=` vazio no marker do `.ps1`). R2: MÉDIO corrigido (guarda `if($cntBase)` espelhando o padrão verificado); BAIXO documentado (omissão proposital no fallback). Bug extra de escopo PowerShell (assignment em `ForEach-Object`) pego pelo **linter** e corrigido. Evidência: `_meta/qa/v1.61.0-sync-baseline-vs-main.{json,md}`.
+
+Nomenclaturas: "branch de integração" · "baseline ortogonal" · "marker `.stale-vs-main`" · "nudge por-turno" · "ack de reconhecimento".
+Decisões permanentes: **ADR-084** Aceito (defasagem vs branch de integração; baseline agnóstica origin/HEAD; marker persistente + reconhecimento). Capability `repo-sync-boot` **estendida** (ADR-019 → ADR-084; +0 nova, régua §0).
+Próximo passo: nenhum WIP — bloco fechado. **Pendente (decisão do dono retomada):** re-avaliação BMAD (examinar CIS/brainstorming + varredura dos 13 repos da org `bmad-code-org` + registrar fontes; ADR-081 analisou 1/13 sem citar fonte) + proposta de README aditivo.
+Riscos ativos: a re-verificação por-turno do route-gate usa `git rev-list` local (sem fetch) — reflete o último fetch do boot, não o remoto vivo (aceitável: barato). Onde EDR veta `.ps1`, a dimensão 2 do `.ps1` não roda, mas o `.py` (porta definitiva) + `route-gate.sh` entregam.
+**RRC:** ADR-084 no CHANGELOG ✓ · capability estendida (PASS test_capabilities) ✓ · vitrine+README+web-bundles 1.61.0 ✓ · canário C6/C7 = regressão-guard ✓ · paridade .py↔.ps1 / .sh↔.ps1 ✓.
+RE-ORQUESTRAÇÃO: prosseguir ao merge (autorizado pelo dono); retomar re-avaliação BMAD em seguida.
+
+---
+
 ## 2026-06-16 — Release v1.60.0 (MINOR): Coaches cross-IA (web-bundles) — ferramental e determinístico (ADR-083)
 
 Aprovado e funcionando. Conclui o mapa de integração BMAD (item deferido em v1.59.0). Pedido do dono: "incluindo artefatos cross ai" + **"ferramental, não prosa, determinismo"** — entregue como pipeline gerado-e-gateado, não markdown solto. **Entregue:** `web-bundles/coaches.json` (fonte única, 6 coaches como DADO: brainstorming/product-brief/prd/prfaq/ux/market-research) + `tools/build_web_bundles.py` (builder determinístico, reusa `web_export.load_map`/`phrase`/`main_version` — sem duplicar, régua §0) → 6 `web-bundles/<id>.md` autocontidos para colar como Gem/GPT/Projeto + `tools/test_web_bundles.py` (canário FAIL-CLOSED: determinismo + drift + ghost-file + anti-JARVIS). Mesmo molde gerado+committed+canário do par `build_capabilities`/`test_capabilities`. Bump README+vitrine 1.58.1→1.60.0 (o bump ficou pendente no v1.59.0).

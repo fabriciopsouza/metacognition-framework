@@ -1,0 +1,28 @@
+{
+  "passou": true,
+  "release": "1.61.0",
+  "bloco": "v1.61.0-sync-baseline-vs-main",
+  "juncao": "PC",
+  "problemas": [],
+  "verificacoes_executadas": [
+    "test_repo_sync C1-C7 PASS (15 checks): C6 reproduz a topologia do bug (feat em dia c/ origin/feat mas atras de origin/main -> AVISA + marker), C7 (branch atualizada -> marker removido)",
+    "guarda base==upstream preserva C1-C5 identicos (mudanca cirurgica)",
+    "baseline agnostica origin/HEAD->origin/main->origin/master (ADR-020); edge sem-remoto e detached-HEAD silenciosos",
+    "paridade .py<->.ps1 e route-gate.sh<->.ps1; nudge por-turno com ack invalidado quando baseline avanca",
+    "ADR-084 no CHANGELOG (test_adr_changelog_sync 80/80) + capability repo-sync-boot ESTENDIDA (regua 0, +0 nova) (test_capabilities)",
+    "web-bundles regenerados v1.61.0 + vitrine/README bumpados (test_web_bundles + test_marketing_claims PASS)",
+    "bug de escopo PowerShell (assignment em ForEach-Object) pego pelo linter e corrigido no route-gate.ps1"
+  ],
+  "recomendacao": "aprovar_com_ressalvas",
+  "postura": {
+    "heterogeneidade": "autor=Opus 4.8 (baseline); process-critic=Sonnet via Agent(model:sonnet) — escada ADR-078/082 (autor tier-max -> critico tier distinto, anti auto-aprovacao que originou ADR-082).",
+    "rounds": 2,
+    "r1_sonnet_heterogeneo": "FAIL. 1 MEDIO + 1 BAIXO. MEDIO: check-repo-sync.ps1 (fallback SessionStart) limpava o marker quando git rev-list falhava (cntBase vazio -> behindBase=0 -> Remove-Item) — violava o invariante 'nunca limpar por erro de git' presente no .py e no route-gate.ps1. BAIXO: campo session= sempre vazio no marker do .ps1 (nao le stdin de SessionStart).",
+    "r2_opus_fix": "MEDIO corrigido: guarda if($cntBase) envolvendo a logica de behindBase no check-repo-sync.ps1, espelhando .py e route-gate.ps1. BAIXO: comentario explicitando que session= e omitido de proposito no fallback (campo informacional, sem consumidor).",
+    "canarios_estado_real": "v1.61.0: apos fixes, test_repo_sync/web_bundles/marketing_claims/capabilities/adr_changelog_sync PASS; os 3 release-closing (posture/qa_evidence/release_checkpoint) fecham com este artefato + checkpoint no history.",
+    "discovery": "N/A: bloco de correcao de bug recorrente; fonte = relato do dono em sessao real (operou 6 commits atras de main) + reincidencia do modo de falha ADR-019 (method-audit 2026-05-30). Sem requirements.md de feature.",
+    "rrc": "PASSA: ADR-084 Aceito no CHANGELOG; capability estendida; vitrine+README+web-bundles 1.61.0; .gitignore marker; canario C6/C7 e a regressao-guard que faltava.",
+    "metodo_senior": "N/A: bloco de tooling de boot sem feature de produto regulado."
+  },
+  "data": "2026-06-16T21:30:00Z"
+}

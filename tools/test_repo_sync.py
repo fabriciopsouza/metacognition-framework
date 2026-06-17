@@ -140,6 +140,31 @@ def main():
         print(("OK  " if ok2 else "FAIL") + " C5 pós: atualizou (behind=0) e preservou untracked"); fails += 0 if ok2 else 1
         ok3 = os.path.exists(os.path.join(c5, "minha-nota.txt"))
         print(("OK  " if ok3 else "FAIL") + " C5 pós: untracked local preservado"); fails += 0 if ok3 else 1
+
+        # C6 FEATURE BRANCH em dia com o PRÓPRIO upstream (origin/feat) mas ATRÁS de origin/main.
+        # É EXATAMENTE a topologia que o @{upstream} sozinho reportava "em dia" (regressão 2026-06-16,
+        # sessão operou 6 commits atrás de main numa branch de teste). ADR-084: dimensão ortogonal.
+        w6, c6 = setup_pair(os.path.join(tmp, "fb6"))
+        git(w6, "branch", "feat")                                          # feat no origin (work fica na main)
+        git(c6, "fetch", "-q")
+        git(c6, "checkout", "-q", "-b", "feat", "--track", "origin/feat")  # clone na feat, em dia c/ origin/feat
+        advance_origin(w6)                                                  # origin/main avança; feat NÃO
+        ctx = run_hook(runner, c6)
+        ok = ("ATRAS de" in ctx) and ("origin/main" in ctx)
+        print(("OK  " if ok else "FAIL") + " C6 feat-em-dia-mas-atras-de-main -> AVISA baseline (NÃO silencioso)  | ctx=" + repr(ctx[:80])); fails += 0 if ok else 1
+        marker6 = os.path.join(c6, ".claude", ".stale-vs-main")
+        ok2 = os.path.exists(marker6)
+        print(("OK  " if ok2 else "FAIL") + " C6 pós: marker .stale-vs-main escrito (route-gate repete por-turno)"); fails += 0 if ok2 else 1
+        ok3 = ("origin/feat" not in ctx)  # dimensão 1 (upstream) deve ficar calada: feat em dia c/ seu remote
+        print(("OK  " if ok3 else "FAIL") + " C6 pós: dimensão upstream silenciosa (sem ruído sobre origin/feat)"); fails += 0 if ok3 else 1
+
+        # C7 a feature branch é atualizada (incorpora origin/main) -> em dia vs baseline -> LIMPA marker, silencioso.
+        git(c6, "merge", "-q", "--no-edit", "origin/main")
+        ctx = run_hook(runner, c6)
+        ok = (ctx == "")
+        print(("OK  " if ok else "FAIL") + " C7 feat-atualizada -> silencioso (baseline em dia)  | ctx=" + repr(ctx[:60])); fails += 0 if ok else 1
+        ok2 = not os.path.exists(marker6)
+        print(("OK  " if ok2 else "FAIL") + " C7 pós: marker .stale-vs-main REMOVIDO (resolvido)"); fails += 0 if ok2 else 1
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     print("-" * 40)

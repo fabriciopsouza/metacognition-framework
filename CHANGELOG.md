@@ -15,6 +15,19 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.61.0] — 2026-06-16 — Sync de boot agora mede defasagem vs a branch de INTEGRAÇÃO (baseline ortogonal ao `@{upstream}`) + nudge persistente (ADR-084)
+
+> MINOR (correção de bug recorrente que estende mecanismo existente). Nasceu de falha em sessão real: numa feature branch, o sync de boot reportou "em dia" (vs o próprio upstream) estando **6 commits atrás de `origin/main`** — o agente operou um retrato congelado e quase recomendou um merge obsoleto. Reincidência do modo de falha do ADR-019 (method-audit 2026-05-30, "41 commits atrás de main"); o canário antigo não pegava porque exercia só a topologia *na main* (onde `@{upstream}` ≡ `origin/main`). [CONFIRMADO — canários C6/C7 PASS]
+
+### Fixed / Changed
+- **`tools/hooks/check_repo_sync.py`** + **`.claude/hooks/check-repo-sync.ps1`** (paridade): nova **dimensão 2 ORTOGONAL** — mede `HEAD..<baseline>` vs a branch de integração, independente de `@{upstream}`. Baseline **agnóstica (ADR-020)**: `origin/HEAD` → fallback `origin/main` → `origin/master`. Guarda cirúrgica `base==upstream` (na main, dimensão 1 já cobre) → C1–C5 inalterados. Não auto-pula a baseline (não se faz ff de main numa feature branch); grava marker persistente `.claude/.stale-vs-main`.
+- **`tools/hooks/route-gate.sh`** + **`route-gate.ps1`** (paridade): leem o marker e **repetem o nudge por-turno** até (a) a branch ser atualizada (re-verificação barata local → limpa marker) ou (b) o atraso ser reconhecido (`git rev-parse --short <base> > .claude/.stale-vs-main.ack`; ack invalidado quando a baseline avança). Fecha "agente passa batido por um status de boot". *Bug de escopo do PowerShell (assignment dentro de `ForEach-Object`) pego pelo linter e corrigido.*
+
+### Added
+- **`tools/test_repo_sync.py`**: canários **C6** (feature branch em dia com o próprio upstream mas atrás de `origin/main` → AVISA + marker escrito) e **C7** (branch atualizada → marker removido, silencioso) — reproduzem a topologia que falhava.
+- **ADR-084** Aceito. `capabilities.json`: `repo-sync-boot` **estendida** (ADR-019 → ADR-084; +0 capability nova — régua §0). `.gitignore`: `.claude/.stale-vs-main` + `.ack`.
+- **README.md:** Versão 1.60.0 → 1.61.0.
+
 ## [1.60.0] — 2026-06-16 — Coaches cross-IA (web-bundles): planejamento em Gemini/ChatGPT, ferramental e determinístico (ADR-083)
 
 > MINOR (conclui o mapa de integração BMAD — item deferido em v1.59.0). Pedido do dono: "incluindo artefatos cross ai" + "ferramental, não prosa, determinismo". Entregue como pipeline gerado-e-gateado (não markdown solto), no mesmo molde de `build_capabilities`/`test_capabilities`. [CONFIRMADO]
