@@ -950,7 +950,7 @@
     }
     ,{
       "id": "advanced-elicitation",
-      "title": "Elicitacao avancada: catalogo de 76 metodos (convergente #1-69 + divergente CIS #70-76) com canario de integridade fail-closed; execucao pela skill",
+      "title": "Elicitacao avancada: catalogo de 77 metodos (convergente #1-69 + divergente CIS #70-76 + tuning-loop #77) com canario de integridade fail-closed; execucao pela skill",
       "status": "PARTIAL",
       "enforcement": "fail-closed",
       "ai_owner": "claude",
