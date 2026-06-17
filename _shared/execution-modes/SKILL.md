@@ -21,6 +21,14 @@ Ponto de entrada para a **ativação/reconfirmação** de um dos 3 modos de exec
 
 Templates declarativos: [`default.json`](default.json) · [`avancado.json`](avancado.json) · [`autosuficiente.json`](autosuficiente.json).
 
+## Auto-recuperação por modo em junção FALHA (P15 · ADR-087)
+
+Quando uma junção falha (ex.: qa-critic FAIL), a ação é resolvida por **`python tools/autonomy_policy.py --mode <m> --attempt <n> --budget <b> --model <atual>`** (determinístico):
+- **`default`/`avançado` (HITL):** `escalate` na **1ª falha** — para e pede decisão humana. Nunca auto-retenta.
+- **`autosuficiente` (autônomo):** **auto-recupera** — `retry` subindo a escada de modelo (ADR-078: `haiku<sonnet<opus<fable`) no **dispatch de subagente**, até o **budget**; `escalate` ao humano só como **último passo** (budget esgotado ou topo da escada). Doutrina "escalação é o último passo, não o primeiro" (estudo do bmad-automator).
+
+Mesmo mecanismo, **dial por modo** (P15). Limite: o fallback de modelo vale no dispatch de subagente (`Agent(model=…)`), não no modelo INTERATIVO da sessão (harness_limit, ADR-078/082). O resolvedor é a parte determinística; o orquestrador executa o retry (prosa-pela-porta).
+
 ## Ratchet forward-only
 
 A sequência permitida no fluxo normal é:
