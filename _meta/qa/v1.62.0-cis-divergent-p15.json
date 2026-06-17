@@ -1,0 +1,34 @@
+{
+  "passou": true,
+  "release": "1.62.0",
+  "bloco": "v1.62.0-cis-divergent-p15",
+  "juncao": "PC",
+  "problemas": [
+    {"severidade": "MEDIO", "descricao": "P15 (§6) duplicava ~70% da doutrina da Parte A.1 (output-format) — violava SSoT/§0 no proprio ato de codificar 'nao duplicar'. CORRIGIDO: P15 enxugado para sumario + ponteiro; detalhe operacional so em A.1.", "estado": "corrigido"},
+    {"severidade": "MEDIO", "descricao": "P15/P10/P12 referenciavam ADR-085 ainda Proposto. CORRIGIDO: ADR-085 marcado Aceito + entrada CHANGELOG v1.62.0 + bump README/vitrine/web-bundles antes do fechamento.", "estado": "corrigido"},
+    {"severidade": "BAIXO", "descricao": "Mandato 'cada capacidade declara {det|prosa|fallback}' nao se verifica nos SKILL.md. CORRIGIDO: A.1 declara que o lar canonico da declaracao e o campo enforcement de capabilities.json.", "estado": "corrigido"},
+    {"severidade": "BAIXO", "descricao": "anti-JARVIS do canario do catalogo deixava passar 'placeholder' minusculo e '[descricao do metodo]' com espaco. CORRIGIDO e provado (grupo case-insensitive).", "estado": "corrigido"}
+  ],
+  "verificacoes_executadas": [
+    "test_elicitation_catalog.py PASS (novo canario fail-closed): 76 metodos, numeracao contigua/unica 1-76, 5 colunas, output_pattern nao-vazio, >=7 divergentes, secao de fase, rota DIVERGIR, anti-JARVIS (provado nao-teatro em copia temp na R2/R3)",
+    "test_capabilities.py PASS: advanced-elicitation prose->fail-closed (canario anexado); CAPABILITIES.md em sync; sem canario orfao; wire do banner debito-mecanizacao->P15/ADR-085",
+    "test_consistency_closing.py + test_adr_changelog_sync.py PASS: ADR-085 Aceito no CHANGELOG; version-claim v1.62.0 coerente",
+    "test_web_bundles.py + test_marketing_claims.py PASS: web-bundles regenerados v1.62.0; vitrine (guia/web/index.html) e README bumpados (zero stale)",
+    "AGENT-FRAMEWORK §6: numeracao de principios contigua 1-15; P15 ponteiro p/ output-format A.1 + ADR-085 (sem duplicacao apos fix R3)",
+    "HITL por modo confirmado vs _shared/execution-modes (default/avancado=prompts; autosuficiente=bypassPermissions) e ADR-005"
+  ],
+  "recomendacao": "aprovar_com_ressalvas",
+  "postura": {
+    "heterogeneidade": "autor=Opus 4.8 (baseline); process-critic=Sonnet via Agent(model:sonnet) em worktree isolado — escada ADR-078/082 (autor tier-max -> critico tier distinto, anti auto-aprovacao).",
+    "rounds": 3,
+    "r1_sonnet_heterogeneo": "INVALIDA por artefato proprio: o critico rodou 'git checkout -- methods.md' p/ reverter defeito injetado, apagando trabalho NAO-commitado e reportando FAIL falso ('#70-76 nunca existiram'). Achados validos separaveis (anti-JARVIS, INFERIDO) aproveitados. Licao: commitar antes / worktree isolado (memoria qa-critic-git-checkout-destroys-uncommitted).",
+    "r2_sonnet_worktree": "PASS aprovar_com_ressalvas. Pegou 2 buracos anti-JARVIS (corrigidos+provados), fidelidade CIS [INFERIDO], distincao #76<->#9. Anti-rename ok (so append #70-76). Canario provado nao-teatro.",
+    "r3_sonnet_worktree": "PASS aprovar_com_ressalvas (codificacao de nucleo). Pegou duplicacao SSoT P15<->A.1 (MEDIO) + ADR Proposto governando §6 (MEDIO) + auto-aplicacao (BAIXO). Todos corrigidos neste fechamento.",
+    "canarios_estado_real": "54 PASS / 1 SKIP / 0 FAIL apos este artefato + checkpoint history + bumps de versao; os 3 release-closing (posture/qa_evidence/release_checkpoint) fecham com este artefato.",
+    "discovery": "N/A de feature regulada: bloco nasce de pendencia retomada pelo dono (re-avaliacao BMAD; ADR-081 analisou 1/13 sem fonte). Sweep org-wide 13/13 com fonte (gh api) substitui requirements.md.",
+    "rrc": "PASSA: ADR-085 Aceito no CHANGELOG; capability advanced-elicitation ESTENDIDA (prose->fail-closed, +0 nova); README+vitrine+web-bundles 1.62.0; canario novo = regressao-guard; suite 0 FAIL.",
+    "metodo_senior": "N/A: bloco de doutrina de framework + recast de tecnica, sem produto de dominio regulado.",
+    "ressalvas_residuais": "Teste forma-vs-conteudo (P12) ainda prosa no check_core_agnostic.py — mecanizacao e o ADR pre-requisito declarado de (B). P15 hook-mediado: sob EDR depende de disciplina (esta sessao expos: qa-evidence foi pulado ate o dono cobrar na auditoria)."
+  },
+  "data": "2026-06-17T12:00:00Z"
+}

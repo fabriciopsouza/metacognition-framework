@@ -140,7 +140,7 @@ def main():
                   if c.get("enforcement") in ENFORCE_WEAK)
     if debt:
         print(f"[debito-mecanizacao] {len(debt)} capacidade(s) ainda nao fail-closed/physical "
-              f"(prosa->mecanismo pendente):")
+              f"(prosa->mecanismo pendente — P15/ADR-085: prosa so pela porta, senao e divida):")
         for cid, enf in debt:
             print(f"  · {cid} — {enf}")
 

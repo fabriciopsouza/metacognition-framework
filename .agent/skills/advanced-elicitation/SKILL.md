@@ -1,9 +1,9 @@
 ---
 name: advanced-elicitation
 description: "Aprofundar qualquer artefato com métodos estruturados de pensamento. Ativar quando o discovery ou o dono pede crítica mais profunda, refinamento de spec, exploração de alternativas, validação de premissas, ou nomeia um método (ex: pre-mortem, steelman, first principles, source triangulation). NÃO ativar para QA de código (isso é edge-case-hunter + qa-critic) nem para exploração de repositório (isso é explorer)."
-version: 1.0.0
-source: "padrão bmad-advanced-elicitation (BMAD-METHOD v6.8.0) — extraído e adaptado para metacognition; ADR-081"
-last_review: 2026-06-16
+version: 1.1.0
+source: "padrão bmad-advanced-elicitation (BMAD-METHOD v6.8.0) — extraído e adaptado; ADR-081. Fase divergente (#70–#76) do bmad-module-creative-intelligence-suite (CIS) — ADR-085."
+last_review: 2026-06-17
 role_order: null
 consumes:
   - "artefato a aprofundar (spec, PRD, decisão, análise, rascunho)"
@@ -41,7 +41,9 @@ Quando invocado pelo **dono diretamente**: aprofunda qualquer artefato em contex
 ### Passo 2 — Selecionar 5 métodos e apresentar menu
 
 Selecionar 5 métodos do companion que melhor se encaixam no contexto:
-- Equilibrar: ao menos 1 método de risco/premissas + 1 colaborativo/multi-perspectiva + 1 criativo/estrutural
+- **Determinar a FASE primeiro (eixo de seleção do companion):** objetivo = **GERAR** (artefato vazio/raso, poucas opções) → priorizar fase **divergente** (#70–#76 + #24/#35/#37/#38/#39/#40/#41). Objetivo = **REFINAR/VALIDAR** (artefato já existe) → priorizar fase **convergente** (o restante). Em dúvida/trabalho longo: **divergir primeiro, convergir depois** — não misturar geração e crítica na mesma rodada.
+- **FALLBACK determinismo → parada-e-orientação (padrão BMAD, via porta do ADR-085):** se o objetivo/fase for **ambíguo** ou o artefato não der base para decidir a fase, **NÃO adivinhar** — parar, apresentar o menu equilibrado e pedir ao dono que declare o objetivo (gerar × refinar). Determinismo onde decide; prosa-com-parada onde o julgamento é irredutível. *(A execução de um método sobre o conteúdo é, por natureza, julgamento — é a parte prosa legítima desta skill; o catálogo + canário são a parte determinística.)*
+- Dentro da fase convergente, equilibrar: ao menos 1 método de risco/premissas + 1 colaborativo/multi-perspectiva + 1 criativo/estrutural
 - Priorizar métodos cujo `output_pattern` se encaixa no tipo de artefato
 
 Apresentar no formato:

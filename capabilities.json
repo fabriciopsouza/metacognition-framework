@@ -950,19 +950,21 @@
     }
     ,{
       "id": "advanced-elicitation",
-      "title": "Elicitacao avancada com 69 metodos estruturados (companion menu interativo)",
+      "title": "Elicitacao avancada: catalogo de 76 metodos (convergente #1-69 + divergente CIS #70-76) com canario de integridade fail-closed; execucao pela skill",
       "status": "PARTIAL",
-      "enforcement": "prose",
+      "enforcement": "fail-closed",
       "ai_owner": "claude",
       "mechanism": ".agent/skills/advanced-elicitation/SKILL.md",
-      "test": null,
+      "test": "tools/test_elicitation_catalog.py",
       "adr": "docs/adr/081-integracao-bmad-elicitation-edge-case-party-readiness.md",
       "cross_ai": false,
       "tags": [
         "elicitation",
         "discovery",
         "methods",
-        "bmad-integration"
+        "bmad-integration",
+        "divergente",
+        "canary"
       ]
     }
     ,{

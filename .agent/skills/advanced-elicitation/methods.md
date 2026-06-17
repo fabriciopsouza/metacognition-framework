@@ -2,7 +2,8 @@
 
 > Companion do `advanced-elicitation/SKILL.md` (ADR-003 / ADR-081).
 > Carregar sob demanda — não em toda ativação da skill.
-> Fonte original: `bmad-advanced-elicitation/methods.csv` (BMAD-METHOD v6.8.0). Adaptado para metacognition.
+> Fonte original (#1–#69, fase convergente): `bmad-advanced-elicitation/methods.csv` (BMAD-METHOD v6.8.0). Adaptado para metacognition.
+> Fonte (#70–#76, fase divergente): `bmad-module-creative-intelligence-suite` (CIS), `docs/explanation/brainstorming-techniques.md` — ADR-085 (forma agnóstica → núcleo). **Confiança:** descrições/output_pattern são [INFERIDO] do resumo de técnicas do CIS (fonte primária de Carson não lida integralmente); o resumo lista 28 de 36 técnicas — as 8 restantes são [DESCONHECIDO] e não foram importadas.
 > **Nota de nomenclatura:** nomes dos métodos mantidos em inglês (nomes próprios de técnicas com uso estabelecido na literatura). Restante do framework segue português conforme glossário.
 
 ## Como usar este catálogo
@@ -87,13 +88,32 @@
 | 67 | technical | Security Audit Personas | Hacker + defensor + auditor examinam sistema a partir de diferentes modelos de ameaça — revisão de segurança abrangente de múltiplos ângulos | vulnerabilities → defenses → compliance |
 | 68 | technical | Performance Profiler Panel | Especialista em banco + especialista em frontend + engenheiro DevOps diagnosticam lentidão — encontra gargalos em toda a pilha | symptoms → analysis → optimizations |
 | 69 | technical | Boundary & Edge Case Sweep | Testar sistematicamente extremos, zeros, nulls, máximos e incompatibilidades de tipo — captura as falhas que o pensamento happy-path sempre perde. **Complementa o edge-case-hunter do metacognition.** | inputs → boundaries → edge cases → failures found |
+| 70 | divergente | Worst Possible Idea | Gerar deliberadamente as PIORES ideias possíveis e então inverter cada uma — destrava grupo travado removendo o medo de errar; a inversão de uma péssima ideia revela uma viável. Distinto do #31 (Inversion analítica): aqui a geração é o produto | problema → piores ideias → inverter → ideias viáveis |
+| 71 | divergente | 100 Ideas | Forçar QUANTIDADE sob tempo (ex.: 100 ideias em 20 min) — a pressão de volume esgota o óbvio e empurra ao território não-óbvio; quantidade antes de qualidade, triagem depois | meta de volume → geração rápida → triagem posterior |
+| 72 | divergente | Exaggeration | Ampliar um aspecto a proporções absurdas (10×, 1000×, infinito) — distorção de escala revela suposições e abre soluções que a escala "normal" esconde | aspecto → ampliar ao absurdo → insight → reduzir ao viável |
+| 73 | divergente | Incubation | Afastar-se deliberadamente do problema após carregamento intenso — delega ao processamento não-consciente; retomar depois com captura imediata do que emergiu. Técnica de processo (temporal), não de conteúdo | imersão → afastamento → retomada → captura |
+| 74 | divergente | Stream of Consciousness | Gerar sem parar e sem editar por período fixo — suspende o crítico interno que poda ideias cedo demais; separa geração de avaliação | tempo fixo → escrita contínua sem filtro → mineração posterior |
+| 75 | divergente | Future Press Release | Escrever o anúncio do sucesso futuro como se já tivesse acontecido (data, manchete, resultado) — força concretude sobre o estado-alvo e revela o que precisa ser verdade. Distinto do #55 (Hindsight retrospectivo) e do #37 (What If hipotético): aqui o alvo é gerar a visão de sucesso concreta | data futura → manchete de sucesso → detalhes → requisitos implicados |
+| 76 | divergente | Brainwriting | Ideação silenciosa e paralela antes de qualquer discussão, depois construir sobre as contribuições — evita ancoragem e dominância do primeiro/mais-alto. Distinto do #9 (Stakeholder Round Table, debate verbal): aqui a geração é silenciosa e precede a discussão. Combina com party-mode | rodada silenciosa → trocar → construir → convergir |
 
 ---
+
+## Fase: divergente × convergente (eixo de seleção)
+
+O catálogo cobre duas fases ortogonais do pensamento — selecionar pela **fase certa** importa tanto quanto pelo método:
+
+- **DIVERGENTE (gerar):** produzir muitas opções do zero, suspendendo o julgamento. Usar quando o artefato está **vazio ou raso** (poucas alternativas, pouca matéria-prima). Métodos: **#70–#76** (novos, CIS) + os criativos já existentes **#24, #35, #37, #38, #39, #40, #41**.
+- **CONVERGENTE (refinar/validar):** estressar, criticar e selecionar sobre material **que já existe**. Usar quando há artefato a aprofundar. Métodos: **todo o restante** (#1–#23, #25–#34, #36, #42–#69).
+
+**Regra de seleção por objetivo (determinística):** se o objetivo é **GERAR** (artefato vazio/poucas opções) → priorizar fase divergente. Se é **REFINAR/VALIDAR** (artefato existe) → priorizar fase convergente. Em dúvida ou trabalho longo: **divergir primeiro, convergir depois** (não misturar geração e crítica na mesma rodada — é o ponto de #74 Stream of Consciousness).
+
+> **Não integrados do CIS (rejeição documentada, régua §0 — ADR-085):** *Dream Capture* e *Guided Imagery* — baixo rigor, não-mecanizáveis, output não-auditável; ficam de fora até haver caso que prove ganho. *Anti-Problems* foi absorvido por #70 (Worst Possible Idea); *Forced Connections* por #38/#40; *Round Robin/Brainwalking* (logística de grupo) por party-mode.
 
 ## Seleção rápida por objetivo
 
 | Objetivo | Métodos recomendados |
 |---|---|
+| **Gerar ideias do zero (DIVERGIR)** | #71 (100 Ideas) · #70 (Worst Possible Idea) · #72 (Exaggeration) · #38 (Random Input) · #74 (Stream of Consciousness) |
 | Validar premissas de um plano | #62 (Assumption Audit) · #57 (Pre-mortem) · #63 (Cascading Failure) · #30 (Second-Order) · #34 (Steelmanning) |
 | Explorar decisão difícil/controversa | #11 (Debate Club) · #21 (Red Team/Blue Team) · #1 (Tree of Thoughts) · #4 (Self-Consistency) · #44 (Reframe) |
 | Aprofundar spec/requirements | #54 (Source Triangulation) · #52 (Thesis Defense) · #7 (Chain-of-Thought) · #26 (Socratic) · #43 (Abstraction Laddering) |
