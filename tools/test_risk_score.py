@@ -48,11 +48,12 @@ def main():
     if achieved != [1, 2, 3, 4, 6, 9]:
         fails.append(f"scores possíveis {achieved} != [1,2,3,4,6,9] (matriz torta)")
 
-    # (c) fail-closed: prob/impacto inválidos levantam ValueError
-    for p, i in [(0, 1), (4, 1), (1, 0), (1, 4), (-1, 2), (2, 99)]:
+    # (c) fail-closed: prob/impacto inválidos levantam ValueError — inclui não-inteiros
+    # (1.0 ∈ (1,2,3) é True em Python; True==1) — type-guard estrito deve rejeitar.
+    for p, i in [(0, 1), (4, 1), (1, 0), (1, 4), (-1, 2), (2, 99), (1.0, 2), (2, 3.0), (True, 1), (1, False)]:
         try:
             rs.score_item(p, i)
-            fails.append(f"NÃO falhou-closed para prob={p},impact={i} (aceitou fora de 1–3)")
+            fails.append(f"NÃO falhou-closed para prob={p!r},impact={i!r}")
         except ValueError:
             pass
     # item sem campos
@@ -69,6 +70,12 @@ def main():
     res2, agg2 = rs.evaluate([{"prob": 1, "impact": 2}, {"prob": 2, "impact": 1}])
     if agg2 != "NONE":
         fails.append(f"agregado esperado NONE (só scores 2), veio {agg2}")
+    if rs.aggregate_gate([]) != "NONE":
+        fails.append(f"agregado de conjunto VAZIO esperado NONE, veio {rs.aggregate_gate([])}")
+    # mix com ADVISORY+CONCERNS (sem FAIL) -> worst=CONCERNS
+    _, agg3 = rs.evaluate([{"prob": 2, "impact": 2}, {"prob": 2, "impact": 3}, {"prob": 1, "impact": 1}])
+    if agg3 != "CONCERNS":
+        fails.append(f"agregado esperado CONCERNS (max=6, sem 9), veio {agg3}")
 
     # (e) determinismo
     if rs.evaluate([{"prob": 2, "impact": 3}])[0] != rs.evaluate([{"prob": 2, "impact": 3}])[0]:

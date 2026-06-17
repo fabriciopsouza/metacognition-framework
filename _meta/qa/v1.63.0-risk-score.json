@@ -1,0 +1,31 @@
+{
+  "passou": true,
+  "release": "1.63.0",
+  "bloco": "v1.63.0-risk-score",
+  "juncao": "PC",
+  "problemas": [
+    {"severidade": "BAIXO", "descricao": "score_item aceitava float/bool silenciosamente (1.0 in (1,2,3)==True; True==1). CORRIGIDO: type-guard estrito (type is int).", "estado": "corrigido"},
+    {"severidade": "BAIXO", "descricao": "comentarios de faixa ('6-8','4-5') implicavam scores 5/7/8 possiveis (sao impossiveis como produto). CORRIGIDO: comentario esclarece {1,2,3,4,6,9}.", "estado": "corrigido"},
+    {"severidade": "BAIXO", "descricao": "canario nao assertava aggregate_gate([])==NONE explicitamente. CORRIGIDO: + assert vazio + mix CONCERNS.", "estado": "corrigido"}
+  ],
+  "verificacoes_executadas": [
+    "test_risk_score.py PASS: tabela-verdade EXAUSTIVA dos 9 combos (prob,impact)->{score,gate,tier}; scores=={1,2,3,4,6,9} (5/7/8 impossiveis); fail-closed (range/tipo/CLI); agregacao worst-case (incl. vazio=NONE); determinismo",
+    "canario provado NAO-TEATRO pelo critico: mutacao do gate (6->ADVISORY) e do tier (P0 >=6 -> >=7) em copia temp -> canario FAIL exit 1",
+    "fail-closed confirmado: prob 0/4/-1, impact -1, str, None, 1.0, True, item sem campos, --items [], JSON invalido -> todos erro/exit 1",
+    "P12: risk_score.py sem categoria de dominio hardcoded (cat e input livre); check_core_agnostic.py PASS no .py e no high-stakes-gate; a 'dependencia do linter' do ADR-085 verificada FALSA (linter denylist passa o mecanismo)",
+    "capability risk-gate PROVIDES com mechanism+test existentes (test_capabilities PASS); wire high-stakes-gate e referencia (nao duplica)",
+    "test_capabilities + consistency_closing + adr_changelog_sync PASS: ADR-086 Aceito no CHANGELOG; version-claim 1.63.0; CAPABILITIES.md em sync (66 capacidades)"
+  ],
+  "recomendacao": "aprovar_com_ressalvas",
+  "postura": {
+    "heterogeneidade": "autor=Opus 4.8; process-critic=Sonnet via Agent(model:sonnet) em worktree isolado (ADR-078/082) — conserto da licao R1/v1.62.0 (git checkout destruiu uncommitted).",
+    "rounds": 1,
+    "r1_sonnet_worktree": "PASS aprovar_com_ressalvas. Canario nao-teatro provado por mutacao. 3 BAIXO (type-guard float/bool, comentarios de faixa, cobertura agregacao vazia) — todos corrigidos neste fechamento.",
+    "canarios_estado_real": "55 PASS / 1 SKIP / 0 FAIL (56 canarios; +test_risk_score). Os 3 release-closing fecham com este artefato + checkpoint + bumps.",
+    "discovery": "N/A de feature regulada: recast (B) de tecnica BMAD (TEA) sob P15, decisao do dono em modo autonomo.",
+    "rrc": "PASSA: ADR-086 Aceito no CHANGELOG; capability risk-gate nova; README+vitrine+web-bundles 1.63.0; canario novo = guard; suite 0 FAIL.",
+    "metodo_senior": "N/A: bloco de tooling/forma agnostica.",
+    "ressalvas_residuais": "A estimativa de prob/impacto por item e julgamento humano na ENTRADA (a porta do P15 — o tool mecaniza calculo->gate, nao a estimativa). (C) tuning-loop e (H) automator->modo-autonomo seguem como blocos futuros."
+  },
+  "data": "2026-06-17T15:30:00Z"
+}

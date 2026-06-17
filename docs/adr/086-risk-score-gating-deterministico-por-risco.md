@@ -1,6 +1,6 @@
 # ADR 086 — Gating determinístico por risco (`risk_score`): recast (B) do TEA/BMAD sob P15
 
-- Status: **Proposto** (2026-06-17 — aguarda gate qa-critic heterogêneo) · Decisores: dono ("siga em modo autônomo") + squad
+- Status: **Aceito** (2026-06-17 — gate: qa-critic heterogêneo Sonnet em worktree isolado, PASS *aprovar_com_ressalvas*; canário provado não-teatro; 3 ressalvas BAIXO corrigidas) · Decisores: dono ("siga em modo autônomo") + squad
 - Tipo: **adição que mecaniza prosa** (P15). Régua §0 (ADR-007): adição de tool, mas satisfaz a cláusula (c) — *destrava decisão hoje implícita/subjetiva* ("quanto de QA/rigor gastar") tornando-a mecanismo determinístico + integra (não duplica) com gates existentes. +1 capability `risk-gate`. Override declarado.
 - Relaciona: **ADR-085** (recast (B); P15/P12), ADR-007 (§0), ADR-011/074 (QA bicelular / qa-evidence), ADR-022 (mission/high-stakes), ADR-010 (agnosticismo)
 

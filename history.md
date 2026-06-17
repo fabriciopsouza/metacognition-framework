@@ -9,6 +9,23 @@
 
 ---
 
+## 2026-06-17 — Release v1.63.0 (MINOR): Gating determinístico por risco (`risk_score`, recast B do ADR-085) sob P15 (ADR-086)
+
+Aprovado e funcionando. **Modo autônomo** (dono: "finalize o que já fizemos, siga em modo autônomo demais direções"). **Finalize:** PR #91 (v1.62.0) mergeado via `--admin` após remover o required-check de GHA morto da branch protection (dono: "não estamos com github actions" — o gate real é a suíte de canários local, não GHA). **Entregue (B):** `tools/risk_score.py` — gating determinístico por risco (recast TEA/BMAD sob P15): `risco = prob × impacto` → gate (9=FAIL/6=CONCERNS/4=ADVISORY/1–3=NONE) + tier P0–P3 (disjunto, desambigua faixas sobrepostas do TEA). FORMA agnóstica no núcleo; categorias = input/blueprint (P12), não hardcoded. Canário `test_risk_score.py` (tabela-verdade exaustiva 9 combos; scores=={1,2,3,4,6,9}; fail-closed; agregação; determinismo). +1 capability `risk-gate` (fail-closed). Wire em `high-stakes-gate`.
+
+**Correção de premissa (auto-pega):** o ADR-085 declarou que (B) **dependia** de evoluir o linter (forma-vs-conteúdo). **FALSO** — afirmei por reflexo sem ler o linter; ele é denylist-based e o mecanismo de risco **passa** (verificado). ADR-085 emendado; **ADR-086-linter não construído** (trave inútil evitada). Mesmo modo de falha "encolher/inventar dependência" que o dono vem corrigindo, agora pego por mim antes de gastar.
+
+**QA heterogêneo (Opus → Sonnet, worktree isolado, ADR-078):** PASS aprovar_com_ressalvas; canário provado não-teatro (mutações da matriz → FAIL); 3 ressalvas BAIXO corrigidas (type-guard de não-inteiro [1.0∈(1,2,3) é True; bool==int], comentários de faixa, cobertura de agregação vazia). Artefato: `_meta/qa/v1.63.0-risk-score.json`.
+
+Nomenclaturas: "risk_score" · "gate (FAIL/CONCERNS/ADVISORY/NONE)" · "tier P0–P3" · "score possível {1,2,3,4,6,9}".
+Decisões permanentes: **ADR-086 Aceito**. Capability `risk-gate` nova (PROVIDES, fail-closed; +1 — mecaniza prosa, §0 cláusula c).
+Próximo passo: recasts restantes — **(C) tuning-loop** (técnica de veículo dados → catálogo) · **(H) estudar automator p/ modo autônomo**. (B') oracle de cobertura 4-tier = avaliar sobreposição com qa-evidence.
+Riscos ativos: a *estimativa* de prob/impacto por item ainda é julgamento humano na ENTRADA (a porta do P15 — o tool mecaniza cálculo→gate, não a estimativa; declarado).
+**RRC:** ADR-086 no CHANGELOG ✓ · capability nova (test_capabilities PASS) ✓ · README+vitrine+web-bundles 1.63.0 ✓ · canário novo = guard ✓ · suite 55 PASS/0 FAIL ✓.
+RE-ORQUESTRAÇÃO: prosseguir a (C)/(H) sob demanda (modo autônomo).
+
+---
+
 ## 2026-06-17 — Release v1.62.0 (MINOR): Princípio de núcleo P15 (determinismo-primeiro + porta) + re-avaliação BMAD org-wide por recast (ADR-085)
 
 Aprovado e funcionando. **Nasceu de pendência retomada pelo dono** (re-avaliação BMAD: ADR-081 analisou 1/13 repos sem citar fonte) e escalou para correção de princípio, cada nível corrigindo um "encolhimento de escopo" meu: rejeição-por-reflexo → modo-único (HITL) → skill-única. **Entregue (A):** fase divergente de elicitação — +7 métodos (#70–76, recast do `bmad-module-creative-intelligence-suite`/CIS) no catálogo `advanced-elicitation` + eixo de seleção por fase + fallback parada-e-orientação + canário fail-closed `tools/test_elicitation_catalog.py` (capacidade saiu de `prose` → `fail-closed`). **Codificação de núcleo:** §6 **P15** (determinismo-primeiro; prosa só pela PORTA; HITL por modo) + emendas **P10** (adoção de padrão externo: presumir competência, provar bug p/ rejeitar, §0 sobrevive) e **P12** (veículo≠especificidade; forma-vs-conteúdo, mantém agnosticismo). Lar operacional `_shared/output-format` A.1; wire no placar débito-mecanização. Sweep BMAD 13/13 com fonte (`gh api`), fechando a falha de auditoria do ADR-081.

@@ -15,6 +15,20 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.63.0] — 2026-06-17 — Gating determinístico por risco (`risk_score`, recast B do ADR-085) sob P15 (ADR-086)
+
+[CONSOLIDADO] · [CONFIRMADO]
+
+### Adicionado
+- **`tools/risk_score.py`** — gating determinístico por risco (recast (B) do TEA/BMAD sob P15): `risco = probabilidade × impacto` → `gate` (9=FAIL · 6=CONCERNS · 4=ADVISORY · 1–3=NONE) + `tier` de cobertura (P0–P3, disjunto). FORMA agnóstica no núcleo; **categorias de risco NÃO hardcoded** (CONTEÚDO = input/blueprint, P12). Fail-closed (prob/impacto não-inteiro ou fora de 1–3 ⇒ erro). Mecaniza o "quanto de QA/rigor" que era julgamento implícito.
+- **`tools/test_risk_score.py`** — canário fail-closed: tabela-verdade EXAUSTIVA dos 9 combos; scores possíveis == {1,2,3,4,6,9} (5/7/8 impossíveis); fail-closed (range/tipo/CLI); agregação worst-case; determinismo. +1 capability `risk-gate` (PROVIDES, fail-closed).
+- Wire em `_shared/high-stakes-gate`: priorizar profundidade de validação por score (referência, não duplica mecanismo).
+
+### Decisões
+- **ADR-086 Aceito** — `risk_score` como FORMA agnóstica no núcleo. **Correção registrada:** a "dependência do linter forma-vs-conteúdo" que o ADR-085 declarou como pré-requisito de (B) era **FALSA** (afirmada sem ler o linter; ele é denylist-based e já permite a forma) — ADR-085 emendado; ADR-086-linter **não construído** (trave inútil evitada, régua §0).
+
+QA: qa-critic heterogêneo (Sonnet, worktree isolado) — PASS *aprovar_com_ressalvas*; canário provado não-teatro (mutações da matriz pegas); 3 ressalvas BAIXO corrigidas (type-guard de não-inteiro, comentários de faixa, cobertura de agregação vazia). Suite: 55 PASS / 1 SKIP / 0 FAIL.
+
 ## [1.62.0] — 2026-06-17 — Princípio de núcleo P15 (determinismo-primeiro + porta) + re-avaliação BMAD org-wide por recast (ADR-085)
 
 [CONSOLIDADO] · [CONFIRMADO]

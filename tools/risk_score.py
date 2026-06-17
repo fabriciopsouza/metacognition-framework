@@ -32,12 +32,14 @@ GATE_ORDER = {"NONE": 0, "ADVISORY": 1, "CONCERNS": 2, "FAIL": 3}
 
 
 def _gate(score):
+    # scores possíveis = {1,2,3,4,6,9} (5/7/8 impossíveis como produto de {1,2,3}²);
+    # os `>=` cobrem faixas para robustez, mas só estes 6 valores ocorrem de fato.
     if score >= 9:
-        return "FAIL"        # 9 (faixa 9): bloqueia release sem mitigação
+        return "FAIL"        # 9: bloqueia release sem mitigação
     if score >= 6:
-        return "CONCERNS"    # 6 (faixa 6–8): plano de mitigação documentado exigido
+        return "CONCERNS"    # 6: plano de mitigação documentado exigido
     if score >= 4:
-        return "ADVISORY"    # 4 (faixa 4–5): recomendado, sem gate
+        return "ADVISORY"    # 4: recomendado, sem gate
     return "NONE"            # 1–3: sem ação
 
 
@@ -53,7 +55,11 @@ def _tier(score):
 
 
 def score_item(prob, impact):
-    """Núcleo determinístico. Levanta ValueError (fail-closed) se fora de 1–3."""
+    """Núcleo determinístico. Levanta ValueError (fail-closed) se não-inteiro ou fora de 1–3."""
+    # type-guard: `type is int` rejeita float (1.0 ∈ (1,2,3) é True) E bool (True==1) — fail-closed estrito.
+    if type(prob) is not int or type(impact) is not int:
+        raise ValueError(f"prob/impact devem ser INTEIROS; recebido prob={prob!r} ({type(prob).__name__}) "
+                         f"impact={impact!r} ({type(impact).__name__})")
     if prob not in VALID or impact not in VALID:
         raise ValueError(f"prob/impact devem estar em {VALID}; recebido prob={prob!r} impact={impact!r}")
     score = prob * impact
