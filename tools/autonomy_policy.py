@@ -37,8 +37,9 @@ def next_action(mode, attempt, budget, current_model):
         raise ValueError(f"modo desconhecido: {mode!r} (use {sorted(HITL_MODES | AUTONOMOUS_MODES)})")
     if current_model not in CAP_ORDER:
         raise ValueError(f"modelo desconhecido: {current_model!r} (use {CAP_ORDER})")
-    if not (isinstance(attempt, int) and isinstance(budget, int)) or attempt < 0 or budget < 0:
-        raise ValueError(f"attempt/budget devem ser inteiros >= 0; recebido attempt={attempt!r} budget={budget!r}")
+    # `type is int` rejeita bool (True==1 / isinstance(True,int)==True) e float — fail-closed estrito.
+    if type(attempt) is not int or type(budget) is not int or attempt < 0 or budget < 0:
+        raise ValueError(f"attempt/budget devem ser INTEIROS >= 0; recebido attempt={attempt!r} budget={budget!r}")
 
     # MODOS HITL: escala na primeira falha — NUNCA auto-retenta (preserva HITL).
     if mode in HITL_MODES:
@@ -50,9 +51,15 @@ def next_action(mode, attempt, budget, current_model):
     if attempt < budget and idx < len(CAP_ORDER) - 1:
         return {"action": "retry", "next_model": CAP_ORDER[idx + 1],
                 "reason": f"auto-recuperação {attempt + 1}/{budget}: sobe {current_model}->{CAP_ORDER[idx + 1]}"}
-    reason = "budget esgotado" if attempt >= budget else f"já no topo da escada ({current_model})"
+    # escala por último — pode haver MAIS de um motivo simultâneo (budget esgotado E topo da escada);
+    # lista todos os aplicáveis (auditabilidade completa — ressalva qa-critic ADR-087).
+    causes = []
+    if attempt >= budget:
+        causes.append("budget esgotado")
+    if idx >= len(CAP_ORDER) - 1:
+        causes.append(f"topo da escada ({current_model})")
     return {"action": "escalate", "next_model": None,
-            "reason": f"escalar ao humano ({reason}) — último passo, não o primeiro"}
+            "reason": f"escalar ao humano ({' + '.join(causes)}) — último passo, não o primeiro"}
 
 
 def main(argv):

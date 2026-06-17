@@ -9,6 +9,21 @@
 
 ---
 
+## 2026-06-17 — Release v1.66.0 (MINOR): Modo autônomo — retry-budget com fallback antes de escalar (recast H, ADR-087)
+
+Aprovado. Dono ratificou (H) com "prossiga". **Entregue:** `tools/autonomy_policy.py` — dial retry/escalate DETERMINÍSTICO por modo (recast do `bmad-automator` sob P15): HITL (default/avançado) escala na 1ª falha; `autosuficiente` auto-recupera subindo a escada de modelo (haiku<sonnet<opus<fable) até budget, escala por ÚLTIMO. Canário `test_autonomy_policy.py` com **invariante de segurança "HITL nunca retenta"**. +1 capability `autonomy-retry-policy`. Wire em `_shared/execution-modes`. H2 (artefato) já existe (qa-evidence); H3 (stuck) DEFERIDO (liveness = harness_limit); H4 (tmux) não adotado.
+
+**Coordenação:** ADR-087 estava em PR #94 (Proposto, atrás da main) — consolidei (ratificado + implementado) nesta branch off main v1.65.0; **#94 fechado como superseded**. **QA heterogêneo (Sonnet, worktree):** invariante HITL exaustivo (7200 casos, 0 violação); canário não-teatro; 3 ressalvas BAIXO corrigidas (guard de bool via `type is int`, reason combinado att>=budget E topo, invariante por budget).
+
+Nomenclaturas: "retry-budget" · "escalação por último" · "dial por modo" · "HITL nunca retenta".
+Decisões permanentes: **ADR-087 Aceito**. Capability `autonomy-retry-policy` nova. Encerra os recasts do ADR-085 (A/B/C/H entregues; D e B' deferidos).
+Próximo passo: nenhum recast pendente. Backlog trigger-gated. (D) WDS e (B') oracle de cobertura seguem deferidos com motivo.
+Riscos ativos: o fallback de modelo só vale no dispatch de subagente (modelo interativo = harness_limit); a *execução* do retry pelo orquestrador é prosa-pela-porta (resolvedor é a parte determinística).
+**RRC:** ADR-087 no CHANGELOG ✓ · capability nova (test_capabilities PASS) ✓ · README+vitrine+web-bundles 1.66.0 ✓ · canário (invariante HITL) = guard ✓ · suite 57 PASS/0 FAIL ✓.
+RE-ORQUESTRAÇÃO: re-avaliação BMAD completa (A/B/C/H); aguardar trigger ou pedido do dono.
+
+---
+
 ## 2026-06-17 — Release v1.65.0 (MINOR): A segurança do GHA SEM GHA — gate de merge por canários locais (ADR-088)
 
 Aprovado. **Nasceu da pergunta do dono** ("conseguimos atender a segurança do GHA sem ele? não quebrar o que funciona; melhorar com o que agrega") após eu remover o required-check morto do GHA da branch protection (para destravar merges; a CI de GHA estava vermelha na main pré-existente — "não usamos github actions"). **Insight:** a "segurança do GHA" e a suíte de canários são a MESMA coisa (o `ci.yml` rodava `run_canaries.py`); o GHA era só um driver morto. **Entregue:** `tools/post_canary_status.py` (BYO-CI) — roda a suíte e posta commit-status `canarios-local` verde SÓ com 0 FAIL; **branch protection re-exige esse context** → restaura o enforcement de merge no nível do GitHub, driver local. Canário `test_post_canary_status.py` (parse_repo ancorado, decide_state, dry-run sem-rede via monkeypatch). +1 capability `byo-ci-gate`.

@@ -1,0 +1,32 @@
+{
+  "passou": true,
+  "release": "1.66.0",
+  "bloco": "v1.66.0-autonomy-retry-policy",
+  "juncao": "PC",
+  "problemas": [
+    {"severidade": "BAIXO", "descricao": "reason parcial quando attempt>=budget E model=fable (ambos valem) — so mostrava um motivo. CORRIGIDO: lista todos os motivos aplicaveis (' + ').", "estado": "corrigido"},
+    {"severidade": "BAIXO", "descricao": "bool aceito como attempt/budget (isinstance(True,int)==True). CORRIGIDO: guard 'type is int' (rejeita bool e float); caso no canario.", "estado": "corrigido"},
+    {"severidade": "BAIXO", "descricao": "invariante HITL do canario usava budget fixo=9. CORRIGIDO: itera budgets (0,1,2,9) — agora 2 modos x 4 modelos x 3 att x 4 budget.", "estado": "corrigido"}
+  ],
+  "verificacoes_executadas": [
+    "INVARIANTE DE SEGURANCA 'HITL nunca retenta' verificado EXAUSTIVAMENTE pelo critico (7200 casos: default/avancado x 4 modelos x 30 att x 30 budget) -> zero violacoes; impl retorna escalate ANTES de qualquer condicional de attempt/budget",
+    "escalacao-por-ultimo: autosuficiente retenta subindo (haiku->sonnet->opus->fable) ate budget; fable (topo) com budget>0 -> escalate (nao retry com next_model invalido); att>=budget -> escalate",
+    "canario nao-teatro: inverter regra (HITL->retry) em copia -> canario pega 21 falhas exit 1",
+    "fail-closed: modo/modelo desconhecido, attempt/budget negativo, float 1.0, bool, string vazia, None -> ValueError",
+    "escada CAP_ORDER=[haiku,sonnet,opus,fable] coerente com model-policy.json tier max (ordem inversa confirma fable>opus>sonnet>haiku); retry SOBE",
+    "ADR-087 honesto: harness_limit (fallback so no dispatch de subagente, nao modelo interativo); H3 deferido declarado; §0 criterio (c)",
+    "capability autonomy-retry-policy PROVIDES com mechanism+test (test_capabilities PASS); 68 capacidades; CAPABILITIES.md em sync"
+  ],
+  "recomendacao": "aprovar_com_ressalvas",
+  "postura": {
+    "heterogeneidade": "autor=Opus 4.8; process-critic=Sonnet via Agent(model:sonnet) em worktree isolado (ADR-078). Bloco governa semantica de HITL (quando escalar ao humano) -> qa-critic heterogeneo real.",
+    "rounds": 1,
+    "r1_sonnet_worktree": "PASS aprovar_com_ressalvas. Invariante HITL exaustivo (7200, 0 violacao). Canario nao-teatro. 3 BAIXO (reason combinado, guard de bool, invariante por budget) — todos corrigidos.",
+    "canarios_estado_real": "57 PASS / 1 SKIP / 0 FAIL (58 canarios; +test_autonomy_policy). Release-closing fecham com este artefato.",
+    "discovery": "N/A: recast (H) de doutrina BMAD sob P15, ratificado pelo dono em modo autonomo.",
+    "rrc": "PASSA: ADR-087 Aceito no CHANGELOG; capability nova; README+vitrine+web-bundles 1.66.0; canario (invariante HITL) = guard; suite 0 FAIL.",
+    "metodo_senior": "N/A.",
+    "ressalvas_residuais": "Fallback de modelo so no dispatch de subagente (modelo interativo = harness_limit). H3 (stuck) deferido. A EXECUCAO do retry pelo orquestrador e prosa-pela-porta (resolvedor = parte deterministica)."
+  },
+  "data": "2026-06-17T18:00:00Z"
+}

@@ -15,6 +15,19 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.66.0] — 2026-06-17 — Modo autônomo: retry-budget com fallback antes de escalar (recast H, ADR-087)
+
+[CONSOLIDADO] · [CONFIRMADO]
+
+### Adicionado
+- **`tools/autonomy_policy.py`** — dial retry/escalate **determinístico por MODO** (recast (H) do `bmad-automator` sob P15, ratificado pelo dono): modos **HITL** (`default`/`avançado`) escalam ao humano na 1ª falha; modo **autônomo** (`autosuficiente`) **auto-recupera** — retenta subindo a escada de modelo (`haiku<sonnet<opus<fable`, ADR-078) até o budget e **escala por último** ("escalação é o último passo, não o primeiro"). Fail-closed (modo/modelo/budget inválido). Aplica-se ao dispatch de subagente (modelo interativo = limite do harness, declarado).
+- **`tools/test_autonomy_policy.py`** — canário fail-closed: tabela-verdade + **invariante de segurança "HITL nunca retenta"** (exaustivo) + "autônomo não escala cedo" + fail-closed. +1 capability `autonomy-retry-policy` (PROVIDES, fail-closed). Wire em `_shared/execution-modes`.
+
+### Decisões
+- **ADR-087 Aceito** (recast H). H2 (verificação por artefato) já existe (qa-evidence); **H3 (detector de "stuck") DEFERIDO** (liveness = limite do harness); H4 (tmux/zero-gate) **não adotado** — adotada a doutrina, não a implementação.
+
+QA: qa-critic heterogêneo (Sonnet, worktree) — invariante HITL verificado **exaustivamente (7200 casos, zero violações)**; canário provado não-teatro; 3 ressalvas BAIXO corrigidas (guard de bool, reason combinado, invariante por budget). Suite: 57 PASS / 1 SKIP / 0 FAIL.
+
 ## [1.65.0] — 2026-06-17 — A segurança do GitHub Actions SEM GHA: gate de merge por canários locais (ADR-088)
 
 [CONSOLIDADO] · [CONFIRMADO]

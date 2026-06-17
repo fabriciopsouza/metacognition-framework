@@ -50,12 +50,14 @@ def main():
         if "reason" not in r or not r["reason"]:
             fails.append(f"({mode},...): sem 'reason'")
 
-    # invariante crítico: NENHUM modo HITL pode retornar 'retry' (jamais auto-retenta)
+    # invariante crítico (exaustivo em budgets também): NENHUM modo HITL retorna 'retry' — jamais
+    # auto-retenta, independente de attempt/budget/model.
     for mode in ("default", "avancado"):
         for model in ap.CAP_ORDER:
             for att in (0, 1, 5):
-                if ap.next_action(mode, att, 9, model)["action"] != "escalate":
-                    fails.append(f"VIOLAÇÃO HITL: {mode} retornou retry (att={att},{model})")
+                for bud in (0, 1, 2, 9):
+                    if ap.next_action(mode, att, bud, model)["action"] != "escalate":
+                        fails.append(f"VIOLAÇÃO HITL: {mode} retornou retry (att={att},bud={bud},{model})")
 
     # invariante: autônomo NUNCA escala enquanto há budget E há degrau acima (escalação é último passo)
     for att in range(0, 2):
@@ -67,7 +69,8 @@ def main():
     # (c) fail-closed
     bad = [("bogus", 0, 2, "sonnet"), ("autosuficiente", 0, 2, "gpt"),
            ("autosuficiente", -1, 2, "sonnet"), ("autosuficiente", 0, -1, "sonnet"),
-           ("autosuficiente", 1.0, 2, "sonnet"), ("autosuficiente", 0, 2, "")]
+           ("autosuficiente", 1.0, 2, "sonnet"), ("autosuficiente", 0, 2, ""),
+           ("autosuficiente", True, 2, "sonnet"), ("autosuficiente", 0, False, "sonnet")]
     for args in bad:
         try:
             ap.next_action(*args)
