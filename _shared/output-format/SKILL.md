@@ -36,6 +36,12 @@ Anti over-formatting: sem ASCII boxes; emojis só com função semântica
 (⚠️ alerta, 🛑 stop, 📍 checkpoint); listas só com ≥3 itens paralelos;
 tabelas só quando comparam algo de fato.
 
+## Parte A.1 — Determinismo-primeiro × prosa-pela-porta (P15 — ADR-085)
+
+Antes de entregar QUALQUER capacidade que **decide ou produz artefato**: o mecanismo é **determinístico** (tool + canário fail-closed) sempre que alcançável. Prosa/template/parada-e-orientação é fallback **só pela PORTA**: (a) o julgamento é **irredutível** E (b) está provado que a ferramenta **não captura**. Fora disso, prosa = débito (`enforcement: prose` no `capabilities.json`), não solução.
+
+Declarar, por capacidade: `{parte determinística | parte prosa-pela-porta | fallback stop-and-guide}`. A **parada-e-orientação** (parar o fluxo e pedir a decisão ao humano em vez de adivinhar) é o fallback canônico — **determinística na forma** (é um gate), prosa só no conteúdo da decisão. Não é só de uma skill: vale para todo skill/tool/gate (núcleo uma vez, referenciado — nunca copiado).
+
 ## Parte B — Checklist único de validação (antes de entregar)
 
 **Técnico**
