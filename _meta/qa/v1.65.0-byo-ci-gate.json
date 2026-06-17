@@ -1,0 +1,34 @@
+{
+  "passou": true,
+  "release": "1.65.0",
+  "bloco": "v1.65.0-byo-ci-gate",
+  "juncao": "PC",
+  "problemas": [
+    {"severidade": "MEDIO", "descricao": "parse_repo usava re.search nao-ancorado -> host falso 'notgithub.com/github.com/owner/repo' passava como GitHub (seguranca). CORRIGIDO: re.match ancorado em esquema+host; caso adicionado ao canario.", "estado": "corrigido"},
+    {"severidade": "INFORMACIONAL", "descricao": "--sha permitia certificar sha != HEAD com resultado do HEAD (dissociacao). REMOVIDO: sempre posta no HEAD (= o que foi testado).", "estado": "corrigido"},
+    {"severidade": "ALTO-evitado", "descricao": "canario v1 rodava a suite inteira -> RECURSAO (run_canaries->test_post_canary_status->run_canaries->explosao). Pego em runtime (task morta); reescrito com monkeypatch in-process. Suite verificada termina rapido (sem recursao).", "estado": "corrigido"}
+  ],
+  "verificacoes_executadas": [
+    "RECURSAO ausente: run_canaries.py termina rapido, 56 PASS/1 SKIP/0 FAIL (57 canarios); test_post_canary_status usa monkeypatch in-process, nao subprocess da suite",
+    "decide_state: 0->success; 1/2/3/255/-1->failure (nenhum verde-com-vermelho) — testado",
+    "parse_repo: https/ssh/.git validos OK; gitlab/vazio/not-url/host-falso-com-github.com-no-path -> ValueError (fail-closed) — provado",
+    "--dry-run nao toca rede (monkeypatch de run_canaries; sem chamada gh); exit reflete o state",
+    "canario nao-teatro: sabotar decide_state (sempre success) -> canario FAIL exit 1 (qa-critic provou)",
+    "POST real (leitura): gh api repos/<repo>/statuses/<sha> com context+sha corretos; falha do gh -> exit 1 (nao engole)",
+    "capability byo-ci-gate PROVIDES com mechanism+test; ADR-088 coerente com ci.yml (rodava run_canaries.py); limites declarados (1 OS, auto-atestacao)",
+    "branch protection re-armada exigindo context 'canarios-local' (restaura enforcement de merge)"
+  ],
+  "recomendacao": "aprovar_com_ressalvas",
+  "postura": {
+    "heterogeneidade": "autor=Opus 4.8; process-critic=Sonnet via Agent(model:sonnet) em worktree isolado (ADR-078). Infra de SEGURANCA (gate de merge) -> qa-critic heterogeneo real, nao auto-revisao.",
+    "rounds": 1,
+    "r1_sonnet_worktree": "REPROVAR/corrigir -> pegou bug MEDIO de seguranca (parse_repo nao-ancorado) + lacuna do canario + INFORMACIONAL (--sha). RECURSAO verificada ausente (PASS). decide_state/dry-run/teatro/POST/capability/ADR PASS. Apos fixes: PASS.",
+    "fixes_pos_critico": "regex ancorada (re.match esquema+host); caso host-falso no canario; --sha removido. Re-suite 56/0 FAIL.",
+    "canarios_estado_real": "56 PASS / 1 SKIP / 0 FAIL. Release-closing fecham com este artefato.",
+    "discovery": "N/A: correcao de regressao de seguranca (remocao do required-check de GHA) + recast da seguranca sem GHA, pedido do dono.",
+    "rrc": "PASSA: ADR-088 Aceito no CHANGELOG; capability nova; README+vitrine+web-bundles 1.65.0; canario recursao-safe; branch protection re-armada.",
+    "metodo_senior": "N/A.",
+    "ressalvas_residuais": "Trade-off vs GHA declarado (1 OS + auto-atestacao). Gap conhecido (qa-critic R3 anterior): test_capabilities nao cruza title-count vs catalogo — fora de escopo."
+  },
+  "data": "2026-06-17T17:00:00Z"
+}

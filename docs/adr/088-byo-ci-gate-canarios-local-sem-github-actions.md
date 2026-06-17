@@ -1,6 +1,6 @@
 # ADR 088 — A segurança do GHA SEM GHA: gate de merge dirigido pelos canários LOCAIS (BYO-CI)
 
-- Status: **Proposto** (2026-06-17 — aguarda gate qa-critic heterogêneo; será promovido no release) · Decisores: dono ("não estamos com github actions"; "atender a segurança sem ele"; "não quebrar o que funciona; melhorar com o que agrega") + squad
+- Status: **Aceito** (2026-06-17 — gate: qa-critic heterogêneo Sonnet em worktree PASS após corrigir `parse_repo` não-ancorado; recursão verificada ausente; canário do tool PASS) · Decisores: dono ("não estamos com github actions"; "atender a segurança sem ele"; "não quebrar o que funciona; melhorar com o que agrega") + squad
 - Tipo: **correção de regressão de segurança + adição que mecaniza** (P15). Régua §0 (ADR-007): satisfaz (c) — *destrava o enforcement de merge que ficou inerte* ao remover o required-check morto do GHA; reusa a suíte de canários existente (não duplica gate). +1 capability `byo-ci-gate`.
 - Relaciona: ADR-040 (run_canaries cross-platform), ADR-019/060 (boot/sync), P15 (determinismo-primeiro), ADR-074/077 (qa-evidence), [[github-actions-not-the-gate]]
 

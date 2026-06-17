@@ -40,11 +40,15 @@ def main():
                 fails.append(f"parse_repo({url!r}) = {got!r}, esperado {expected!r}")
         except ValueError as e:
             fails.append(f"parse_repo({url!r}) levantou erro inesperado: {e}")
-    # fail-closed: remote não-GitHub
-    for bad in ["https://gitlab.com/o/r", "not a url", ""]:
+    # fail-closed: remote não-GitHub — inclui host FALSO com 'github.com' no PATH (qa-critic ADR-088:
+    # re.search não-ancorado aceitava isso; deve levantar ValueError com a regex ancorada).
+    for bad in ["https://gitlab.com/o/r", "not a url", "",
+                "https://notgithub.com/github.com/owner/repo",
+                "https://evil.com/?github.com/owner/repo",
+                "github.com.attacker.net/owner/repo"]:
         try:
-            pcs.parse_repo(bad)
-            fails.append(f"parse_repo NÃO falhou-closed para remote não-GitHub: {bad!r}")
+            got = pcs.parse_repo(bad)
+            fails.append(f"parse_repo NÃO falhou-closed para remote não-GitHub: {bad!r} -> {got!r}")
         except ValueError:
             pass
 

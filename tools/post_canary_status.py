@@ -18,7 +18,9 @@ status anterior (strict mode), exigindo novo run verde.
 Uso:
     python tools/post_canary_status.py            # roda canários + posta status no HEAD
     python tools/post_canary_status.py --dry-run  # mostra o payload, NÃO posta (sem rede)
-    python tools/post_canary_status.py --sha <sha># posta para um sha específico
+
+Sempre posta no HEAD (= o que foi de fato testado). NÃO há `--sha` arbitrário (evita certificar
+um sha diferente do que rodou — dissociação apontada pelo qa-critic, ADR-088).
 
 Exit 0 se canários PASS (status success postado/simulado); 1 se FAIL (status failure) ou erro.
 Requer `gh` autenticado (exceto --dry-run).
@@ -34,8 +36,10 @@ CONTEXT = "canarios-local"
 
 
 def parse_repo(remote_url):
-    """github.com/owner/repo(.git)? -> 'owner/repo'. Fail-closed (ValueError) se não casar."""
-    m = re.search(r"github\.com[:/]([^/]+/[^/]+?)(?:\.git)?/?$", remote_url.strip())
+    """github.com/owner/repo(.git)? -> 'owner/repo'. Fail-closed (ValueError) se não casar.
+    ANCORADO no início (re.match + esquema/host) — 'github.com' no PATH (ex.: notgithub.com/github.com/o/r)
+    NÃO conta como GitHub (qa-critic ADR-088: re.search aceitava host falso)."""
+    m = re.match(r"(?:https?://github\.com/|git@github\.com:)([^/]+/[^/]+?)(?:\.git)?/?$", remote_url.strip())
     if not m:
         raise ValueError(f"remote não-GitHub ou ilegível: {remote_url!r}")
     return m.group(1)
@@ -62,7 +66,6 @@ def run_canaries():
 def main(argv):
     ap = argparse.ArgumentParser(description="Posta commit-status a partir do run de canários local (ADR-088).")
     ap.add_argument("--dry-run", action="store_true", help="mostra o payload, não posta (sem rede)")
-    ap.add_argument("--sha", help="sha alvo (default: HEAD)")
     args = ap.parse_args(argv[1:])
 
     try:
@@ -70,7 +73,7 @@ def main(argv):
     except ValueError as e:
         print(f"ERRO (fail-closed): {e}", file=sys.stderr)
         return 1
-    sha = args.sha or _git("rev-parse", "HEAD")
+    sha = _git("rev-parse", "HEAD")
     if not sha:
         print("ERRO (fail-closed): não consegui resolver o SHA", file=sys.stderr)
         return 1
