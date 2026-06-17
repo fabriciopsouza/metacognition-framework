@@ -146,7 +146,7 @@ Decidido **Leitura 1** + diagnóstico: o ADR-081 não errou por *excesso* de agn
 - **(A) CIS divergente** = forma pura → estende `methods.md` (núcleo), sem conteúdo de domínio.
 - **(C) tuning-loop** = forma (modelar→medir-vs-alvo→iterar) núcleo; os *alvos/red-flags* numéricos são conteúdo → app.
 
-**Custo declarado (auto-crítica):** a linha forma/conteúdo é por vezes borrada, e o `check_core_agnostic.py` hoje barra por *sentinela de domínio* — precisará **evoluir para distinguir forma-permitida de conteúdo-barrado**. Isso é um **ADR próprio pequeno** (backlog), pré-requisito para (B) não ser barrado falso-positivo pelo linter ao colocar o mecanismo de risco no núcleo.
+**Custo declarado (auto-crítica) — CORRIGIDO (2026-06-17, ADR-086):** eu **declarei** que o `check_core_agnostic.py` precisaria evoluir (forma-vs-conteúdo) como **pré-requisito de (B)**. Essa dependência era **FALSA** — afirmada por reflexo sem ler o linter (o mesmo modo de falha que este ADR corrige). O linter é **denylist-based** (só normas de domínio: ANVISA/ANP/FDA/LGPD/ISO…); o mecanismo de risco **passa** (`check_core_agnostic.py <arquivo>` = PASS). Ele **já** permite forma e barra conteúdo por construção. **(B) estava desbloqueado** e foi entregue em **ADR-086 sem tocar o linter**. Ganho líquido: trave inútil não construída.
 
 ## Alternativas consideradas
 

@@ -23,7 +23,11 @@ Quando o `## Escopo declarado pelo discovery` do projeto afirma **qualquer** dos
 
 ## O que o gate exige
 1. **Validação por risco** (não por volume de documento) — foco em mitigar o que
-   pode dar errado, com critérios binários no `validation.md`.
+   pode dar errado, com critérios binários no `validation.md`. **Mecanismo determinístico (P15):**
+   priorizar a profundidade de validação por `python tools/risk_score.py --items <json>`
+   (`risco = prob × impacto` → `gate` FAIL/CONCERNS/ADVISORY + `tier` P0–P3; ADR-086). O score é
+   FORMA agnóstica; as *categorias* e o que conta como impacto alto são CONTEÚDO do domínio
+   (input/blueprint, não hardcoded — P12). `gate_agregado=FAIL` ⇒ mitigação obrigatória antes do hand-off.
 2. **Audit trail** — quem, o quê, quando, com base em qual fonte/versão (`traceability`).
 3. **Logs imutáveis** quando o contexto exigir (`observability`).
 4. **Human-in-the-loop (HITL)** — hand-off **bloqueado** até revisão humana sobre
