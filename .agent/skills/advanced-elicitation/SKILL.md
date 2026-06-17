@@ -42,6 +42,7 @@ Quando invocado pelo **dono diretamente**: aprofunda qualquer artefato em contex
 
 Selecionar 5 métodos do companion que melhor se encaixam no contexto:
 - **Determinar a FASE primeiro (eixo de seleção do companion):** objetivo = **GERAR** (artefato vazio/raso, poucas opções) → priorizar fase **divergente** (#70–#76 + #24/#35/#37/#38/#39/#40/#41). Objetivo = **REFINAR/VALIDAR** (artefato já existe) → priorizar fase **convergente** (o restante). Em dúvida/trabalho longo: **divergir primeiro, convergir depois** — não misturar geração e crítica na mesma rodada.
+- **FALLBACK determinismo → parada-e-orientação (padrão BMAD, via porta do ADR-085):** se o objetivo/fase for **ambíguo** ou o artefato não der base para decidir a fase, **NÃO adivinhar** — parar, apresentar o menu equilibrado e pedir ao dono que declare o objetivo (gerar × refinar). Determinismo onde decide; prosa-com-parada onde o julgamento é irredutível. *(A execução de um método sobre o conteúdo é, por natureza, julgamento — é a parte prosa legítima desta skill; o catálogo + canário são a parte determinística.)*
 - Dentro da fase convergente, equilibrar: ao menos 1 método de risco/premissas + 1 colaborativo/multi-perspectiva + 1 criativo/estrutural
 - Priorizar métodos cujo `output_pattern` se encaixa no tipo de artefato
 
