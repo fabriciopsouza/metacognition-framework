@@ -968,6 +968,24 @@
       ]
     }
     ,{
+      "id": "risk-gate",
+      "title": "Gating deterministico por risco (prob x impacto -> gate + tier P0-P3); recast TEA/BMAD sob P15, forma agnostica (categorias = blueprint)",
+      "status": "PROVIDES",
+      "enforcement": "fail-closed",
+      "ai_owner": "claude",
+      "mechanism": "tools/risk_score.py",
+      "test": "tools/test_risk_score.py",
+      "adr": "docs/adr/086-risk-score-gating-deterministico-por-risco.md",
+      "cross_ai": false,
+      "tags": [
+        "risk",
+        "gate",
+        "deterministic",
+        "bmad-integration",
+        "canary"
+      ]
+    }
+    ,{
       "id": "edge-case-hunter",
       "title": "Percurso mecanico exaustivo de paths nao tratados — output JSON verificavel",
       "status": "PARTIAL",
