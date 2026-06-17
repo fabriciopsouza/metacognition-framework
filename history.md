@@ -9,6 +9,20 @@
 
 ---
 
+## 2026-06-17 — Release v1.64.0 (MINOR): Parameter Tuning Loop no catálogo (recast C do ADR-085)
+
+Aprovado. **Modo autônomo** (continuação de "siga demais direções"). **Entregue (C):** método #77 `Parameter Tuning Loop` no catálogo `advanced-elicitation` — calibração de parâmetros contra alvos com red-flags (modelar→isolar/junto/escala→medir-vs-alvo→iterar); veículo dados/análise, forma agnóstica → núcleo; recast do balance/certification testing do `bmad-module-game-dev-studio`. [INFERIDO] da fonte. Catálogo: 77 métodos; canário `test_elicitation_catalog.py` PASS (contígua 1–77).
+
+**QA proporcional (§0):** auto-revisão adversarial — linha única de catálogo, fielmente fonteada, sob ADR-085(C) já Aceito, validada pelo canário estrutural fail-closed. Subagente worktree heterogêneo seria desproporcional para 1 linha (declarado). Artefato: `_meta/qa/v1.64.0-tuning-loop.json`.
+
+Decisões permanentes: nenhum ADR novo — recast (C) sob ADR-085 (Aceito). Capability `advanced-elicitation` estendida (77 métodos; +0 nova, régua §0).
+Próximo passo: **(H) estudar `bmad-automator` p/ melhorar nosso modo autônomo** (`autosuficiente`) — bloco de pesquisa, recomendo foco dedicado. (B') oracle de cobertura 4-tier = avaliar sobreposição com qa-evidence (deferido).
+Riscos ativos: nenhum novo.
+**RRC:** catálogo 77 (canário PASS) · README+vitrine+web-bundles 1.64.0 · CHANGELOG 1.64.0 · suite 55 PASS/0 FAIL.
+RE-ORQUESTRAÇÃO: (H) é a direção restante de maior valor; recomendo bloco focado.
+
+---
+
 ## 2026-06-17 — Release v1.63.0 (MINOR): Gating determinístico por risco (`risk_score`, recast B do ADR-085) sob P15 (ADR-086)
 
 Aprovado e funcionando. **Modo autônomo** (dono: "finalize o que já fizemos, siga em modo autônomo demais direções"). **Finalize:** PR #91 (v1.62.0) mergeado via `--admin` após remover o required-check de GHA morto da branch protection (dono: "não estamos com github actions" — o gate real é a suíte de canários local, não GHA). **Entregue (B):** `tools/risk_score.py` — gating determinístico por risco (recast TEA/BMAD sob P15): `risco = prob × impacto` → gate (9=FAIL/6=CONCERNS/4=ADVISORY/1–3=NONE) + tier P0–P3 (disjunto, desambigua faixas sobrepostas do TEA). FORMA agnóstica no núcleo; categorias = input/blueprint (P12), não hardcoded. Canário `test_risk_score.py` (tabela-verdade exaustiva 9 combos; scores=={1,2,3,4,6,9}; fail-closed; agregação; determinismo). +1 capability `risk-gate` (fail-closed). Wire em `high-stakes-gate`.

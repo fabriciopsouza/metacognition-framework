@@ -1,0 +1,27 @@
+{
+  "passou": true,
+  "release": "1.64.0",
+  "bloco": "v1.64.0-tuning-loop",
+  "juncao": "PC",
+  "problemas": [],
+  "verificacoes_executadas": [
+    "test_elicitation_catalog.py PASS: 77 metodos, numeracao contigua 1-77, 5 colunas, output_pattern, fase divergente presente, anti-JARVIS",
+    "fidelidade a fonte: #77 transcreve o metodo generalizavel de balance-testing.md (modelar->isolar/junto/escala->medir-vs-alvo-com-red-flags->iterar); marcado [INFERIDO]",
+    "sobreposicao §0: #77 (calibracao empirica de parametros) NAO duplica metodos existentes #1-#76 (verificado contra Pre-mortem/Reverse-Engineering/Self-Consistency); distinto",
+    "P12: sem categoria/norma de dominio hardcoded; veiculo dados como forma agnostica",
+    "title da capability advanced-elicitation atualizado 76->77 (sem mentir na contagem); CAPABILITIES.md em sync",
+    "suite 55 PASS / 1 SKIP / 0 FAIL; consistency/adr_changelog/web_bundles/marketing PASS apos bump 1.64.0"
+  ],
+  "recomendacao": "aprovar",
+  "postura": {
+    "heterogeneidade": "PROPORCIONAL (§0): auto-revisao adversarial pelo autor (Opus), NAO subagente worktree. Justificativa declarada: linha UNICA de catalogo, fielmente fonteada de doc ja lido, sob ADR-085(C) JA ACEITO (decisao ja gateada), validada pelo canario estrutural fail-closed que JA existe. Spawn de qa-critic heterogeneo para 1 linha = desproporcional (regua §0 aplicada ao proprio processo de QA). Blocos substantivos (A/B + codificacao de nucleo) tiveram qa-critic heterogeneo em worktree.",
+    "rounds": 1,
+    "auto_revisao": "fiel a fonte (balance-testing.md); sem sobreposicao §0; [INFERIDO] marcado; categoria 'core' adequada; numeracao contigua; canario PASS.",
+    "canarios_estado_real": "55 PASS / 1 SKIP / 0 FAIL. Release-closing fecham com este artefato.",
+    "discovery": "N/A: recast (C) de tecnica sob ADR-085 Aceito, modo autonomo.",
+    "rrc": "PASSA: sem ADR novo (sob 085); capability estendida; README+vitrine+web-bundles 1.64.0; canario PASS.",
+    "metodo_senior": "N/A.",
+    "ressalvas_residuais": "Gap conhecido (qa-critic R3, fora de escopo): test_capabilities nao cruza a contagem do title com o catalogo real — sincronizado manualmente (77). (H) automator->modo-autonomo e a direcao restante de maior valor (bloco focado recomendado)."
+  },
+  "data": "2026-06-17T16:00:00Z"
+}

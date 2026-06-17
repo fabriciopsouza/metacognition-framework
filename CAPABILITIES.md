@@ -20,7 +20,7 @@
 ## Nucleo (local ao repo-mae)
 
 - ✅ `adr-changelog-sync` — Canario doc-sync: toda ADR Aceito deve estar no CHANGELOG (mecaniza falha recorrente)
-- 🟡 `advanced-elicitation` — Elicitacao avancada: catalogo de 76 metodos (convergente #1-69 + divergente CIS #70-76) com canario de integridade fail-closed; execucao pela skill
+- 🟡 `advanced-elicitation` — Elicitacao avancada: catalogo de 77 metodos (convergente #1-69 + divergente CIS #70-76 + tuning-loop #77) com canario de integridade fail-closed; execucao pela skill
 - ✅ `agnostic-core-linter` — Linter fail-closed: nucleo nao carrega norma de dominio (agnosticismo)
 - ✅ `author-tier-gate` — Gate de tier-autor da sessao: detecta modelo ativo (transcript) + alerta LOUD se autor < baseline (ADR-082)
 - ✅ `boot-self-check` — Self-check de boot consolidado (sync+agnosticismo+boot-scan+versao) com prova checavel

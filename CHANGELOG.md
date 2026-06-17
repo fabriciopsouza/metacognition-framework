@@ -15,6 +15,15 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.64.0] — 2026-06-17 — Parameter Tuning Loop no catálogo de elicitação (recast C do ADR-085)
+
+[CONSOLIDADO] · [CONFIRMADO]
+
+### Adicionado
+- **Método #77 `Parameter Tuning Loop`** no catálogo `advanced-elicitation` (recast (C) do ADR-085): calibração de parâmetros contra alvos quantificados (modelar → testar isolado/junto/escala → medir vs alvo com red-flags → iterar). Veículo dados/análise, forma agnóstica → núcleo. Recast do balance/certification testing do `bmad-module-game-dev-studio`. [INFERIDO] da fonte. Catálogo: 77 métodos (canário `test_elicitation_catalog.py` PASS — numeração contígua 1–77).
+
+QA: auto-revisão adversarial **proporcional** (§0) — linha única de catálogo fielmente fonteada sob ADR-085(C) já Aceito, validada pelo canário estrutural fail-closed; subagente worktree seria desproporcional (declarado em `_meta/qa/v1.64.0-tuning-loop.json`). Suite: 55 PASS / 1 SKIP / 0 FAIL.
+
 ## [1.63.0] — 2026-06-17 — Gating determinístico por risco (`risk_score`, recast B do ADR-085) sob P15 (ADR-086)
 
 [CONSOLIDADO] · [CONFIRMADO]
