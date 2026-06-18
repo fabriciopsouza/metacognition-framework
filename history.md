@@ -9,6 +9,15 @@
 
 ---
 
+## 2026-06-18 — Feedback do dono (Proposto): elicitation-first VINCULANTE — autosuficiente bypassou o gate (ADR-089)
+
+Não-release; **feedback de processo** do dono durante uma aplicação (vibra-kb-rag, indicador AIVI). **Falha observada:** o agente em autosuficiente implementou sobre um indicador regulado **inferindo** em vez de **elicitar proativamente**, corrigindo reativamente em 5+ rodadas (CABET fabricado; Variação Interna×Manual; linha×acumulado; ANP884 mandatório×referência; unidade %; faltou memória de cálculo). **Diagnóstico crítico (anti-reinvenção ADR-072):** a capacidade de elicitação **JÁ EXISTE** (ADR-081 advanced-elicitation; discovery método-sênior ADR-009/010; readiness-gate; anti-silêncio ADR-055) — a falha é de **ENFORCEMENT**: autosuficiente pulou o gate. **ADR-089 (Proposto):** antes de J2/codar indicador/métrica/regra de domínio em risco alto, elicitar+confirmar uma "ficha de insumo" (fontes · método/fórmula com inclusões-EXCLUSÕES · limites+natureza mandatório×referência · granularidade/janela/unidade · exemplo-oráculo · memória de cálculo) — mesmo em autosuficiente. Mecanismo = emenda a gates existentes (route-gate/risk-score ADR-086, execution-modes ADR-087, discovery), sem arquivo novo.
+
+**Aprendizado (firewall):** "assertividade relativa" (perto, mas errado) em indicador regulado **é falha**, não sucesso parcial — só vale *elicitar-tudo-e-garantir*. Autosuficiente ≠ pular elicitação; é elicitar completo e *depois* executar. Postura crítica é default, não opcional. (Dono: "qd te desenhei, meu objetivo é que sem provocação vc perguntasse fontes/premissas/limites/método/exemplos… vc deixou de ser crítico.")
+Próximo passo: qa-critic adversarial no ADR-089 + ratificação do dono → então implementar o gate (canário determinístico) + emendar route-gate/execution-modes/discovery.
+
+---
+
 ## 2026-06-17 — Release v1.66.0 (MINOR): Modo autônomo — retry-budget com fallback antes de escalar (recast H, ADR-087)
 
 Aprovado. Dono ratificou (H) com "prossiga". **Entregue:** `tools/autonomy_policy.py` — dial retry/escalate DETERMINÍSTICO por modo (recast do `bmad-automator` sob P15): HITL (default/avançado) escala na 1ª falha; `autosuficiente` auto-recupera subindo a escada de modelo (haiku<sonnet<opus<fable) até budget, escala por ÚLTIMO. Canário `test_autonomy_policy.py` com **invariante de segurança "HITL nunca retenta"**. +1 capability `autonomy-retry-policy`. Wire em `_shared/execution-modes`. H2 (artefato) já existe (qa-evidence); H3 (stuck) DEFERIDO (liveness = harness_limit); H4 (tmux) não adotado.
