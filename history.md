@@ -9,6 +9,13 @@
 
 ---
 
+## 2026-06-18 — Feedback do dono (Proposto): BMAD project-onboarding + wayfinding (ADR-090)
+
+Não-release; **pedido de capacidade** do dono: greenfield/brownfield, `generate-project-context`, `document-project`, e direção do usuário pelo framework ("andar da carruagem"). **Anti-reinvenção (ADR-072, file-first):** o framework já tem `explorer` (brownfield read-only), `discovery`+submodo, `handoff.py`+`CAPABILITIES.md`+`knowledge_catalog.py` (artefatos de contexto), `framework_onboarding.py` (ADR-067), router `AGENT-FRAMEWORK.md`. **Gaps reais:** greenfield×brownfield implícito (não fork explícito); artefatos de contexto espalhados (sem 1-shot); sem documentador padronizado de projeto existente; wayfinding agent-side (falta guia user-facing). **ADR-090 (Proposto):** (A) fork explícito greenfield×brownfield no discovery; (B) `generate-project-context` por **composição** (briefing+glossário+handoff+capabilities+explorer); (C) `document-project` = explorer+docops; (D) guia user-facing de direção. Nenhum tool pesado novo — compõe o existente.
+Próximo passo: qa-critic + ratificação; mapear 1:1 os comandos BMAD adicionais que o dono quer (lista aberta).
+
+---
+
 ## 2026-06-17 — Release v1.66.0 (MINOR): Modo autônomo — retry-budget com fallback antes de escalar (recast H, ADR-087)
 
 Aprovado. Dono ratificou (H) com "prossiga". **Entregue:** `tools/autonomy_policy.py` — dial retry/escalate DETERMINÍSTICO por modo (recast do `bmad-automator` sob P15): HITL (default/avançado) escala na 1ª falha; `autosuficiente` auto-recupera subindo a escada de modelo (haiku<sonnet<opus<fable) até budget, escala por ÚLTIMO. Canário `test_autonomy_policy.py` com **invariante de segurança "HITL nunca retenta"**. +1 capability `autonomy-retry-policy`. Wire em `_shared/execution-modes`. H2 (artefato) já existe (qa-evidence); H3 (stuck) DEFERIDO (liveness = harness_limit); H4 (tmux) não adotado.
