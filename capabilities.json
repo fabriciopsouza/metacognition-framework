@@ -928,7 +928,7 @@
         "cross-ai",
         "web-bundles",
         "planning",
-        "bmad-integration"
+        "external-integration"
       ]
     }
     ,{
@@ -969,7 +969,7 @@
     }
     ,{
       "id": "risk-gate",
-      "title": "Gating deterministico por risco (prob x impacto -> gate + tier P0-P3); recast TEA/BMAD sob P15, forma agnostica (categorias = blueprint)",
+      "title": "Gating deterministico por risco (prob x impacto -> gate + tier P0-P3); recast externo (ADR-086) sob P15, forma agnostica (categorias = blueprint)",
       "status": "PROVIDES",
       "enforcement": "fail-closed",
       "ai_owner": "claude",
@@ -1030,7 +1030,7 @@
       "ai_owner": "claude",
       "mechanism": "tools/test_core_no_vendor.py",
       "test": "tools/test_core_no_vendor.py",
-      "adr": "docs/adr/010-framework-agnostico-discovery-declara-escopo.md",
+      "adr": "docs/adr/091-nucleo-product-free-proveniencia-nos-adrs.md",
       "cross_ai": false,
       "tags": [
         "agnosticism",
@@ -1053,7 +1053,7 @@
         "qa",
         "edge-cases",
         "code-review",
-        "bmad-integration"
+        "external-integration"
       ]
     }
     ,{
@@ -1070,7 +1070,7 @@
         "exploration",
         "personas",
         "brainstorming",
-        "bmad-integration"
+        "external-integration"
       ]
     }
     ,{
@@ -1087,7 +1087,7 @@
         "qa",
         "gate",
         "pre-dev",
-        "bmad-integration"
+        "external-integration"
       ]
     }
   ],

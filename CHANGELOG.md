@@ -15,6 +15,21 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.67.0] — 2026-06-19 — Núcleo product-free: nomes de produto externo fora do operativo, proveniência só nos ADRs (ADR-091)
+
+[CONSOLIDADO] · [CONFIRMADO]
+
+### Mudado
+- **Limpeza de agnosticismo (constraint do dono "este repo não pode ter produtos"):** removidos nomes de produto externo (`bmad-*`, `creative-intelligence-suite`, `game-dev-studio`) do **conteúdo operativo do núcleo** — `methods.md` (descrição #77, seção de fase, linhas de Fonte), `execution-modes`, `source:` de 5 skills (advanced-elicitation, edge-case-hunter, party-mode, readiness-gate), tags do `capabilities.json` (`bmad-integration`→`external-integration`). Proveniência completa preservada nos ADRs 081/085 (que são `docs/` e podem citar externo).
+
+### Adicionado
+- **`tools/test_core_no_vendor.py`** (fail-closed) — regression-guard de pureza do núcleo: varre `_shared/`, `.agent/skills|rules|workflows`, roteador e `capabilities.json` por nome de produto/vendor; **exclui referências a arquivo de ADR** (proveniência legítima). Sentinela `vendor-ok:allow`. +1 capability `core-no-vendor`. Complementa `check_core_agnostic` (que barra NORMA, não PRODUTO).
+
+### Decisões
+- **ADR-091 Aceito** — núcleo operativo product-free; proveniência nos ADRs (estende ADR-046 forma-vs-conteúdo para nomes de vendor). Distinção: o agente lê operativo agnóstico; de-onde-veio é registro de decisão.
+
+QA: qa-critic heterogêneo (Sonnet, worktree) — pegou que o `replace_all` de tags renomeou só 3 de 7 (as 4 sem-vírgula ficaram) + título `risk-gate` "TEA/BMAD" → **corrigidos** + canário estendido a `capabilities.json` (fecha a lacuna de enforcement). Suite: 58 PASS / 1 SKIP / 0 FAIL.
+
 ## [1.66.0] — 2026-06-17 — Modo autônomo: retry-budget com fallback antes de escalar (recast H, ADR-087)
 
 [CONSOLIDADO] · [CONFIRMADO]

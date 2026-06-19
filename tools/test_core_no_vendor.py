@@ -24,7 +24,9 @@ SENTINEL = "vendor-ok:allow"
 # Escopo = NÚCLEO operativo (o que o agente carrega para agir). Fora: docs/ (ADRs citam proveniência),
 # tools/ (infra; docstrings citam fonte como comentário de código), capabilities.json (dado/metadado).
 CORE_GLOBS = ["_shared/**/*.md", ".agent/skills/**/*.md", ".agent/rules/**/*.md", ".agent/workflows/**/*.md"]
-CORE_FILES = ["AGENT-FRAMEWORK.md", "CLAUDE.md", "AGENTS.md"]
+# capabilities.json incluido (metadado do repo) — a exclusao de ADR-path cobre os campos `adr`
+# que apontam p/ arquivos de ADR com 'bmad' no nome; tags/titulos NAO podem nomear produto (qa-critic).
+CORE_FILES = ["AGENT-FRAMEWORK.md", "CLAUDE.md", "AGENTS.md", "capabilities.json"]
 
 # Vendores externos integrados (slugs inequívocos). NÃO usar acrônimos ambíguos (CIS/TEA) — falso-positivo.
 VENDOR = re.compile(r"bmad|creative-intelligence-suite|game-dev-studio", re.IGNORECASE)

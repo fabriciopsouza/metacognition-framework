@@ -9,6 +9,21 @@
 
 ---
 
+## 2026-06-19 — Release v1.67.0 (MINOR): Núcleo product-free — nomes de produto fora do operativo, proveniência nos ADRs (ADR-091)
+
+Aprovado. **Constraint do dono:** "este repo não pode ter domínios, produtos, etc" + "1-2, siga autônomo até merge". **Item 1 de 2.** A integração BMAD (v1.62–66) deixou nomes de produto (`bmad-*`/CIS/game-dev-studio) no **conteúdo operativo** do núcleo; o `check_core_agnostic` passava (ele barra NORMA, não PRODUTO). **Entregue:** limpeza repo-wide (5 skills + execution-modes + methods.md + tags do capabilities.json) → ponteiro ao ADR; proveniência completa fica nos ADRs 081/085. Guard novo `tools/test_core_no_vendor.py` (fail-closed; exclui refs a arquivo de ADR; cobre capabilities.json) + capability `core-no-vendor`. **ADR-091 Aceito** (núcleo product-free; estende ADR-046 forma-vs-conteúdo).
+
+**QA heterogêneo (Sonnet, worktree):** R1 REPROVAR → pegou que meu `replace_all` de tags renomeou só 3 de 7 (as 4 sem-vírgula, última-tag-do-array, ficaram) + título `risk-gate` "TEA/BMAD". Corrigidos + **canário estendido a capabilities.json** (a lacuna que o crítico apontou — metadado agora também é enforçado). Auto-pega de bug meu (replace_all parcial), exatamente o tipo de coisa que a revisão adversarial existe para pegar.
+
+Nomenclaturas: "núcleo product-free" · "proveniência nos ADRs" · "vendor-ok:allow" · "guard de pureza".
+Decisões permanentes: **ADR-091 Aceito**. Capability `core-no-vendor` nova (fail-closed).
+Próximo passo: **item 2 — ADR-089 (#97)** elicitation-first vinculante: qa-critic → ratificar → implementar. (ADR-090 #98 fica para depois.)
+Riscos ativos: o guard cobre slugs conhecidos (não um vendor novo nunca visto — qa-critic + ADR são a rede); tools/ e docs/ fora de escopo por design.
+**RRC:** ADR-091 no CHANGELOG ✓ · capability nova (test_capabilities PASS) ✓ · README+vitrine+web-bundles 1.67.0 ✓ · canário vendor = guard ✓ · suite 58 PASS/0 FAIL ✓.
+RE-ORQUESTRAÇÃO: item 1 fechado; seguir para item 2 (ADR-089) autônomo até merge.
+
+---
+
 ## 2026-06-17 — Release v1.66.0 (MINOR): Modo autônomo — retry-budget com fallback antes de escalar (recast H, ADR-087)
 
 Aprovado. Dono ratificou (H) com "prossiga". **Entregue:** `tools/autonomy_policy.py` — dial retry/escalate DETERMINÍSTICO por modo (recast do `bmad-automator` sob P15): HITL (default/avançado) escala na 1ª falha; `autosuficiente` auto-recupera subindo a escada de modelo (haiku<sonnet<opus<fable) até budget, escala por ÚLTIMO. Canário `test_autonomy_policy.py` com **invariante de segurança "HITL nunca retenta"**. +1 capability `autonomy-retry-policy`. Wire em `_shared/execution-modes`. H2 (artefato) já existe (qa-evidence); H3 (stuck) DEFERIDO (liveness = harness_limit); H4 (tmux) não adotado.

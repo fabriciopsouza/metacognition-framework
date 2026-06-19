@@ -1,0 +1,32 @@
+{
+  "passou": true,
+  "release": "1.67.0",
+  "bloco": "v1.67.0-nucleo-product-free",
+  "juncao": "PC",
+  "problemas": [
+    {"severidade": "MEDIO", "descricao": "replace_all de tags 'bmad-integration'->'external-integration' renomeou so 3 de 7 (as 4 sem-virgula, ultima-tag-do-array, ficaram). CORRIGIDO: replace_all da forma sem-virgula.", "estado": "corrigido"},
+    {"severidade": "MEDIO", "descricao": "title da capability risk-gate ainda dizia 'recast TEA/BMAD'. CORRIGIDO: 'recast externo (ADR-086)'. Detectado ao estender o canario a capabilities.json.", "estado": "corrigido"},
+    {"severidade": "BAIXO", "descricao": "canario v1 excluia capabilities.json do escopo (metadado nao verificavel). CORRIGIDO: capabilities.json adicionado a CORE_FILES (exclusao de ADR-path cobre os campos adr).", "estado": "corrigido"}
+  ],
+  "verificacoes_executadas": [
+    "core-no-vendor PASS: 45 arquivos varridos (inclui capabilities.json), zero nome de produto no operativo",
+    "limpeza completa: grep bmad|creative-intelligence-suite|game-dev-studio no nucleo = 0 (exceto refs a arquivo de ADR, excluidas por design)",
+    "canario nao-teatro (qa-critic): injetar 'bmad-module-game-dev-studio' em prosa -> exit 1; injetar so ref a arquivo de ADR -> exit 0 (exclusao funciona); 'bmad' em prosa NA MESMA linha de uma ref de ADR -> ainda pego (strip cirurgico)",
+    "proveniencia preservada: ADR-081 e ADR-085 continuam nomeando as fontes BMAD/CIS/game-dev (URLs+veredito) — zero perda de rastreabilidade",
+    "semantica preservada: #77 Parameter Tuning Loop ainda descreve o metodo; source: ainda diz 'integracao externa seletiva'",
+    "0 tags bmad-integration restantes; capability core-no-vendor PROVIDES (mechanism+test existem); test_capabilities PASS; CAPABILITIES.md em sync (69)",
+    "suite 58 PASS / 1 SKIP / 0 FAIL"
+  ],
+  "recomendacao": "aprovar_com_ressalvas",
+  "postura": {
+    "heterogeneidade": "autor=Opus 4.8; process-critic=Sonnet via Agent(model:sonnet) em worktree isolado (ADR-078). Mudanca de pureza do nucleo (constraint do dono) -> qa-critic heterogeneo real.",
+    "rounds": 1,
+    "r1_sonnet_worktree": "REPROVAR -> pegou replace_all parcial (4 de 7 tags ficaram) + title risk-gate + lacuna de escopo do canario. TODOS corrigidos + canario estendido a capabilities.json. Demais criterios PASS (limpeza operativa completa, nao-teatro, proveniencia preservada, semantica ok).",
+    "canarios_estado_real": "58 PASS / 1 SKIP / 0 FAIL (59 canarios; +test_core_no_vendor). Release-closing fecham com este artefato.",
+    "discovery": "N/A: enforcement de P12 (constraint do dono) + correcao de regressao introduzida na integracao BMAD.",
+    "rrc": "PASSA: ADR-091 Aceito no CHANGELOG; capability nova; README+vitrine+web-bundles 1.67.0; canario vendor = guard; suite 0 FAIL.",
+    "metodo_senior": "N/A.",
+    "ressalvas_residuais": "Guard cobre slugs de vendor CONHECIDOS (nao um vendor novo nunca visto — qa-critic + ADR sao a rede). tools/ (comentarios de codigo) e docs/ (ADRs) fora de escopo por design (infra/proveniencia)."
+  },
+  "data": "2026-06-19T12:00:00Z"
+}
