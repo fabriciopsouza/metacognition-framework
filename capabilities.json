@@ -1077,6 +1077,25 @@
       ]
     }
     ,{
+      "id": "project-onboarding",
+      "title": "Onboarding/wayfinding de projeto por COMPOSICAO (ADR-090): fork greenfield/brownfield no discovery + workflows generate-project-context/document-project (compoem handoff/explorer/docops) + guia user-facing POR-ONDE-COMECAR",
+      "status": "PROVIDES",
+      "enforcement": "fail-closed",
+      "ai_owner": "claude",
+      "mechanism": ".agent/workflows/generate-project-context.md",
+      "test": "tools/test_project_onboarding.py",
+      "adr": "docs/adr/090-bmad-project-onboarding-greenfield-brownfield-wayfinding.md",
+      "cross_ai": false,
+      "tags": [
+        "onboarding",
+        "wayfinding",
+        "discovery",
+        "composition",
+        "external-integration",
+        "canary"
+      ]
+    }
+    ,{
       "id": "edge-case-hunter",
       "title": "Percurso mecanico exaustivo de paths nao tratados — output JSON verificavel",
       "status": "PARTIAL",

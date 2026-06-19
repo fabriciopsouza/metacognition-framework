@@ -1,7 +1,7 @@
 <!-- GERADO por tools/build_capabilities.py a partir de capabilities.json — NAO editar a mao -->
 # CAPABILITIES — indice de capacidades (nivel 1: id + title)
 
-> **71 capacidades** — 62 ✅ PROVIDES · 9 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
+> **72 capacidades** — 63 ✅ PROVIDES · 9 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
 > **Como usar (file-first, boot):** leia esta lista p/ achar o `id`; o registro completo (mecanismo · canario · ADR · doc) vem por **`python tools/build_capabilities.py --show <id>`** ou `grep -A8 '"<id>"' capabilities.json`. Nao reexplore o repo antes disto.
 > **Manutencao:** feature nova -> +1 registro em `capabilities.json` + `python tools/build_capabilities.py`. Canario barra canario orfao (cobertura).
 
@@ -64,6 +64,7 @@
 - ✅ `posture-gate` — posture-gate (fail-closed): release exige evidencia de postura deep-research/squad (discovery+RRC+metodo-senior) atestada pelo qa-critic adversarial (ADR-074 emenda 3)
 - ✅ `premium-tier-export` — Tier premium na export-clean (mesma fonte, mantem camada premium; baseline single-source)
 - 🟡 `prepush-sync-guard` — Guarda de pre-push: evita push sobre base dessincronizada
+- ✅ `project-onboarding` — Onboarding/wayfinding de projeto por COMPOSICAO (ADR-090): fork greenfield/brownfield no discovery + workflows generate-project-context/document-project (compoem handoff/explorer/docops) + guia user-facing POR-ONDE-COMECAR
 - ✅ `project-token-report` — Relatorio de tokens por projeto (custo de sessao)
 - ✅ `qa-evidence-gate` — qa-evidence (fail-closed): release exige veredito qa-critic aprovativo persistido em _meta/qa/ (ADR-074 emenda 2)
 - 🟡 `readiness-gate` — Gate pre-developer: valida alinhamento requirements+ADR antes de J3

@@ -145,6 +145,12 @@ Decisão arquitetural: `docs/adr/003-progressive-disclosure-companion-files.md`.
 
 Cada companion contém: filtro de entrada explícito, fluxo do sub-modo, output esperado.
 
+### Fork greenfield × brownfield (ADR-090 — declarar na rota)
+Antes de elicitar, decidir explicitamente (molda quais perguntas a "ficha de insumo" §2.4/passo 4.1 faz):
+- **Greenfield** (projeto novo, sem código-fonte de partida): elicitação do zero pelo método universal — objetivo, escopo, critério de aceite, product_type.
+- **Brownfield** (já existe código/dados/processo): **`explorer` mapeia o existente PRIMEIRO** (estrutura, convenções, dependências, regras embutidas) → discovery elicita **só os gaps** sobre o mapa (não re-pergunta o que o código já responde). Para 1-shot do contexto, ver workflow `generate-project-context`; para documentar o existente, `document-project`.
+Sem declaração → o agente infere por sinal (há repo/arquivos? = brownfield) e **declara** a escolha.
+
 ### Capability transversal: ingestão de documentos (v1.22.0 — ADR-029)
 Quando a entrada inclui **arquivos/documentos como fonte** (PDF de norma, DOCX/XLSX/PPTX,
 MD/TXT), carregar `_shared/doc-intake` e rodar `tools/doc_intake.py <pasta> --out intake-manifest.json`
