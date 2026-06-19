@@ -1,0 +1,33 @@
+{
+  "passou": true,
+  "release": "1.70.0",
+  "bloco": "v1.70.0-project-onboarding",
+  "juncao": "PC",
+  "problemas": [
+    {"severidade": "ALTO-evitado", "descricao": "guard core-no-vendor (v1.67) auto-pegou 'BMAD' que vazou nos workflows generate/document-project (.agent/workflows esta no escopo). CORRIGIDO: proveniencia -> ADR-090; operativo product-free.", "estado": "corrigido"},
+    {"severidade": "MEDIO", "descricao": "incoerencia B<->C: document-project dizia alimentar o passo 5 de generate-project-context, mas o passo 5 so chamava explorer (re-varredura redundante). CORRIGIDO: passo 5 reusa docs/project-doc.md se existir, senao explorer.", "estado": "corrigido"},
+    {"severidade": "BAIXO", "descricao": "canario B omitia knowledge_catalog (citado no workflow). CORRIGIDO: adicionado ao loop de refs.", "estado": "corrigido"},
+    {"severidade": "BAIXO", "descricao": "capability.mechanism aponta so p/ generate-project-context.md (document-project nao indexado pelo mechanism). ACEITO: o title nomeia os 2 workflows e o canario testa ambos; mechanism e 1 representante.", "estado": "aceito-declarado"}
+  ],
+  "verificacoes_executadas": [
+    "test_project_onboarding PASS: 4 superficies (fork A; workflows B/C compoem; guia D); canario provado nao-teatro (remover fork -> exit 1; remover ref de gerador -> exit 1)",
+    "anti-reinvencao REAL: B/C citam handoff.py/CAPABILITIES/knowledge_catalog/explorer/docops sem reimplementar; nenhum gerador novo",
+    "refs vivas: handoff.py/knowledge_catalog.py/build_capabilities.py existem; explorer (.agent/skills+.claude/agents) e docops (.agent/skills) existem; ADR-091 existe",
+    "core-no-vendor PASS (47 arquivos): nenhum nome de produto no operativo; BMAD so no ADR-090 (proveniencia, ADR-091)",
+    "check_core_agnostic PASS nos novos arquivos de nucleo; guia/POR-ONDE-COMECAR fora do nucleo (dominio-exemplo ok)",
+    "capability project-onboarding PROVIDES (mechanism+test existem); CAPABILITIES.md em sync (72)",
+    "suite 60 PASS / 1 SKIP / 0 FAIL (apos CHANGELOG; o adr_changelog FAIL pre-release era esperado)"
+  ],
+  "recomendacao": "aprovar_com_ressalvas",
+  "postura": {
+    "heterogeneidade": "autor=Opus 4.8; process-critic=Sonnet via Agent(model:sonnet) em worktree isolado (ADR-078).",
+    "rounds": 1,
+    "r1_sonnet_worktree": "PASS aprovar_com_ressalvas. Composicao real, sem refs mortas, canario nao-teatro. 1 MEDIO (coerencia B<->C) + 2 BAIXO (cobertura canario; mechanism) — corrigidos/aceitos.",
+    "canarios_estado_real": "60 PASS / 1 SKIP / 0 FAIL (62 canarios; +test_project_onboarding).",
+    "discovery": "N/A: integracao seletiva BMAD por composicao; proposta do dono (#98), ratificada.",
+    "rrc": "PASSA: ADR-090 Aceito no CHANGELOG; capability nova; README+vitrine+web-bundles 1.70.0; canario composicao; suite 0 FAIL.",
+    "metodo_senior": "N/A.",
+    "ressalvas_residuais": "Backlog: comandos BMAD adicionais por uso (nao-bloqueante). Latente: run_canaries quebra no console cp1252 se canario FALHA com chars especiais (PYTHONIOENCODING=utf-8 contorna)."
+  },
+  "data": "2026-06-19T17:00:00Z"
+}

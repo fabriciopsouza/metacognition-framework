@@ -9,6 +9,21 @@
 
 ---
 
+## 2026-06-19 — Release v1.70.0 (MINOR): Project-onboarding/wayfinding BMAD por composição (ADR-090)
+
+Aprovado. **Ratificado pelo dono "siga"** (ADR-090 proposto em #98, atrás da main — consolidei nesta branch; #98 a fechar superseded). Integração BMAD de onboarding por **COMPOSIÇÃO** (anti-reinvenção, ADR-072 — 0 tool pesado novo): **(A)** fork greenfield×brownfield no discovery; **(B)** workflow `generate-project-context` (compõe briefing+glossário+handoff.py+CAPABILITIES+knowledge_catalog+explorer → 1 doc); **(C)** workflow `document-project` (explorer+docops → doc padronizado); **(D)** guia user-facing `POR-ONDE-COMECAR.md`. Canário `test_project_onboarding.py` (4 superfícies + composição-não-recriação) + capability `project-onboarding`.
+
+**QA heterogêneo (Sonnet, worktree):** PASS aprovar_com_ressalvas. **Auto-pega:** o guard `core-no-vendor` (v1.67) pegou "BMAD" que pus nos workflows → movido p/ ADR (proveniência); operativo product-free. 2 ressalvas corrigidas: coerência B↔C (gpc reusa `project-doc.md` se existir, não re-varre) + canário cobre `knowledge_catalog`.
+
+Nomenclaturas: "greenfield × brownfield" · "generate-project-context" · "document-project" · "wayfinding".
+Decisões permanentes: **ADR-090 Aceito**. Capability `project-onboarding` nova. Backlog não-bloqueante: comandos BMAD adicionais por uso.
+Próximo passo: **PRs antigos #85/#86** (arquivar/revisar — #86 é fix do banner liveness). Re-avaliação BMAD + propostas do dono (089/090) concluídas.
+Riscos ativos: o auto-gen do prompt-web (ADR-054/057) segue pendente (manual + guard); o run_canaries no console Windows quebra (cp1252) se um canário FALHA com chars especiais no output — latente, só morde sob falha (PYTHONIOENCODING=utf-8 contorna).
+**RRC:** ADR-090 no CHANGELOG · capability nova (test_capabilities PASS) · README+vitrine+web-bundles 1.70.0 · canário composição = guard · suite 60 PASS/0 FAIL.
+RE-ORQUESTRAÇÃO: propostas do dono fechadas; restam PRs antigos (#85/#86) + backlog trigger-gated.
+
+---
+
 ## 2026-06-19 — Release v1.69.0 (MINOR): Chat-web atualizado (v4.5) + guard de currency
 
 Aprovado. **Pergunta do dono "chat web atualizado?"** revelou: o prompt `PROMPT-CHAT-WEB` estava STALE (alinhado a v1.39.0, 29 releases atrás) — débito declarado (mantido à mão, linha 154/154; alvo = auto-gen ADR-054/057). Artefatos VERSIONADOS (README/CHANGELOG/vitrine/web-bundles) já estavam em sync (1.68.0); o gap era só o chat-web. **Entregue:** prompt v4.4→v4.5 (alinhamento v1.39→v1.68 + §2.4 ficha de insumo VINCULANTE refletindo ADR-089 no idioma do chat) + rename + refs (PUBLIC_SRC, vitrine, README, guias, eval) + **guard de currency** `test_web_prompt_currency.py` (carimbo não pode ficar >5 minors atrás de main — o mecanismo ausente que deixou derivar). +1 capability `web-prompt-currency`.
