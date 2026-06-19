@@ -13,7 +13,7 @@
 2. **Handoff determinístico** — `python tools/handoff.py` (ADR-076): pacote P14 (artefato consumível + localização + acesso + prompt-pronto + pendências/premissas). É o núcleo do contexto.
 3. **Índice de capacidades** — `CAPABILITIES.md` (gerado por `tools/build_capabilities.py`): o que o framework/projeto provê.
 4. **Catálogo de conhecimento** — `python tools/knowledge_catalog.py` (ADR-068), se houver: fontes/docs do projeto.
-5. **Mapa do existente (brownfield)** — delegar ao `explorer` (read-only): estrutura, convenções, dependências. Greenfield: pular.
+5. **Mapa do existente (brownfield)** — **se já houver `docs/project-doc.md`** (gerado pelo `document-project`), usar como entrada e **pular a re-varredura** (não duplicar trabalho); senão delegar ao `explorer` (read-only): estrutura, convenções, dependências. Greenfield: pular.
 6. **Estado** — checkpoint do TOPO de `history.md` (mais-novo-primeiro) + WIP `## Em aberto`.
 
 ## Saída

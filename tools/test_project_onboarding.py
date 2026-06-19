@@ -42,7 +42,7 @@ def main():
     if not gpc:
         fails.append("(B) .agent/workflows/generate-project-context.md ausente")
     else:
-        for ref in ("handoff.py", "CAPABILITIES", "explorer", "briefing"):
+        for ref in ("handoff.py", "CAPABILITIES", "explorer", "briefing", "knowledge_catalog"):
             if ref.lower() not in gpc.lower():
                 fails.append(f"(B) generate-project-context não compõe '{ref}' (reusar, não recriar)")
 

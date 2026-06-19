@@ -15,6 +15,23 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.70.0] — 2026-06-19 — Project-onboarding/wayfinding BMAD por composição: greenfield/brownfield + generate/document-project + guia user-facing (ADR-090)
+
+[CONSOLIDADO] · [CONFIRMADO]
+
+### Adicionado
+- **Onboarding/wayfinding de projeto (ADR-090, COMPOSIÇÃO — 0 tool pesado novo):**
+  - **(A)** `discovery/SKILL.md`: fork explícito **greenfield × brownfield** (brownfield = `explorer` mapeia primeiro → discovery elicita só os gaps).
+  - **(B)** `.agent/workflows/generate-project-context.md`: compõe briefing+glossário+`handoff.py`+`CAPABILITIES.md`+`knowledge_catalog.py`+`explorer` → 1 doc de contexto consumível por IA (usa `document-project` se já existir).
+  - **(C)** `.agent/workflows/document-project.md`: compõe `explorer` (mapa) + `docops` (redação) → doc padronizado de projeto existente.
+  - **(D)** `guia/POR-ONDE-COMECAR.md`: wayfinding **user-facing** (que modo para minha situação).
+- **`tools/test_project_onboarding.py`** (fail-closed): verifica que as 4 superfícies existem e que os workflows **compõem** geradores existentes (não recriam). +1 capability `project-onboarding`.
+
+### Decisões
+- **ADR-090 Aceito** — integração BMAD seletiva por composição (anti-reinvenção, ADR-072); proveniência do produto só no ADR (ADR-091); nada altera `_shared/`. Backlog não-bloqueante: mapear comandos BMAD adicionais por uso.
+
+QA: qa-critic heterogêneo (Sonnet, worktree) — PASS aprovar_com_ressalvas; o guard `core-no-vendor` auto-pegou "BMAD" que vazou nos workflows → movido p/ ADR; 2 ressalvas corrigidas (coerência B↔C: reusar `project-doc.md`; canário cobre `knowledge_catalog`). Suite: 60 PASS / 1 SKIP / 0 FAIL.
+
 ## [1.69.0] — 2026-06-19 — Chat-web atualizado (prompt v4.4→v4.5, alinhado a v1.68) + guard de currency
 
 [CONSOLIDADO] · [CONFIRMADO]
