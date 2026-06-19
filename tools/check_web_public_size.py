@@ -8,14 +8,14 @@ LIMITE HONESTO (GAP-3): chars/4 é estimativa, NÃO o tokenizer real do Claude.a
 depende do tokenizer da plataforma-alvo (dependência externa). Use este número como semáforo, não como verdade
 final; a validação real é o eval na plataforma (ver _meta/eval-web-gemini.md).
 
-Uso: python tools/check_web_public_size.py [arquivo]   # default: PROMPT-CHAT-WEB-v4.4.md
+Uso: python tools/check_web_public_size.py [arquivo]   # default: PROMPT-CHAT-WEB-v4.5.md
 Exit 0 se dentro do alvo; 1 se estourar (corte profundidade de domínio antes do transversal — REQ-PUB-3).
 """
 import os
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DEFAULT = os.path.join(ROOT, "PROMPT-CHAT-WEB-v4.4.md")
+DEFAULT = os.path.join(ROOT, "PROMPT-CHAT-WEB-v4.5.md")
 TARGET_TOKENS = 12000          # REQ-PUB-3
 CHARS_PER_TOKEN = 4            # heurística PT-BR (estimativa — não é o tokenizer real; GAP-3)
 
