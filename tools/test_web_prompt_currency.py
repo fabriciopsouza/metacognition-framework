@@ -62,7 +62,8 @@ def main():
                 fails.append(f"prompt web à FRENTE de main (v{web_major}.{web_minor} × v{main_major}.{main_minor})?")
 
     base = os.path.basename(src)
-    print(f"web-prompt-currency: {base} alinhado a v{web_major}.{web_minor} × main v{main_major}.{main_minor} "
+    web_disp = f"v{web_major}.{web_minor}" if web_major is not None else "?(sem carimbo)"
+    print(f"web-prompt-currency: {base} alinhado a {web_disp} × main v{main_major}.{main_minor} "
           f"(máx {GAP_MAX} minors) — {'OK' if not fails else 'FAIL'}")
     for f in fails:
         print("  -", f)

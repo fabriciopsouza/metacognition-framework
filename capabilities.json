@@ -1066,7 +1066,7 @@
       "ai_owner": "claude",
       "mechanism": "tools/test_web_prompt_currency.py",
       "test": "tools/test_web_prompt_currency.py",
-      "adr": "docs/adr/091-nucleo-product-free-proveniencia-nos-adrs.md",
+      "adr": "docs/adr/089-elicitation-first-vinculante-dado-indicador-regra.md",
       "cross_ai": true,
       "tags": [
         "web",

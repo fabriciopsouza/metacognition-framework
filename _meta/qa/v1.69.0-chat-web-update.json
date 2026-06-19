@@ -1,0 +1,31 @@
+{
+  "passou": true,
+  "release": "1.69.0",
+  "bloco": "v1.69.0-chat-web-update",
+  "juncao": "PC",
+  "problemas": [
+    {"severidade": "MEDIO", "descricao": "vitrine guia/web/index.html: label visivel '(v4.4)' enquanto a URL apontava p/ v4.5 (replace_all pegou o nome do arquivo, nao o label solto). CORRIGIDO: '(v4.5)'.", "estado": "corrigido"},
+    {"severidade": "MEDIO", "descricao": "capability web-prompt-currency com adr -> 091 (product-free, errado). CORRIGIDO: -> 089 (elicitation-first, contexto que motivou o update + §2.4).", "estado": "corrigido"},
+    {"severidade": "BAIXO", "descricao": "test_web_prompt_currency.py imprimia 'vNone.None' quando carimbo ausente (exit-code FAIL correto, so o diagnostico era enganoso). CORRIGIDO: web_disp guardado ('?(sem carimbo)').", "estado": "corrigido"}
+  ],
+  "verificacoes_executadas": [
+    "guard de currency PROVADO nao-teatro (qa-critic): gap=0 PASS; gap=18 (v1.50) FAIL; gap=2 (v1.66) PASS; sem carimbo fail-closed; major divergente (v2.0) tratado",
+    "rename completo: 0 ref VIVA a PROMPT-CHAT-WEB-v4.4 fora de CHANGELOG/historico/cofre; exatamente 1 PROMPT-CHAT-WEB-v*.md (v4.5); web_export.PUBLIC_SRC -> v4.5",
+    "marketing-canary PASS (link de prompt morto: nenhum; 1 prompt em disco == PUBLIC_SRC); web_bundles PASS",
+    "§2.4 ficha de insumo: 6 campos do ADR-089 presentes; redacao anti-JARVIS ('checkpoint declarado, nao gate de runtime')",
+    "capability web-prompt-currency PROVIDES (mechanism+test); CAPABILITIES.md em sync (71); cross_ai=true coerente (artefato cross-AI)",
+    "suite 60 PASS / 1 SKIP / 0 FAIL"
+  ],
+  "recomendacao": "aprovar_com_ressalvas",
+  "postura": {
+    "heterogeneidade": "autor=Opus 4.8; process-critic=Sonnet via Agent(model:sonnet) em worktree isolado (ADR-078). Artefato publico (chat-web) + logica de guard -> qa-critic heterogeneo.",
+    "rounds": 1,
+    "r1_sonnet_worktree": "REPROVAR -> 2 MEDIO (label stale na vitrine; adr errado na capability) + 1 BAIXO (print vNone). Guard correto + canarios todos PASS. Apos fixes: aprovar.",
+    "canarios_estado_real": "60 PASS / 1 SKIP / 0 FAIL (61 canarios; +test_web_prompt_currency).",
+    "discovery": "N/A: doc-sync de artefato cross-AI (debito declarado do prompt mantido a mao) + reflexo do ADR-089 no chat.",
+    "rrc": "PASSA: capability nova; README+vitrine+web-bundles 1.69.0; guard provado; marketing-canary (link morto) PASS; suite 0 FAIL.",
+    "metodo_senior": "N/A.",
+    "ressalvas_residuais": "O prompt-web segue mantido a MAO (auto-gen do main = alvo ADR-054/057, nao feito aqui). O guard agora barra drift >5 minors, mas a SINCRONIZACAO de conteudo ainda e manual a cada doutrina chat-relevante."
+  },
+  "data": "2026-06-19T15:00:00Z"
+}

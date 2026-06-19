@@ -9,6 +9,21 @@
 
 ---
 
+## 2026-06-19 — Release v1.69.0 (MINOR): Chat-web atualizado (v4.5) + guard de currency
+
+Aprovado. **Pergunta do dono "chat web atualizado?"** revelou: o prompt `PROMPT-CHAT-WEB` estava STALE (alinhado a v1.39.0, 29 releases atrás) — débito declarado (mantido à mão, linha 154/154; alvo = auto-gen ADR-054/057). Artefatos VERSIONADOS (README/CHANGELOG/vitrine/web-bundles) já estavam em sync (1.68.0); o gap era só o chat-web. **Entregue:** prompt v4.4→v4.5 (alinhamento v1.39→v1.68 + §2.4 ficha de insumo VINCULANTE refletindo ADR-089 no idioma do chat) + rename + refs (PUBLIC_SRC, vitrine, README, guias, eval) + **guard de currency** `test_web_prompt_currency.py` (carimbo não pode ficar >5 minors atrás de main — o mecanismo ausente que deixou derivar). +1 capability `web-prompt-currency`.
+
+**QA heterogêneo (Sonnet, worktree):** pegou label `(v4.4)` stale na vitrine (replace_all pegou o nome do arquivo, não o label solto), `adr` da capability errado (091→089), e print `vNone.None` → corrigidos; guard provado não-teatro.
+
+Nomenclaturas: "guard de currency" · "carimbo de alinhamento" · "ficha de insumo no chat".
+Decisões permanentes: capability `web-prompt-currency` nova. Sem novo ADR (implementa anti-defasagem do ADR-054/057 + reflete ADR-089).
+Próximo passo: **ADR-090 (#98)** onboarding/wayfinding BMAD — qa-critic → ratificar → implementar. PRs antigos #85/#86 arquivar.
+Riscos ativos: o prompt-web segue mantido à mão (auto-gen é o alvo ADR-054/057); o guard agora barra drift >5 minors.
+**RRC:** capability nova (test_capabilities PASS) · README+vitrine+web-bundles 1.69.0 · guard provado não-teatro · suite 60 PASS/0 FAIL · marketing-canary (link morto) PASS.
+RE-ORQUESTRAÇÃO: chat-web sincronizado; seguir para ADR-090 ou aguardar dono.
+
+---
+
 ## 2026-06-19 — Release v1.68.0 (MINOR): Elicitation-first VINCULANTE antes de implementar sobre dado/indicador/regra (ADR-089)
 
 Aprovado. **Item 2 de 2** (dono: "1-2, siga autônomo até merge"). Ratifiquei + implementei o ADR-089 (proposto pelo dono em #97, que estava atrás da main — consolidei nesta branch; #97 fechado superseded). **Enforcement de capacidade existente** (anti-reinvenção): antes de implementar sobre indicador/métrica/regra de domínio de risco alto, o agente DEVE elicitar a **ficha de insumo** (6 campos) — não-skippável, **mesmo em autosuficiente**. Nasceu de falha real (sessão 2026-06-18, indicador AIVI: inferiu em vez de elicitar, 5+ rodadas de retrabalho). **Entregue:** `discovery/SKILL.md` passo 4.1 (ficha vinculante) + `execution-modes` reafirma + canário `test_elicitation_gate.py` + capability `elicitation-gate`. 0 skill nova (régua §0: edita gates existentes).
