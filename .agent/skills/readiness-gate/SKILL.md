@@ -2,7 +2,7 @@
 name: readiness-gate
 description: "Validar que requirements, decisões arquiteturais e (quando existir) spec de UX estão alinhados e completos ANTES de avançar para o developer. Gate pré-J3 (architect→developer). Ativar quando o architect declara que a ADR está fechada ou o PMO está prestes a rotear para developer. NÃO substituir o qa-critic (que opera APÓS o developer). NÃO ativar em blocos pontuais/triviais onde não há ADR nem requirements formal."
 version: 1.0.0
-source: "padrão bmad-check-implementation-readiness (BMAD-METHOD v6.8.0) — extraído e adaptado; ADR-081"
+source: "integração externa seletiva — extraído e adaptado; proveniência na ADR-081"
 last_review: 2026-06-16
 role_order: null
 consumes:
@@ -29,7 +29,7 @@ rewind_target: architect
 
 Gate **binário** (não gradual): ou todos os critérios passam e o developer avança, ou há bloqueio com lista explícita de gaps a resolver pelo architect/discovery. Nenhum "aprovar com ressalvas" — ressalva é bloqueio até resolução.
 
-Inspiração: `bmad-check-implementation-readiness` (BMAD). Adaptado com os artefatos e nomenclatura do metacognition.
+Inspiração: integração externa seletiva registrada em ADR-081. Adaptado com os artefatos e nomenclatura do metacognition.
 
 ## Posição no fluxo QA bicelular
 
@@ -96,7 +96,7 @@ qa-critic
 
 Para cada critério: marcar VERDADEIRO / FALSO / DESCONHECIDO com evidência:
 ```
-R1: VERDADEIRO — arquivo presente em docs/specs/v1.59.0-bmad-integration/requirements.md
+R1: VERDADEIRO — arquivo presente em docs/specs/<caso>/requirements.md
 A2: FALSO — decisão da ADR está em 3 frases sem ação clara
 X1: DESCONHECIDO — requirements menciona "autenticação" mas ADR não trata o tema
 ```

@@ -2,7 +2,7 @@
 name: edge-case-hunter
 description: "Percorrer exaustivamente todos os caminhos e condições de contorno de um artefato de código e reportar SOMENTE os não tratados. Ativar APÓS o qa-critic adversarial em blocos de código com lógica de branching (condicionais, loops, handlers de erro). NÃO ativar para revisão de prose/spec (isso é qa-critic) nem para exploração de repo (isso é explorer). Ortogonal ao qa-critic: este é método-driven (percurso mecânico), não postura-driven (ceticismo)."
 version: 1.0.0
-source: "padrão bmad-review-edge-case-hunter (BMAD-METHOD v6.8.0) — extraído e adaptado; ADR-081"
+source: "integração externa seletiva — extraído e adaptado; proveniência na ADR-081"
 last_review: 2026-06-16
 role_order: null
 consumes:
