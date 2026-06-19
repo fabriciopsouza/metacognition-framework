@@ -1059,6 +1059,24 @@
       ]
     }
     ,{
+      "id": "web-prompt-currency",
+      "title": "Guard de currency do prompt chat-web: carimbo 'Alinhado ao vX.Y.Z' nao pode ficar >5 minors atras de main (anti-drift-silencioso do prompt mantido a mao)",
+      "status": "PROVIDES",
+      "enforcement": "fail-closed",
+      "ai_owner": "claude",
+      "mechanism": "tools/test_web_prompt_currency.py",
+      "test": "tools/test_web_prompt_currency.py",
+      "adr": "docs/adr/089-elicitation-first-vinculante-dado-indicador-regra.md",
+      "cross_ai": true,
+      "tags": [
+        "web",
+        "chat-web",
+        "currency",
+        "guard",
+        "canary"
+      ]
+    }
+    ,{
       "id": "edge-case-hunter",
       "title": "Percurso mecanico exaustivo de paths nao tratados — output JSON verificavel",
       "status": "PARTIAL",

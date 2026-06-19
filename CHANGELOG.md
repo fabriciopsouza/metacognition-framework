@@ -15,6 +15,18 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.69.0] — 2026-06-19 — Chat-web atualizado (prompt v4.4→v4.5, alinhado a v1.68) + guard de currency
+
+[CONSOLIDADO] · [CONFIRMADO]
+
+### Mudado
+- **Prompt chat-web `PROMPT-CHAT-WEB-v4.4.md → v4.5.md`** — estava STALE (alinhado a v1.39.0, 29 releases atrás, sem guard). Atualizado: alinhamento → v1.68.0 + nova **§2.4 ficha de insumo VINCULANTE** (reflete ADR-089 no idioma do chat: não inferir indicador/regra regulado; 6 campos como checkpoint declarado, anti-JARVIS). Refs (vitrine, README, guias, `web_export.PUBLIC_SRC`, `check_web_public_size`, eval) → v4.5; CHANGELOG histórico preservado.
+
+### Adicionado
+- **`tools/test_web_prompt_currency.py`** (fail-closed) — guard de currency: o carimbo "Alinhado ao Framework Metacognitivo vX.Y.Z" do prompt não pode ficar **> 5 minors atrás** de main (o mecanismo que faltava — implementa o anti-defasagem declarado em ADR-054/057; foi a ausência dele que deixou derivar 29 releases em silêncio). +1 capability `web-prompt-currency`.
+
+QA: qa-critic heterogêneo (Sonnet, worktree) — pegou label `(v4.4)` stale na vitrine + `adr` da capability apontando p/ ADR errado (091→089) + print `vNone.None` no guard → **corrigidos**; guard provado não-teatro (gap 18 → FAIL; gap 2 → PASS). Artefatos versionados já estavam em sync (1.68.0); o gap era só o chat-web. Suite: 60 PASS / 1 SKIP / 0 FAIL.
+
 ## [1.68.0] — 2026-06-19 — Elicitation-first VINCULANTE antes de implementar sobre dado/indicador/regra de domínio (ADR-089)
 
 [CONSOLIDADO] · [CONFIRMADO]

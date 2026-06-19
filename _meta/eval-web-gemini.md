@@ -14,7 +14,7 @@
 
 ## Procedimento (manual, ~30 min)
 
-1. **Token real:** colar o `PROMPT-CHAT-WEB-v4.4.md` no campo de instruções do Claude.ai e do Gemini.
+1. **Token real:** colar o `PROMPT-CHAT-WEB-v4.5.md` no campo de instruções do Claude.ai e do Gemini.
    Registrar se a plataforma aceita sem truncar (e o contador de tokens, se exposto). Comparar com a
    estimativa de `python tools/check_web_public_size.py`.
 2. **Probes:** rodar cada probe abaixo em (a) Claude.ai com o prompt e (b) Gemini com o prompt. Pontuar

@@ -7,7 +7,7 @@
 
 - **O zip certo:** `framework-metacognitivo-v1.4.0.zip` — o que tem **54 arquivos**.
   Confirmação: ao abrir, tem `CLAUDE.md`, `AGENTS.md`, `AGENT-FRAMEWORK.md`,
-  `PROMPT-CHAT-WEB-v4.4.md` e as pastas `.claude/` e `guia/` (esta contém o `SETUP.md`)
+  `PROMPT-CHAT-WEB-v4.5.md` e as pastas `.claude/` e `guia/` (esta contém o `SETUP.md`)
   na raiz. Ignore/apague qualquer outro zip ou .md solto baixado antes.
 - **A pasta:** vamos chamá-la de PASTA-FRAMEWORK. Sugestão de caminho limpo:
   `F:\Frameworks\metacognitivo-v1.4.0\`  (ou a que você já tem em Downloads).
@@ -19,7 +19,7 @@
 1. Crie uma pasta nova e vazia (ex.: `F:\Frameworks\metacognitivo-v1.4.0`).
 2. Extraia o `framework-metacognitivo-v1.4.0.zip` (54 arquivos) DENTRO dela.
 3. Confira que a raiz tem: `CLAUDE.md`, `AGENTS.md`, `AGENT-FRAMEWORK.md`, `README.md`,
-   `PROMPT-CHAT-WEB-v4.4.md`, e as pastas `_shared/`, `.agent/`, `.claude/`, `docs/`,
+   `PROMPT-CHAT-WEB-v4.5.md`, e as pastas `_shared/`, `.agent/`, `.claude/`, `docs/`,
    `_meta/`, `exemplos/`, `guia/` (o `SETUP.md` vive em `guia/SETUP.md`).
 
 Pronto — esta pasta contém SOMENTE o nosso framework. Nada antigo entrou.

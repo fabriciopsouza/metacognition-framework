@@ -5,7 +5,7 @@ Chamado por `export-clean.py --profile web` (ou direto). Produz, de forma DETERM
 encarnação chat-sem-filesystem do framework, em dois tiers:
 
   PÚBLICO  -> out/publico/prompt-web-publico.md
-             (o prompt autocontido canônico `PROMPT-CHAT-WEB-v4.4.md`, carimbado com a versão do main)
+             (o prompt autocontido canônico `PROMPT-CHAT-WEB-v4.5.md`, carimbado com a versão do main)
 
   PREMIUM  -> out/premium/prompt-web-premium.md  +  out/premium/skills/<nome>/SKILL.md
              skills ENXUTAS geradas do FRONT-MATTER (description = gatilho de auto-trigger;
@@ -26,7 +26,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 SRC_ROOT = os.path.dirname(HERE)
 MAP_PATH = os.path.join(HERE, "web-phrasing-map.txt")
-PUBLIC_SRC = os.path.join(SRC_ROOT, "PROMPT-CHAT-WEB-v4.4.md")
+PUBLIC_SRC = os.path.join(SRC_ROOT, "PROMPT-CHAT-WEB-v4.5.md")
 
 # Pipeline canônico (ADR-056): ordem fixa; explorer é lateral (read-only, sem sucessor).
 PIPELINE = ["pmo", "discovery", "architect", "developer", "qa-critic", "docops"]
