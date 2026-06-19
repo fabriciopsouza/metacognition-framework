@@ -15,6 +15,19 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.68.0] — 2026-06-19 — Elicitation-first VINCULANTE antes de implementar sobre dado/indicador/regra de domínio (ADR-089)
+
+[CONSOLIDADO] · [CONFIRMADO]
+
+### Adicionado
+- **Elicitation-gate VINCULANTE (ADR-089, enforcement — 0 skill nova):** antes de J2 / escrever código que computa ou depende de **indicador/métrica/regra de domínio de risco alto** (regulado · número-a-decisão · combustível/saúde/financeiro), o agente DEVE elicitar+confirmar uma **ficha de insumo** (6 campos: fontes; método/fórmula+EXCLUSÕES; limites/tolerâncias+natureza; granularidade/janela/UNIDADE; exemplo verificado; memória de cálculo) — **não-skippável, mesmo em autosuficiente**. `discovery/SKILL.md` passo **4.1** (vinculante, após anti-raso); `execution-modes` reafirma. Nasceu de falha real (sessão 2026-06-18, indicador AIVI: inferiu em vez de elicitar, 5+ rodadas de retrabalho).
+- **`tools/test_elicitation_gate.py`** (fail-closed) — canário que verifica os 6 campos (ancorados no rótulo) + a natureza vinculante. +1 capability `elicitation-gate`.
+
+### Decisões
+- **ADR-089 Aceito** — enforcement de capacidade existente (anti-reinvenção, ADR-072): usa `advanced-elicitation`/`discovery`/`readiness-gate` já existentes; a falha era ENFORCEMENT (autosuficiente bypassava), não capacidade. Régua §0: edita gates existentes + destrava "acertar de primeira".
+
+QA: qa-critic heterogêneo (Sonnet, worktree) — pegou 3 de 8 padrões do canário em "teatro" (keyword casava fora do passo 4.1) → **corrigidos** (ancorados no rótulo em negrito + âncora de seção 4.1; remoção de campo agora é pega). Suite: 58 PASS / 1 SKIP / 0 FAIL.
+
 ## [1.67.0] — 2026-06-19 — Núcleo product-free: nomes de produto externo fora do operativo, proveniência só nos ADRs (ADR-091)
 
 [CONSOLIDADO] · [CONFIRMADO]

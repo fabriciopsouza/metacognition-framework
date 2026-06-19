@@ -1040,6 +1040,25 @@
       ]
     }
     ,{
+      "id": "elicitation-gate",
+      "title": "Elicitation-first VINCULANTE antes de implementar sobre indicador/metrica/regra de dominio de risco alto: ficha de insumo (6 campos) nao-skippavel mesmo em autosuficiente (enforcement, nao skill nova)",
+      "status": "PROVIDES",
+      "enforcement": "fail-closed",
+      "ai_owner": "claude",
+      "mechanism": ".agent/skills/discovery/SKILL.md",
+      "test": "tools/test_elicitation_gate.py",
+      "adr": "docs/adr/089-elicitation-first-vinculante-dado-indicador-regra.md",
+      "cross_ai": false,
+      "tags": [
+        "elicitation",
+        "discovery",
+        "gate",
+        "high-stakes",
+        "enforcement",
+        "canary"
+      ]
+    }
+    ,{
       "id": "edge-case-hunter",
       "title": "Percurso mecanico exaustivo de paths nao tratados — output JSON verificavel",
       "status": "PARTIAL",
