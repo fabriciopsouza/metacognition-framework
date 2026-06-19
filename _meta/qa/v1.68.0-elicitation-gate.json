@@ -1,0 +1,32 @@
+{
+  "passou": true,
+  "release": "1.68.0",
+  "bloco": "v1.68.0-elicitation-gate",
+  "juncao": "PC",
+  "problemas": [
+    {"severidade": "MEDIO", "descricao": "3 de 8 padroes do canario eram teatro: r'font'/r'unidade'/r'refer...' casavam a keyword EM OUTRA secao -> remover o campo do passo 4.1 nao falhava. CORRIGIDO: padroes ancorados no ROTULO EM NEGRITO do campo (**Fontes**, **Limites/tolerancias**, etc.) + sub-checks (EXCLUSOES, decimal); provado que remocao de campo agora e pega.", "estado": "corrigido"},
+    {"severidade": "BAIXO", "descricao": "canario nao ancorava na secao 4.1 (risco de drift se campos movidos). CORRIGIDO: checagem (a) exige passo '4.1' + 'ficha de insumo' + ADR-089.", "estado": "corrigido"},
+    {"severidade": "BAIXO", "descricao": "enforcement 'fail-closed' e doc-verified (canario prova que o TEXTO do gate existe, nao que o agente obedeceu). Consistente com outros canarios doc-sync do codebase; limitacao 'prosa-pela-porta' declarada no ADR-089. Mantido fail-closed (padrao do codebase); limite honesto registrado.", "estado": "aceito-declarado"}
+  ],
+  "verificacoes_executadas": [
+    "test_elicitation_gate PASS: 6 campos (ancorados no rotulo) + natureza vinculante + secao 4.1 presentes no discovery/SKILL.md",
+    "canario nao-teatro PROVADO: remover **Fontes**/**Limites...**/**Memoria de calculo**/decimal numa copia -> canario PEGA (PEGA=True para cada)",
+    "6 campos do ADR-089 TODOS no passo 4.1 (fontes; metodo/formula+EXCLUSOES; limites+natureza mandatorio x referencia; granularidade/janela/UNIDADE; exemplo verificado/oraculo; memoria de calculo)",
+    "anti-reinvencao: 0 skill nova; emenda a discovery/SKILL.md + execution-modes (existentes); canario = test, nao capacidade",
+    "binding declarado: 'nao-skippavel'/'mesmo em autosuficiente' presente; execution-modes reafirma",
+    "capability elicitation-gate PROVIDES (mechanism=discovery SKILL + test=canario, existem); CAPABILITIES.md em sync (70)",
+    "suite 58 PASS / 1 SKIP / 0 FAIL (apos CHANGELOG; o adr_changelog FAIL pre-release era esperado)"
+  ],
+  "recomendacao": "aprovar_com_ressalvas",
+  "postura": {
+    "heterogeneidade": "autor=Opus 4.8; process-critic=Sonnet via Agent(model:sonnet) em worktree isolado (ADR-078). Gate que governa quando elicitar em dominio regulado -> qa-critic heterogeneo real.",
+    "rounds": 1,
+    "r1_sonnet_worktree": "REPROVAR -> pegou 3 padroes de teatro (keyword casando fora do 4.1) + falta de ancora de secao. Texto do gate completo; canario fraco. Corrigido (rotulos em negrito + ancora 4.1) e provado anti-teatro.",
+    "canarios_estado_real": "58 PASS / 1 SKIP / 0 FAIL (60 canarios; +test_elicitation_gate). Release-closing fecham com este artefato.",
+    "discovery": "N/A: enforcement de P12/anti-reinvencao a partir de falha de campo real (indicador AIVI). Proposta original do dono (#97).",
+    "rrc": "PASSA: ADR-089 Aceito no CHANGELOG; capability nova; README+vitrine+web-bundles 1.68.0; canario anti-teatro provado; suite 0 FAIL.",
+    "metodo_senior": "N/A.",
+    "ressalvas_residuais": "Gate e doc-verified (comportamento do agente = prosa-pela-porta, declarado). Aberto por caso: HITL na ficha quando divergencia de fonte; auto-preenche quando 1 fonte inequivoca (default no passo 4.1)."
+  },
+  "data": "2026-06-19T13:00:00Z"
+}

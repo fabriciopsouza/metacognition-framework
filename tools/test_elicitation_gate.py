@@ -22,16 +22,18 @@ try:
 except Exception:
     pass
 
-# (b) os 6 campos da ficha — cada um por um padrão robusto (tolerante a formatação).
+# (b) os 6 campos da ficha — ANCORADOS no RÓTULO EM NEGRITO do campo (qa-critic ADR-089: padrões
+# genéricos como "font"/"unidade"/"referência" casavam em OUTRAS seções -> teatro. O rótulo `**X**`
+# é específico do passo 4.1). +2 sub-checks (EXCLUSÕES no campo 2; decimal no campo 4).
 SEIS_CAMPOS = [
-    (r"font", "1-Fontes (qual é a verdade)"),
-    (r"f[óo]rmula|m[ée]todo", "2-Método/fórmula exata"),
-    (r"exclus", "2-EXCLUSÕES explícitas"),
-    (r"toler[âa]nci|mandat[óo]ri|refer[êe]nci", "3-Limites/tolerância + natureza"),
-    (r"unidade", "4-Unidade (%/decimal)"),
-    (r"granularidad|janela|acumulad", "4-Granularidade/janela"),
-    (r"exemplo verificado|or[áa]culo", "5-Exemplo verificado (oráculo)"),
-    (r"mem[óo]ria de c[áa]lculo", "6-Memória de cálculo"),
+    (r"\*\*Fontes\*\*", "1-Fontes (rótulo)"),
+    (r"\*\*M[ée]todo/f[óo]rmula", "2-Método/fórmula (rótulo)"),
+    (r"inclus[õo]es e EXCLUS|EXCLUS[ÕO]ES", "2-EXCLUSÕES explícitas"),
+    (r"\*\*Limites/toler[âa]ncias", "3-Limites/tolerância+natureza (rótulo)"),
+    (r"\*\*Granularidade", "4-Granularidade/janela/UNIDADE (rótulo)"),
+    (r"decimal", "4-unidade %/decimal"),
+    (r"\*\*Exemplo verificado\*\*", "5-Exemplo verificado (rótulo)"),
+    (r"\*\*Mem[óo]ria de c[áa]lculo\*\*", "6-Memória de cálculo (rótulo)"),
 ]
 # (c) natureza vinculante
 BINDING = [r"VINCULANTE|n[ãa]o-?skipp[áa]vel|não-skippável", r"mesmo em autosufici|autosufici"]
@@ -44,9 +46,9 @@ def main():
         return 1
     txt = open(SKILL, encoding="utf-8").read()
 
-    # (a) seção do gate existe
-    if "ADR-089" not in txt or not re.search(r"elicitation-gate|ficha de insumo", txt, re.I):
-        fails.append("seção do elicitation-gate (ADR-089 / 'ficha de insumo') ausente no discovery/SKILL.md")
+    # (a) seção do gate existe (ancorada no passo 4.1 — anti-drift, qa-critic)
+    if not (("ADR-089" in txt) and re.search(r"ficha de insumo", txt, re.I) and re.search(r"\b4\.1\b", txt)):
+        fails.append("seção do elicitation-gate (passo 4.1 / 'ficha de insumo' / ADR-089) ausente no discovery/SKILL.md")
 
     # (b) 6 campos
     for rx, label in SEIS_CAMPOS:

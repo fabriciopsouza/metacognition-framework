@@ -9,6 +9,21 @@
 
 ---
 
+## 2026-06-19 — Release v1.68.0 (MINOR): Elicitation-first VINCULANTE antes de implementar sobre dado/indicador/regra (ADR-089)
+
+Aprovado. **Item 2 de 2** (dono: "1-2, siga autônomo até merge"). Ratifiquei + implementei o ADR-089 (proposto pelo dono em #97, que estava atrás da main — consolidei nesta branch; #97 fechado superseded). **Enforcement de capacidade existente** (anti-reinvenção): antes de implementar sobre indicador/métrica/regra de domínio de risco alto, o agente DEVE elicitar a **ficha de insumo** (6 campos) — não-skippável, **mesmo em autosuficiente**. Nasceu de falha real (sessão 2026-06-18, indicador AIVI: inferiu em vez de elicitar, 5+ rodadas de retrabalho). **Entregue:** `discovery/SKILL.md` passo 4.1 (ficha vinculante) + `execution-modes` reafirma + canário `test_elicitation_gate.py` + capability `elicitation-gate`. 0 skill nova (régua §0: edita gates existentes).
+
+**QA heterogêneo (Sonnet, worktree):** R1 REPROVAR → pegou 3 de 8 padrões do canário em **teatro** (keyword do campo casava em OUTRA seção do arquivo → remover o campo do 4.1 não falhava). Corrigidos: padrões ancorados no **rótulo em negrito** do campo + âncora de seção `4.1`; provado que remoção de campo agora é pega. Texto do gate no SKILL estava completo — só o canário era fraco.
+
+Nomenclaturas: "ficha de insumo" · "elicitation-gate VINCULANTE" · "passo 4.1" · "memória de cálculo".
+Decisões permanentes: **ADR-089 Aceito**. Capability `elicitation-gate` nova (fail-closed, doc-verified).
+Próximo passo: **itens 1-2 concluídos.** Abertos: ADR-090 (#98, onboarding/wayfinding) aguarda; PRs antigos #85/#86 arquivar/revisar.
+Riscos ativos: o gate é doc-verified (o canário prova que o TEXTO do gate existe; a OBEDIÊNCIA do agente é prosa-pela-porta, declarado no ADR — limite honesto de enforcement de comportamento).
+**RRC:** ADR-089 no CHANGELOG ✓ · capability nova (test_capabilities PASS) ✓ · README+vitrine+web-bundles 1.68.0 ✓ · canário (anti-teatro provado) = guard ✓ · suite 58 PASS/0 FAIL ✓.
+RE-ORQUESTRAÇÃO: itens 1-2 fechados; aguardar dono (ADR-090 / PRs antigos / novo pedido).
+
+---
+
 ## 2026-06-19 — Release v1.67.0 (MINOR): Núcleo product-free — nomes de produto fora do operativo, proveniência nos ADRs (ADR-091)
 
 Aprovado. **Constraint do dono:** "este repo não pode ter domínios, produtos, etc" + "1-2, siga autônomo até merge". **Item 1 de 2.** A integração BMAD (v1.62–66) deixou nomes de produto (`bmad-*`/CIS/game-dev-studio) no **conteúdo operativo** do núcleo; o `check_core_agnostic` passava (ele barra NORMA, não PRODUTO). **Entregue:** limpeza repo-wide (5 skills + execution-modes + methods.md + tags do capabilities.json) → ponteiro ao ADR; proveniência completa fica nos ADRs 081/085. Guard novo `tools/test_core_no_vendor.py` (fail-closed; exclui refs a arquivo de ADR; cobre capabilities.json) + capability `core-no-vendor`. **ADR-091 Aceito** (núcleo product-free; estende ADR-046 forma-vs-conteúdo).
