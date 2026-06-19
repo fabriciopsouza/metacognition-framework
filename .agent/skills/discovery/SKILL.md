@@ -53,8 +53,16 @@ perguntado. Este papel encarna esse método — não um catálogo de domínios, 
    *"o que um especialista sênior NESTE campo levantaria que ainda não cobrimos?"*
    — e responder essa pergunta proativamente, trazendo à tona o não-pedido.
    **Ferramenta:** para aprofundar uma seção rasa, ativar `advanced-elicitation` (ADR-081) —
-   menu de 69 métodos estruturados (Source Triangulation p/ claims, Assumption Audit p/ premissas,
+   menu de métodos estruturados (Source Triangulation p/ claims, Assumption Audit p/ premissas,
    Pre-mortem p/ riscos, Stakeholder Round Table p/ perspectivas). Retorna a seção enriquecida.
+4.1. **FICHA DE INSUMO — elicitation-gate VINCULANTE (ADR-089).** Antes de **J2 / escrever código que computa ou depende de um indicador, métrica ou regra de domínio** — gatilho de **risco alto** (regulado · número que vai a decisão · combustível/saúde/financeiro, ADR-086) — o agente **DEVE elicitar proativamente e confirmar**, **mesmo em autosuficiente** (não-skippável; falha-fechada como o mission-gate), uma ficha mínima:
+   1. **Fontes** — qual arquivo/sistema é a verdade (e qual prevalece se divergirem).
+   2. **Método/fórmula EXATA** — com **inclusões e EXCLUSÕES** explícitas (ex.: "Interna ≠ Manual").
+   3. **Limites/tolerâncias + NATUREZA** — mandatório × **referência**; teto/fallback/piso.
+   4. **Granularidade / janela / UNIDADE** — linha × acumulado; 12m × YTD; **% × decimal**.
+   5. **Exemplo verificado** — ≥1 caso com resultado esperado (oráculo).
+   6. **Memória de cálculo** nas respostas — parcelas (numerador/denominador), fórmula, unidade, fonte.
+   **Autosuficiente = elicitar completo + executar; NÃO = pular a elicitação.** "Perto, mas errado" em indicador regulado **é falha**. Sem fonte autoritativa única → confirmar com o dono (HITL); com 1 fonte inequívoca → auto-preencher file-first e declarar. O artefato (ex.: `docs/indicadores/<NOME>.md`) vive **fora do núcleo** (ADR-070).
 5. **Anti-alucinação:** nunca inventar requisito, número ou nome. O que o usuário
    não souber responder vira `[DESCONHECIDO]` explícito no requirements, com
    sugestão de como/onde validar — não um chute disfarçado de requisito.

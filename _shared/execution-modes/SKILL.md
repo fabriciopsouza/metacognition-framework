@@ -29,6 +29,8 @@ Quando uma junção falha (ex.: qa-critic FAIL), a ação é resolvida por **`py
 
 Mesmo mecanismo, **dial por modo** (P15). Limite: o fallback de modelo vale no dispatch de subagente (`Agent(model=…)`), não no modelo INTERATIVO da sessão (harness_limit, ADR-078/082). O resolvedor é a parte determinística; o orquestrador executa o retry (prosa-pela-porta).
 
+**Autosuficiente NÃO pula elicitação (ADR-089):** autonomia = *elicitar completo + executar*, **não** *inferir e corrigir reativo*. Antes de implementar sobre indicador/métrica/regra de domínio de risco alto, a **ficha de insumo VINCULANTE** (discovery passo 4.1) é não-skippável mesmo aqui — "perto, mas errado" em domínio regulado é falha.
+
 ## Ratchet forward-only
 
 A sequência permitida no fluxo normal é:
