@@ -962,7 +962,7 @@
         "elicitation",
         "discovery",
         "methods",
-        "bmad-integration",
+        "external-integration",
         "divergente",
         "canary"
       ]
@@ -981,7 +981,7 @@
         "risk",
         "gate",
         "deterministic",
-        "bmad-integration",
+        "external-integration",
         "canary"
       ]
     }
@@ -1018,7 +1018,24 @@
         "execution-modes",
         "retry",
         "hitl",
-        "bmad-integration",
+        "external-integration",
+        "canary"
+      ]
+    }
+    ,{
+      "id": "core-no-vendor",
+      "title": "Pureza do nucleo: nenhum nome de PRODUTO/VENDOR externo no conteudo operativo (_shared/.agent/skills/roteador); proveniencia so nos ADRs. Regression-guard do 'repo nao tem produtos' (P12)",
+      "status": "PROVIDES",
+      "enforcement": "fail-closed",
+      "ai_owner": "claude",
+      "mechanism": "tools/test_core_no_vendor.py",
+      "test": "tools/test_core_no_vendor.py",
+      "adr": "docs/adr/010-framework-agnostico-discovery-declara-escopo.md",
+      "cross_ai": false,
+      "tags": [
+        "agnosticism",
+        "core-purity",
+        "guard",
         "canary"
       ]
     }

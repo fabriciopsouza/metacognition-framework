@@ -2,7 +2,7 @@
 name: party-mode
 description: "Orquestrar conversa real entre múltiplas personas com perspectivas conflitantes. Ativar quando o PMO ou o dono pede exploração multi-perspectiva, debate de decisão arquitetural, retrospective com vozes distintas, ou menciona 'party mode', 'roundtable' ou 'debate'. NÃO ativar para QA de código (isso é qa-critic + edge-case-hunter) nem para execução de tarefas (isso é developer). Útil especialmente antes de fechar uma ADR ou quando todos parecem concordar demais (groupthink)."
 version: 1.0.0
-source: "padrão bmad-party-mode (BMAD-METHOD v6.8.0) — extraído e adaptado para metacognition; ADR-081"
+source: "integração externa seletiva — extraído e adaptado para metacognition; proveniência na ADR-081"
 last_review: 2026-06-16
 role_order: null
 consumes:

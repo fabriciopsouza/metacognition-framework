@@ -2,9 +2,9 @@
 
 > Companion do `advanced-elicitation/SKILL.md` (ADR-003 / ADR-081).
 > Carregar sob demanda — não em toda ativação da skill.
-> Fonte original (#1–#69, fase convergente): `bmad-advanced-elicitation/methods.csv` (BMAD-METHOD v6.8.0). Adaptado para metacognition.
-> Fonte (#70–#76, fase divergente): `bmad-module-creative-intelligence-suite` (CIS), `docs/explanation/brainstorming-techniques.md` — ADR-085 (forma agnóstica → núcleo). **Confiança:** descrições/output_pattern são [INFERIDO] do resumo de técnicas do CIS (fonte primária de Carson não lida integralmente); o resumo lista 28 de 36 técnicas — as 8 restantes são [DESCONHECIDO] e não foram importadas.
-> Fonte (#77, calibração de parâmetros): `bmad-module-game-dev-studio`, `…/gametest/knowledge/balance-testing.md` — ADR-085 (C) (veículo dados/análise → forma agnóstica no núcleo). [INFERIDO] do método generalizável da fonte.
+> Fonte (#1–#69, fase convergente): integração externa seletiva — proveniência completa em **ADR-081**.
+> Fonte (#70–#76, fase divergente): proveniência em **ADR-085** (forma agnóstica → núcleo). **Confiança:** descrições/output_pattern são [INFERIDO] do resumo da fonte (primária não lida integralmente); a fonte lista 28 de 36 técnicas — as 8 restantes são [DESCONHECIDO] e não foram importadas.
+> Fonte (#77, calibração de parâmetros): proveniência em **ADR-085 (C)** (veículo dados/análise → forma agnóstica no núcleo). [INFERIDO] do método generalizável da fonte.
 > **Nota de nomenclatura:** nomes dos métodos mantidos em inglês (nomes próprios de técnicas com uso estabelecido na literatura). Restante do framework segue português conforme glossário.
 
 ## Como usar este catálogo
@@ -96,7 +96,7 @@
 | 74 | divergente | Stream of Consciousness | Gerar sem parar e sem editar por período fixo — suspende o crítico interno que poda ideias cedo demais; separa geração de avaliação | tempo fixo → escrita contínua sem filtro → mineração posterior |
 | 75 | divergente | Future Press Release | Escrever o anúncio do sucesso futuro como se já tivesse acontecido (data, manchete, resultado) — força concretude sobre o estado-alvo e revela o que precisa ser verdade. Distinto do #55 (Hindsight retrospectivo) e do #37 (What If hipotético): aqui o alvo é gerar a visão de sucesso concreta | data futura → manchete de sucesso → detalhes → requisitos implicados |
 | 76 | divergente | Brainwriting | Ideação silenciosa e paralela antes de qualquer discussão, depois construir sobre as contribuições — evita ancoragem e dominância do primeiro/mais-alto. Distinto do #9 (Stakeholder Round Table, debate verbal): aqui a geração é silenciosa e precede a discussão. Combina com party-mode | rodada silenciosa → trocar → construir → convergir |
-| 77 | core | Parameter Tuning Loop | Calibrar parâmetros de um sistema contra alvos quantificados: modelar matematicamente (planilha/simulação) → testar isolado → junto → em escala → medir vs alvo com **red-flags numéricos** (limiar de intervenção) → ajustar e iterar. Veículo dados/análise — agnóstico (economia, manufatura, software, processo). Recast do balance/certification testing do `bmad-module-game-dev-studio` (ADR-085 C) | intent → model → isolate→integrate→scale → measure vs target → red-flag → iterate |
+| 77 | core | Parameter Tuning Loop | Calibrar parâmetros de um sistema contra alvos quantificados: modelar matematicamente (planilha/simulação) → testar isolado → junto → em escala → medir vs alvo com **red-flags numéricos** (limiar de intervenção) → ajustar e iterar. Veículo dados/análise — agnóstico (economia, manufatura, software, processo). Recast registrado em ADR-085 (C) | intent → model → isolate→integrate→scale → measure vs target → red-flag → iterate |
 
 ---
 
@@ -104,12 +104,12 @@
 
 O catálogo cobre duas fases ortogonais do pensamento — selecionar pela **fase certa** importa tanto quanto pelo método:
 
-- **DIVERGENTE (gerar):** produzir muitas opções do zero, suspendendo o julgamento. Usar quando o artefato está **vazio ou raso** (poucas alternativas, pouca matéria-prima). Métodos: **#70–#76** (novos, CIS) + os criativos já existentes **#24, #35, #37, #38, #39, #40, #41**.
+- **DIVERGENTE (gerar):** produzir muitas opções do zero, suspendendo o julgamento. Usar quando o artefato está **vazio ou raso** (poucas alternativas, pouca matéria-prima). Métodos: **#70–#76** (novos — ADR-085) + os criativos já existentes **#24, #35, #37, #38, #39, #40, #41**.
 - **CONVERGENTE (refinar/validar):** estressar, criticar e selecionar sobre material **que já existe**. Usar quando há artefato a aprofundar. Métodos: **todo o restante** (#1–#23, #25–#34, #36, #42–#69).
 
 **Regra de seleção por objetivo (determinística):** se o objetivo é **GERAR** (artefato vazio/poucas opções) → priorizar fase divergente. Se é **REFINAR/VALIDAR** (artefato existe) → priorizar fase convergente. Em dúvida ou trabalho longo: **divergir primeiro, convergir depois** (não misturar geração e crítica na mesma rodada — é o ponto de #74 Stream of Consciousness).
 
-> **Não integrados do CIS (rejeição documentada, régua §0 — ADR-085):** *Dream Capture* e *Guided Imagery* — baixo rigor, não-mecanizáveis, output não-auditável; ficam de fora até haver caso que prove ganho. *Anti-Problems* foi absorvido por #70 (Worst Possible Idea); *Forced Connections* por #38/#40; *Round Robin/Brainwalking* (logística de grupo) por party-mode.
+> **Não integrados (rejeição documentada, régua §0 — ADR-085):** *Dream Capture* e *Guided Imagery* — baixo rigor, não-mecanizáveis, output não-auditável; ficam de fora até haver caso que prove ganho. *Anti-Problems* foi absorvido por #70 (Worst Possible Idea); *Forced Connections* por #38/#40; *Round Robin/Brainwalking* (logística de grupo) por party-mode.
 
 ## Seleção rápida por objetivo
 
