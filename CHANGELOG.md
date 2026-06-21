@@ -15,6 +15,20 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.71.0] — 2026-06-20 — Poda de contexto: rotação do history.md (últimos N quentes + arquivo-arquivo, zero perda) (ADR-092)
+
+[CONSOLIDADO] · [CONFIRMADO]
+
+### Adicionado
+- **Rotação determinística do `history.md` (ADR-092):** `tools/rotate_history.py` (`--keep N`, default 10; `--dry-run`; `--file`/`--archive` testáveis) mantém os últimos **N checkpoints** + `## Em aberto` + `## Aprendizado` **inteiros** no arquivo quente e move os mais antigos — **na mesma ordem, sem deletar** — para `docs/history/history-archive.md`. Mecaniza a "Higiene v1.58.1" (prosa→mecanismo); o contrato ADR-007 (boot lê só o topo + Em aberto + Aprendizado) fica explícito.
+- **Canário `tools/test_rotate_history.py`** (auto-descoberto pelo `run_canaries`): prova 6 invariantes — `quente + arquivo = original` (zero perda/duplicata), `## Em aberto`/`## Aprendizado` byte-a-byte, trap do sub-header `## Aprendizado (append…)` dentro de checkpoint, idempotência, topo preservado, `--dry-run` não escreve. + capability `history-rotation`.
+
+### Resultado
+- 1ª rotação real: **55 checkpoints → 10 quentes / 45 arquivados** (`history.md` ~901→238 linhas, ~37k→~8k tokens). Consumidores verificados verdes: `compaction_gate` (≥1 checkpoint), `handoff.py` (topo + Em aberto), suíte 62 PASS/0 FAIL.
+
+### Limite declarado
+- `check_reorchestration.py` (linter, fora do `run_canaries`) já falhava ANTES por casar "APROVADO_LIMPO" em prosa no `## Aprendizado` — pré-existente/ortogonal (flag em `## Em aberto`). Rotação é sob demanda (sem hook dedicado).
+
 ## [1.70.0] — 2026-06-19 — Project-onboarding/wayfinding BMAD por composição: greenfield/brownfield + generate/document-project + guia user-facing (ADR-090)
 
 [CONSOLIDADO] · [CONFIRMADO]
