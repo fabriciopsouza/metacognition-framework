@@ -1148,7 +1148,7 @@
     },
     {
       "id": "squad-enforcement-gate",
-      "title": "Enforcement deterministico do squad: manifesto declarativo (forma BMAD) + gate fail-closed com atestacao de isolamento",
+      "title": "Enforcement deterministico do squad: manifesto declarativo de papeis/comportamentos + gate fail-closed com atestacao de isolamento",
       "status": "PROVIDES",
       "ai_owner": "claude",
       "mechanism": "tools/squad_gate.py",
