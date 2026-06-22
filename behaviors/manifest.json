@@ -1,0 +1,29 @@
+{
+  "_doc": "Manifesto declarativo (forma BMAD) dos comportamentos/papeis + MATRIZ deterministica path->papeis exigidos. Lido por tools/squad_gate.py (ADR-092). Comportamento vira DADO versionado: editar aqui muda o que o gate exige, sem mexer no codigo. Cada item da matriz casa por PATH staged (deterministico, nao julgamento).",
+  "matriz": [
+    {"match": {"suffix": ".py"}, "exige": ["qa_critic"], "porque": "mudanca de codigo"},
+    {"match": {"prefix": "docs/adr/"}, "exige": ["architect", "qa_critic"], "porque": "ADR novo/alterado"},
+    {"match": {"exact": "data/catalog/bindings.json"}, "exige": ["research_ou_ratificacao"], "porque": "binding/numero regulado"},
+    {"match": {"exact": "data/catalog/spec_faixas.json"}, "exige": ["research_ou_ratificacao"], "porque": "faixa de especificacao regulada"},
+    {"match": {"prefix": "CHANGELOG"}, "exige": ["juncao_release"], "porque": "release (junção J0-J6, ADR-077)"}
+  ],
+  "comportamentos": {
+    "qa_critic": {
+      "evidencia": "artefato em _meta/qa/<bloco>.json com recomendacao aprovativa E atestacao de isolamento",
+      "atestacao_obrigatoria": ["agentId", "modelo"],
+      "regra": "agentId nao-vazio (subagente isolado) e modelo != autor do bloco (ADR-074). String solta NAO passa.",
+      "check": "tools/squad_gate.py"
+    },
+    "architect": {"evidencia": "ADR correspondente em docs/adr/ (o proprio arquivo staged)", "check": "tools/squad_gate.py"},
+    "research_ou_ratificacao": {
+      "evidencia": "research-ledger (>=K dominios DISTINTOS + resultado url+hash) OU campo ratificado_por humano",
+      "check": "tools/research_evidence.py"
+    },
+    "busca_exaustiva": {
+      "evidencia": "para todo [DESCONHECIDO] que vai a decisao: >=K dominios distintos, fonte oficial, resultado anexado, vigencia verificada",
+      "porque": "NAO SEI so e legitimo APOS busca provada — elimina o punt preguicoso (nao garante onisciencia)",
+      "check": "tools/research_evidence.py"
+    }
+  },
+  "parametros": {"K_dominios_distintos": 2, "atestacao_anti_self": true}
+}
