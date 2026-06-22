@@ -1145,6 +1145,22 @@
         "pre-dev",
         "external-integration"
       ]
+    },
+    {
+      "id": "squad-enforcement-gate",
+      "title": "Enforcement deterministico do squad: manifesto declarativo (forma BMAD) + gate fail-closed com atestacao de isolamento",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/squad_gate.py",
+      "test": "tools/test_squad_gate.py",
+      "adr": "docs/adr/092-camada-enforcement-comportamentos-manifesto-gate-githook.md",
+      "cross_ai": false,
+      "tags": [
+        "squad",
+        "enforcement",
+        "fail-closed",
+        "anti-drift"
+      ]
     }
   ],
   "registry_waivers": [
