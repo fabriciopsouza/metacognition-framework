@@ -9,6 +9,22 @@
 
 ---
 
+## 2026-06-23 — Release v1.72.0 (MINOR): processo adversarial mandatório-default + canônico-prevalece + autonomia-limitada + EDR verificável (ADR-094)
+
+Fechamento do release do ADR-094, que já estava mergeado em main (#106 @ `23655d9`) mas com o ritual de release não-cortado (CHANGELOG em `[Não lançado]`). Diretriz do dono: *"o PROCESSO adversarial é o CORAÇÃO do framework e precisa ser mandatório; ANTES funcionava SEM bloquear; advisory parou de funcionar"*. O defeito era NÃO seguir regras que já existiam e funcionavam (ADR-011/027/007), não ausência de regra → correção ADITIVA (sem hook novo, sem hard-block; régua §0). Fechamento executado em sessão separada (máquina `9TRP7H4`, não-kerberus) após verificar origin sem trabalho de release in-flight (sem branch/tag/WIP de v1.72).
+
+**Entregue (já em main via #106; este bloco apenas CORTA o release):** `_shared/traceability` **Regra 6** (desafiar o pedido · qa-critic isolado por-default até-PASS com rewind · elicitação/pesquisa exaustivas · **canônico-prevalece** · **autonomia≠bypass**); `boot_check` ganha `kind=process` (`_process_running`, cross-platform/determinístico) tornando a premissa "Kaspersky veta hooks" **verificável** (APLICA/ESTALE), não assumida; canário `test_environment_applicability` cobre o caso `process`. **Decisão de NÃO fazer:** hard-block de merge — `squad_gate` permanece **pronto-mas-não-ativado** (escalada futura, decisão do dono).
+
+**QA heterogêneo (Sonnet, isolado):** sobre o código (#106) — APROVAR_COM_RESSALVAS, 3 ALTO corrigidos (incl. NÃO commitar `settings.json` com paths de cliente). Sobre o **fechamento do release** (esta sessão, qa-critic isolado para o posture-gate) — APROVAR_COM_RESSALVAS, `rrc=PASSA`: conteúdo verificado correto (bump completo, CHANGELOG honesto vs main, Regra 6/kind=process/squad_gate-dormante confirmados no código, SemVer MINOR correto, ADR-094 Aceito+citado); 3 ressalvas BAIXO = passos mecânicos de fechamento (persistir artefato qa-evidence + checkpoint + commit), não defeitos. Reconciliação registrada: os 3 canários inicialmente-FAIL (posture/qa-evidence/release-checkpoint) eram **pré-condicionados ao próprio veredito a persistir**, não bug — verificável em `test_posture_gate.py:95`/`test_qa_evidence.py:14`. Suíte final: 63 PASS / 1 SKIP / 0 FAIL.
+
+Nomenclaturas: "processo adversarial mandatório-default" · "canônico-prevalece" · "autonomia≠bypass" · "EDR verificável (kind=process)" · "Regra 6".
+Decisões permanentes: **ADR-094 Aceito**. `squad_gate` pronto-mas-dormante (hard-block é decisão futura do dono). Release **v1.72.0** cortado (RRC completo). Dono autorizou "verificar, revalidar e finalizar até pr merge".
+Próximo passo: tarefas B/C (Copilot→Gemini↔RAG) — prompt de handoff portável + discovery file-first da pasta `F:\Downloads\1- Agente Copilot Studio...`.
+Riscos ativos: corte do release feito de `9TRP7H4` (não-kerberus); se kerberus tiver corte não-pushed, reconciliar CHANGELOG/README (conflito trivial, aditivo).
+**RRC (completo):** ADR-094 no CHANGELOG [1.72.0] · README+web-bundles(6)+vitrine(`guia/web/index.html`) 1.72.0 · qa-evidence v1.72.0 (posture, `_meta/qa/v1.72.0-adversarial-process-edr.json`) · suíte 63 PASS/1 SKIP/0 FAIL · tag v1.72.0.
+
+---
+
 ## 2026-06-23 — Release v1.71.0 (MINOR): detecção de ambiente no boot + aplicabilidade das premissas (ADR-093)
 
 Pedido cross-app (vinda de vibra-kb-rag, sessão 2026-06-22b): premissa de ambiente ESTALE quebra file-first (briefing dizia "CORPUS_ROOT F:\ não existe" → agente hesitou em ler F:\ que EXISTIA). Squad completo com criticidade: architect→ADR-093 (ratificado pelo dono: "ambos mecanismo+regra; manifesto `.agent/environment.json`")→qa-critic heterogêneo (Sonnet) sobre o ADR→developer→canário.
