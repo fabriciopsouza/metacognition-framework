@@ -15,6 +15,15 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [Não lançado] — Processo adversarial mandatório (default) + canônico-prevalece + autonomia-limitada + EDR verificável (ADR-094)
+
+[EMERGENTE] · [CONFIRMADO]
+
+### Adicionado / Mudado (ADITIVO — sem hard-block, sem reescrever desenho aprovado)
+- **ADR-094 Aceito** — restaura o **processo adversarial como mandatório-default** (o coração do framework), reafirmando ADR-011/027/007 (as regras já existiam e funcionavam SEM bloqueio; o defeito foi não segui-las) via **`_shared/traceability` Regra 6** (desafiar o pedido · qa-critic isolado por-default até-PASS com rewind · elicitação/pesquisa exaustivas · **canônico-prevalece** · **autonomia≠bypass**).
+- **EDR verificável (estende ADR-093):** `boot_check` ganha `kind=process` (`_process_running`, cross-platform/determinístico) — a premissa "Kaspersky veta hooks" passa a ser **verificada** (`.agent/environment.json` → APLICA/ESTALE), não assumida. Canário `test_environment_applicability` cobre o caso process.
+- **Decisão de NÃO fazer:** hard-block de merge (squad_gate) — o dono confirmou que antes funcionava sem bloquear; `squad_gate` permanece pronto-mas-não-ativado (escalada futura, decisão do dono). Sem hook novo (régua §0 — reusa route-gate/ADR-011).
+
 ## [1.71.0] — 2026-06-23 — Detecção de ambiente no boot + aplicabilidade das premissas cross-session (ADR-093)
 
 [CONSOLIDADO] · [CONFIRMADO]

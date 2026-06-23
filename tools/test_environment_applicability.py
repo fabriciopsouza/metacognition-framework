@@ -59,6 +59,12 @@ def test_polarity_matrix():
     qk = boot_check.eval_assumption({"id": "qk", "kind": "network", "expect_present": False})
     check(qk["verdict"] == "INDEFINIDO", f"kind inválido -> INDEFINIDO, não APLICA (got {qk['verdict']})")
 
+    # ADR-094: kind=process (EDR verificável) — processo inexistente + expect_present=false = APLICA
+    qpr = boot_check.eval_assumption({"id": "edr", "kind": "process", "expect_present": False,
+                                      "value": "zzz_no_such_process_adr094_zzz"})
+    check(qpr["verdict"] == "APLICA", f"process ausente × expect=false -> APLICA (got {qpr['verdict']})")
+    check(qpr["found"] is False, "process inexistente -> found=False (deterministico)")
+
 
 def test_envelope_contract():
     """O envelope cross-IA tem TODOS os 10 campos REQUIRED do cross_ai_hub (ALTO-1: API real)."""
