@@ -23,6 +23,7 @@ Uso:
 import datetime
 import json
 import os
+import platform
 import re
 import subprocess
 import sys
@@ -183,7 +184,147 @@ def check_author_tier(author_model=""):
             "stamps": []}
 
 
-CHECKS = [check_repo_sync, check_core_agnostic, check_cross_ai_boot_scan, check_version_sanity]
+# ---------------------------------------------------------------------------
+# ADR-093 — detecção de ambiente + aplicabilidade das premissas (cross-session/cross-IA)
+# ---------------------------------------------------------------------------
+ENV_MANIFEST = os.path.join(ROOT, ".agent", "environment.json")
+
+
+def detect_environment():
+    """Ambiente REAL desta máquina (determinístico — nunca probe de rede)."""
+    return {"host": platform.node() or "?", "os": platform.system() or "?"}
+
+
+def _path_exists(value):
+    """Primitivo único cross-platform p/ kind path|drive. Drive ejetado/inacessível -> False
+    (a verdade viva que o agente precisa), não falso-presente por 'letra reservada'."""
+    try:
+        return bool(value) and os.path.exists(os.path.expandvars(os.path.expanduser(str(value))))
+    except Exception:  # noqa: BLE001 — boot nunca crasha
+        return False
+
+
+SUPPORTED_KINDS = ("path", "drive", "env", "host", "hook")
+
+
+def eval_assumption(a):
+    """Matriz de polaridade (ADR-093): expect_present × found -> APLICA | ESTALE | AUSENTE.
+    kind não-suportado -> INDEFINIDO (NUNCA APLICA silencioso — achado M1 do qa-critic)."""
+    kind = (a.get("kind") or "").lower()
+    expect = bool(a.get("expect_present", True))
+    value = a.get("value", "")
+    if kind not in SUPPORTED_KINDS:
+        return {"id": a.get("id", "?"), "kind": kind, "expect_present": expect, "found": None,
+                "verdict": "INDEFINIDO",
+                "note": f"kind '{kind}' não suportado ({'/'.join(SUPPORTED_KINDS)}) — premissa NÃO verificada"}
+    if kind in ("path", "drive"):
+        found = _path_exists(value)
+    elif kind == "env":
+        found = bool(os.environ.get(str(value))) if value else False
+    elif kind == "host":
+        found = (platform.node() or "").lower() == str(value).lower()
+    else:  # hook — NB: .hooklive PERSISTE entre sessões (proxy de "hooks já rodaram neste repo",
+        #  não "hooks ativos NESTA sessão"); limite declarado (ADR-093, achado B3 do qa-critic).
+        found = os.path.isdir(os.path.join(ROOT, ".claude", ".hooklive"))
+    if expect and found:
+        verdict = "APLICA"
+    elif expect and not found:
+        verdict = "AUSENTE"
+    elif not expect and not found:
+        verdict = "APLICA"
+    else:  # not expect and found -> o CASO-RAIZ (prosa diz ausente, mas existe)
+        verdict = "ESTALE"
+    return {"id": a.get("id", "?"), "kind": kind, "expect_present": expect,
+            "found": found, "verdict": verdict, "note": a.get("note", "")}
+
+
+def build_env_envelope(stale, env):
+    """Monta o envelope de handoff EXATO que cross_ai_hub.deposit() exige (os 10 campos REQUIRED).
+    Determinístico (report_id por host+dia -> idempotente). Função pura -> o canário a verifica."""
+    host = env.get("host", "?")
+    date = datetime.date.today().isoformat()
+    return {
+        "schema_version": "1.0",
+        "report_id": f"env-applicability-{host}-{date}",
+        "topic_fingerprint": "environment-applicability",
+        "thread_id": f"env-{host}",
+        "from": "claude-master",
+        "to": "[all]",
+        "date": date,
+        "status": "open",
+        "kind": "environment-alert",
+        "round": 1,
+    }
+
+
+def emit_cross_ai_handoff(stale, env):
+    """ADR-069: claude-master só ESCREVE no próprio outbox (deposit no hub = fluxo de PR, não auto).
+    Escreve o envelope quando há ESTALE/AUSENTE -> outra IA/sessão não repete a premissa errada.
+    Fail-soft: outbox não-gravável -> só registro local em boot-proof.json. Devolve msg de status."""
+    envelope = build_env_envelope(stale, env)
+    ids = ", ".join(s["id"] for s in stale)
+    fm = "\n".join(f"{k}: {envelope[k]}" for k in envelope)
+    body = (f"---\n{fm}\n---\n\n"
+            f"# Alerta de ambiente — premissa(s) divergente(s) em {env.get('host', '?')}\n\n"
+            f"Premissas ESTALE/AUSENTE no boot: {ids}.\n"
+            f"Não confie na prosa do briefing/ADR sobre estes itens NESTA máquina — file-first (ADR-093).\n")
+    outbox = os.path.join(ROOT, "docs", "_private", "cross-ai", "outbox")
+    try:
+        os.makedirs(outbox, exist_ok=True)
+        dest = os.path.join(outbox, f"{envelope['report_id']}.md")
+        with open(dest, "w", encoding="utf-8") as f:
+            f.write(body)
+        return f"envelope cross-IA -> {os.path.relpath(dest, ROOT)} (deposite no hub via PR, ADR-069)"
+    except Exception as e:  # noqa: BLE001
+        return f"cross-IA fail-soft (outbox não-gravável: {e}) — registro só local em boot-proof.json"
+
+
+def check_environment_applicability():
+    """ADR-093: detecta ambiente real + cruza com .agent/environment.json (APLICA/ESTALE/AUSENTE).
+    Sem manifesto -> skip declarado (nunca falso-OK). Fail-soft. Cross-session via bloco 'environment'
+    do boot-proof.json; cross-IA via outbox quando há divergência."""
+    env = detect_environment()
+    if not os.path.isfile(ENV_MANIFEST):
+        return {"name": "env-applicability", "status": "skip",
+                "detail": f"sem .agent/environment.json (host={env['host']} os={env['os']}) — copie "
+                          f".agent/environment.example.json e declare as premissas (ADR-093)",
+                "stamps": [], "environment": {**env, "assumptions": []}}
+    try:
+        with open(ENV_MANIFEST, encoding="utf-8-sig") as _f:  # B1: context manager
+            data = json.load(_f)
+        assumptions = data.get("assumptions", []) or []
+    except Exception as e:  # noqa: BLE001
+        return {"name": "env-applicability", "status": "warn",
+                "detail": f".agent/environment.json ilegível ({e}) — premissas NÃO verificadas",
+                "stamps": [], "environment": {**env, "assumptions": []}}
+    if not assumptions:  # B4: manifesto presente mas vazio != "tudo OK" (nunca falso-OK)
+        return {"name": "env-applicability", "status": "skip",
+                "detail": f"manifesto presente sem premissas (host={env['host']} os={env['os']}) — "
+                          f"preencha assumptions[] (ADR-093)",
+                "stamps": [], "environment": {**env, "assumptions": []}}
+    evaluated = [eval_assumption(a) for a in assumptions]
+    stale = [e for e in evaluated if e["verdict"] in ("ESTALE", "AUSENTE")]
+    indef = [e for e in evaluated if e["verdict"] == "INDEFINIDO"]  # M1: kind não-suportado
+    block = {**env, "assumptions": evaluated}
+    if not stale and not indef:
+        return {"name": "env-applicability", "status": "ok",
+                "detail": f"host={env['host']} os={env['os']} — {len(evaluated)} premissa(s) APLICAM",
+                "stamps": [], "environment": block}
+    parts = []
+    xai = ""
+    if stale:
+        xai = " " + emit_cross_ai_handoff(stale, env)
+        parts.append("DIVERGÊNCIA: " + "; ".join(f"{s['id']}={s['verdict']}" for s in stale))
+    if indef:
+        parts.append("NÃO-VERIFICADO (kind inválido): " + "; ".join(s["id"] for s in indef))
+    return {"name": "env-applicability", "status": "warn",
+            "detail": f"host={env['host']} os={env['os']} — " + " | ".join(parts) +
+                      ". NÃO confie na prosa documentada; file-first." + xai,
+            "stamps": [], "environment": block}
+
+
+CHECKS = [check_repo_sync, check_core_agnostic, check_cross_ai_boot_scan, check_version_sanity,
+          check_environment_applicability]
 
 
 def run_checks():
@@ -225,6 +366,11 @@ def write_proof(session_id, results):
         "all_ok": all(r["status"] != "fail" for r in results),
         "checks": [{k: r[k] for k in ("name", "status", "detail")} for r in results],
     }
+    # ADR-093: bloco environment = SNAPSHOT por-boot (datado em `ts`), "última realidade observada",
+    # NUNCA premissa congelada — o próximo boot re-detecta e sobrescreve.
+    env_res = next((r for r in results if r.get("name") == "env-applicability"), None)
+    if env_res and "environment" in env_res:
+        proof["environment"] = env_res["environment"]
     out = os.path.join(ROOT, ".claude", "boot-proof.json")
     try:
         os.makedirs(os.path.dirname(out), exist_ok=True)

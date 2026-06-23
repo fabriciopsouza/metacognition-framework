@@ -69,3 +69,32 @@ Triagem do que sobra:
 já temos para artefatos de processo. A única "contribuição" real é **metacognitiva**: prova de convergência
 que **valida** a decisão de manter o núcleo agnóstico (standard declarativo + gates anti-drift fail-closed).
 Reabrir só se aparecer dor concreta de impact-tracking que a suíte de canários não cubra (então: ADR + §0 + qa-critic).
+
+## Addendum 2026-06-22 — gap NOVO surgido em conversa, com extratos (não fecha a §4; refina a #2/#3)
+
+> A §4 olhou pela lente *features de dados* e concluiu "nada a importar". Esta conversa (sessão `ee8a9a49`)
+> surfou um gap **diferente**, sob a lente *credibilidade do processo*, e **com evidência empírica** — por isso
+> reabro pontualmente. **Não contradiz a §4** (continua: não importar feature do OM); refina a triagem #2/#3,
+> que havia descartado PROV-O/"memories por asset" como over-engineering sem examinar a granularidade *por-turno*.
+
+**Provocação do dono:** "vocês fazem muita coisa na mão e por provocação humana; quero no automático — e eu nem
+vejo se você elicita/pesquisa/critica; me prove o contrário com extratos a cada interação."
+
+**Extratos (desta sessão, file-first):** em 4 interações, o único recibo persistido foi `.claude/boot-proof.json`
+(22:41, e **manual** após o nag do liveness). `elicitation-gate` / `context-brief-gate` / `qa_evidence` **não
+dispararam nenhuma vez** — nenhuma ficha de insumo, nenhum brief, nenhum ledger novo (último `_meta/qa/junctions/`
+= `adr-085...jsonl` de sessão **anterior**). Hooks **estão** cabeados (`settings.json`: 5 eventos) e os de
+`UserPromptSubmit` disparam (são os banners). **Correção de atribuição:** o "EDR/Kaspersky" foi *hint-de-banner
+virando causa* (anti-padrão já catalogado) — é 1 máquina pouco usada e o fallback existe; **a causa real é
+arquitetural.**
+
+**Diagnóstico [CONFIRMADO pelos extratos]:** os gates de elicit/pesquisa/crítica são de **MARCO**
+(release / junção J0–J6 / pré-implementação-de-risco), **não de TURNO**. Entre dois marcos (dias), todo o
+raciocínio acontece **sem gatilho e sem recibo** — exatamente o "tudo na mão" percebido. **Falta a camada de
+proveniência por-turno** — o equivalente ao *evento* do OpenMetadata (proveniência por-evento) vs. nossa
+proveniência por-marco. Não é bug; é uma camada ausente.
+
+**Candidato [§0 — único net-positivo]:** emissor por-turno (`PostToolUse`/fim-de-turno) que **declara ao vivo +
+grava recibo** do elicit/pesquisa/crítica do turno, **reusando `qa_evidence.py` como sink** (granularidade do
+turno) **com fallback inline** onde o hook não roda. **NÃO reinventar** `qa_evidence`/`junction-ledger` — estender.
+Pré-gate obrigatório: architect (ADR) + qa-critic heterogêneo. Backlog registrado em `history.md → ## Em aberto`.

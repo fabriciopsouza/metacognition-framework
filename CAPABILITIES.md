@@ -1,7 +1,7 @@
 <!-- GERADO por tools/build_capabilities.py a partir de capabilities.json — NAO editar a mao -->
 # CAPABILITIES — indice de capacidades (nivel 1: id + title)
 
-> **73 capacidades** — 64 ✅ PROVIDES · 9 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
+> **74 capacidades** — 65 ✅ PROVIDES · 9 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
 > **Como usar (file-first, boot):** leia esta lista p/ achar o `id`; o registro completo (mecanismo · canario · ADR · doc) vem por **`python tools/build_capabilities.py --show <id>`** ou `grep -A8 '"<id>"' capabilities.json`. Nao reexplore o repo antes disto.
 > **Manutencao:** feature nova -> +1 registro em `capabilities.json` + `python tools/build_capabilities.py`. Canario barra canario orfao (cobertura).
 
@@ -9,6 +9,7 @@
 
 - ✅ 🔗 `cross-ai-antiloop-gate` — Trava fisica anti-loop da troca cross-IA (terminacao garantida)
 - ✅ 🔗 `cross-ai-hub-tooling` — Scan/manifest/deposit do hub cross-IA (descoberta no boot + deposit validado pelo gate)
+- ✅ 🔗 `environment-applicability-gate` — Deteccao de ambiente no boot + aplicabilidade das premissas (APLICA/ESTALE/AUSENTE) cross-session/cross-IA
 - ✅ 🔗 `equivalence-gate` — Equivalencia de capacidade entre repos-mae (PROVIDES|JUSTIFIED_ABSENT + hitl_proof)
 - ✅ 🔗 `execution-report` — Relatorio de execucao (telemetria de processo + licoes), opt-in anonimizado
 - ✅ 🔗 `execution-report-builder` — Builder do relatorio de execucao (dois tiers: telemetria processo + anonimizada)
