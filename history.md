@@ -22,6 +22,7 @@ Decisões permanentes: **ADR-094 Aceito**. `squad_gate` pronto-mas-dormante (har
 Próximo passo: tarefas B/C (Copilot→Gemini↔RAG) — prompt de handoff portável + discovery file-first da pasta `F:\Downloads\1- Agente Copilot Studio...`.
 Riscos ativos: corte do release feito de `9TRP7H4` (não-kerberus); se kerberus tiver corte não-pushed, reconciliar CHANGELOG/README (conflito trivial, aditivo).
 **RRC (completo):** ADR-094 no CHANGELOG [1.72.0] · README+web-bundles(6)+vitrine(`guia/web/index.html`) 1.72.0 · qa-evidence v1.72.0 (posture, `_meta/qa/v1.72.0-adversarial-process-edr.json`) · suíte 63 PASS/1 SKIP/0 FAIL · tag v1.72.0.
+**OVERRIDE (ADR-051):** PR #107 mergeado com o required-check GHA "canários" VERMELHO — **causa: os jobs do GitHub Actions NÃO iniciaram por falha de billing/spending-limit da conta** (anotação literal do run), não é falha de código/canário; red idêntico em #104/#105/#106 (já em main) prova pré-existência. **Gate real** = `run_canaries.py` local = 63 PASS/0 FAIL. **Custo/consequência:** GHA segue inoperante até o billing ser resolvido (dívida de infra, ação dono/TI; sem risco de código). Declarado, não-silencioso (memória `github-actions-not-the-gate`).
 
 ---
 
