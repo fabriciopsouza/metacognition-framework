@@ -35,6 +35,24 @@
       ]
     },
     {
+      "id": "environment-applicability-gate",
+      "title": "Deteccao de ambiente no boot + aplicabilidade das premissas (APLICA/ESTALE/AUSENTE) cross-session/cross-IA",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/boot_check.py",
+      "test": "tools/test_environment_applicability.py",
+      "adr": "docs/adr/093-boot-deteccao-ambiente-aplicabilidade-premissas-cross-session.md",
+      "cross_ai": true,
+      "enforcement": "fail-soft",
+      "tags": [
+        "boot",
+        "environment",
+        "file-first",
+        "cross-session",
+        "anti-stale"
+      ]
+    },
+    {
       "id": "cross-ai-antiloop-gate",
       "title": "Trava fisica anti-loop da troca cross-IA (terminacao garantida)",
       "status": "PROVIDES",

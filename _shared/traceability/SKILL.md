@@ -45,3 +45,17 @@ PARAR, EXPLICITAR, PERGUNTAR. Mostrar sempre, de forma cirúrgica:
 Toda decisão relevante registra: **decisão → fonte → versão**.
 Em ambiente regulado, esta cadeia é parte do entregável (ver `high-stakes-gate`),
 não acessório. Mudança técnica vincula-se ao ADR e ao changelog.
+
+## Regra 5 — Premissa de ambiente é INFERÊNCIA com validade (ADR-093)
+
+Premissa sobre o ambiente (path, drive, `CORPUS_ROOT`, host, hook vetado por EDR) declarada em
+briefing/ADR/memória é **INFERÊNCIA presa a uma máquina num momento** — nunca CONFIRMADO-para-sempre.
+Ao abrir sessão (ou trocar de PC), **re-verificar por inspeção** (`os.path.exists`, listar drive);
+**file-first suplanta a prosa**: se a documentação diz "`F:\` não existe" mas o filesystem mostra
+`F:\` montado, vale o filesystem (prosa = ESTALE). O inverso também: path documentado-mas-ausente
+não é "deve estar lá", é AUSENTE aqui. Ver eixo CONFIRMADO/INFERIDO em
+`_shared/confidence-classification`. Mecanizado no boot por `check_environment_applicability`
+(`tools/boot_check.py`) cruzando `.agent/environment.json`.
+
+> Causa raiz desta regra: prosa estale ("`F:\` não existe neste PC") fez o agente hesitar em ler
+> `F:\` que EXISTIA — file-first quebrado por documentação congelada.

@@ -9,6 +9,22 @@
 
 ---
 
+## 2026-06-23 — Release v1.71.0 (MINOR): detecção de ambiente no boot + aplicabilidade das premissas (ADR-093)
+
+Pedido cross-app (vinda de vibra-kb-rag, sessão 2026-06-22b): premissa de ambiente ESTALE quebra file-first (briefing dizia "CORPUS_ROOT F:\ não existe" → agente hesitou em ler F:\ que EXISTIA). Squad completo com criticidade: architect→ADR-093 (ratificado pelo dono: "ambos mecanismo+regra; manifesto `.agent/environment.json`")→qa-critic heterogêneo (Sonnet) sobre o ADR→developer→canário.
+
+**Entregue:** `check_environment_applicability` em `boot_check.py` (matriz de polaridade `expect_present × found` → APLICA/ESTALE/AUSENTE; `os.path.exists`, sem probe de rede); bloco `environment` no boot-proof.json (snapshot, nunca premissa congelada); envelope cross-IA no outbox via `cross_ai_hub.deposit` (fail-soft); `.agent/environment.example.json` (template genérico); `_shared/traceability` Regra 5; canário `test_environment_applicability.py` (4 quadrantes). +1 capability `environment-applicability-gate`.
+
+**QA heterogêneo (Sonnet, 2 rounds):** sobre o ADR — APROVAR_COM_RESSALVAS, 3 ALTO (API `cross_ai_hub` não tem "publish" → `deposit`; matriz de polaridade incompleta; `.json` fora do tier-norma do linter) + 3 MÉDIO + 1 BAIXO. Sobre o CÓDIGO — APROVAR_COM_RESSALVAS: M1 (kind inválido → APLICA silencioso → corrigido p/ INDEFINIDO), M2 (canário protege `environment`), M3 (redação ADR alinhada a "outbox, não auto-deposita"), B1/B3/B4. TODOS incorporados.
+
+Nomenclaturas: "matriz de polaridade", "APLICA/ESTALE/AUSENTE", "manifesto de ambiente", "environment-applicability".
+Decisões permanentes: **ADR-093 Aceito**. Capability `environment-applicability-gate` nova. Release **v1.71.0** cortado (RRC completo) — dono autorizou merge explícito ("faça até o merge, não deixe pendências").
+Próximo passo: tarefas B/C (Copilot→Gemini↔RAG) — prompt de handoff portável + discovery file-first da pasta `F:\Downloads\1- Agente Copilot Studio...`.
+Riscos ativos: envelope cross-IA escreve em `docs/_private/cross-ai/outbox` (rastreado neste repo privado) só quando há ESTALE/AUSENTE — comportamento ADR-069, não bug.
+**RRC (completo):** ADR-093 no CHANGELOG [1.71.0] · capability nova (build_capabilities OK) · README+vitrine+web-bundles 1.71.0 · qa-evidence v1.71.0 · suíte 63 PASS/0 FAIL.
+
+---
+
 ## 2026-06-19 — Release v1.70.0 (MINOR): Project-onboarding/wayfinding BMAD por composição (ADR-090)
 
 Aprovado. **Ratificado pelo dono "siga"** (ADR-090 proposto em #98, atrás da main — consolidei nesta branch; #98 a fechar superseded). Integração BMAD de onboarding por **COMPOSIÇÃO** (anti-reinvenção, ADR-072 — 0 tool pesado novo): **(A)** fork greenfield×brownfield no discovery; **(B)** workflow `generate-project-context` (compõe briefing+glossário+handoff.py+CAPABILITIES+knowledge_catalog+explorer → 1 doc); **(C)** workflow `document-project` (explorer+docops → doc padronizado); **(D)** guia user-facing `POR-ONDE-COMECAR.md`. Canário `test_project_onboarding.py` (4 superfícies + composição-não-recriação) + capability `project-onboarding`.
@@ -840,6 +856,7 @@ Riscos ativos: nenhum bloqueante. Risco residual ADR-010 §Riscos (detector de v
 - *(nenhum WIP aberto — plano F0–F4 fechado em v1.58.0, 2026-06-11)*
 - **Pendência permanente (não-código, dono/TI):** exclusão do Kaspersky `.claude\hooks\*` (afeta só os hooks .ps1 remanescentes; ADR-060/079).
 - **Backlog ativo (trigger-gated, NÃO WIP):**
+  - **Proveniência de raciocínio POR-TURNO** (gap empírico 2026-06-22, sessão `ee8a9a49`): gates elicit/pesquisa/crítica são de **MARCO** (release/junção), não de TURNO — entre marcos, raciocínio sem gatilho nem recibo (o "tudo na mão" cobrado pelo dono). **Extratos:** 4 interações, único recibo = `.claude/boot-proof.json` (manual, pós-nag); `elicitation-gate`/`context-brief-gate`/`qa_evidence` não dispararam — sem ficha, sem brief, sem ledger novo. **Causa NÃO-EDR** (hooks cabeados + UserPromptSubmit dispara; atribuir a Kaspersky foi hint-virou-causa). **Candidato §0:** emissor por-turno (`PostToolUse`/fim-de-turno) que declara ao vivo + grava recibo, reusando `qa_evidence.py` como sink, com fallback inline — **NÃO reinventar** ledger, estender. Análogo: o "evento" do OpenMetadata vs. nossa proveniência por-marco. Trigger: dono declarar OU 2ª recorrência. Detalhe: `docs/research/OpenMetadata-analise-contribuicoes-processo-com-fontes.md` §Addendum 2026-06-22. Pré-gate: architect (ADR) + qa-critic heterogêneo.
   - Corrida do 1º prompt do liveness (route-gate dispara antes do carimbo dos SessionStart; banner se auto-cura no 2º prompt — observado 2026-06-11 sessão `9f01bd9e`) — trigger: incomodar o dono OU 3ª ocorrência reportada. Candidato: tolerar carimbo < N min de outra sessão.
   - Cascata v1.55.0–v1.60.0 para os shadows via `export-clean` — trigger: decisão de publicação do dono.
   - ADR-011 §Pendências: Alternativa 2 (rewind cirúrgico) — trigger: caso real onde cascata é custosa.

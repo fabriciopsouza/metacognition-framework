@@ -15,6 +15,19 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.71.0] — 2026-06-23 — Detecção de ambiente no boot + aplicabilidade das premissas cross-session (ADR-093)
+
+[CONSOLIDADO] · [CONFIRMADO]
+
+### Adicionado
+- **Detecção de ambiente + aplicabilidade das premissas (ADR-093):** novo check `check_environment_applicability` em `tools/boot_check.py` (na lista `CHECKS`) que detecta host/SO e existência de path/drive (`os.path.exists`, nunca probe de rede) e cruza com o manifesto declarativo **`.agent/environment.json`** pela **matriz de polaridade** `expect_present × found` → **APLICA · ESTALE · AUSENTE**. Registra cross-session no bloco `environment` de `.claude/boot-proof.json` (snapshot por-boot, nunca premissa congelada) e cross-IA via envelope no outbox (`cross_ai_hub.deposit`, ADR-069, fail-soft).
+- **`.agent/environment.example.json`** — template genérico (placeholders; canário barra path concreto no núcleo).
+- **`_shared/traceability` Regra 5** — premissa de ambiente é INFERÊNCIA com validade; file-first suplanta prosa sobre o filesystem (caso-raiz: prosa dizia "F:\ não existe" mas existia).
+- **`tools/test_environment_applicability.py`** — canário dos 4 quadrantes da matriz (incl. o caso-raiz `expect_present:false × found:true = ESTALE`) + envelope satisfaz `cross_ai_hub.REQUIRED` + `.example.json` sem path concreto + contrato do dict. +1 capability `environment-applicability-gate`.
+
+### Decisões
+- **ADR-093 Aceito** — ratificado pelo dono ("ambos: mecanismo + regra; manifesto `.agent/environment.json`"). qa-critic heterogêneo (Sonnet) sobre o ADR pegou 3 ALTO (API `cross_ai_hub` sem "publish" → usar `deposit`; matriz de polaridade incompleta; `.json` fora do tier-norma do linter) + 3 MÉDIO + 1 BAIXO — todos incorporados antes do código.
+
 ## [1.70.0] — 2026-06-19 — Project-onboarding/wayfinding BMAD por composição: greenfield/brownfield + generate/document-project + guia user-facing (ADR-090)
 
 [CONSOLIDADO] · [CONFIRMADO]
