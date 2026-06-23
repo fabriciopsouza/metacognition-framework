@@ -9,19 +9,19 @@
 
 ---
 
-## 2026-06-22 — ADR-093 (Aceito, NÃO lançado): detecção de ambiente no boot + aplicabilidade das premissas cross-session
+## 2026-06-23 — Release v1.71.0 (MINOR): detecção de ambiente no boot + aplicabilidade das premissas (ADR-093)
 
 Pedido cross-app (vinda de vibra-kb-rag, sessão 2026-06-22b): premissa de ambiente ESTALE quebra file-first (briefing dizia "CORPUS_ROOT F:\ não existe" → agente hesitou em ler F:\ que EXISTIA). Squad completo com criticidade: architect→ADR-093 (ratificado pelo dono: "ambos mecanismo+regra; manifesto `.agent/environment.json`")→qa-critic heterogêneo (Sonnet) sobre o ADR→developer→canário.
 
 **Entregue:** `check_environment_applicability` em `boot_check.py` (matriz de polaridade `expect_present × found` → APLICA/ESTALE/AUSENTE; `os.path.exists`, sem probe de rede); bloco `environment` no boot-proof.json (snapshot, nunca premissa congelada); envelope cross-IA no outbox via `cross_ai_hub.deposit` (fail-soft); `.agent/environment.example.json` (template genérico); `_shared/traceability` Regra 5; canário `test_environment_applicability.py` (4 quadrantes). +1 capability `environment-applicability-gate`.
 
-**QA heterogêneo (Sonnet, ADR sob revisão):** APROVAR_COM_RESSALVAS — 3 ALTO (API `cross_ai_hub` não tem "publish" → `deposit`; matriz de polaridade incompleta no schema; `.json` fora do tier-norma do linter) + 3 MÉDIO + 1 BAIXO — TODOS incorporados ANTES do código. qa-critic sobre o CÓDIGO: pendente neste bloco.
+**QA heterogêneo (Sonnet, 2 rounds):** sobre o ADR — APROVAR_COM_RESSALVAS, 3 ALTO (API `cross_ai_hub` não tem "publish" → `deposit`; matriz de polaridade incompleta; `.json` fora do tier-norma do linter) + 3 MÉDIO + 1 BAIXO. Sobre o CÓDIGO — APROVAR_COM_RESSALVAS: M1 (kind inválido → APLICA silencioso → corrigido p/ INDEFINIDO), M2 (canário protege `environment`), M3 (redação ADR alinhada a "outbox, não auto-deposita"), B1/B3/B4. TODOS incorporados.
 
 Nomenclaturas: "matriz de polaridade", "APLICA/ESTALE/AUSENTE", "manifesto de ambiente", "environment-applicability".
-Decisões permanentes: **ADR-093 Aceito**. Capability `environment-applicability-gate` nova. Registrado em CHANGELOG `## [Não lançado]`.
-Próximo passo: qa-critic sobre o CÓDIGO + edge-case-hunter; commit + PR (parar no PR — release v1.71.0 é cerimônia do dono). Depois: tarefas B/C na pasta vibra-kb-rag.
+Decisões permanentes: **ADR-093 Aceito**. Capability `environment-applicability-gate` nova. Release **v1.71.0** cortado (RRC completo) — dono autorizou merge explícito ("faça até o merge, não deixe pendências").
+Próximo passo: tarefas B/C (Copilot→Gemini↔RAG) — prompt de handoff portável + discovery file-first da pasta `F:\Downloads\1- Agente Copilot Studio...`.
 Riscos ativos: envelope cross-IA escreve em `docs/_private/cross-ai/outbox` (rastreado neste repo privado) só quando há ESTALE/AUSENTE — comportamento ADR-069, não bug.
-**RRC (parcial — não lançado):** ADR-093 no CHANGELOG · capability nova (build_capabilities OK) · suíte verde esperada pós-fix dos canários de boot. Bump README/vitrine/web-bundles + tag = no release.
+**RRC (completo):** ADR-093 no CHANGELOG [1.71.0] · capability nova (build_capabilities OK) · README+vitrine+web-bundles 1.71.0 · qa-evidence v1.71.0 · suíte 63 PASS/0 FAIL.
 
 ---
 

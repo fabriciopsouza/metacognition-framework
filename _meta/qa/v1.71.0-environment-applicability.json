@@ -1,0 +1,63 @@
+{
+  "passou": true,
+  "release": "1.71.0",
+  "bloco": "v1.71.0-environment-applicability",
+  "juncao": "PC",
+  "problemas": [
+    {
+      "severidade": "ALTO",
+      "descricao": "ADR: afirmava reuso de cross_ai_hub como sink 'publish' — API inexistente; deposit() exige envelope .md com 10 campos REQUIRED + hubdir. CORRIGIDO: sink garantido = boot-proof.json local; cross-IA = envelope no outbox p/ PR (ADR-069), nao auto-deposit.",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "ALTO",
+      "descricao": "ADR: matriz de polaridade so mostrava expect_present=true; o caso-raiz (F: 'nao existe' mas existe) e expect_present=false x found=true. CORRIGIDO: matriz dos 4 quadrantes no ADR + schema com exemplo false + canario cobre.",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "ALTO",
+      "descricao": "ADR: .agent/environment.json (.json) esta FORA dos CORE_GLOBS (.md) do tier-norma do linter no boot. CORRIGIDO: nucleo versiona so .example.json com placeholders; tier-sensivel cobre no export; canario barra path concreto no .example.",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "MEDIO",
+      "descricao": "CODIGO: kind nao-suportado caia no ramo else como found=False -> APLICA silencioso (com expect_present=false). CORRIGIDO: kind invalido -> verdict INDEFINIDO (nunca falso-OK); surfacado como warn.",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "MEDIO",
+      "descricao": "CODIGO: canario test_dict_contract nao protegia o campo 'environment' (sink cross-session). CORRIGIDO: asserts de 'environment' dict com 'assumptions'.",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "MEDIO",
+      "descricao": "ADR L55: redacao 'chama deposit()' diverge do codigo (escreve no outbox p/ PR, ADR-069). CORRIGIDO: redacao alinhada ao comportamento real.",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "BAIXO",
+      "descricao": "B1 open() sem context manager; B3 kind=hook persiste entre sessoes (limite); B4 manifesto vazio -> skip (nao ok). CORRIGIDOS/documentados.",
+      "estado": "corrigido"
+    }
+  ],
+  "verificacoes_executadas": [
+    "test_environment_applicability PASS: 4 quadrantes (incl. caso-raiz false x true = ESTALE) + kind invalido -> INDEFINIDO + envelope satisfaz cross_ai_hub.REQUIRED + .example sem path concreto + contrato do dict + bloco environment",
+    "E2E real: manifesto temp com ESTALE -> boot_check warn + bloco environment no boot-proof.json + envelope no outbox; manifesto removido pos-teste",
+    "fail-soft verificado pelo qa-critic: check + emit + json.load todos em try/except; boot_check nunca trava o boot",
+    "test_boot_check atualizado p/ 6 checks (env-applicability adicionado); suite 63 PASS / 1 SKIP / 0 FAIL",
+    "anti-reinvencao: reuso de boot_check (CHECKS) + cross_ai_hub.deposit (contrato REQUIRED) + _shared/traceability (Regra 5, nao skill nova); 0 tool standalone novo"
+  ],
+  "recomendacao": "aprovar_com_ressalvas",
+  "postura": {
+    "heterogeneidade": "autor=Opus 4.8; qa-critic=Sonnet via Agent(model:sonnet) isolado, 2 rounds (ADR + codigo) — escada ADR-078/082.",
+    "rounds": 2,
+    "r1_adr_sonnet": "APROVAR_COM_RESSALVAS: 3 ALTO + 3 MEDIO + 1 BAIXO contra os arquivos reais (cross_ai_hub sem publish; matriz incompleta; .json fora do linter) — incorporados ANTES do codigo.",
+    "r2_codigo_sonnet": "APROVAR_COM_RESSALVAS: M1 kind invalido->INDEFINIDO; M2 canario protege environment; M3 redacao ADR; B1/B3/B4 — todos corrigidos.",
+    "canarios_estado_real": "63 PASS / 1 SKIP / 0 FAIL (64 canarios; +test_environment_applicability).",
+    "discovery": "inline: pedido cross-app (vibra-kb-rag 2026-06-22b) com falha de campo concreta (premissa F: estale quebrou file-first); escopo decidido por popup ao dono (ambos + .agent/environment.json).",
+    "rrc": "PASSA: ADR-093 Aceito no CHANGELOG [1.71.0]; capability environment-applicability-gate nova; README+vitrine+web-bundles 1.71.0; canario novo; suite 0 FAIL.",
+    "metodo_senior": "N/A: feature de nucleo (boot), nao norma/spec regulada.",
+    "ressalvas_residuais": "kind=hook e proxy de 'hooks ja rodaram neste repo', nao 'ativos nesta sessao' (limite declarado). Envelope cross-IA escrito no outbox; deposito no hub e fluxo de PR manual (ADR-069)."
+  },
+  "data": "2026-06-23T01:00:00Z"
+}

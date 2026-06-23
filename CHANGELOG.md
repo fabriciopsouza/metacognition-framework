@@ -15,12 +15,9 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
-## [Não lançado] — Detecção de ambiente no boot + aplicabilidade das premissas cross-session (ADR-093)
+## [1.71.0] — 2026-06-23 — Detecção de ambiente no boot + aplicabilidade das premissas cross-session (ADR-093)
 
-[EMERGENTE] · [CONFIRMADO]
-
-> Feature pronta e com suíte verde, **aguardando o dono cortar o release v1.71.0** (RRC: bump
-> README/vitrine/web-bundles + tag). Registrada aqui para doc-sync (ADR-093 Aceito ↔ CHANGELOG).
+[CONSOLIDADO] · [CONFIRMADO]
 
 ### Adicionado
 - **Detecção de ambiente + aplicabilidade das premissas (ADR-093):** novo check `check_environment_applicability` em `tools/boot_check.py` (na lista `CHECKS`) que detecta host/SO e existência de path/drive (`os.path.exists`, nunca probe de rede) e cruza com o manifesto declarativo **`.agent/environment.json`** pela **matriz de polaridade** `expect_present × found` → **APLICA · ESTALE · AUSENTE**. Registra cross-session no bloco `environment` de `.claude/boot-proof.json` (snapshot por-boot, nunca premissa congelada) e cross-IA via envelope no outbox (`cross_ai_hub.deposit`, ADR-069, fail-soft).
