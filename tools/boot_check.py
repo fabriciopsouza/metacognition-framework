@@ -204,7 +204,25 @@ def _path_exists(value):
         return False
 
 
-SUPPORTED_KINDS = ("path", "drive", "env", "host", "hook")
+SUPPORTED_KINDS = ("path", "drive", "env", "host", "hook", "process")
+
+
+def _process_running(value):
+    """ADR-094: detecta se um processo casa `value` (regex, ex.: 'avp|kaspersky') na lista viva.
+    Cross-platform, determinístico (sem rede), fail-soft. Torna a premissa EDR VERIFICÁVEL, não assumida.
+    NB (qa-critic): POSIX `ps -o comm` trunca o nome a ~15 chars → use PREFIXO curto no manifesto
+    (ex.: 'avp', 'klnag'). ReDoS: o regex vem do manifesto (controlado pelo dono) e é COMPILADO antes do
+    subprocess (re.error cai cedo); risco baixo (boot advisory/fail-soft)."""
+    if not value:
+        return False
+    try:
+        rx = re.compile(str(value), re.IGNORECASE)  # compila ANTES (re.error imediato; qa-critic MÉD-1)
+        cmd = ["tasklist"] if platform.system() == "Windows" else ["ps", "-A", "-o", "comm"]
+        out = subprocess.run(cmd, capture_output=True, text=True,
+                             encoding="utf-8", errors="replace", timeout=20).stdout
+        return rx.search(out) is not None
+    except Exception:  # noqa: BLE001 — boot nunca crasha
+        return False
 
 
 def eval_assumption(a):
@@ -223,6 +241,8 @@ def eval_assumption(a):
         found = bool(os.environ.get(str(value))) if value else False
     elif kind == "host":
         found = (platform.node() or "").lower() == str(value).lower()
+    elif kind == "process":  # ADR-094: EDR/processo VERIFICÁVEL (ex.: premissa "Kaspersky veta hooks")
+        found = _process_running(value)
     else:  # hook — NB: .hooklive PERSISTE entre sessões (proxy de "hooks já rodaram neste repo",
         #  não "hooks ativos NESTA sessão"); limite declarado (ADR-093, achado B3 do qa-critic).
         found = os.path.isdir(os.path.join(ROOT, ".claude", ".hooklive"))
