@@ -227,8 +227,46 @@ def main():
         if "Sessao adicional" not in txt:
             fails.append("procedencia: 2a passagem nao apendou secao de sessao")
 
+        # (h) NAO apenda em documento alheio: arquivo existente que nao e carimbo (pasta
+        #     reaproveitada, arquivo vazio/truncado) — devia recusar, nao colar rabo sem cabeca.
+        alheio_dir = os.path.join(td, "alheio")
+        os.makedirs(alheio_dir)
+        alheio = os.path.join(alheio_dir, "PROCEDENCIA.md")
+        for conteudo in ("", "# Outro documento qualquer\n\ntexto de outra demanda\n"):
+            with open(alheio, "w", encoding="utf-8") as fh:
+                fh.write(conteudo)
+            if handoff.emit_provenance(alheio_dir, "ts", write=True) != 2:
+                fails.append("procedencia: apendou/sobrescreveu arquivo que NAO e carimbo "
+                             f"(conteudo={conteudo!r:.30})")
+            if open(alheio, encoding="utf-8").read() != conteudo:
+                fails.append("procedencia: alterou documento alheio (devia deixar intacto)")
+
+        # (i) --write COM caminho no modo procedencia: destino e sempre <DIR>/PROCEDENCIA.md.
+        #     Aceitar e descartar em silencio e armadilha de CLI.
+        limpo = os.path.join(td, "limpo")
+        os.makedirs(limpo)
+        if handoff.main(["handoff.py", "--provenance", limpo, "--write", "algum/caminho"]) != 2:
+            fails.append("procedencia: --write com caminho foi aceito e descartado em silencio")
+
+    # (j) guarda robusta a path exotico — commonpath levanta ValueError em drive diferente/UNC,
+    #     que e JUSTAMENTE o caso de uso primario (drive corporativo sincronizado / share de rede).
+    for exotico in ("D:\\NaoExisteDrive\\Chamado123", "\\\\servidor\\share\\Chamado123"):
+        try:
+            rc = handoff.emit_provenance(exotico, "ts", write=False)
+        except Exception as e:  # noqa: BLE001 — qualquer excecao aqui e o bug
+            fails.append(f"procedencia: guarda estourou {type(e).__name__} em alvo exotico {exotico}")
+        else:
+            if rc != 2:
+                fails.append(f"procedencia: alvo exotico inexistente {exotico} devia dar exit 2, deu {rc}")
+
+    # (k) bypass por CASE: filesystem Windows e case-INSENSITIVE, commonpath compara
+    #     case-SENSITIVE — sem normcase, alvo DENTRO do repo passa como 'externo'.
+    if os.name == "nt":
+        if not handoff._inside_repo(os.path.join(handoff.ROOT.upper(), "tools")):
+            fails.append("procedencia: guarda furada por CASE — alvo dentro do repo passou como externo")
+
     print(f"handoff: 6 campos P14; {len(MODEL_CASES)} regras de modelo; {len(ROLE_CASES)} inferencias; "
-          f"deterministico; procedencia ADR-095 (7 checks) — {'OK' if not fails else 'FAIL'}")
+          f"deterministico; procedencia ADR-095 (11 checks) — {'OK' if not fails else 'FAIL'}")
     for f in fails:
         print("  -", f)
     print("-" * 50)

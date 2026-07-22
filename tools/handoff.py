@@ -349,15 +349,39 @@ def provenance(target, ts="<timestamp>"):
     return "\n".join(L) + "\n"
 
 
+PROV_HEADER = "# PROCEDENCIA"
+WRITE_DEFAULT_DIR = "docs/_private/handoffs"
+
+
+def _inside_repo(target):
+    """True se `target` cai DENTRO da arvore do repo. Endurecido por qa-critic (ADR-095):
+
+    - `realpath`: resolve symlink/junction/reparse-point. Sync clients criam junction e um alvo
+      textualmente 'fora' pode apontar fisicamente para dentro do repo — `abspath` NAO resolve isso.
+    - `normcase`: filesystem Windows e case-INSENSITIVE, mas `commonpath` compara string
+      case-SENSITIVE. Sem isto, 'C:\\Users\\Fulano\\repo' nao casa 'C:\\Users\\fulano\\repo' e a
+      guarda deixa escrever DENTRO do repo (bypass reproduzido na revisao).
+    - `ValueError`: `commonpath` levanta quando os paths estao em drives diferentes ou um e UNC
+      (`\\\\servidor\\share`) — que e JUSTAMENTE o caso de uso primario (drive corporativo/share).
+      Drive diferente => certamente fora; retorna False em vez de estourar stack trace.
+    """
+    try:
+        t = os.path.normcase(os.path.realpath(target))
+        r = os.path.normcase(os.path.realpath(ROOT))
+        return os.path.commonpath([t, r]) == r
+    except (ValueError, OSError):
+        return False
+
+
 def emit_provenance(target, ts, write):
     """Imprime o carimbo; com --write grava <target>/PROCEDENCIA.md.
 
     NAO sobrescreve carimbo existente (traceability Regra 3 — preservacao): se o arquivo ja
-    existe, APENDA uma secao de sessao e preserva o conteudo anterior. Recusa alvo DENTRO do
-    repo: la a procedencia e o proprio git, e o carimbo seria ruido.
+    existe E E UM CARIMBO VALIDO, APENDA uma secao de sessao. Recusa alvo DENTRO do repo:
+    la a procedencia e o proprio git, e o carimbo seria ruido.
     """
     target = os.path.abspath(os.path.expanduser(target))
-    if os.path.commonpath([target, ROOT]) == ROOT:
+    if _inside_repo(target):
         print(f"[handoff] ERRO: '{target}' esta DENTRO do repo — procedencia aqui e o proprio git."
               " Este carimbo e para diretorio de trabalho EXTERNO.", file=sys.stderr)
         return 2
@@ -365,23 +389,38 @@ def emit_provenance(target, ts, write):
         print(f"[handoff] ERRO: diretorio inexistente: {target}", file=sys.stderr)
         return 2
     pkg = provenance(target, ts=ts)
-    if write:
-        out = os.path.join(target, "PROCEDENCIA.md")
-        if os.path.exists(out):
-            st = repo_state()
-            with open(out, "a", encoding="utf-8") as f:
-                f.write(f"\n\n---\n\n## Sessao adicional — {ts}\n\n"
-                        f"- Framework v{st['version']} · commit `{st['commit']}` · branch `{st['branch']}`\n"
-                        f"- Operador: {_git('config', 'user.name') or '(nao configurado)'}\n"
-                        f"- Sessao (ID): `<preencher>`\n"
-                        f"- O que esta sessao alterou nesta pasta: `<preencher>`\n")
-            print(f"[handoff] carimbo JA EXISTIA — apendada secao de sessao em: {out}")
-            return 0
-        with open(out, "w", encoding="utf-8") as f:
-            f.write(pkg)
-        print(f"[handoff] carimbo de procedencia gravado: {out}")
+    if not write:
+        print(pkg)
         return 0
-    print(pkg)
+
+    out = os.path.join(target, "PROCEDENCIA.md")
+    if os.path.exists(out):
+        # Existir NAO basta: pasta reaproveitada de outra demanda, arquivo vazio ou truncado
+        # fariam o append colar um rabo de sessao num documento sem cabeca (achado da revisao).
+        try:
+            head = open(out, encoding="utf-8-sig").read(4096)
+        except OSError as e:
+            print(f"[handoff] ERRO: {out} existe mas nao pode ser lido ({e}).", file=sys.stderr)
+            return 2
+        if PROV_HEADER not in head:
+            print(f"[handoff] ERRO: '{out}' existe mas NAO e um carimbo de procedencia"
+                  f" (falta o cabecalho '{PROV_HEADER}'). Nao vou apendar em documento alheio nem"
+                  " sobrescrever. Renomeie/remova o arquivo, ou gere o carimbo em outra pasta.",
+                  file=sys.stderr)
+            return 2
+        st = repo_state()
+        with open(out, "a", encoding="utf-8") as f:
+            f.write(f"\n\n---\n\n## Sessao adicional — {ts}\n\n"
+                    f"- Framework v{st['version']} · commit `{st['commit']}` · branch `{st['branch']}`\n"
+                    f"- Operador: {_git('config', 'user.name') or '(nao configurado)'}\n"
+                    f"- Sessao (ID): `<preencher>`\n"
+                    f"- O que esta sessao alterou nesta pasta: `<preencher>`\n")
+        print(f"[handoff] carimbo JA EXISTIA — apendada secao de sessao em: {out}")
+        return 0
+
+    with open(out, "w", encoding="utf-8") as f:
+        f.write(pkg)
+    print(f"[handoff] carimbo de procedencia gravado: {out}")
     return 0
 
 
@@ -390,17 +429,24 @@ def main(argv):
     ap.add_argument("--next-role", default="", help="papel da proxima sessao (default: inferido do checkpoint)")
     ap.add_argument("--risk", default="low", choices=["low", "high", "regulated", "irreversible"])
     ap.add_argument("--author", default="opus", choices=list(MODEL_ID), help="familia do modelo autor do bloco")
-    ap.add_argument("--write", nargs="?", const="docs/_private/handoffs", default=None,
-                    help="grava o pacote (default dir docs/_private/handoffs/) em vez de so imprimir")
+    ap.add_argument("--write", nargs="?", const=WRITE_DEFAULT_DIR, default=None,
+                    help=f"grava o pacote (default dir {WRITE_DEFAULT_DIR}/) em vez de so imprimir")
     ap.add_argument("--provenance", metavar="DIR", default=None,
                     help="emite CARIMBO DE PROCEDENCIA para um diretorio de trabalho EXTERNO ao repo "
-                         "(ADR-095); com --write grava/atualiza <DIR>/PROCEDENCIA.md")
+                         "(ADR-095); com --write (SEM valor) grava/atualiza <DIR>/PROCEDENCIA.md")
     a = ap.parse_args(argv[1:])
 
     # timestamp DETERMINISTICO do estado do repo: data do commit HEAD (nao Date.now).
     ts = _git("show", "-s", "--format=%cI", "HEAD") or "<sem-data>"
 
     if a.provenance is not None:
+        # --write tem semantica DIFERENTE nos dois modos: no handoff aceita caminho; aqui o
+        # destino e sempre <DIR>/PROCEDENCIA.md. Aceitar um caminho e descarta-lo em silencio
+        # e armadilha de CLI (achado da revisao adversarial) — falhar alto e o correto.
+        if a.write is not None and a.write != WRITE_DEFAULT_DIR:
+            print(f"[handoff] ERRO: '--write {a.write}' nao se aplica a --provenance: o carimbo"
+                  " grava SEMPRE em <DIR>/PROCEDENCIA.md. Use '--write' sem valor.", file=sys.stderr)
+            return 2
         return emit_provenance(a.provenance, ts, write=a.write is not None)
     pkg = build(a.next_role, a.risk, a.author, ts=ts)
     try:

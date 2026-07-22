@@ -1187,6 +1187,7 @@
       "ai_owner": "claude",
       "mechanism": "tools/handoff.py",
       "test": "tools/test_handoff.py",
+      "enforcement": "manual",
       "adr": "docs/adr/095-procedencia-de-trabalho-executado-fora-do-repo.md",
       "cross_ai": false,
       "tags": [
