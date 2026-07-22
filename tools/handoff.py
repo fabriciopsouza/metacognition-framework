@@ -443,7 +443,9 @@ def main(argv):
         # --write tem semantica DIFERENTE nos dois modos: no handoff aceita caminho; aqui o
         # destino e sempre <DIR>/PROCEDENCIA.md. Aceitar um caminho e descarta-lo em silencio
         # e armadilha de CLI (achado da revisao adversarial) — falhar alto e o correto.
-        if a.write is not None and a.write != WRITE_DEFAULT_DIR:
+        # normpath nos dois lados: 'docs\\_private\\handoffs' e 'docs/_private/handoffs' sao a
+        # MESMA pasta; comparar string crua rejeitava a forma nativa do Windows (falso-positivo).
+        if a.write is not None and os.path.normpath(a.write) != os.path.normpath(WRITE_DEFAULT_DIR):
             print(f"[handoff] ERRO: '--write {a.write}' nao se aplica a --provenance: o carimbo"
                   " grava SEMPRE em <DIR>/PROCEDENCIA.md. Use '--write' sem valor.", file=sys.stderr)
             return 2

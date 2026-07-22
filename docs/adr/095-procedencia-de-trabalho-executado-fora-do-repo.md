@@ -23,8 +23,12 @@ Quando o diretório de trabalho é **EXTERNO ao repositório**, essa pasta receb
 ## Mecanismo (estende o que existe — régua §0)
 
 1. **`tools/handoff.py --provenance DIR [--write]`** — reusa `repo_state()` (versão do CHANGELOG, commit, branch, origin, não-commitado/não-pushado) e o timestamp determinístico do commit HEAD, já existentes para o Pacote P14. Sem tool nova, sem dependência nova, coberto pelo canário `tools/test_handoff.py` que já existia.
-2. **Recusa alvo dentro do repo** (exit 2): lá a procedência é o próprio git; o carimbo seria ruído.
-3. **Não sobrescreve carimbo existente** — apenda seção de sessão (`_shared/traceability` Regra 3, preservação).
+2. **Recusa alvo dentro do repo** (exit 2): lá a procedência é o próprio git; o carimbo seria ruído. A guarda `_inside_repo()` combina três normalizações — cada uma corrigindo um bypass **reproduzido** na revisão adversarial:
+   - `realpath` (não `abspath`) — resolve **symlink/junction**. Sync clients criam reparse points, e um alvo textualmente "fora" pode apontar fisicamente para dentro do repo. Confirmado criando uma junction Windows real.
+   - `normcase` — o filesystem Windows é case-**IN**sensitive, mas `commonpath` compara case-**SENSITIVE**. Sem isto, `C:\Users\Fulano\repo` não casava `C:\Users\fulano\repo` e a guarda **deixava escrever dentro do repo**. Em POSIX `normcase` é identidade, então a case-sensitivity nativa segue preservada.
+   - `try/except (ValueError, OSError)` — `commonpath` **levanta** quando os paths estão em drives diferentes ou um é UNC (`\\servidor\share`). Esse é **justamente o gatilho declarado** deste ADR (drive corporativo/share de rede): a feature crashava com stack trace cru no seu caso primário. Drive diferente ⇒ certamente fora ⇒ `False`.
+3. **Não sobrescreve carimbo existente** — apenda seção de sessão (`_shared/traceability` Regra 3, preservação). **Existir não basta:** valida o cabeçalho `# PROCEDENCIA` antes de tocar o arquivo. Pasta reaproveitada de outra demanda, ou arquivo vazio/truncado, recebia um rabo de sessão num documento sem cabeça — agora recusa (exit 2) e deixa o documento alheio intacto.
+3b. **Falha alto, não em silêncio:** `--write` tem semântica **diferente** nos dois modos (no handoff aceita caminho; aqui o destino é sempre `<DIR>/PROCEDENCIA.md`). Passar `--write <caminho>` com `--provenance` era aceito e o caminho descartado sem aviso; agora exit 2, comparando com `normpath` nos dois lados para não rejeitar a forma nativa do Windows do mesmo diretório.
 4. **SLOT explícito para o domínio:** demanda, sistema/objeto, origem do material migrado, modelos por papel, status por artefato (MINUTA / PROPOSTA / MIGRADO / APROVADO), o que o material NÃO é, bloqueio e decisões pendentes. **Slot vazio é lacuna VISÍVEL, não silêncio** — é o mesmo princípio do `check_context_brief` (presença/estrutura, não qualidade).
 5. **`_shared/traceability` Regra 7** (SSoT) + **`.agent/rules/05-procedencia-trabalho-externo.md`** (ponteiro fino, padrão das demais rules).
 
@@ -50,8 +54,21 @@ O gatilho é **"o destino de escrita está fora do repo"**, nunca o nome de um c
 
 ## Implementação
 
-- `tools/handoff.py`: funções `provenance()` + `emit_provenance()`, flag `--provenance DIR`.
-- `tools/test_handoff.py`: canário do modo procedência (recusa dentro do repo, campos determinísticos presentes, slots presentes).
+- Ponteiro: branch `feature/adr-095-procedencia-trabalho-externo` · 2026-07-22 · grep `provenance|_inside_repo|PROV_HEADER`
+- `tools/handoff.py`: `provenance()` + `emit_provenance()` + `_inside_repo()`, constantes `PROV_HEADER`/`WRITE_DEFAULT_DIR`, flag `--provenance DIR`.
+- `tools/test_handoff.py`: **11 checks** — campos determinísticos, slots visíveis, taxonomia de status, determinismo, recusa dentro-do-repo, recusa dir inexistente, preservação de carimbo próprio, recusa de documento alheio (vazio e com outro conteúdo), `--write` com caminho, drive diferente/UNC, bypass por case.
 - `_shared/traceability/SKILL.md`: **Regra 7**.
 - `.agent/rules/05-procedencia-trabalho-externo.md`: ponteiro fino.
-- `capabilities.json`: registro `external-work-provenance`.
+- `capabilities.json`: registro `external-work-provenance`, `enforcement: manual` (sem o campo, a capability escapava da auditoria de débito de mecanização — P15/ADR-085).
+- RRC: `README.md` · `guia/web/index.html` · 6 `web-bundles/` em v1.73.0.
+
+## QA adversarial (heterogêneo, isolado — ADR-018/074)
+
+Autor: Opus 4.8 · Revisor: Sonnet (tier *balanced*, conforme `heterogeneous_preference` do `model-policy.json`). Duas rodadas na mesma junção — itera até PASS (ADR-011):
+
+| Rodada | Veredito | Achados |
+|---|---|---|
+| 1ª | **REJEITAR** | 1 CRÍTICO (guarda com 3 bypasses: crash cross-drive/UNC, case, symlink) · 3 ALTOS (trap de CLI, cobertura fraca do canário, `enforcement` ausente, README stale) · 1 MÉDIO (append cego) |
+| 2ª | **APROVAR_COM_RESSALVAS** | Todos reverificados **empiricamente** — inclusive criando uma junction Windows real, caso que na 1ª rodada ficara como INFERIDO. Sem regressão nos 60 canários restantes. Ressalva remanescente: CHANGELOG/ADR stale — corrigida por este texto |
+
+> Registro deliberado: o bloco só existe na forma atual por causa da 1ª rodada. A versão inicial **crashava no caso de uso primário do próprio ADR** e tinha a guarda de segurança furada por case-insensitivity. É evidência concreta de que o processo adversarial (Regra 6 / ADR-094) pega o que a autorrevisão não pega.
