@@ -1180,6 +1180,23 @@
         "anti-drift"
       ]
     }
+    ,{
+      "id": "external-work-provenance",
+      "title": "Carimbo de PROCEDENCIA em trabalho executado FORA do repo: PROCEDENCIA.md com framework/versao/commit/sessao deterministicos + status por artefato (MINUTA/PROPOSTA/MIGRADO/APROVADO)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/handoff.py",
+      "test": "tools/test_handoff.py",
+      "adr": "docs/adr/095-procedencia-de-trabalho-executado-fora-do-repo.md",
+      "cross_ai": false,
+      "tags": [
+        "traceability",
+        "provenance",
+        "external-work",
+        "regulated",
+        "anti-drift"
+      ]
+    }
   ],
   "registry_waivers": [
     {

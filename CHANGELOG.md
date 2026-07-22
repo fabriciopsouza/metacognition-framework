@@ -15,6 +15,20 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.73.0] — 2026-07-22 — Carimbo de PROCEDÊNCIA em trabalho executado fora do repositório (ADR-095)
+
+[CONSOLIDADO] · [CONFIRMADO]
+
+### Adicionado (ADITIVO — estende `handoff.py`, sem tool nova, sem hook novo)
+- **ADR-095 Aceito** — quando o diretório de trabalho é **EXTERNO ao repositório** (drive corporativo sincronizado, pasta de cliente, share de rede, pasta de demanda/chamado), essa pasta recebe um **`PROCEDENCIA.md`** antes de o bloco fechar. Fecha o elo em que a cadeia decisão→fonte→versão (`_shared/traceability` Regra 4) **quebrava ao artefato sair do repo**: quem abre a pasta meses depois não sabia qual framework/versão/sessão produziu, nem **o que ali é minuta e o que é registro**.
+- **`tools/handoff.py --provenance DIR [--write]`** — reusa `repo_state()` e o timestamp determinístico do commit HEAD já existentes para o Pacote P14 (régua §0: estende o gerador, não cria ferramenta). Campos do repo **determinísticos**; campos de domínio como **SLOT explícito** (slot vazio é lacuna VISÍVEL, não silêncio). **Recusa alvo dentro do repo** (exit 2 — lá a procedência é o próprio git) e **não sobrescreve carimbo existente**: apenda seção de sessão (preservação, Regra 3).
+- **`_shared/traceability` Regra 7** + **`.agent/rules/05-procedencia-trabalho-externo.md`** (ponteiro fino, padrão das demais rules). Gatilho é a **FORMA da situação** (destino de escrita fora do repo), **nunca** o nome de cliente/produto/ferramenta — núcleo agnóstico (canário `core-no-vendor`, ADR-091); a instância concreta vive na aplicação de domínio.
+- **`tools/test_handoff.py`** — 7 checks do modo procedência (campos determinísticos, slots visíveis, taxonomia MINUTA/PROPOSTA/MIGRADO/APROVADO, determinismo, recusa dentro-do-repo, recusa dir inexistente, não-sobrescrita). +1 capability `external-work-provenance`.
+
+### Decisões
+- **Rejeitado:** ferramenta dedicada nova (duplicaria `repo_state()`), estender `check_context_brief` (conflataria procedência de entrega com verificação de âncora de pesquisa), e template em prosa preenchido à mão (é o "Gap 8 — handoff improviso" que o ADR-076 já diagnosticou).
+- **Limite honesto declarado no ADR:** o carimbo **não é forçado por mecanismo** — nenhum hook observa escrita fora do repo. Mesmo teto do ADR-094; hook fail-closed fica como escalada disponível se a regra não pegar na prática.
+
 ## [1.72.0] — 2026-06-23 — Processo adversarial mandatório (default) + canônico-prevalece + autonomia-limitada + EDR verificável (ADR-094)
 
 [CONSOLIDADO] · [CONFIRMADO]

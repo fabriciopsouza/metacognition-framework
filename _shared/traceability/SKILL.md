@@ -81,6 +81,37 @@ rewrite/overwrite. Onde divergir, **vale o canônico** (liga-se à Regra 2 anti-
 (E1) e dispensa HITL só para efeito reversível — **NUNCA** dispensa o processo adversarial, **NUNCA** autoriza
 pular gates aprovados, **NUNCA** autoriza reabrir/sobrescrever o canônico. Autonomia ≠ bypass.
 
+## Regra 7 — Trabalho executado FORA do repo deixa carimbo de procedência (ADR-095)
+
+Quando o **diretório de trabalho é EXTERNO ao repositório** — drive corporativo sincronizado,
+pasta de cliente, share de rede, pasta de demanda/chamado — essa pasta recebe um
+`PROCEDENCIA.md` **antes de o bloco fechar**.
+
+O gatilho é a **FORMA da situação** (destino de escrita fora do repo), **nunca** o nome do
+cliente/produto/ferramenta — o núcleo permanece agnóstico (canário `core-no-vendor`; a
+instância concreta vive na aplicação de domínio, não aqui).
+
+O carimbo declara: **demanda** (id interno/externo, sistema/objeto, solicitante) ·
+**pasta** e origem do material migrado · **framework + versão + commit + branch + sessão +
+operador** · **modelo por papel** · **origem e STATUS de cada artefato**
+(MINUTA / PROPOSTA / MIGRADO / APROVADO) · **o que o material NÃO é** · bloqueio e decisões
+pendentes.
+
+Mecanizado — não é prosa a preencher de memória:
+
+```bash
+python tools/handoff.py --provenance "<dir externo>" --write
+```
+
+Campos do repo são **determinísticos**; campos de domínio saem como **SLOT explícito** — slot
+vazio é lacuna VISÍVEL, não silêncio. Recusa alvo dentro do repo (lá a procedência é o próprio
+git). Não sobrescreve carimbo existente: apenda seção de sessão (Regra 3).
+
+> Causa raiz desta regra: a cadeia decisão→fonte→versão (Regra 4) **quebra no ponto em que o
+> artefato SAI do repo**. Quem abre a pasta meses depois não sabe qual framework/versão/sessão
+> produziu, nem o que ali é minuta e o que é registro. Em ambiente regulado essa distinção é a
+> diferença entre insumo e evidência — e uma minuta lida como registro é achado de auditoria.
+
 > Causa raiz desta regra: o framework nasceu JUSTAMENTE para impedir o agente de "ir pelo caminho fácil".
 > Numa sessão real (2026-06-23) o agente tratou um pedido pontual de "modo autônomo" como licença para pular
 > o processo adversarial e tratar descobertas novas como se sobrepusessem o canônico aprovado. As regras já
