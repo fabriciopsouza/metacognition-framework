@@ -243,3 +243,87 @@ developer em Opus 4.8, qa-critic de juncao em Sonnet.
   core-no-vendor forcou o desenho do ADR-095 a ser agnostico - e no fim ficou
   MELHOR: a regra vale para qualquer pasta externa e o caso concreto vira
   instancia, nao excecao. Constraint de arquitetura como forca de qualidade.
+
+---
+
+## Sessao 2026-07-27/28 (bloco 4) - analise de capacidade + merge ADR-095/096
+
+**Natureza: APLICACAO.** Framework aplicado a um dominio (defesa de headcount
+de uma coordenacao de TI, com deck que vai a diretoria), trabalho executado
+FORA do repo em `analise-capacidade-sistemas`, artefatos publicados em
+`agidesk-cockpit-sistemas`. A parte de framework foi so' o fechamento: o PR
+#110 (ADR-095 + ADR-096, releases 1.73.0 e 1.74.0) seguia aberto e foi
+mergeado nesta sessao. Carimbo `PROCEDENCIA.md` renovado via
+`tools/handoff.py --provenance` - primeiro uso real do ADR-095 depois de
+Aceito.
+
+**Rota:** pontual iterativo (pedidos do dono lamina a lamina), sem squad. Gates
+de dominio proprios da pasta: `qa_consistencia.py` (escopo/data/portfolio) e
+`qa_deck.py` (borda e sobreposicao), ambos dentro de `run_all.py`.
+
+### Placar gate x achado
+| Achado | Quem pegou | Gate que deveria ter pego |
+|---|---|---|
+| 14 arquivos velhos no repo de destino com a cadeia inteira VERDE | o DONO ("nao atualizou? terminou?") | NENHUM - todos os gates olhavam a pasta de trabalho |
+| ROADMAP-PROJETOS.xlsx listando projeto ja' parado como ativo | verificacao apos a pergunta | run_all.py - o gerador estava FORA da cadeia |
+| projetos_declarados.json em dois caminhos com conteudo divergente | idem | qa_consistencia - nao detecta duplicata de fonte |
+| capacidade da equipe = 155,5 x 5, ignorando meio periodo declarado em escopo.py | o DONO (pergunta sobre a lamina 15) | qa_consistencia - nao cruza escopo.py com quem o usa |
+| coluna p90 INVERTIA o ranking: melhor mediana = pior p90 | o DONO ("nao piora?") | NENHUM |
+| coluna "horas 19 meses" somava tempo-de-casa com composicao-de-servico | o DONO ("em qt tempo? pq saiu da referencia?") | NENHUM |
+| cabecalho "duracao tipica" com valor ja' trocado para media | o DONO | qa_consistencia - nao cruza rotulo com estatistica exibida |
+| sync_repo.py se excluia do proprio mapa | eu, relendo o que acabara de escrever | NENHUM |
+| campo `motivo_parada` criado quando o schema ja' tinha `motivo` | run_all.py (KeyError) | pegou corretamente |
+| 4o parado sobrepondo o bloco seguinte em dois decks | qa_deck.py | pegou corretamente |
+| PR bloqueado por required-check `canarios-local` sem status postado | levantamento de fechamento | ADR-088 ja' tinha a ferramenta (`post_canary_status.py`) |
+
+### Deteccao: framework x humano
+- **O DONO pegou 5 dos achados substantivos; os mecanismos pegaram 2, ambos
+  mecanicos** (KeyError e sobreposicao de caixa). Nenhum gate pegou nenhum
+  defeito de RACIOCINIO.
+- **A causa raiz e' uma so' e vale para qualquer projeto: os gates verificavam
+  a ORIGEM, nunca o DESTINO.** `qa_consistencia` e `qa_deck` liam a pasta de
+  trabalho. O que vai a diretoria e' o repo. Enquanto a copia foi manual, os
+  dois divergiram em silencio por 14 arquivos, com a cadeia reportando verde a
+  cada rodada. **Gate que olha so' a origem da' garantia FALSA, e a garantia
+  falsa e' pior que gate nenhum** - com ela ninguem confere.
+- **Tres achados do dono sao a mesma classe: numero correto, comparacao
+  invalida.** p90 sobre n=13..34; total de 19 meses sobre pessoas com 5, 11 e
+  18 meses de casa; capacidade de 5 jornadas quando uma e' meio periodo.
+  Nenhum canario de valor pegaria - os valores estavam certos. O defeito estava
+  no DENOMINADOR e no que a coluna prometia comparar.
+- **Duas premissas erradas andavam CONTRA o proprio pedido do dono.** A
+  capacidade inflada em 77,75 h fazia o cenario conservador dizer "sobram 49 h"
+  - a unica barra do deck que argumentava contra a contratacao que o deck
+  existia para defender. Erro nao e' sempre a favor de quem erra.
+
+### Gaps (nao-bloqueantes, flagados)
+- `qa_consistencia` nao cruza o rotulo de uma coluna com a estatistica que ela
+  exibe ("tipica" x media). Candidato a assercao.
+- Numeros de origem manual seguem cravados no gerador (`328,3 h` de
+  apontamento, `5,38 h/semana` de reuniao). Se a fonte mudar, nada acusa.
+- Framework: nenhum canario compara `sync`/destino de artefato publicado.
+  Generalizavel? Provavelmente sim - todo projeto que gera artefato numa pasta
+  e publica noutra tem esta lacuna.
+
+### Licoes por skill (agnostico de dominio)
+- **qa-critic:** verificar o ARTEFATO ENTREGUE, nao o pipeline que o produz.
+  Cadeia verde nao e' evidencia de entrega correta se a entrega e' uma copia.
+- **developer:** campo novo com nome novo para o que ja' existe no schema
+  quebra o consumidor irmao em silencio. Ler o schema antes de estender.
+- **architect:** o mecanismo que verifica precisa estar sujeito a propria
+  verificacao. Escrevi `sync_repo.py` excluindo-o do proprio mapa - o unico
+  script que garante que o repo esta em dia era o unico que nao subia.
+- **docops:** remover dado de uma coluna e manter o cabecalho produz coluna
+  orfa. Aconteceu duas vezes nesta pasta, as duas pegas pelo dono.
+
+### Boas praticas reutilizaveis
+- **Sync declarativo com falha alta.** Mapa explicito origem->destino; origem
+  declarada ausente = ERRO, nao aviso; lista de orfaos para REMOVER copias que
+  existiram por engano (sem ela o script so' adiciona e a duplicata divergente
+  sobrevive a toda rodada); `--check` que nao copia e sai 1. Ultimo passo da
+  cadeia, depois dos gates: so' sobe o que passou.
+- **Gerador que le fonte viva PRECISA estar na cadeia.** Ficar de fora produz
+  artefato velho com cara de atual - pior que artefato ausente.
+- **Contexto de comparabilidade na propria lamina.** "1.285 h" nao diz nada;
+  "71 h/mes, ha' 18 meses" diz. Coluna que compara pessoas em escalas
+  diferentes sem declarar a escala e' municao para o lado contrario.
