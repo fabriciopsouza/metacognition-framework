@@ -15,6 +15,59 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.74.0] — 2026-07-28 — HITL mecanizado: corte `score ≥ 6` com exit code próprio (ADR-096)
+
+[CONSOLIDADO] · [CONFIRMADO]
+
+### Adicionado (EXTENSÃO — estende `risk_score.py`, sem tool nova, sem capability nova)
+- **ADR-096 Aceito** — fecha o item **B4 do ADR-086**, que entregou o cálculo de risco (`prob × impacto` → `gate` + `tier`) mas deixou o consumo como possibilidade: *"`qa-evidence`/`readiness-gate` **podem** consumir o `gate_agregado`"*. Verificado por grep: **nenhum consumidor existia**. Consequência prática — o item 4 do `high-stakes-gate` (*"hand-off bloqueado até revisão humana"*) seguia sendo **prosa**: um agente podia ler `gate_agregado: CONCERNS` e seguir adiante, e mesmo querendo respeitar não havia o que ler, porque o tool sai com `exit 0` em todos os vereditos por desenho do ADR-086.
+- **Corte do HITL = `score ≥ 6`** (`HITL_MIN_SCORE = 6`), alcançando 2×3, 3×2 e 3×3. Escolha do dono entre três opções apresentadas.
+- **HITL é eixo ORTOGONAL ao gate, não rebatismo.** O `gate` (FAIL/CONCERNS/ADVISORY/NONE) classifica **severidade** e permanece intacto — é a taxonomia do recast TEA. Os campos novos `hitl` (por item) e `hitl_requerido` (agregado worst-case) respondem outra pergunta: *"posso passar adiante sem humano?"*. Colapsar `6 → FAIL` teria destruído a faixa CONCERNS e feito o canário exaustivo mentir sobre a matriz.
+- **Enforcement por exit code próprio:** `--gate-exit` → **exit 2** quando `hitl_requerido`. Contrato legível por hook: **0 = liberado · 1 = entrada inválida (fail-closed) · 2 = HITL requerido**. Sem a flag, comportamento do ADR-086 preservado — compatibilidade **aditiva**: vereditos e chaves antigas idênticos, mais três campos novos no stdout. Não é bit-a-bit, e sem consumidor nada quebra.
+- **Precedência fail-closed > gate:** entrada inválida **com** `--gate-exit` sai **1**, não 2. Travado por canário. Usar `exit 1` também para o bloqueio tornaria JSON malformado indistinguível de "gate barrou", e o chamador não saberia se conserta a entrada ou busca aprovação.
+- **`tools/test_risk_score.py` estendido** — coluna `hitl` na tabela-verdade exaustiva dos 9 combos, agregação worst-case, guarda `HITL_MIN_SCORE == 6` (o corte só muda por ADR, não por deriva) e a matriz dos 6 casos de exit code.
+- **`_shared/high-stakes-gate/SKILL.md` v1.1.0** — o item 4 passa a citar o comando e o código de saída, e declara a lacuna abaixo.
+
+### Limite declarado — a lacuna do corte multiplicativo
+`1 × 3 = 3` **não trava**: **raro × catastrófico passa livre**. É exatamente a forma dos incidentes históricos registrados na memória do projeto — segredo de produção em log, teste gravando em estado global do Windows que vazou para outro projeto: probabilidade percebida baixa, dano alto e irreversível. **O corte foi escolhido com essa consequência posta na mesa**, e fica registrado para ser auditável, não para relitigar.
+
+**Mitigação de segunda linha** (reduz pouco, não elimina): o `action-safety` gateia por **efeito**, não por score — mas a cobertura mecânica é estreita, e o qa-critic a dimensionou: só inspeciona `Bash` e `PowerShell`, é **fail-open** em erro interno e com regras ausentes, e o julgamento T3 pleno segue sendo prosa do agente. Para um item `1×3` cujo dano não vira comando de shell casando com padrão, **nenhum dos dois mecanismos pega**.
+
+**Risco residual explícito:** item **raro × catastrófico e reversível** não é pego por nenhum dos dois — score 3 < 6 e o efeito não é T3. Se um incidente dessa forma ocorrer, o ADR deve ser revisitado, e a regra de impacto absoluto (impacto = 3 gateia sempre) é o candidato natural.
+
+### Corrigido após pré-gate qa-critic adversarial (Fable, subagente isolado)
+A primeira submissão foi **rejeitada**. Três defeitos corrigidos, dois aceitos com o texto ajustado.
+
+- **CRÍTICO — erro de uso do `argparse` saía exit 2**, o código reservado a "HITL requerido". `--prob abc`, valor faltando ou typo de flag eram indistinguíveis de bloqueio legítimo, e um hook registraria "aguardando humano" para item que **nunca foi avaliado** — exatamente a confusão que a Alternativa 2 declara ter rejeitado, cometida pela porta dos fundos. Corrigido com subclasse `_ParserFailClosed` que remapeia `error()` para exit 1, travado por três casos no canário e provado por mutação.
+- **MÉDIO — o canário aferia só o `returncode`, nunca o `stdout`.** Mutação removendo `hitl_requerido` do JSON **passava**, enquanto o `high-stakes-gate/SKILL.md` manda o consumidor ler exatamente esse campo. O canário agora valida a forma do JSON e a coerência de `hitl_min_score` com a constante.
+- **BAIXO — lista de não-dicts em `--items`** atravessava o guard (o operador `in` casa substring em `str`) e estourava `TypeError` cru; o exit 1 vinha do interpretador **por acidente**, não por desenho. Corrigido com guarda de tipo.
+- **Aceito com o texto ajustado:** a mitigação por `action-safety` existe mecanicamente, mas é **fail-open**, só inspeciona `Bash`/`PowerShell` e o julgamento T3 pleno segue sendo prosa do agente — a frase original descrevia a política, não a cobertura. E "compatibilidade retroativa total" é **aditiva**: o stdout ganhou três campos mesmo sem a flag. Sem consumidor, nada quebra.
+
+### Rejeitado
+- **Colapsar `6 → FAIL`** — destrói a faixa CONCERNS e contradiz a desambiguação do TEA (ADR-086 B2). Perde-se a distinção "bloqueia release" × "exige plano de mitigação".
+- **Corte em `≥ 4`** — mais conservador, mais atrito. Rejeitado pelo dono.
+- **Regra de impacto absoluto** — recomendada pelo autor, **rejeitada pelo dono** em favor do corte multiplicativo.
+- **Classificador de risco por LLM** — não-determinístico, mesmo motivo dos ADR-086 e ADR-039.
+
+## [1.73.0] — 2026-07-22 — Carimbo de PROCEDÊNCIA em trabalho executado fora do repositório (ADR-095)
+
+[CONSOLIDADO] · [CONFIRMADO]
+
+### Adicionado (ADITIVO — estende `handoff.py`, sem tool nova, sem hook novo)
+- **ADR-095 Aceito** — quando o diretório de trabalho é **EXTERNO ao repositório** (drive corporativo sincronizado, pasta de cliente, share de rede, pasta de demanda/chamado), essa pasta recebe um **`PROCEDENCIA.md`** antes de o bloco fechar. Fecha o elo em que a cadeia decisão→fonte→versão (`_shared/traceability` Regra 4) **quebrava ao artefato sair do repo**: quem abre a pasta meses depois não sabia qual framework/versão/sessão produziu, nem **o que ali é minuta e o que é registro**.
+- **`tools/handoff.py --provenance DIR [--write]`** — reusa `repo_state()` e o timestamp determinístico do commit HEAD já existentes para o Pacote P14 (régua §0: estende o gerador, não cria ferramenta). Campos do repo **determinísticos**; campos de domínio como **SLOT explícito** (slot vazio é lacuna VISÍVEL, não silêncio).
+- **Guarda `_inside_repo()` endurecida** (achados CRÍTICOS do qa-critic adversarial, reproduzidos): `realpath` (não `abspath`) resolve **symlink/junction** — sync clients criam junction e um alvo textualmente "fora" pode apontar fisicamente para dentro do repo (confirmado criando junction real); `normcase` fecha o **bypass por case** (filesystem Windows é case-INsensitive, `commonpath` compara case-SENSITIVE — `C:\Users\Fulano\repo` não casava `C:\Users\fulano\repo` e a guarda deixava escrever DENTRO do repo); `try/except ValueError` para **drive diferente e UNC** (`\\servidor\share`) — que é JUSTAMENTE o caso de uso primário do ADR e crashava com stack trace cru.
+- **Falha alto onde antes falhava em silêncio:** `--write <caminho>` no modo procedência era aceito e o caminho **descartado** (armadilha de CLI — `--write` tem semântica diferente nos dois modos); agora exit 2, com `normpath` nos dois lados para não rejeitar a forma nativa do Windows do mesmo diretório. O append **valida o cabeçalho `# PROCEDENCIA`** antes de tocar o arquivo: pasta reaproveitada ou arquivo vazio recebia um rabo de sessão sem cabeça; agora recusa e deixa o documento alheio intacto. Carimbo existente e válido segue preservado (apenda seção de sessão — Regra 3).
+- **`_shared/traceability` Regra 7** + **`.agent/rules/05-procedencia-trabalho-externo.md`** (ponteiro fino, padrão das demais rules). Gatilho é a **FORMA da situação** (destino de escrita fora do repo), **nunca** o nome de cliente/produto/ferramenta — núcleo agnóstico (canário `core-no-vendor`, ADR-091); a instância concreta vive na aplicação de domínio.
+- **`tools/test_handoff.py`** — **11 checks** do modo procedência: campos determinísticos, slots visíveis, taxonomia MINUTA/PROPOSTA/MIGRADO/APROVADO, determinismo, recusa dentro-do-repo, recusa dir inexistente, preservação de carimbo próprio, recusa de documento alheio (vazio e com outro conteúdo), `--write` com caminho, drive diferente/UNC (`except Exception` genérico pega regressão para crash), bypass por case (gated `os.name == "nt"`). +1 capability `external-work-provenance` com **`enforcement: manual`** — sem o campo, a capability escapava silenciosamente da auditoria anti-teatro do próprio framework (P15/ADR-085).
+
+### Decisões
+- **Rejeitado:** ferramenta dedicada nova (duplicaria `repo_state()`), estender `check_context_brief` (conflataria procedência de entrega com verificação de âncora de pesquisa), e template em prosa preenchido à mão (é o "Gap 8 — handoff improviso" que o ADR-076 já diagnosticou).
+- **Limite honesto declarado no ADR:** o carimbo **não é forçado por mecanismo** — nenhum hook observa escrita fora do repo. Mesmo teto do ADR-094; hook fail-closed fica como escalada disponível se a regra não pegar na prática.
+- **QA adversarial heterogêneo (Sonnet, isolado) — 2 rodadas:** 1ª = **REJEITAR** (3 bugs reproduzidos: crash cross-drive/UNC, bypass de case, append cego; + cobertura fraca do canário, `enforcement` ausente, README stale). Corrigidos e reverificados empiricamente → 2ª = **APROVAR_COM_RESSALVAS**, sem regressão nos 60 canários restantes.
+- **Dívida registrada (pré-existente, exposta por este bloco):** nenhum canário compara **README × topo do CHANGELOG**; `test_marketing_claims` só cobre vitrine × README (e lê a versão do próprio README). O sintoma foi corrigido à mão aqui; o mecanismo não existe. Item em aberto no `history.md`.
+- **Trade-off aceito (INFERIDO, BAIXO):** a guarda passou a fazer I/O (`realpath` resolve reparse point) onde antes era só string — em share de rede inacessível pode custar latência. Correção > velocidade num CLI manual, e o `isdir()` preexistente já tinha o mesmo risco.
+
 ## [1.72.0] — 2026-06-23 — Processo adversarial mandatório (default) + canônico-prevalece + autonomia-limitada + EDR verificável (ADR-094)
 
 [CONSOLIDADO] · [CONFIRMADO]

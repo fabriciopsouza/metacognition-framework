@@ -190,8 +190,83 @@ def main():
          handoff.proposed_adrs, handoff.latest_checkpoint_field) = (
             orig_rs, orig_pr, orig_ea, orig_pa, orig_cf)
 
+    # --- ADR-095: modo PROCEDENCIA (carimbo em diretorio EXTERNO ao repo) -------------------
+    import tempfile
+    prov = handoff.provenance("/alvo/externo", ts="2026-07-22T00:00:00Z")
+    # (a) campos DETERMINISTICOS do repo tem de aparecer
+    for campo in ("metacognition-framework", "Versao", "Commit", "Operador humano"):
+        if campo not in prov:
+            fails.append(f"procedencia: campo deterministico ausente: {campo}")
+    # (b) slots de dominio tem de ficar VISIVEIS (lacuna declarada, nao silencio)
+    if "<preencher>" not in prov:
+        fails.append("procedencia: nenhum SLOT '<preencher>' — lacuna de dominio ficaria silenciosa")
+    # (c) status por artefato e o ponto todo do carimbo (minuta != registro)
+    if "MINUTA" not in prov or "APROVADO" not in prov:
+        fails.append("procedencia: taxonomia de status (MINUTA/PROPOSTA/MIGRADO/APROVADO) ausente")
+    # (d) determinismo
+    if prov != handoff.provenance("/alvo/externo", ts="2026-07-22T00:00:00Z"):
+        fails.append("procedencia: nao-deterministico com mesmo estado/ts")
+    # (e) RECUSA alvo dentro do repo (la a procedencia e o proprio git)
+    if handoff.emit_provenance(os.path.join(handoff.ROOT, "tools"), "ts", write=False) != 2:
+        fails.append("procedencia: aceitou alvo DENTRO do repo (devia recusar com exit 2)")
+    # (f) recusa diretorio inexistente
+    with tempfile.TemporaryDirectory() as td:
+        if handoff.emit_provenance(os.path.join(td, "nao-existe"), "ts", write=False) != 2:
+            fails.append("procedencia: aceitou diretorio inexistente (devia recusar com exit 2)")
+        # (g) nao sobrescreve carimbo existente — apenda (traceability Regra 3)
+        alvo = os.path.join(td, "externo")
+        os.makedirs(alvo)
+        handoff.emit_provenance(alvo, "2026-07-22T00:00:00Z", write=True)
+        marca = "MARCA-QUE-NAO-PODE-SUMIR"
+        with open(os.path.join(alvo, "PROCEDENCIA.md"), "a", encoding="utf-8") as fh:
+            fh.write("\n" + marca + "\n")
+        handoff.emit_provenance(alvo, "2026-07-23T00:00:00Z", write=True)
+        txt = open(os.path.join(alvo, "PROCEDENCIA.md"), encoding="utf-8").read()
+        if marca not in txt:
+            fails.append("procedencia: SOBRESCREVEU carimbo existente (viola preservacao — Regra 3)")
+        if "Sessao adicional" not in txt:
+            fails.append("procedencia: 2a passagem nao apendou secao de sessao")
+
+        # (h) NAO apenda em documento alheio: arquivo existente que nao e carimbo (pasta
+        #     reaproveitada, arquivo vazio/truncado) — devia recusar, nao colar rabo sem cabeca.
+        alheio_dir = os.path.join(td, "alheio")
+        os.makedirs(alheio_dir)
+        alheio = os.path.join(alheio_dir, "PROCEDENCIA.md")
+        for conteudo in ("", "# Outro documento qualquer\n\ntexto de outra demanda\n"):
+            with open(alheio, "w", encoding="utf-8") as fh:
+                fh.write(conteudo)
+            if handoff.emit_provenance(alheio_dir, "ts", write=True) != 2:
+                fails.append("procedencia: apendou/sobrescreveu arquivo que NAO e carimbo "
+                             f"(conteudo={conteudo!r:.30})")
+            if open(alheio, encoding="utf-8").read() != conteudo:
+                fails.append("procedencia: alterou documento alheio (devia deixar intacto)")
+
+        # (i) --write COM caminho no modo procedencia: destino e sempre <DIR>/PROCEDENCIA.md.
+        #     Aceitar e descartar em silencio e armadilha de CLI.
+        limpo = os.path.join(td, "limpo")
+        os.makedirs(limpo)
+        if handoff.main(["handoff.py", "--provenance", limpo, "--write", "algum/caminho"]) != 2:
+            fails.append("procedencia: --write com caminho foi aceito e descartado em silencio")
+
+    # (j) guarda robusta a path exotico — commonpath levanta ValueError em drive diferente/UNC,
+    #     que e JUSTAMENTE o caso de uso primario (drive corporativo sincronizado / share de rede).
+    for exotico in ("D:\\NaoExisteDrive\\Chamado123", "\\\\servidor\\share\\Chamado123"):
+        try:
+            rc = handoff.emit_provenance(exotico, "ts", write=False)
+        except Exception as e:  # noqa: BLE001 — qualquer excecao aqui e o bug
+            fails.append(f"procedencia: guarda estourou {type(e).__name__} em alvo exotico {exotico}")
+        else:
+            if rc != 2:
+                fails.append(f"procedencia: alvo exotico inexistente {exotico} devia dar exit 2, deu {rc}")
+
+    # (k) bypass por CASE: filesystem Windows e case-INSENSITIVE, commonpath compara
+    #     case-SENSITIVE — sem normcase, alvo DENTRO do repo passa como 'externo'.
+    if os.name == "nt":
+        if not handoff._inside_repo(os.path.join(handoff.ROOT.upper(), "tools")):
+            fails.append("procedencia: guarda furada por CASE — alvo dentro do repo passou como externo")
+
     print(f"handoff: 6 campos P14; {len(MODEL_CASES)} regras de modelo; {len(ROLE_CASES)} inferencias; "
-          f"deterministico — {'OK' if not fails else 'FAIL'}")
+          f"deterministico; procedencia ADR-095 (11 checks) — {'OK' if not fails else 'FAIL'}")
     for f in fails:
         print("  -", f)
     print("-" * 50)
