@@ -45,3 +45,19 @@ Faltava, portanto, **um corte** (a partir de qual score o humano é obrigatório
 **Risco residual explícito:** item **raro × catastrófico e reversível** não é pego por nenhum dos dois (score 3 < 6; efeito não é T3). Se um incidente desse formato ocorrer, este ADR deve ser revisitado — e a alternativa 4 é o candidato natural.
 
 **Não-feito nesta sessão (declarado, não presumido):** `CHANGELOG.md`, `history.md`, `capabilities.json` (gerado por `tools/build_capabilities.py`), evidência em `_meta/qa/`, release e o pré-gate `qa-critic` heterogêneo. O espelho `~/.claude/skills/high-stakes-gate/` só reflete a v1.1.0 após o próximo `framework-sync.ps1` (SessionStart neste repo).
+
+## Pré-gate qa-critic — rodado em 2026-07-28 (Fable, subagente isolado em worktree)
+
+**Veredito da 1ª submissão: REJEITAR.** Um CRÍTICO reproduzível, corrigido abaixo. `CHANGELOG.md` e `capabilities.json` deixaram de estar na lista de não-feito acima (fechados em 28/07); permanecem abertos `history.md`, evidência em `_meta/qa/` e o release.
+
+**A1 — CRÍTICO, corrigido.** Erro de uso do `argparse` saía com **exit 2**, o código reservado a "HITL requerido". `--prob abc`, valor faltando e typo de flag eram indistinguíveis de bloqueio legítimo: um hook registraria "aguardando humano" como evidência de item que **nunca foi avaliado**. É exatamente a confusão que a Alternativa 2 declara ter rejeitado — e a implementação a cometia pela porta dos fundos. Corrigido com `_ParserFailClosed`, subclasse que remapeia `error()` para exit 1. Travado no canário (bloco `g`, 3 casos) e provado por mutação: revertendo para `SystemExit(2)`, o canário falha nos três.
+
+**A2 — MÉDIO, corrigido.** O canário aferia **só o `returncode`**, nunca o `stdout`. Mutação removendo `hitl_requerido` do JSON **passava** — e o `high-stakes-gate/SKILL.md` manda o consumidor ler exatamente esse campo. Corrigido com o bloco `h`, que valida a forma do JSON e a coerência de `hitl_min_score` com a constante. Provado por mutação: removendo o campo, o canário falha.
+
+**A5 — BAIXO, corrigido.** `--items` com lista de não-dicts (`[1,2]`, `["prob impact"]`) atravessava o guard — o operador `in` casa substring em `str` — e estourava `TypeError` cru. O exit 1 vinha do interpretador **por acidente**, não por desenho fail-closed. Corrigido com guarda de tipo antes do teste de chave.
+
+**A3 — MÉDIO, aceito sem correção, com o texto ajustado.** A mitigação de segunda linha existe mecanicamente (`effect_gate.py`, `effect-rules.json`, canário, capability PROVIDES), mas é mais estreita que a prosa sugeria: só inspeciona `Bash`/`PowerShell`, é **fail-open** em erro interno e com rules ausente, e o julgamento T3 pleno continua sendo prosa do agente. A frase original descrevia a política, não a cobertura. **Consequência:** para um item `1×3` cujo dano não se manifesta como comando de shell casando com padrão, **nenhum** mecanismo pega. O risco residual já estava declarado; agora está declarado com o tamanho certo.
+
+**A4 — BAIXO, aceito.** "Compatibilidade retroativa total" é **aditiva**, não bit-a-bit: o stdout ganhou três campos mesmo sem a flag. Como não existe consumidor (confirmado por grep, que também valida a premissa do ADR), nada quebra — mas a palavra "total" era imprecisa.
+
+**Verificado sem achado pelo revisor:** tabela-verdade e bordas (9 combos, score 6 trava, 4 e 3 não travam, multi-itens, lista vazia, campo faltando, fora de faixa, string, bool, float, NaN, JSON malformado, arquivo inexistente) · precedência fail-closed > gate pelo caminho `--items`, inclusive lista com item score 9 **e** item inválido nas duas ordens → exit 1 sem JSON parcial · ortogonalidade: a tabela EXPECT nova é idêntica em score/gate/tier à do ADR-086, nenhum veredito mudou de valor.

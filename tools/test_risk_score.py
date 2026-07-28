@@ -9,6 +9,7 @@ Sem isto, "o gate de risco é determinístico" seria prosa. Fail-closed (exit 1 
 
 Uso: python tools/test_risk_score.py   (exit 0 PASS; 1 se falha)
 """
+import json
 import os
 import subprocess
 import sys
@@ -120,6 +121,42 @@ def main():
                               capture_output=True, text=True, cwd=ROOT, stdin=subprocess.DEVNULL)
         if proc.returncode != esperado:
             fails.append(f"exit {proc.returncode} != {esperado} para {argv} ({porque})")
+
+    # (g) ERRO DE USO DO ARGPARSE => 1, nunca 2 (achado CRÍTICO do qa-critic).
+    #     argparse sai 2 por padrão, que é o código do HITL. Um hook leria
+    #     "aguardando humano" para item que nunca foi avaliado.
+    for argv, porque in (
+        (["--prob", "abc", "--impact", "3", "--gate-exit"], "tipo inválido no valor"),
+        (["--prob", "3", "--impact", "--gate-exit"], "valor faltando"),
+        (["--flag-que-nao-existe"], "flag inexistente"),
+    ):
+        proc = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "risk_score.py"), *argv],
+                              capture_output=True, text=True, cwd=ROOT, stdin=subprocess.DEVNULL)
+        if proc.returncode != 1:
+            fails.append(f"erro de uso saiu {proc.returncode} != 1 para {argv} ({porque}) "
+                         "— exit 2 colide com HITL requerido")
+
+    # (h) FORMA DO STDOUT. O canário aferia só o returncode: uma mutação que
+    #     apagasse 'hitl_requerido' do JSON passava, e o SKILL manda o consumidor
+    #     ler exatamente esse campo. Prova por mutação do qa-critic adversarial.
+    proc = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "risk_score.py"),
+                           "--prob", "3", "--impact", "3"],
+                          capture_output=True, text=True, cwd=ROOT, stdin=subprocess.DEVNULL)
+    try:
+        saida = json.loads(proc.stdout)
+    except Exception as e:
+        saida = None
+        fails.append(f"stdout não é JSON válido: {e}")
+    if saida is not None:
+        for campo in ("itens", "gate_agregado", "hitl_requerido", "hitl_min_score"):
+            if campo not in saida:
+                fails.append(f"campo '{campo}' ausente do JSON — consumidor documentado quebra")
+        if saida.get("hitl_min_score") != rs.HITL_MIN_SCORE:
+            fails.append("hitl_min_score do JSON diverge da constante")
+        if saida.get("hitl_requerido") is not True:
+            fails.append("hitl_requerido deveria ser True para score 9")
+        if saida.get("itens") and "hitl" not in saida["itens"][0]:
+            fails.append("campo 'hitl' ausente do item — agregação não é auditável")
 
     print(f"risk_score: tabela-verdade 9 combos (+hitl) + scores {{1,2,3,4,6,9}} + fail-closed + "
           f"agregação + HITL>=6 + exit-codes + determinismo — {'OK' if not fails else 'FAIL'}")

@@ -105,6 +105,11 @@ def evaluate(items):
     Retorna (results, aggregate). Fail-closed via ValueError em item inválido."""
     results = []
     for i, it in enumerate(items):
+        # Guarda de tipo ANTES do 'in': `["prob impact"]` passava porque o
+        # operador `in` casa substring em str, e `[1,2]` estourava TypeError
+        # cru — o exit 1 vinha do interpretador, por acidente, não por desenho.
+        if not isinstance(it, dict):
+            raise ValueError(f"item #{i} não é objeto JSON: {it!r}")
         if "prob" not in it or "impact" not in it:
             raise ValueError(f"item #{i} sem 'prob'/'impact': {it!r}")
         sc = score_item(it["prob"], it["impact"])
@@ -114,8 +119,24 @@ def evaluate(items):
     return results, aggregate_gate(results)
 
 
+class _ParserFailClosed(argparse.ArgumentParser):
+    """argparse sai 2 em erro de uso — e 2 é o código do HITL neste contrato.
+
+    Achado CRÍTICO do qa-critic adversarial: `--prob abc`, valor faltando ou
+    typo de flag saíam com 2, indistinguíveis de "HITL requerido". Um hook
+    registraria "aguardando humano" como evidência de item que nunca foi
+    avaliado — exatamente a confusão que o ADR-096 declara ter rejeitado na
+    Alternativa 2. Erro de uso é entrada inválida: sai 1, fail-closed.
+    """
+
+    def error(self, message):
+        self.print_usage(sys.stderr)
+        print(f"ERRO (fail-closed): {message}", file=sys.stderr)
+        raise SystemExit(1)
+
+
 def main(argv):
-    ap = argparse.ArgumentParser(description="Gating determinístico por risco (prob×impacto). ADR-086.")
+    ap = _ParserFailClosed(description="Gating determinístico por risco (prob×impacto). ADR-086.")
     ap.add_argument("--items", help="JSON: lista de {id,prob,impact[,cat,nota]}")
     ap.add_argument("--prob", type=int, help="probabilidade 1-3 (item único)")
     ap.add_argument("--impact", type=int, help="impacto 1-3 (item único)")

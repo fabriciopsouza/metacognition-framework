@@ -35,6 +35,14 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 **Risco residual explícito:** item **raro × catastrófico e reversível** não é pego por nenhum dos dois — score 3 < 6 e o efeito não é T3. Se um incidente dessa forma ocorrer, o ADR deve ser revisitado, e a regra de impacto absoluto (impacto = 3 gateia sempre) é o candidato natural.
 
+### Corrigido após pré-gate qa-critic adversarial (Fable, subagente isolado)
+A primeira submissão foi **rejeitada**. Três defeitos corrigidos, dois aceitos com o texto ajustado.
+
+- **CRÍTICO — erro de uso do `argparse` saía exit 2**, o código reservado a "HITL requerido". `--prob abc`, valor faltando ou typo de flag eram indistinguíveis de bloqueio legítimo, e um hook registraria "aguardando humano" para item que **nunca foi avaliado** — exatamente a confusão que a Alternativa 2 declara ter rejeitado, cometida pela porta dos fundos. Corrigido com subclasse `_ParserFailClosed` que remapeia `error()` para exit 1, travado por três casos no canário e provado por mutação.
+- **MÉDIO — o canário aferia só o `returncode`, nunca o `stdout`.** Mutação removendo `hitl_requerido` do JSON **passava**, enquanto o `high-stakes-gate/SKILL.md` manda o consumidor ler exatamente esse campo. O canário agora valida a forma do JSON e a coerência de `hitl_min_score` com a constante.
+- **BAIXO — lista de não-dicts em `--items`** atravessava o guard (o operador `in` casa substring em `str`) e estourava `TypeError` cru; o exit 1 vinha do interpretador **por acidente**, não por desenho. Corrigido com guarda de tipo.
+- **Aceito com o texto ajustado:** a mitigação por `action-safety` existe mecanicamente, mas é **fail-open**, só inspeciona `Bash`/`PowerShell` e o julgamento T3 pleno segue sendo prosa do agente — a frase original descrevia a política, não a cobertura. E "compatibilidade retroativa total" é **aditiva**: o stdout ganhou três campos mesmo sem a flag. Sem consumidor, nada quebra.
+
 ### Rejeitado
 - **Colapsar `6 → FAIL`** — destrói a faixa CONCERNS e contradiz a desambiguação do TEA (ADR-086 B2). Perde-se a distinção "bloqueia release" × "exige plano de mitigação".
 - **Corte em `≥ 4`** — mais conservador, mais atrito. Rejeitado pelo dono.
