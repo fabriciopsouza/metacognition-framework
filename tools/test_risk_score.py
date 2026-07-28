@@ -122,6 +122,19 @@ def main():
         if proc.returncode != esperado:
             fails.append(f"exit {proc.returncode} != {esperado} para {argv} ({porque})")
 
+    # (c3) guarda de TIPO no item (A5 do qa-critic). Sem ela, `["prob impact"]`
+    #      atravessava porque `in` casa substring em str, e `[1,2]` estourava
+    #      TypeError cru — exit 1 vinha do interpretador, por acidente.
+    for ruim in ([1, 2], ["prob impact"], [None], [[1, 2]], [{"prob": 1, "impact": 1}, 7]):
+        try:
+            rs.evaluate(ruim)
+            fails.append(f"evaluate NÃO falhou-closed para item não-dict: {ruim!r}")
+        except ValueError:
+            pass
+        except Exception as e:
+            fails.append(f"evaluate levantou {type(e).__name__} (esperado ValueError) "
+                         f"para {ruim!r} — fail-closed por acidente, não por desenho")
+
     # (g) ERRO DE USO DO ARGPARSE => 1, nunca 2 (achado CRÍTICO do qa-critic).
     #     argparse sai 2 por padrão, que é o código do HITL. Um hook leria
     #     "aguardando humano" para item que nunca foi avaliado.

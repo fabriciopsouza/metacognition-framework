@@ -1,0 +1,65 @@
+{
+  "bloco": "v1.74.0-hitl-corte-score-6",
+  "release": "1.74.0",
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "problemas": [
+    {
+      "severidade": "CRITICO",
+      "local": "tools/risk_score.py main() — argparse",
+      "descricao": "CORRIGIDO na 1a rodada. Erro de uso do argparse saia com exit 2, o codigo reservado a 'HITL requerido'. --prob abc, valor faltando e typo de flag eram indistinguiveis de bloqueio legitimo: um hook registraria 'aguardando humano' como evidencia de item que NUNCA foi avaliado — exatamente a confusao que a Alternativa 2 do ADR declara ter rejeitado. Fix: subclasse _ParserFailClosed remapeia error() para exit 1. Confirmado na 2a rodada por 20 vetores de ataque (tipo invalido, valor faltando, flag inexistente, prefixo ambiguo --i, --items sem valor, posicional inesperado, store_true com valor) — todos saem 1, stdout vazio. Mutacao revertendo para SystemExit(2): canario falha nos 3 casos."
+    },
+    {
+      "severidade": "MEDIO",
+      "local": "tools/test_risk_score.py",
+      "descricao": "CORRIGIDO na 1a rodada. O canario aferia so o returncode, nunca o stdout: mutacao removendo hitl_requerido do JSON PASSAVA, enquanto o high-stakes-gate/SKILL.md manda o consumidor ler exatamente esse campo. Bloco (h) novo valida a forma do JSON. Confirmado na 2a rodada por 4 mutacoes independentes (remove hitl_requerido, remove hitl_min_score, remove hitl do item, HITL_MIN_SCORE=9) — 4/4 pegas."
+    },
+    {
+      "severidade": "MEDIO",
+      "local": "docs/adr/096 §Decisao e §Consequencias; CHANGELOG 1.74.0",
+      "descricao": "CORRIGIDO na 2a rodada. As correcoes A3/A4 tinham sido escritas em APENDICE enquanto as frases originais ('compatibilidade retroativa total'; mitigacao action-safety sem qualificador) permaneciam nas secoes principais. Quem lesse so a secao principal receberia a afirmacao que o proprio QA derrubou. Emenda em apendice nao corrige o corpo. Corpo reescrito nas duas fontes; o paragrafo 'nao-feito' foi de fato editado, e o status do pre-gate deixou de dizer PENDENTE."
+    },
+    {
+      "severidade": "BAIXO",
+      "local": "tools/risk_score.py evaluate() — guarda de tipo",
+      "descricao": "CORRIGIDO nas duas rodadas. Lista de nao-dicts atravessava o guard (o operador 'in' casa substring em str) e estourava TypeError cru: o exit 1 vinha do interpretador POR ACIDENTE, nao por desenho fail-closed. Guarda isinstance na 1a rodada; na 2a o QA mostrou que a guarda NAO tinha dentes (mutacao removendo-a passava no canario) e o bloco (c3) foi acrescentado. Mutacao confirmada: remover a guarda produz 4 acusacoes."
+    },
+    {
+      "severidade": "BAIXO",
+      "local": "_shared/high-stakes-gate/SKILL.md item 4",
+      "descricao": "CORRIGIDO na 2a rodada. O documento operativo mantinha 'o bloqueio vem do action-safety (T3)' sem dimensionar a cobertura. O effect_gate so inspeciona Bash/PowerShell, e fail-open em erro e com regras ausentes, e o julgamento T3 pleno e prosa do agente. Texto agora diz que para item 1x3 cujo dano nao vira comando de shell NENHUM dos dois pega."
+    },
+    {
+      "severidade": "BAIXO",
+      "local": "capabilities.json — registro risk-gate",
+      "descricao": "ACEITO, nao corrigido. O registro risk-gate nao referencia o ADR-096, entao o drill-down nao revela o HITL. Nenhum byte mudou no capabilities.json, o que e coerente com a regra §0 (a extensao nao cria capability). Fica como divida de rastreabilidade de catalogo."
+    },
+    {
+      "severidade": "BAIXO",
+      "local": "tools/risk_score.py — pre-existente do ADR-086",
+      "descricao": "ACEITO, backlog. ensure_ascii=False mais pipe cp1252 no Windows faz item VALIDO com caractere fora do cp1252 em campo livre estourar UnicodeEncodeError e sair 1 com traceback. Direcao fail-closed, mas rotula entrada valida como invalida. Confirmado como pre-existente ao ADR-096 (commit c7b5710)."
+    }
+  ],
+  "verificacoes_executadas": [
+    "2 RODADAS de qa-critic adversarial heterogeneo em subagente ISOLADO com worktree proprio (Fable != autor Opus) — 1a rodada REJEITOU com CRITICO",
+    "1a rodada: 26 casos empiricos contra a CLI, canario executado, 2 testes de mutacao em copia no scratchpad (repo intocado)",
+    "2a rodada: 20 vetores de ataque ao caminho argparse; todos saem 1 com stdout vazio; --help e -h saem 0",
+    "2a rodada: 4 mutacoes independentes contra o bloco (h) do canario — 4/4 pegas",
+    "2a rodada: regressao da guarda de tipo verificada (dict valido, chaves extras, dict aninhado, lista mista) — sem JSON parcial no stdout",
+    "Precedencia fail-closed > gate pelo caminho --items: lista com item score 9 E item invalido, nas duas ordens, sai 1",
+    "Ortogonalidade: tabela EXPECT identica em score/gate/tier a do ADR-086 — nenhum veredito mudou de valor",
+    "Contrato de exit code verificado pelo autor nos 5 combos de score, entrada invalida e modo compatibilidade",
+    "Mutacao final apos as correcoes da 2a rodada: remover a guarda isinstance produz FAIL com 4 acusacoes",
+    "run_canaries.py: 60 PASS de 64 antes da evidencia de release"
+  ],
+  "postura": {
+    "discovery": "inline: o ADR-086 entregou o calculo de risco e declarou o consumo como possibilidade ('podem consumir'). Grep por risk_score|gate_agregado|CONCERNS em tools/ confirmou que nenhum consumidor existia — o item 4 do high-stakes-gate era prosa.",
+    "decisao_do_dono": "corte HITL em score >= 6, escolhido entre tres opcoes apresentadas (>=6, >=4, regra de impacto absoluto). A regra de impacto absoluto foi RECOMENDADA pelo autor e rejeitada pelo dono; registrada para ser auditavel, nao para relitigar.",
+    "limite_declarado": "1x3 = 3 nao trava: raro x catastrofico passa livre. E a forma dos incidentes historicos registrados na memoria do projeto. A mitigacao de segunda linha existe mas e estreita e fail-open — dimensionada pelo QA e agora declarada com o tamanho certo no ADR, no CHANGELOG e no SKILL.",
+    "achado_sobre_o_proprio_autor": "o autor encontrou empiricamente o defeito CRITICO durante a implementacao (rodou uma flag inexistente, viu exit 2) e o descartou como erro de invocacao propria, sem investigar. O qa-critic o encontrou em 26 casos. Registra-se porque e o tipo de vies que o gate heterogeneo existe para pegar.",
+    "rrc": "PASSA: bump 1.73->1.74 nas surfaces que a extensao toca — CHANGELOG (entrada 1.74.0 com o limite declarado e as correcoes do qa-critic), ADR-096 (status do pre-gate atualizado de PENDENTE para RODADO) e _shared/high-stakes-gate/SKILL.md v1.1.0 (item 4 cita comando, exit code e agora dimensiona a cobertura do action-safety). capabilities.json regerado sem bytes alterados — coerente com a regra §0, a extensao nao cria capability. Ressalva aceita: o registro risk-gate nao referencia o ADR-096.",
+    "metodo_senior": "aplicado: docs/adr/096-hitl-corte-score-6-mecanizado.md — causa-raiz declarada (o ADR-086 entregou o calculo e deixou o consumo como 'podem consumir'; grep confirmou zero consumidores, logo o item 4 do high-stakes-gate era prosa), tres alternativas apresentadas ao dono com a consequencia de cada uma, escolha do dono registrada com a recomendacao contraria do autor preservada para auditoria, e o limite 1x3=3 declarado junto com os incidentes historicos que tem essa forma.",
+    "fonte_canonica": true
+  },
+  "data": "2026-07-28T00:00:00Z"
+}

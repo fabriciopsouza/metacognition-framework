@@ -37,8 +37,11 @@ Quando o `## Escopo declarado pelo discovery` do projeto afirma **qualquer** dos
    `python tools/risk_score.py --items <json> --gate-exit` no ponto de hand-off; **exit 2 = travado**
    (0 = liberado, 1 = entrada inválida). Corte escolhido pelo dono: alcança 2×3, 3×2 e 3×3.
    **Lacuna declarada:** 1×3 (raro × catastrófico = 3) **não** trava — se o item for irreversível,
-   o bloqueio vem do `action-safety` (T3), não daqui. Um dos dois precisa pegar; se nenhum pegar,
-   é achado de process-compliance.
+   o bloqueio vem do `action-safety` (T3), não daqui — e a cobertura dele é ESTREITA: o hook só
+   inspeciona Bash/PowerShell, é fail-open em erro e com regras ausentes, e o
+   julgamento T3 pleno é prosa do agente. Para item `1×3` cujo dano não vira
+   comando de shell casando com padrão, NENHUM dos dois pega; é achado de
+   process-compliance, e assumir que o outro mecanismo cobre é o erro a evitar.
 
 ## Como uma aplicação especializa este gate
 A aplicação fornece, via sua própria skill (clone de `_template`) E via declaração do discovery do projeto, a **config**:

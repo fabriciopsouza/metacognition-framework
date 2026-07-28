@@ -1,6 +1,6 @@
 # ADR 096 — HITL mecanizado: corte `score ≥ 6` com exit code próprio (fecha o wire do ADR-086)
 
-- Status: **Aceito** quanto à DECISÃO (2026-07-26 — corte escolhido pelo dono, resposta literal *">=6"* à pergunta "onde fica o corte") · Decisores: dono + squad (architect) · **pré-gate qa-critic heterogêneo: PENDENTE** (canário estendido passa; a revisão adversarial em subagente isolado não rodou nesta sessão — declarado, não presumido)
+- Status: **Aceito** quanto à DECISÃO (2026-07-26 — corte escolhido pelo dono, resposta literal *">=6"* à pergunta "onde fica o corte") · Decisores: dono + squad (architect) · **pré-gate qa-critic heterogêneo: RODADO em 2026-07-28** (Fable, subagente isolado em worktree; 1ª passada REJEITOU com um CRÍTICO, 2ª passada `aprovar_com_ressalvas` — apêndice ao final)
 - Tipo: **extensão que mecaniza prosa** (P15). Régua §0 (ADR-007): **não é adição** — zero arquivo novo, zero capability nova; estende `tools/risk_score.py` (capability `risk-gate` existente) e seu canário. Satisfaz a cláusula (c): destrava decisão hoje implícita ("posso passar adiante sem humano?") tornando-a mecanismo com código de saída legível por hook.
 - Relaciona: **ADR-086** (fecha o item B4, que ficou em "podem consumir"), ADR-085 (recast TEA/BMAD), ADR-022 (mission/high-stakes), ADR-011/074 (QA bicelular / qa-evidence), ADR-092 (camada de enforcement), `action-safety` (T3 por efeito)
 
@@ -18,7 +18,7 @@ Faltava, portanto, **um corte** (a partir de qual score o humano é obrigatório
 
 **(2) HITL é eixo ORTOGONAL ao gate, não um rebatismo dele.** O `gate` (FAIL/CONCERNS/ADVISORY/NONE) classifica **severidade** e permanece **intacto** — é a taxonomia do recast TEA (ADR-086 B2). O campo novo `hitl` (bool, por item) e `hitl_requerido` (agregado worst-case) respondem outra pergunta: *"posso passar adiante sem humano?"*. Colapsar `6 → FAIL` teria destruído a faixa CONCERNS e feito o canário exaustivo mentir sobre a matriz.
 
-**(3) Enforcement por exit code próprio:** `--gate-exit` → **exit 2** quando `hitl_requerido`. Contrato legível por hook: **0 = liberado · 1 = entrada inválida (fail-closed) · 2 = HITL requerido**. Sem a flag, comportamento do ADR-086 preservado (exit 0, veredito no stdout) — compatibilidade retroativa total.
+**(3) Enforcement por exit code próprio:** `--gate-exit` → **exit 2** quando `hitl_requerido`. Contrato legível por hook: **0 = liberado · 1 = entrada inválida (fail-closed) · 2 = HITL requerido**. Sem a flag, comportamento do ADR-086 preservado (exit 0, veredito no stdout) — compatibilidade **aditiva**: os vereditos e as chaves antigas são idênticos, e o stdout ganha três campos novos (`hitl` por item, `hitl_requerido`, `hitl_min_score`). Não é bit-a-bit, e como não existe consumidor, nada quebra.
 
 **(4) Precedência fail-closed > gate:** entrada inválida **com** `--gate-exit` sai **1**, não 2. Travado por canário.
 
@@ -40,11 +40,11 @@ Faltava, portanto, **um corte** (a partir de qual score o humano é obrigatório
 
 **Negativa / limite DECLARADO — a lacuna do corte multiplicativo:** `1 × 3 = 3` **não trava**. Ou seja, **raro × catastrófico passa livre**. Essa é exatamente a forma dos incidentes históricos do dono registrados na memória do projeto (segredo de produção em log; teste gravando em estado global do Windows que vazou para outro projeto): probabilidade percebida baixa, dano alto e irreversível. O corte foi escolhido com essa consequência posta na mesa.
 
-**Mitigação de segunda linha (não elimina a lacuna, reduz):** o `action-safety` gateia por **efeito**, não por score — operação T3 (irreversível + alto impacto) exige gate humano independentemente do risco calculado. Os dois mecanismos são ortogonais e a cobertura conjunta é maior que a de cada um.
+**Mitigação de segunda linha (não elimina a lacuna, reduz pouco):** o `action-safety` gateia por **efeito**, não por score. Mas a cobertura mecânica é estreita, e isso foi dimensionado pelo qa-critic: o `effect_gate.py` só inspeciona `Bash` e `PowerShell`, é **fail-open** em erro interno e com o arquivo de regras ausente, e reconhece padrões inequívocos — o julgamento T3 pleno continua sendo prosa do agente. Os mecanismos são ortogonais e a cobertura conjunta é maior que a de cada um, mas **para um item `1×3` cujo dano não se manifesta como comando de shell casando com padrão, nenhum dos dois pega**.
 
 **Risco residual explícito:** item **raro × catastrófico e reversível** não é pego por nenhum dos dois (score 3 < 6; efeito não é T3). Se um incidente desse formato ocorrer, este ADR deve ser revisitado — e a alternativa 4 é o candidato natural.
 
-**Não-feito nesta sessão (declarado, não presumido):** `CHANGELOG.md`, `history.md`, `capabilities.json` (gerado por `tools/build_capabilities.py`), evidência em `_meta/qa/`, release e o pré-gate `qa-critic` heterogêneo. O espelho `~/.claude/skills/high-stakes-gate/` só reflete a v1.1.0 após o próximo `framework-sync.ps1` (SessionStart neste repo).
+**Não-feito nesta sessão (declarado, não presumido) — atualizado em 28/07:** `history.md`, evidência em `_meta/qa/` e o release. Fechados em 28/07: `CHANGELOG.md` (entrada 1.74.0), `capabilities.json` (regerado; sem bytes alterados, coerente com a régua §0 — a extensão não cria capability) e o pré-gate `qa-critic` heterogêneo, documentado no apêndice abaixo. O espelho `~/.claude/skills/high-stakes-gate/` só reflete a v1.1.0 após o próximo `framework-sync.ps1` (SessionStart neste repo).
 
 ## Pré-gate qa-critic — rodado em 2026-07-28 (Fable, subagente isolado em worktree)
 
