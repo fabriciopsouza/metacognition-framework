@@ -15,6 +15,32 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.74.0] — 2026-07-28 — HITL mecanizado: corte `score ≥ 6` com exit code próprio (ADR-096)
+
+[CONSOLIDADO] · [CONFIRMADO]
+
+### Adicionado (EXTENSÃO — estende `risk_score.py`, sem tool nova, sem capability nova)
+- **ADR-096 Aceito** — fecha o item **B4 do ADR-086**, que entregou o cálculo de risco (`prob × impacto` → `gate` + `tier`) mas deixou o consumo como possibilidade: *"`qa-evidence`/`readiness-gate` **podem** consumir o `gate_agregado`"*. Verificado por grep: **nenhum consumidor existia**. Consequência prática — o item 4 do `high-stakes-gate` (*"hand-off bloqueado até revisão humana"*) seguia sendo **prosa**: um agente podia ler `gate_agregado: CONCERNS` e seguir adiante, e mesmo querendo respeitar não havia o que ler, porque o tool sai com `exit 0` em todos os vereditos por desenho do ADR-086.
+- **Corte do HITL = `score ≥ 6`** (`HITL_MIN_SCORE = 6`), alcançando 2×3, 3×2 e 3×3. Escolha do dono entre três opções apresentadas.
+- **HITL é eixo ORTOGONAL ao gate, não rebatismo.** O `gate` (FAIL/CONCERNS/ADVISORY/NONE) classifica **severidade** e permanece intacto — é a taxonomia do recast TEA. Os campos novos `hitl` (por item) e `hitl_requerido` (agregado worst-case) respondem outra pergunta: *"posso passar adiante sem humano?"*. Colapsar `6 → FAIL` teria destruído a faixa CONCERNS e feito o canário exaustivo mentir sobre a matriz.
+- **Enforcement por exit code próprio:** `--gate-exit` → **exit 2** quando `hitl_requerido`. Contrato legível por hook: **0 = liberado · 1 = entrada inválida (fail-closed) · 2 = HITL requerido**. Sem a flag, comportamento do ADR-086 preservado — compatibilidade retroativa total.
+- **Precedência fail-closed > gate:** entrada inválida **com** `--gate-exit` sai **1**, não 2. Travado por canário. Usar `exit 1` também para o bloqueio tornaria JSON malformado indistinguível de "gate barrou", e o chamador não saberia se conserta a entrada ou busca aprovação.
+- **`tools/test_risk_score.py` estendido** — coluna `hitl` na tabela-verdade exaustiva dos 9 combos, agregação worst-case, guarda `HITL_MIN_SCORE == 6` (o corte só muda por ADR, não por deriva) e a matriz dos 6 casos de exit code.
+- **`_shared/high-stakes-gate/SKILL.md` v1.1.0** — o item 4 passa a citar o comando e o código de saída, e declara a lacuna abaixo.
+
+### Limite declarado — a lacuna do corte multiplicativo
+`1 × 3 = 3` **não trava**: **raro × catastrófico passa livre**. É exatamente a forma dos incidentes históricos registrados na memória do projeto — segredo de produção em log, teste gravando em estado global do Windows que vazou para outro projeto: probabilidade percebida baixa, dano alto e irreversível. **O corte foi escolhido com essa consequência posta na mesa**, e fica registrado para ser auditável, não para relitigar.
+
+**Mitigação de segunda linha** (reduz, não elimina): o `action-safety` gateia por **efeito**, não por score — operação T3 (irreversível + alto impacto) exige gate humano independentemente do risco calculado. Os mecanismos são ortogonais e a cobertura conjunta é maior que a de cada um.
+
+**Risco residual explícito:** item **raro × catastrófico e reversível** não é pego por nenhum dos dois — score 3 < 6 e o efeito não é T3. Se um incidente dessa forma ocorrer, o ADR deve ser revisitado, e a regra de impacto absoluto (impacto = 3 gateia sempre) é o candidato natural.
+
+### Rejeitado
+- **Colapsar `6 → FAIL`** — destrói a faixa CONCERNS e contradiz a desambiguação do TEA (ADR-086 B2). Perde-se a distinção "bloqueia release" × "exige plano de mitigação".
+- **Corte em `≥ 4`** — mais conservador, mais atrito. Rejeitado pelo dono.
+- **Regra de impacto absoluto** — recomendada pelo autor, **rejeitada pelo dono** em favor do corte multiplicativo.
+- **Classificador de risco por LLM** — não-determinístico, mesmo motivo dos ADR-086 e ADR-039.
+
 ## [1.73.0] — 2026-07-22 — Carimbo de PROCEDÊNCIA em trabalho executado fora do repositório (ADR-095)
 
 [CONSOLIDADO] · [CONFIRMADO]

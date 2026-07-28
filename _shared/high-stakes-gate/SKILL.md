@@ -1,9 +1,9 @@
 ---
 name: high-stakes-gate
 description: "Carregar quando a tarefa é de alto risco: ambiente regulado, decisão irreversível, número que vai a decisão executiva, ou operação que afeta produção crítica. Define validação por risco, audit trail, logs imutáveis e gate humano (HITL). Regras de domínio específicas (ex.: normas setoriais) são CONFIG de aplicação, não deste núcleo. NÃO carregar para tarefa pontual de baixo risco."
-version: 1.0.0
+version: 1.1.0
 source: "pesquisa A3 (governança/validação por risco) + A2 (HITL); generalização de validação regulada"
-last_review: 2026-05-23
+last_review: 2026-07-26
 ---
 
 # High-Stakes Gate — Validação por Risco (genérico)
@@ -32,7 +32,13 @@ Quando o `## Escopo declarado pelo discovery` do projeto afirma **qualquer** dos
 3. **Logs imutáveis** quando o contexto exigir (`observability`).
 4. **Human-in-the-loop (HITL)** — hand-off **bloqueado** até revisão humana sobre
    diffs/saídas estruturadas. Liga a `rules/04-confidence-routing` (baixa confiança
-   estratégica → arquitetura reflexiva).
+   estratégica → arquitetura reflexiva). **Mecanismo, não prosa (ADR-096):** o disparo é
+   `score ≥ 6` (`hitl_requerido` no JSON do `risk_score`) — rodar
+   `python tools/risk_score.py --items <json> --gate-exit` no ponto de hand-off; **exit 2 = travado**
+   (0 = liberado, 1 = entrada inválida). Corte escolhido pelo dono: alcança 2×3, 3×2 e 3×3.
+   **Lacuna declarada:** 1×3 (raro × catastrófico = 3) **não** trava — se o item for irreversível,
+   o bloqueio vem do `action-safety` (T3), não daqui. Um dos dois precisa pegar; se nenhum pegar,
+   é achado de process-compliance.
 
 ## Como uma aplicação especializa este gate
 A aplicação fornece, via sua própria skill (clone de `_template`) E via declaração do discovery do projeto, a **config**:
