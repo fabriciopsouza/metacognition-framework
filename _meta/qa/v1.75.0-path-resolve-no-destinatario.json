@@ -1,0 +1,79 @@
+{
+  "bloco": "v1.75.0-path-resolve-no-destinatario",
+  "release": "1.75.0",
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "autor": "claude-opus-5",
+  "critico": "claude-fable-5 (subagente isolado, modelo != autor — ADR-074/078)",
+  "veredito_1a_rodada": "NAO LIBERADO",
+  "problemas": [
+    {
+      "severidade": "CRITICO",
+      "local": ".claude/settings.json:5-22",
+      "descricao": "CORRIGIDO. O diff nao-commitado adicionava 16 entradas Read(//c/Users/<user>/<repo-de-cliente>/**) e similares num arquivo RASTREADO. check_core_agnostic.py --sensitive falhava com LEAK [sensivel] ... 'vibra' — exatamente a classe de vazamento de dado de cliente que tornou este repositorio privado. Fix: git checkout do arquivo; e configuracao local de maquina, nao pertence a distribuicao. Lint sensitive volta a passar."
+    },
+    {
+      "severidade": "CRITICO",
+      "local": "docs/adr/098 §Regua §0",
+      "descricao": "CORRIGIDO. A 1a versao alegava ganho liquido reformulando a regua §0 do ADR-007 como custo-beneficio generico ('paga o peso') — racionalizacao, nao enquadramento. Nenhuma das tres portas (a/b/c) era satisfeita: nada fundido/removido, +36 linhas liquidas num SKILL carregado em contexto (AUMENTA tokens, o oposto de (b)), nenhum eval destravado. As Regras 5 e 7 (ADR-093/095) haviam passado porque vieram COM mecanizacao; a 098 seria a primeira prose-only da serie. Fix: mecanizacao entregue junto — handoff.py passa a declarar a raiz absoluta no Pacote P14 e a auditar o proprio pacote (audit_paths), mais canario novo tools/test_path_absoluto.py. Enquadra em (c). O nao-atendimento de (a) e (b) esta declarado no ADR, nao maquiado."
+    },
+    {
+      "severidade": "ALTO",
+      "local": "_shared/traceability/SKILL.md — blockquote apos a Regra 7",
+      "descricao": "CORRIGIDO. O blockquote 'Causa raiz desta regra: o framework nasceu JUSTAMENTE...' pertence a Regra 6 (ADR-094) e havia sido deslocado quando a Regra 7 entrou — defeito PRE-EXISTENTE em main, confirmado por git show HEAD. A insercao da Regra 8 o deixou orfao logo apos ela, fazendo a Regra 8 terminar com DOIS 'Causa raiz desta regra', o segundo narrando o incidente de 2026-06-23 do ADR-094. Misatribuicao em SSoT. Movido para o fim da Regra 6."
+    },
+    {
+      "severidade": "ALTO",
+      "local": "docs/adr/098 §Contexto",
+      "descricao": "CORRIGIDO. Overclaim: 'Nenhuma regra existente cobria emissao de path'. O P14 (_shared/metacognition-core/SKILL.md:83, ADR-012 v1.13.0) JA exigia 'Localizacao — repositorio (URL) e/ou path absoluto' no pacote de handoff. Sobreposicao parcial nao reconhecida. Fix: secao 'Cobertura previa' explicita que a 098 GENERALIZA o P14 (que valia so para handoff) e lista o que ele nao cobria (aspas, temp-dir, multi-repo, verificar-antes-de-emitir)."
+    },
+    {
+      "severidade": "ALTO",
+      "local": "docs/adr/098 §Consequencias",
+      "descricao": "CORRIGIDO. A mitigacao alegada NAO existe: o ADR remetia ao pipeline export-clean para anonimizar paths de usuario. Verificado que tools/anonymize-map.txt tem apenas UM token de path, de username LEGADO (nem o da maquina atual), e tools/sensitive-denylist.txt declara explicitamente 'AUTOR != CLIENTE: username do mantenedor NAO entra aqui'. C:\\Users\\fpsou\\... passa INTACTO. Fix: consequencia reescrita declarando que a mitigacao nao existe hoje, com a pendencia registrada."
+    },
+    {
+      "severidade": "ALTO",
+      "local": "capabilities.json",
+      "descricao": "CORRIGIDO. Debito prose nao registrado (viola P15/ADR-085): a Regra 7 tem registro com campo enforcement, a Regra 8 nao tinha nenhum — test_capabilities passava so porque nada fora registrado, o que torna o debito INVISIVEL. Fix: registro path-resolves-at-destination adicionado, com enforcement 'advisory' (o vocabulario do canario e fechado e rejeita 'parcial'; advisory e o termo correto porque o aviso e visivel e nao bloqueia). CAPABILITIES.md reconstruido: 76 capacidades, test_capabilities PASS."
+    },
+    {
+      "severidade": "ALTO",
+      "local": "CHANGELOG [1.75.0] §Corrigido",
+      "descricao": "CORRIGIDO. O CHANGELOG afirmava 'referencias internas atualizadas' apos o rename 095->097 — era FALSO. Ficaram stale: docs/research/conformance-frameworks-benchmark.md linhas 8, 9 e 148, e o ponteiro no proprio ADR-097 linha 54, que apontava para a branch feature/adr-095-conformance-topologia-hard, inexistente local e em origin. As 4 foram atualizadas e a claim agora e verdadeira e especifica."
+    },
+    {
+      "severidade": "MEDIO",
+      "local": "README.md:11",
+      "descricao": "CORRIGIDO. README declarava Versao 1.73.0 enquanto o CHANGELOG ja tinha 1.74.0 e agora 1.75.0 — o bump de 1.74.0 nao havia sido feito (divida herdada de main). Nenhum canario pega isso; e RRC manual. Atualizado para 1.75.0."
+    },
+    {
+      "severidade": "MEDIO",
+      "local": "_shared/traceability/SKILL.md Regra 8 (headline) e CHANGELOG",
+      "descricao": "CORRIGIDO. 'Absoluto' era a forma ERRADA para mensagem de PR: um path F:\\metacognition-framework\\... numa pagina do GitHub e tao morto para o revisor quanto um relativo. O proprio bullet de links ja admitia 'URL completa', contradizendo o headline. Fix: a invariante passou a ser 'resolve no cwd do DESTINATARIO' — absoluto na mesma maquina, URL/permalink em consumo web. Titulo da Regra 8 ajustado. Tambem removida a hiperbole 'custo de emitir path absoluto e zero tokens' (falsa: paths absolutos sao mais longos) e a recopia quase integral da norma no CHANGELOG, que contradizia a propria frase 'fonte unica — nao recopiar'."
+    },
+    {
+      "severidade": "BAIXO",
+      "local": "_shared/traceability/SKILL.md Regra 8",
+      "descricao": "ACEITO, nao corrigido. Fronteiras de julgamento sem binariedade: 'quando houver mais de um repositorio em jogo' e o gatilho 'o destinatario resolve a partir de outro cwd' exigem prever a audiencia do leitor. O process-critic nao tem como auditar mecanicamente quantos repos estavam em jogo. Aceitavel para a parcela advisory; registrado como pendencia 3 do ADR."
+    },
+    {
+      "severidade": "BAIXO",
+      "local": "tools/anonymize-map.txt",
+      "descricao": "ACEITO, backlog. Anonimizacao de path de usuario no pipeline publico nao existe (regra generica C:\\Users\\<qualquer> -> token). Fica como pendencia 1 do ADR-098: adicionar a regra, ou decidir explicitamente que o layout do mantenedor e aceitavel no publico."
+    }
+  ],
+  "canarios": "64 canarios + test_path_absoluto.py novo (10 casos: 5 devem acusar, 5 NAO devem — URL, ancora, absoluto Win, absoluto POSIX, path sem link)",
+  "observacao": "Veredito da 1a rodada foi NAO LIBERADO com 2 BLOQUEANTES e 7 GRAVES. O merito da decisao nao foi contestado (4 falhas documentadas, pedido explicito do dono, escopo cirurgico); o critico recomendou corrigir, nao reverter. A correcao mais substantiva foi trocar prosa por mecanismo: a regra passou a nascer com canario e com o handoff.py emitindo a raiz absoluta, em vez de prometer mecanizacao futura.",
+  "verificacoes_executadas": "check_core_agnostic.py --sensitive (LEAK do settings.json confirmado e sanado) - test_path_absoluto.py 10/10 - test_capabilities.py PASS apos rebuild (76 capacidades) - test_consistency_closing.py PASS - test_qa_evidence.py PASS - run_canaries.py",
+  "postura": {
+    "discovery": "inline: pedido explicito do dono apos ver, na propria sessao, um path com espaco falhar no PowerShell. Grep em _shared/, .agent/rules/ e CAPABILITIES.md por path|absoluto|caminho|cwd|relativo - o critico encontrou cobertura PARCIAL no P14 (metacognition-core:83, ADR-012), que o autor havia declarado inexistente. Overclaim corrigido.",
+    "decisao_do_dono": "'paths devem ser completos e links totalmente funcionais, visto que pode estar trabalhando em outro repo folder'. O escopo (item obrigatorio do framework) e do dono; a FORMA da invariante foi corrigida pelo QA de 'absoluto sempre' para 'resolve no cwd do destinatario', porque path absoluto Windows em pagina de PR e tao morto quanto relativo.",
+    "limite_declarado": "cobertura PARCIAL: auditado no handoff (raiz absoluta + audit_paths), advisory no restante do output - resposta ao dono, relatorio e mensagem de PR nao tem canario. Registrado em capabilities.json como enforcement advisory, nao como completo. E a mitigacao de vazamento de layout (C:\\Users\\<user>) NAO existe: verificado que export-clean nao anonimiza username do mantenedor por decisao explicita do sensitive-denylist.",
+    "achado_sobre_o_proprio_autor": "as quatro falhas que motivam o ADR sao do PROPRIO autor, na mesma sessao, e nenhuma foi percebida por ele: entregou o prompt apontando para o scratchpad temporario, usou link relativo em documento destinado a outra IA em outro repo, passou path com espaco sem aspas, e declarou 'pasta inexistente' um diretorio que existia no repo pai. O dono viu o erro do PowerShell antes do agente. Registra-se porque a regra nasce de vies do autor, nao de teoria.",
+    "rrc": "PASSA: bump 1.74->1.75 nas surfaces tocadas - CHANGELOG (entrada 1.75.0 com os limites declarados), README (que estava em 1.73.0, divida herdada, tambem sanada), _shared/traceability/SKILL.md (Regra 8 + blockquote orfao do ADR-094 devolvido a Regra 6), capabilities.json + CAPABILITIES.md regerados (76 capacidades), tools/handoff.py (raiz absoluta + audit_paths) e canario novo test_path_absoluto.py. Colisao de numeracao 095 resolvida (renomeado para 097) com as 4 referencias stale atualizadas.",
+    "metodo_senior": "aplicado: docs/adr/098 declara causa-raiz com as quatro falhas nomeadas, reconhece a cobertura previa do P14 em vez de alegar novidade total, enquadra a regua paragrafo-zero na porta (c) com a mecanizacao entregue junto, e declara o que NAO satisfaz (a) e (b) em vez de maquiar. Pendencias 1-3 registradas, incluindo a mitigacao inexistente.",
+    "fonte_canonica": true
+  },
+  "data": "2026-08-01"
+}

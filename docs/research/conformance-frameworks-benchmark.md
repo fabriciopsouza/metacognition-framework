@@ -5,8 +5,8 @@
 > usando frameworks **comprovados** como régua. Critério de "comprovado" = adoção/maturidade +
 > evidência empírica + **conformance explícito** (mecanismo que garante o fluxo).
 >
-> **Data:** 2026-06-23 · **Tipo:** pesquisa (não-decisão; alimenta ADR-095) · **Autor:** squad (discovery+pesquisa, opus) ·
-> verificação adversarial: qa-critic heterogêneo (sobre o ADR-095, não sobre esta pesquisa).
+> **Data:** 2026-06-23 · **Tipo:** pesquisa (não-decisão; alimenta ADR-097) · **Autor:** squad (discovery+pesquisa, opus) ·
+> verificação adversarial: qa-critic heterogêneo (sobre o ADR-097, não sobre esta pesquisa).
 > **Convenção de confiança:** CONFIRMADO (fonte citada) · INFERIDO (deduzido) · DESCONHECIDO.
 
 ---
@@ -145,7 +145,7 @@ quatro = contraexemplo (advisory), não referência de implementação.
 2. Formalizar o fluxo do squad como modelo BPMN/Petri (hoje em prosa).
 3. Rodar PM4Py (token-replay p/ dashboard + alignments p/ diagnóstico).
 4. Gate de conformidade fail-closed (análogo ao posture-gate, ADR-074): bloco fecha só se
-   fitness ≥ limiar. → vira ADR-095 (advisory→HARD), acionando o `squad_gate` que ADR-094 deixou
+   fitness ≥ limiar. → vira ADR-097 (advisory→HARD), acionando o `squad_gate` que ADR-094 deixou
    reservado como escalada.
 
 **Limite honesto:** "HARD via hook" não é universal (EDR veta hooks; ADR-047/060) — a camada

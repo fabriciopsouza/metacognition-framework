@@ -15,6 +15,36 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.75.0] — 2026-08-01 — Referência a arquivo é absoluta e resolvível fora do cwd (ADR-098)
+
+[CONSOLIDADO] · [CONFIRMADO]
+
+### Adicionado (EMENDA — 1 regra no SSoT existente; sem arquivo de regra novo)
+- **ADR-098 Aceito** — pedido explícito do dono: *"paths devem ser completos e links totalmente funcionais, visto que pode estar trabalhando em outro repo folder"*. **Texto normativo em `_shared/traceability/SKILL.md`, Regra 8** — fonte única, não recopiado aqui.
+- **Invariante:** a referência resolve do ponto de vista do **destinatário**, não de quem escreveu. Generaliza o que o P14 (ADR-012) já exigia do handoff (*"Localização: repositório (URL) e/ou path absoluto"*) para todo output do agente.
+- **Mecanização entregue junto, não prometida:** `tools/handoff.py` passa a declarar a **raiz absoluta** da cópia no Pacote P14 — sem ela, os paths relativos que o pacote já listava só resolviam no `cwd` de quem gerou — e `audit_paths()` audita o próprio pacote, emitindo `⚠️` para diretório temporário e link markdown relativo. Canário novo: `tools/test_path_absoluto.py`, 10 casos (5 que devem acusar, 5 que **não** devem — URL, âncora, absoluto Win/POSIX, path sem link).
+
+### Causa raiz — quatro falhas na MESMA sessão (2026-08-01, validação de migração de dados)
+1. Prompt de contextualização para outra IA entregue apontando para `%TEMP%\claude\...\scratchpad\`.
+2. O mesmo prompt com link markdown **relativo**, destinado a ser lido em outro repositório.
+3. Agente declarou "pasta inexistente" um diretório que **existia no repo pai** — diagnóstico correto era "repo errado", não "path fantasma".
+4. Path com espaço (`Projeto Cliente`) passado ao dono **sem aspas** → erro imediato no PowerShell.
+
+Mesmo defeito nos quatro: **referência que só resolve no `cwd` de quem escreveu**.
+
+### Limites declarados
+- **Cobertura parcial:** auditado no handoff; **advisory** no restante do output (resposta ao dono, relatório, mensagem de PR não têm canário). Registrado em `capabilities.json` com `enforcement: advisory` — não como se fosse completo.
+- **A mitigação de vazamento de layout NÃO existe hoje:** paths absolutos expõem `C:\Users\<user>\...`, e verificou-se que `tools/anonymize-map.txt` só traz um token de path de username **legado**, enquanto `tools/sensitive-denylist.txt` declara que o username do mantenedor não entra (*"AUTOR ≠ CLIENTE"*). O `export-clean` **não** anonimiza esse caso. Pendência registrada no ADR.
+- **Régua §0:** enquadra-se em **(c)** — chega com canário novo e com ferramenta existente passando a emitir e auditar. **Não** satisfaz (a) nem (b): não funde, não remove, e acrescenta linhas ao SSoT carregado em contexto. Declarado, não maquiado.
+
+### Corrigido
+- **Colisão de numeração de ADR:** o ADR de conformance de topologia desta branch usava o número **095**, que o PR #110 já havia consumido em main com o ADR de procedência. Renumerado para **097**; as 4 referências stale foram atualizadas (`docs/research/conformance-frameworks-benchmark.md` linhas 8, 9 e 148, e o ponteiro de branch no próprio ADR, que apontava para uma branch inexistente).
+- **`README.md`** subiu de 1.73.0 para 1.75.0 — o bump de 1.74.0 não havia sido feito (dívida herdada).
+- **Blockquote órfão** no `_shared/traceability/SKILL.md`: a causa-raiz do ADR-094 estava posicionada após a Regra 7 e passou a ser lida como parte dela. Movida para o fim da Regra 6, a que pertence.
+
+### Sincronia PROMPT-CHAT-WEB (política desta seção)
+`PROMPT-CHAT-WEB-v4.5.md` estava carimbado em **v1.68.0** — 7 minors atrás, acima da janela de 5 do `test_web_prompt_currency`. A defasagem já existia em 1.74.0 e o bump a expôs. Doutrina incorporada antes de mover o carimbo (bumpar sem sincronizar seria o overclaim que o framework pune): **§3.5** processo adversarial default + canônico-prevalece + autonomia≠bypass (ADR-094) · **§3.6** referência resolve para o destinatário, com a regra de aspas em path com espaço (ADR-098) · **§3.7** HITL `prob × impacto ≥ 6`, com o limite `1×3` declarado (ADR-096). Carimbo → v1.75.0; versão do prompt permanece v4.5 (adição de seções, sem quebra de contrato). Vitrine (`guia/web/index.html`, 9 ocorrências) e os 6 `web-bundles/` regenerados para 1.75.0.
+
 ## [1.74.0] — 2026-07-28 — HITL mecanizado: corte `score ≥ 6` com exit code próprio (ADR-096)
 
 [CONSOLIDADO] · [CONFIRMADO]
