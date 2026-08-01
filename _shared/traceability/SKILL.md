@@ -81,6 +81,12 @@ rewrite/overwrite. Onde divergir, **vale o canônico** (liga-se à Regra 2 anti-
 (E1) e dispensa HITL só para efeito reversível — **NUNCA** dispensa o processo adversarial, **NUNCA** autoriza
 pular gates aprovados, **NUNCA** autoriza reabrir/sobrescrever o canônico. Autonomia ≠ bypass.
 
+> Causa raiz desta regra: o framework nasceu JUSTAMENTE para impedir o agente de "ir pelo caminho fácil".
+> Numa sessão real (2026-06-23) o agente tratou um pedido pontual de "modo autônomo" como licença para pular
+> o processo adversarial e tratar descobertas novas como se sobrepusessem o canônico aprovado. As regras já
+> existiam (ADR-011/027/007) e funcionavam **sem bloqueio** — o defeito foi **não segui-las**. Esta regra
+> consolida e torna o mandato explícito e default.
+
 ## Regra 7 — Trabalho executado FORA do repo deixa carimbo de procedência (ADR-095)
 
 Quando o **diretório de trabalho é EXTERNO ao repositório** — drive corporativo sincronizado,
@@ -112,8 +118,38 @@ git). Não sobrescreve carimbo existente: apenda seção de sessão (Regra 3).
 > produziu, nem o que ali é minuta e o que é registro. Em ambiente regulado essa distinção é a
 > diferença entre insumo e evidência — e uma minuta lida como registro é achado de auditoria.
 
-> Causa raiz desta regra: o framework nasceu JUSTAMENTE para impedir o agente de "ir pelo caminho fácil".
-> Numa sessão real (2026-06-23) o agente tratou um pedido pontual de "modo autônomo" como licença para pular
-> o processo adversarial e tratar descobertas novas como se sobrepusessem o canônico aprovado. As regras já
-> existiam (ADR-011/027/007) e funcionavam **sem bloqueio** — o defeito foi **não segui-las**. Esta regra
-> consolida e torna o mandato explícito e default.
+## Regra 8 — Referência a arquivo resolve no cwd do DESTINATÁRIO (ADR-098)
+
+Generaliza o que o **P14** (`_shared/metacognition-core`, ADR-012) já exigia do handoff
+("Localização: repositório (URL) e/ou path absoluto") para **todo** path emitido a humano ou a
+outro agente: prompt de contextualização, relatório, checkpoint, mensagem de PR, resposta ao dono.
+
+**Invariante:** o path resolve de onde o LEITOR está, não de onde o agente estava. Na mesma
+máquina isso é **path absoluto**; em consumo web (PR, issue) é **URL/permalink**. Relativo só
+dentro de arquivo cujo próprio local o ancora (import, `include`, link interno do repo).
+
+- **Path com espaço vem citado** no dialeto do shell alvo — `cd "C:\...\Projeto Cliente"`.
+  Sem aspas no PowerShell não é ambiguidade: é erro de execução.
+- **Diretório temporário não é entrega.** Scratchpad, `%TEMP%`, `/tmp` somem. Artefato reusável
+  nasce (ou é copiado) em caminho **permanente**, e é esse que se informa.
+- **Declare a qual repositório o path pertence** quando houver mais de um em jogo — repo pai ×
+  repo extraído é caso normal, não exceção.
+- **Verifique antes de emitir** (Regra 1). Path citado de memória é INFERIDO; path inexistente
+  entregue como certo é o modo de falha que esta regra ataca.
+
+Mecanizado no gerador do Pacote P14 — não é prosa a lembrar:
+
+```bash
+python tools/handoff.py            # emite ⚠️ por path relativo/temporário no pacote
+python tools/test_path_absoluto.py # canário
+```
+
+Cobertura **HARD no handoff**; **advisory** no resto do output (ADR-097: advisory ≠ opcional).
+Débito registrado em `capabilities.json` (`enforcement: advisory` — o aviso é visível, não bloqueia).
+
+> Causa raiz: quatro falhas na MESMA sessão (2026-08-01) — prompt entregue apontando para o
+> scratchpad temporário; link relativo em documento destinado a outra IA em outro repo; path com
+> espaço passado sem aspas (falhou no PowerShell); e "pasta inexistente" declarada sobre um
+> diretório que **existia no repo pai**, por não declarar a qual repo o path pertencia. Mesmo
+> defeito nos quatro: **referência que só resolve no cwd de quem escreveu**. Narrativa completa
+> no ADR-098 — não recopiar.

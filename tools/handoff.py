@@ -201,6 +201,43 @@ def pr_info(branch):
     return "(sem PR aberto para esta branch)"
 
 
+# --- Regra 8 / ADR-098: referencia a arquivo resolve no cwd do DESTINATARIO ------------------
+# Conservador POR DESENHO: so acusa o que e deterministicamente quebrado no destino. Falso
+# positivo aqui custa a confianca no gate inteiro — e um gate em que ninguem acredita e pior
+# que nenhum gate.
+_TEMP_MARCAS = (
+    "appdata\\local\\temp", "appdata/local/temp", "/tmp/", "\\temp\\",
+    "%temp%", "$env:temp", "scratchpad",
+)
+# link markdown cujo alvo nao e URL, nao e ancora e nao e path absoluto -> so resolve
+# a partir do diretorio do arquivo que o contem
+_LINK_REL = re.compile(r"\]\((?!https?://|#|mailto:|/|[A-Za-z]:[\\/])([^)\s]+)\)")
+
+
+def audit_paths(texto):
+    """Avisos sobre referencias que NAO resolvem no cwd do destinatario (ADR-098, Regra 8).
+
+    Retorna lista de avisos. Nao levanta excecao e nao altera o texto: o handoff continua
+    sendo emitido — o aviso e VISIVEL, nao bloqueante (conformance advisory do ADR-097).
+    """
+    avisos = []
+    baixo = texto.lower()
+    achadas = sorted({m for m in _TEMP_MARCAS if m in baixo})
+    if achadas:
+        avisos.append(
+            "path em diretorio TEMPORARIO (" + ", ".join(achadas) + ") — some em limpeza de "
+            "disco. Copie o artefato para caminho PERMANENTE e informe esse."
+        )
+    rel = sorted({m.group(1) for m in _LINK_REL.finditer(texto)})
+    if rel:
+        amostra = ", ".join(rel[:3]) + (" ..." if len(rel) > 3 else "")
+        avisos.append(
+            f"link markdown RELATIVO ({amostra}) — morto para quem le fora deste diretorio. "
+            "Use path absoluto ou URL completa."
+        )
+    return avisos
+
+
 def build(next_role, risk, author, ts="<timestamp>"):
     st = repo_state()
     proximo = latest_checkpoint_field("Próximo passo") or latest_checkpoint_field("Proximo passo")
@@ -226,6 +263,10 @@ def build(next_role, risk, author, ts="<timestamp>"):
     L.append("## [P14] Localizacao")
     L.append(f"- origin: {st['origin']}")
     L.append(f"- branch/commit: `{st['branch']}` @ `{st['commit']}` · {pr}")
+    # ADR-098 (Regra 8): sem a raiz ABSOLUTA, todo path relativo citado abaixo (arquivos
+    # recentes, pendencias) so resolve no cwd de quem gerou — a proxima sessao pode estar
+    # em outra maquina, outro clone ou outro repo aberto.
+    L.append(f"- raiz absoluta desta copia: `{ROOT}` (paths relativos abaixo ancoram AQUI)")
     L.append("")
     L.append("## [P14] Acesso")
     naoprot = []
@@ -256,7 +297,14 @@ def build(next_role, risk, author, ts="<timestamp>"):
     L.append("- **5 arquivos mais recentes:**")
     for i, f in enumerate(st["recent"], 1):
         L.append(f"  {i}. {f}")
-    return "\n".join(L) + "\n"
+    pacote = "\n".join(L) + "\n"
+    # ADR-098: audita o proprio pacote antes de entregar. Aviso VISIVEL no artefato — nao
+    # basta o agente "lembrar" da Regra 8, senao volta a ser prosa.
+    avisos = audit_paths(pacote)
+    if avisos:
+        pacote += "\n## [ADR-098] Avisos de referencia\n"
+        pacote += "".join(f"- ⚠️ {a}\n" for a in avisos)
+    return pacote
 
 
 def provenance(target, ts="<timestamp>"):

@@ -931,8 +931,8 @@
         "doc-intake",
         "canary"
       ]
-    }
-    ,{
+    },
+    {
       "id": "web-bundles-coaches",
       "title": "Coaches cross-IA (planejamento em Gemini/ChatGPT) gerados do dado com canario de drift fail-closed",
       "status": "PROVIDES",
@@ -948,8 +948,8 @@
         "planning",
         "external-integration"
       ]
-    }
-    ,{
+    },
+    {
       "id": "author-tier-gate",
       "title": "Gate de tier-autor da sessao: detecta modelo ativo (transcript) + alerta LOUD se autor < baseline (ADR-082)",
       "status": "PROVIDES",
@@ -965,8 +965,8 @@
         "boot",
         "heterogeneity"
       ]
-    }
-    ,{
+    },
+    {
       "id": "advanced-elicitation",
       "title": "Elicitacao avancada: catalogo de 77 metodos (convergente #1-69 + divergente CIS #70-76 + tuning-loop #77) com canario de integridade fail-closed; execucao pela skill",
       "status": "PARTIAL",
@@ -984,8 +984,8 @@
         "divergente",
         "canary"
       ]
-    }
-    ,{
+    },
+    {
       "id": "risk-gate",
       "title": "Gating deterministico por risco (prob x impacto -> gate + tier P0-P3); recast externo (ADR-086) sob P15, forma agnostica (categorias = blueprint)",
       "status": "PROVIDES",
@@ -1002,8 +1002,8 @@
         "external-integration",
         "canary"
       ]
-    }
-    ,{
+    },
+    {
       "id": "byo-ci-gate",
       "title": "Gate de merge dirigido pelos canarios LOCAIS (BYO-CI) — a seguranca do GHA sem GHA: posta commit-status verde so com 0 FAIL; branch protection exige o context",
       "status": "PROVIDES",
@@ -1020,8 +1020,8 @@
         "deterministic",
         "canary"
       ]
-    }
-    ,{
+    },
+    {
       "id": "autonomy-retry-policy",
       "title": "Dial retry/escalate por MODO (ADR-087): HITL escala na 1a falha; autosuficiente auto-retenta subindo a escada de modelo ate budget, escala por ultimo",
       "status": "PROVIDES",
@@ -1039,8 +1039,8 @@
         "external-integration",
         "canary"
       ]
-    }
-    ,{
+    },
+    {
       "id": "core-no-vendor",
       "title": "Pureza do nucleo: nenhum nome de PRODUTO/VENDOR externo no conteudo operativo (_shared/.agent/skills/roteador); proveniencia so nos ADRs. Regression-guard do 'repo nao tem produtos' (P12)",
       "status": "PROVIDES",
@@ -1056,8 +1056,8 @@
         "guard",
         "canary"
       ]
-    }
-    ,{
+    },
+    {
       "id": "elicitation-gate",
       "title": "Elicitation-first VINCULANTE antes de implementar sobre indicador/metrica/regra de dominio de risco alto: ficha de insumo (6 campos) nao-skippavel mesmo em autosuficiente (enforcement, nao skill nova)",
       "status": "PROVIDES",
@@ -1075,8 +1075,8 @@
         "enforcement",
         "canary"
       ]
-    }
-    ,{
+    },
+    {
       "id": "web-prompt-currency",
       "title": "Guard de currency do prompt chat-web: carimbo 'Alinhado ao vX.Y.Z' nao pode ficar >5 minors atras de main (anti-drift-silencioso do prompt mantido a mao)",
       "status": "PROVIDES",
@@ -1093,8 +1093,8 @@
         "guard",
         "canary"
       ]
-    }
-    ,{
+    },
+    {
       "id": "project-onboarding",
       "title": "Onboarding/wayfinding de projeto por COMPOSICAO (ADR-090): fork greenfield/brownfield no discovery + workflows generate-project-context/document-project (compoem handoff/explorer/docops) + guia user-facing POR-ONDE-COMECAR",
       "status": "PROVIDES",
@@ -1112,8 +1112,8 @@
         "external-integration",
         "canary"
       ]
-    }
-    ,{
+    },
+    {
       "id": "edge-case-hunter",
       "title": "Percurso mecanico exaustivo de paths nao tratados — output JSON verificavel",
       "status": "PARTIAL",
@@ -1129,8 +1129,8 @@
         "code-review",
         "external-integration"
       ]
-    }
-    ,{
+    },
+    {
       "id": "party-mode",
       "title": "Exploracao multi-perspectiva com personas em conflito deliberado",
       "status": "PARTIAL",
@@ -1146,8 +1146,8 @@
         "brainstorming",
         "external-integration"
       ]
-    }
-    ,{
+    },
+    {
       "id": "readiness-gate",
       "title": "Gate pre-developer: valida alinhamento requirements+ADR antes de J3",
       "status": "PARTIAL",
@@ -1179,8 +1179,8 @@
         "fail-closed",
         "anti-drift"
       ]
-    }
-    ,{
+    },
+    {
       "id": "external-work-provenance",
       "title": "Carimbo de PROCEDENCIA em trabalho executado FORA do repo: PROCEDENCIA.md com framework/versao/commit/sessao deterministicos + status por artefato (MINUTA/PROPOSTA/MIGRADO/APROVADO)",
       "status": "PROVIDES",
@@ -1196,6 +1196,24 @@
         "external-work",
         "regulated",
         "anti-drift"
+      ]
+    },
+    {
+      "id": "path-resolves-at-destination",
+      "title": "Referencia a arquivo resolve no cwd do DESTINATARIO: raiz absoluta no Pacote P14 + auditoria de diretorio temporario e link markdown relativo",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/handoff.py",
+      "test": "tools/test_path_absoluto.py",
+      "enforcement": "advisory",
+      "adr": "docs/adr/098-referencia-a-arquivo-absoluta-e-resolvivel-fora-do-cwd.md",
+      "cross_ai": false,
+      "tags": [
+        "traceability",
+        "handoff",
+        "cross-session",
+        "anti-drift",
+        "path"
       ]
     }
   ],
