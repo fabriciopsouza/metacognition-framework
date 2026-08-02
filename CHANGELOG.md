@@ -15,6 +15,43 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.76.0] — 2026-08-02 — Método de validação ponto a ponto com reporte para humano (ADR-099)
+
+[EMERGENTE] · [CONFIRMADO no bloco de origem; generalização para outros domínios INFERIDA]
+
+### Adicionado (1 skill de núcleo; régua §0 pela porta (c) — destrava eval)
+- **ADR-099 Aceito** — pedido explícito do dono ao fim de um bloco de validação real:
+  *"incorpore como um dos métodos quando pedir validação ponto a ponto e com clareza. Este
+  é o método que deve valer para o framework agora."* **Texto normativo em
+  `_shared/validation-reporting/SKILL.md`** — fonte única, não recopiado aqui.
+- O framework tinha regras para **fazer** validação (file-first, confidence-classification,
+  traceability) e **nenhuma** para **reportá-la a quem decide**. O resultado observado foi um
+  executor tecnicamente rigoroso e praticamente inútil: apresentou "não conferido" com
+  aparência de "ok", reprovou por 0,01% em campo descritivo, declarou impedimento
+  inexistente, e gerou artefato dizendo "PASSOU" com um portão reprovando três linhas acima.
+- Dez seções, **cada uma derivada de um erro concreto** do bloco de origem (o dono corrigiu
+  o executor oito vezes). Destaques: **quatro categorias** — validado · não conferido ·
+  **não obtenível** · não se aplica; **níveis por consequência do campo** (A dinheiro/
+  documento tolerância zero · B operacional aceito se caracterizado **e testado** que não
+  altera decisão · C descritivo · **B-DEC** flag derivada = métrica de impacto, não erro
+  independente); **total agregado nunca sozinho** (é cego a erro compensatório, que é o que
+  fraude produz); **diferença nomeada com resíduo zero** em vez de faixa de tolerância;
+  **materialidade por unidade de veredito**; **antes de declarar impedimento, procurar a
+  segunda via**; e **VALIDADO COM RESSALVA é validado** — negá-lo por perfeccionismo
+  desserve quem decide.
+- Formato de entrega recomendado (planilha por abas, abrindo pelo que **NÃO** está validado,
+  código de saída por conferência, **número derivado nunca digitado**, veredito condicionado
+  aos códigos medidos, nome de arquivo **fixo**, glossário). Obrigatório é o **conteúdo**, não
+  o formato.
+
+### Débito declarado
+- A skill **não tem canário próprio**: sua conformidade é avaliada por leitura, não por
+  mecanismo — o que contraria a §10 dela mesma (*"declarar a regra não a implementa"*).
+  Registrado na §Verificação do ADR-099 como pendência, não como completo.
+- `check_core_agnostic.py --sensitive` acusa LEAK **pré-existente** em
+  `docs/specs/v1.13.0-aivi-method-fixes/` (token no NOME do caminho), anterior a esta
+  release e fora do seu escopo.
+
 ## [1.75.0] — 2026-08-01 — Referência a arquivo é absoluta e resolvível fora do cwd (ADR-098)
 
 [CONSOLIDADO] · [CONFIRMADO]

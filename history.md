@@ -9,6 +9,63 @@
 
 ---
 
+## 2026-08-02 — Release v1.76.0 (MINOR): método de validação ponto a ponto com reporte para humano (ADR-099)
+
+Bloco nascido **fora** do núcleo: uma sessão de validação de dados em repositório de domínio,
+onde o executor produziu **números corretos e um reporte inutilizável**. O dono corrigiu oito
+vezes — sobre o que estava validado, sobre o que não estava, sobre linguagem, sobre veredito e
+sobre onde o arquivo estava. Nenhuma correção foi de gosto: cada uma apontou defeito que
+**mudava a decisão de quem lia**. O padrão exposto é do framework, não da sessão: havia regra
+para *fazer* validação (file-first, confidence-classification, traceability) e **nenhuma** para
+*reportá-la a quem decide*. Resultado: executor tecnicamente rigoroso e praticamente inútil —
+apresentou "não conferido" com cara de "ok", reprovou por 0,01% em campo descritivo, declarou
+impedimento inexistente, e gerou artefato dizendo "PASSOU" com um portão reprovando três linhas
+acima.
+
+**Entregue:** `_shared/validation-reporting/SKILL.md` — quatro categorias (validado · não
+conferido · **não obtenível** · não se aplica), níveis por **consequência do campo** (A
+dinheiro/documento tolerância zero · B operacional aceito se caracterizado **e testado** que
+não altera decisão · C descritivo · **B-DEC** flag derivada = métrica de impacto), total
+agregado nunca sozinho (é cego a erro compensatório, que é o que fraude produz), diferença
+**nomeada com resíduo zero** em vez de faixa de tolerância, materialidade restrita a B/C, e
+**VALIDADO COM RESSALVA é validado** — negá-lo por perfeccionismo desserve quem decide.
+
+**QA heterogêneo (Fable isolado, ≠ autor Opus) — 1ª rodada NÃO LIBERADO: 1 bloqueante, 5
+graves, 4 menores.** O bloqueante é o que mais importa registrar: o ADR alegava a régua §0
+pela **porta (c)** ("destrava eval editando existente") e o crítico derrubou os **três**
+predicados — entrega 100% aditiva, nenhum eval criado, nenhuma fusão executada
+(`confidence-classification` ficou intocada, e a skill nem a referenciava). Era
+**racionalização**, e exatamente o defeito que o ADR-098 sofreu — citado como lição **dentro
+do ADR que o cometia**. Corrigido trocando a alegação falsa pela base real, que existia:
+**override explícito do dono (ADR-051)**, com débito e condição de quitação. Um ADR que
+racionaliza a régua §0 vira precedente citável; registrar isso vale mais que a release.
+
+Outros: `enforcement: advisory` afirmava um avisador inexistente (→ `prose`, como os
+precedentes) · sem ponte para `confidence-classification`/`high-stakes-gate`, dual-SSoT
+latente · materialidade sem escopo de nível permitia aprovar divergência de **dinheiro**
+sub-limiar · "ressalva" indefinida permitia empacotar **não-conferido** como ressalva e
+carimbar VALIDADO — o pecado que a §2 proíbe, pela porta dos fundos · a decisão "formato
+recomendado, conteúdo obrigatório" vivia **só no ADR**, que sessão futura não carrega, enquanto
+a SSoT prescrevia planilha e `.xlsx`.
+
+Nomenclaturas: "não obtenível não é pendência" · "nível por consequência do campo" · "resíduo
+zero é prestação de contas, não tolerância" · "validado com ressalva é validado".
+Decisões permanentes: **ADR-099 Aceito**. Régua §0 por **override declarado**, não por porta.
+Riscos ativos: método **provado uma vez**, num domínio — generalização é [INFERIDO]; o gatilho
+da §1 é conjuntivo para limitar o dano.
+Dívida aceita: **a skill não tem canário próprio** e portanto **viola a §10 dela mesma**
+("declarar a regra não a implementa"). Declarado em três lugares e refletido em
+`PARTIAL`/`prose`. Quita quando houver canário sobre artefato-exemplo com veredito derivado —
+o bloco de origem já construiu um gerador assim, logo é alcançável.
+**RRC:** ADR-099 no CHANGELOG [1.76.0] · README 1.75.0 → 1.76.0 · `capabilities.json` +
+`CAPABILITIES.md` regerados (77) · qa-evidence
+`_meta/qa/adr-099-metodo-de-validacao-ponto-a-ponto-com-reporte-para-humano.json`.
+
+**Próximo passo:** escrever o canário da `validation-reporting` — um artefato-exemplo mínimo
+cujo veredito seja derivado de códigos de saída, e um teste que **mute** o artefato e exija
+que o veredito vire REPROVADO. Critério de aceite: o canário foi **visto reprovar**, e o
+registro sobe de `PARTIAL`/`prose` para `PROVIDES`, quitando o débito §0.
+
 ## 2026-08-01 — Release v1.75.0 (MINOR): referência a arquivo resolve no cwd do DESTINATÁRIO (ADR-098)
 
 Bloco nascido de **quatro falhas do próprio autor na mesma sessão**, nenhuma percebida por ele. Entregou um prompt de contextualização apontando para o **scratchpad temporário**; usou **link markdown relativo** num documento destinado a outra IA em outro repositório; passou um path com espaço (`Projeto Cliente`) **sem aspas** — e foi o dono quem viu o erro do PowerShell primeiro; e declarou **"pasta inexistente"** um diretório que **existia no repo pai**, por não ter declarado a qual dos dois repositórios o path pertencia. Mesmo defeito nos quatro: **referência que só resolve no `cwd` de quem escreveu**.
