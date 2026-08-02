@@ -1215,6 +1215,23 @@
         "anti-drift",
         "path"
       ]
+    },
+    {
+      "id": "validation-reporting",
+      "title": "Metodo de validacao ponto a ponto com reporte legivel por humano que decide",
+      "status": "PARTIAL",
+      "ai_owner": "claude",
+      "mechanism": "_shared/validation-reporting/SKILL.md",
+      "adr": "docs/adr/099-metodo-de-validacao-ponto-a-ponto-com-reporte-para-humano.md",
+      "cross_ai": false,
+      "enforcement": "prose",
+      "tags": [
+        "validacao",
+        "reporte",
+        "humano",
+        "metodo"
+      ],
+      "note": "PARTIAL / prose por honestidade: skill de METODO sem mecanismo — nao ha avisador, logo 'advisory' afirmaria um mecanismo inexistente (achado A2 do qa-critic; precedentes edge-case-hunter/party-mode/readiness-gate usam 'prose'). Contraria a §10 da propria skill; debito declarado no ADR-099 §Regua §0, que assume o override do dono (ADR-051) em vez de alegar a porta (c). Vira PROVIDES quando houver canario sobre artefato-exemplo com veredito derivado."
     }
   ],
   "registry_waivers": [
