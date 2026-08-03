@@ -82,8 +82,14 @@ def latest_checkpoint_field(field):
         return ""
     nxt = re.search(r"(?m)^##\s+\d{4}-\d{2}-\d{2}", hist[m.end():])
     block = hist[m.end(): m.end() + nxt.start()] if nxt else hist[m.end():]
-    fm = re.search(rf"(?im)^\s*{re.escape(field)}\s*:?\s*(.+)$", block)
-    return fm.group(1).strip() if fm else ""
+    # `\*{0,2}` porque os checkpoints escrevem o campo em NEGRITO (`**Proximo passo:**`),
+    # e o regex ancorado em `^\s*<campo>` nunca casava — o pacote P14 saia com
+    # "<definir: nao havia Proximo passo no checkpoint>" mesmo com o campo presente, o que
+    # esvaziava justamente o item que define o que a proxima sessao produz (bug observado
+    # em 2026-08-02 contra os checkpoints de v1.75.0 e v1.76.0).
+    fm = re.search(rf"(?im)^\s*\*{{0,2}}{re.escape(field)}\*{{0,2}}\s*:?\*{{0,2}}\s*(.+)$",
+                   block)
+    return fm.group(1).strip().lstrip("*").strip() if fm else ""
 
 
 def em_aberto():
