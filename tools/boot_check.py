@@ -91,6 +91,32 @@ def check_cross_ai_boot_scan():
     return {"name": "cross-ai-boot-scan", "status": status, "detail": detail, "stamps": []}
 
 
+def check_trabalhos_abertos():
+    """Oferece os trabalhos com handoff em aberto (ADR-100).
+
+    O Pacote P14 (`tools/handoff.py`) e completo, mas EFEMERO: gerado, exibido e perdido.
+    Sem isto, quem abre a proxima sessao nao e lembrado de que existe trabalho aguardando
+    decisao — e reconstitui o estado do zero, ou simplesmente nao retoma.
+
+    NUNCA falha o boot: trabalho pendente e informacao, nao erro. Mas tambem nunca fica
+    silencioso — "nenhum aberto" e resultado declarado, nao ausencia de checagem.
+    """
+    rc, out = _run(sys.executable, os.path.join("tools", "trabalhos.py"), "listar")
+    text = out.strip()
+    if rc != 0:
+        return {"name": "trabalhos-abertos", "status": "warn",
+                "detail": text.replace("\n", " ")[:300], "stamps": []}
+    if "nenhum trabalho em aberto" in text:
+        return {"name": "trabalhos-abertos", "status": "ok",
+                "detail": "nenhum trabalho em aberto (verificado, nao presumido)",
+                "stamps": []}
+    nomes = [l.strip()[2:].strip() for l in text.splitlines() if l.startswith("▸")]
+    return {"name": "trabalhos-abertos", "status": "ok",
+            "detail": f"{len(nomes)} trabalho(s) aguardando decisao: " +
+                      " · ".join(n[:60] for n in nomes[:4]),
+            "stamps": []}
+
+
 def check_version_sanity():
     """Ancora a versao canonica (anti 'versao fantasma' — erro real do boot Gemini que declarou v3.1
     inexistente). Le o topo do CHANGELOG (release) e a versao do roteador no AGENT-FRAMEWORK.md."""
@@ -344,7 +370,7 @@ def check_environment_applicability():
 
 
 CHECKS = [check_repo_sync, check_core_agnostic, check_cross_ai_boot_scan, check_version_sanity,
-          check_environment_applicability]
+          check_environment_applicability, check_trabalhos_abertos]
 
 
 def run_checks():
