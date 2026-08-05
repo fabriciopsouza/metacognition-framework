@@ -26,7 +26,19 @@ Primeiro turno de cada sessão. Obrigatório.
    SÓ por exceção declarada (retomada profunda · auditoria/process-critic · consulta a method-audit).
    Campos do STATUS: onde paramos · ADRs aceitos · nomenclaturas · próximo passo · riscos · **WIP**
    (itens em aberto reconciliados) · **debt retrospective** (gaps detectados no 2.5, se houver).
-4. Responder: "Sessão aberta. [STATUS 2-3 linhas] Retomar o próximo passo ou mudou direção?"
+3.5. **Trabalhos em aberto — OFERECER, não só listar (ADR-100):** `python tools/trabalhos.py listar`
+   (o `boot_check` já o executa e resume). Cada trabalho aberto traz **objetivo · o que foi feito ·
+   o que está pendente · próximo passo e o que ele decide**. **Enquanto o status for `aberto`, o
+   trabalho reaparece a cada sessão** — é o mecanismo que impede o handoff de se perder.
+   **O agente DEVE mencioná-lo na resposta de abertura**, ainda que o dono traga outro assunto: um
+   registro que existe e não é oferecido é igual a não existir. Detalhe:
+   `python tools/trabalhos.py mostrar --slug <slug>`.
+   **Só o dono encerra:** `python tools/trabalhos.py tratar --slug <slug> [--nota "..."]`.
+   Ao FECHAR um bloco que deixa pendência, registrar/atualizar com
+   `python tools/trabalhos.py registrar --slug <s> --nome ... --objetivo ... --pendente ... --proximo ...`
+   — é o passo que transforma o Pacote P14 (efêmero) em pendência que sobrevive à sessão.
+4. Responder: "Sessão aberta. [STATUS 2-3 linhas] [se houver trabalho aberto: citar nome + próximo
+   passo] Retomar o próximo passo ou mudou direção?"
 
 ## Bloqueios
 Sem briefing.md → primeira tarefa é criá-lo. Sem 00-glossario.md → bloquear

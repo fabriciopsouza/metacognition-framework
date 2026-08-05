@@ -1232,6 +1232,24 @@
         "metodo"
       ],
       "note": "PARTIAL / prose por honestidade: skill de METODO sem mecanismo — nao ha avisador, logo 'advisory' afirmaria um mecanismo inexistente (achado A2 do qa-critic; precedentes edge-case-hunter/party-mode/readiness-gate usam 'prose'). Contraria a §10 da propria skill; debito declarado no ADR-099 §Regua §0, que assume o override do dono (ADR-051) em vez de alegar a porta (c). Vira PROVIDES quando houver canario sobre artefato-exemplo com veredito derivado."
+    },
+    {
+      "id": "trabalhos-registro",
+      "title": "Registro persistente de trabalhos: handoff sobrevive a sessao e e oferecido ate ser tratado",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/trabalhos.py",
+      "adr": "docs/adr/100-registro-de-trabalhos-handoff-persistente.md",
+      "cross_ai": false,
+      "enforcement": "advisory",
+      "tags": [
+        "handoff",
+        "boot",
+        "continuidade",
+        "p14"
+      ],
+      "note": "advisory por desenho: trabalho pendente e INFORMACAO, nao erro — o gate check_trabalhos_abertos do boot_check nunca falha o boot, mas nunca fica silencioso ('nenhum aberto' e resultado declarado). Ciclo aberto->tratado; so o dono encerra. Persistencia em ~/.claude/trabalhos/ (fora do repo, porque um trabalho pode envolver varios repositorios).",
+      "test": "tools/test_trabalhos.py"
     }
   ],
   "registry_waivers": [

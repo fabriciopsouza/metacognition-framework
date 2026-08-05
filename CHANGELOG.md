@@ -15,6 +15,41 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.77.0] — 2026-08-03 — Registro de trabalhos: o handoff sobrevive à sessão (ADR-100)
+
+[EMERGENTE] · [CONFIRMADO — gap observado na própria sessão que originou o ADR]
+
+### Adicionado (1 executável + 1 canário + 1 gate de boot; régua §0 pela porta (c))
+
+- **ADR-100 Aceito** — pedido do dono: *"o handoff não deve ser perdido se eu iniciar os
+  trabalhos, mas deve ser oferecido até que eu trate o assunto"*, organizado **por trabalho**,
+  com objetivo, resumo do que foi feito e o que está pendente.
+- **`tools/trabalhos.py`** — registro persistente em `~/.claude/trabalhos/<slug>.md`, **fora do
+  repositório** de propósito: um trabalho pode envolver vários repositórios e não pode depender
+  de qual pasta foi aberta. Ciclo `aberto` → `tratado`; **só o dono encerra**.
+- **Gate `trabalhos-abertos` no `boot_check`** — **nunca falha o boot** (trabalho pendente é
+  informação, não erro) e **nunca fica silencioso**: "nenhum aberto" é resultado declarado.
+- **Passo 3.5 no `start-session`** — o agente **deve mencionar na abertura**. Registro que existe
+  e não é oferecido é igual a não existir, que é exatamente a falha corrigida.
+- **`tools/test_trabalhos.py`** — 16 verificações: ciclo aberto→tratado→reaberto, preservação de
+  campo não informado ao re-registrar, "nenhum" declarado em vez de silêncio, e que o boot **não
+  falha** por haver trabalho aberto.
+
+### Por quê
+
+O Pacote P14 (ADR-012/076) resolve **o que o handoff contém**; não resolvia **o que acontece com
+ele depois**. Era gerado, exibido no chat e **perdido** — a próxima sessão não era lembrada de que
+havia trabalho aguardando decisão. Régua §0 porta (c): destrava o uso de mecanismo que já existe,
+sem reimplementá-lo — o conteúdo técnico continua vindo de `handoff.py`.
+
+### Consequência declarada
+
+O registro vive fora do git: **não é versionado nem tem backup**. É o preço de ser
+cross-repositório. E registro desatualizado é pior que ausente — por isso `listar` sempre mostra o
+comando de encerramento.
+
+---
+
 ## [1.76.0] — 2026-08-02 — Método de validação ponto a ponto com reporte para humano (ADR-099)
 
 [EMERGENTE] · [CONFIRMADO no bloco de origem; generalização para outros domínios INFERIDA]
