@@ -10,6 +10,8 @@ import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _project import project_root  # noqa: E402 — resolvedor unico da raiz do PROJETO (ADR-101)
 
 try:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -28,14 +30,14 @@ def allow():
 
 try:
     raw = sys.stdin.read()
-    cwd = ROOT
+    h = {}
     if raw:
         try:
-            h = json.loads(raw)
-            if h.get("cwd"):
-                cwd = str(h["cwd"])
+            h = json.loads(raw) or {}
         except Exception:
-            pass
+            h = {}
+    # ADR-101: o history.md que importa e o do PROJETO aberto, nao o do repo-framework.
+    cwd = project_root(h if isinstance(h, dict) else {})
 
     candidates = [
         os.path.join(cwd, "history.md"),

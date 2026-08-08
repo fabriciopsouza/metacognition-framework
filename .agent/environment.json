@@ -1,0 +1,30 @@
+{
+  "_doc": "ADR-093/101 — GERADO de `--init-env` a partir da realidade viva desta maquina, nao copiado a mao. Cada premissa foi MEDIDA no momento da geracao; o boot re-cruza a cada sessao e marca APLICA/ESTALE/AUSENTE. ReGERE (`python tools/boot_check.py --init-env --force`) ao trocar de maquina. NAO edite 'found' — ele nao existe aqui de proposito: o valor vivo vem do boot.",
+  "schema_version": 1,
+  "generated_on": {
+    "host": "EAP9CQXC64",
+    "os": "Windows"
+  },
+  "assumptions": [
+    {
+      "id": "edr-que-vetaria-hooks",
+      "kind": "process",
+      "expect_present": false,
+      "value": "avp|kaspersky|klnagent",
+      "note": "MEDIDO nesta maquina: NENHUM EDR desta lista rodando -> NAO alegue veto de hook aqui; se um gate nao rodou, a causa e outra (wiring/timing)"
+    },
+    {
+      "id": "hooks-deixam-rastro",
+      "kind": "hook",
+      "expect_present": true,
+      "note": "MEDIDO: hooks ja carimbaram liveness neste repo"
+    },
+    {
+      "id": "host-de-origem",
+      "kind": "host",
+      "expect_present": true,
+      "value": "EAP9CQXC64",
+      "note": "premissa vira ESTALE automaticamente em outra maquina (que e o ponto)"
+    }
+  ]
+}

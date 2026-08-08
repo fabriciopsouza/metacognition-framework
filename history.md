@@ -9,6 +9,78 @@
 
 ---
 
+## 2026-08-08 — Release v1.78.0 (MINOR): gates portáteis, encerramento determinístico e correlação obrigatória (ADR-101)
+
+Bloco nascido de uma **auditoria falada do dono**: onze queixas de que o framework "só funciona se
+provocado", e mais comuns **fora** deste repo. A tentação era tratar onze itens. A medição disse
+outra coisa — eram **três buracos estruturais**, e cada queixa era sintoma de um deles.
+
+**Buraco espacial.** `.claude/settings.json` do repo-mãe: **17 gates**. `~/.claude/settings.json`
+global — o que vale ao abrir qualquer outro repo: **2**, ambos `.ps1`. Duas causas por baixo, ambas
+silenciosas há muito: o espelhamento copiava skills/agents/workflows mas **nunca `tools/`** (sem
+código lá, o global não tinha o que chamar), e o `bootstrap.py` instalava por padrão o perfil
+non-admin *"settings.json sem hooks"* — o medo de EDR virou política do instalador.
+**Buraco temporal.** Os 17 gates disparavam no início ou no meio; **zero** em `Stop`. O fim da
+sessão era terra de ninguém — daí encerramento parcial, memória e relatório não-determinísticos,
+cross-IA parado.
+**Buraco relacional.** Nada modelava "X muda junto com Y". O `completeness-gate` mede escopo-pedido
+× entrega, isto é, o que foi **dito**; acoplamento é o que **não se diz** porque se presume sabido.
+
+**Entregue:** `wire_gates.py` + `gates-manifest.json` (wiring vira função de manifesto, nos dois
+escopos — **global 2 → 13 gates**, todos Python) · `closing_gate.py` no evento `Stop` · `correlated.py`
++ `.agent/correlations.json` · `boot_brief.py` (anti-repergunta) · ports Python de `route-gate` e do
+auto-boot · `_project.py` · `boot_check --init-env`.
+
+**Três bugs reais, todos pegos por execução:** `mission_gate` e `compaction_gate` faziam `cwd = ROOT`
+— wirados globalmente auditariam o *framework* enquanto o dono trabalha noutro repo (falso-OK, pior
+que gate ausente); `porcelain()` cortava 1 char do primeiro path porque o helper `git()` dava
+`.strip()` num formato onde a coluna 1 é significativa.
+
+**A queixa do Kaspersky estava certa e era de outra natureza.** O veto é de UMA máquina, já tratada,
+mas a prosa afirmava como fato universal em 20+ arquivos e o agente passou a **supor bloqueio onde
+não há**. O ADR-093/094 já previa (`kind: process`, nota *"NÃO assumir o veto, VERIFICAR"*) — mas o
+manifesto nunca foi instanciado e o gate vivia em **skip permanente**. Agora é medido: nesta máquina,
+**nenhum EDR da lista rodando**.
+
+**Dois achados que só apareceram porque fui atrás da queixa, e valem mais que a queixa:**
+(1) `test_dev_dogfood` estava **verde há dois meses** medindo só *existência* — o docstring
+**confessava** que frescor era "disciplina do `/checkpoint`", ou seja, prosa. Agora exige que os
+artefatos citem a release do topo do CHANGELOG (âncora por conteúdo; mtime não sobrevive a clone).
+(2) O canal cross-IA não parou por esquecimento: o hub está em **deadlock desde 2026-06-08** —
+arquivos duplicados (mesmo `report_id` em 2 arquivos) fazem o `cross_ai_gate`, que é fail-closed e
+valida o hub inteiro, **rejeitar todo deposit novo**. Diagnosticado, não corrigido (outro repo).
+
+Nomenclaturas: "buraco espacial/temporal/relacional" · "declaração não pode superestimar a medição"
+· "tem que ser tudo" (correlato) · "gate que aceita autodeclaração do auditado não é gate".
+Decisões permanentes: **ADR-101 Aceito**.
+Riscos ativos: `closing_gate` é o gate mais intrusivo do repo (bloqueia trabalho real — mitigado por
+1×/sessão, `stop_hook_active` e dois escapes) · path absoluto do framework no settings global quebra
+se o repo mudar de lugar (re-afirmado a cada boot; falha-soft) · `correlations.json` é escrito à mão.
+**RRC:** ADR-101 no CHANGELOG [1.78.0] · README/vitrine/PROMPT-WEB/AGENTS.md em sync · `capabilities.json`
++ `CAPABILITIES.md` regerados (81) · canários `test_wire_gates` (23) e `test_closing_gate` (22) novos,
+`test_author_tier` de 6 → 9 asserts, `test_marketing_claims` +1 (README × topo do CHANGELOG — fecha
+dívida de backlog), `test_dev_dogfood` ganhou frescor.
+
+**QA — declarado sem maquiagem: NÃO houve crítico heterogêneo.** Três tentativas de spawnar o
+qa-critic isolado morreram por watchdog de infraestrutura (600s sem progresso), duas em `opus` e uma
+em `sonnet`. O que existe é **auto-revisão do autor** (`opus` revisando `opus`), que o ADR-011 define
+como mais fraca — e que rendeu 1 achado real mesmo assim (orçamento de timeout do `closing_gate`:
+5 chamadas git × 30s contra 60s de hook → o gate morreria em silêncio em repo lento, falso-OK).
+**A heterogeneidade é dívida aberta desta release**, registrada no trabalho `adr-101-gates-portateis`.
+
+**Método-audit — a falha mais instrutiva do bloco foi minha.** Presumi que o `/model claude-fable-5`
+do dono tinha pegado e **alimentei o gate com a suposição** (`--author-model claude-fable-5`). O
+`author-tier-gate` **detecta certo** pelo transcript, mas aceitava a flag como override incondicional:
+devolveu minha suposição carimbada de ✅ (`autor='fable'`), e em cascata spawnei o crítico no meu
+próprio modelo, quebrando a heterogeneidade. **Quem pegou foi o dono** — *"tem certeza que não pegou
+um snapshot e usou como verdade?"*. Corrigido no mesmo bloco: declaração só pode **rebaixar**;
+superestimar cai para o detectado, com aviso. Liga a [[feedback-prosa-vira-mecanismo]].
+
+**Próximo passo:** rodar o qa-critic heterogêneo (`sonnet`, subagente isolado) sobre o diff do
+ADR-101, absorver achados e gravar `qa_evidence` com veredito aprovativo — os gates `qa-evidence`,
+`posture` e `release-checkpoint` só ficam verdes com isso. Critério de aceite: `run_canaries.py` com
+0 FAIL e veredito persistido em `_meta/qa/`.
+
 ## 2026-08-02 — Release v1.76.0 (MINOR): método de validação ponto a ponto com reporte para humano (ADR-099)
 
 Bloco nascido **fora** do núcleo: uma sessão de validação de dados em repositório de domínio,

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """boot_check.py — self-check de boot UNICO, em Python (imune ao veto de EDR), que executa as
-verificacoes session-time que de outro modo sao hook-inerte (Kaspersky) ou skippaveis pelo agente,
+verificacoes session-time que de outro modo sao hook-inerte ou skippaveis pelo agente,
 e grava PROVA checavel em .claude/boot-proof.json.
 
 PORQUE (emenda ADR-061 / plano anti-bypass 2026-06-10): os gates de boot EXISTEM mas sao
@@ -165,6 +165,16 @@ def detect_session_model(transcript_path=""):
     return model
 
 
+def _fam_rank(model_str, pol, order):
+    """Indice da familia em `order` (0 = mais capaz). None se nao reconhecida. ADR-101."""
+    if not model_str:
+        return None
+    for f, mid in pol.get("model_ids", {}).items():
+        if f in model_str or str(mid).lower() in model_str:
+            return order.index(f) if f in order else None
+    return None
+
+
 def check_author_tier(author_model=""):
     """Gate de TIER-AUTOR da sessao (ADR-082): o modelo da sessao principal NAO e governado pelo
     model-policy.json (e do harness/`/model`) — esta era a cegueira que deixou Sonnet virar autor em
@@ -188,6 +198,21 @@ def check_author_tier(author_model=""):
     baseline_avail = baseline and baseline not in unavailable
     am = (author_model or os.environ.get("CLAUDE_CODE_MODEL") or os.environ.get("ANTHROPIC_MODEL")
           or os.environ.get("CLAUDE_MODEL") or detect_session_model()).lower()
+    # [ADR-101, 2026-08-08] DECLARACAO NAO PODE SUPERESTIMAR A MEDICAO. Caso real desta sessao: o
+    # dono rodou `/model claude-fable-5`, o harness NAO aplicou (fable indisponivel) e o agente
+    # passou `--author-model claude-fable-5` — a flag sobrepos a deteccao e o gate declarou
+    # "autor='fable'" enquanto o transcript dizia claude-opus-5 194x. Um gate que aceita a
+    # auto-declaracao do auditado nao e gate. A declaracao segue valendo p/ REBAIXAR (declarar-se
+    # abaixo e confissao, nao overclaim); superestimar cai p/ o detectado, com aviso.
+    detected = (detect_session_model() or "").lower()
+    tier_declared = _fam_rank(author_model.lower() if author_model else "", pol, order)
+    tier_detected = _fam_rank(detected, pol, order)
+    overclaim = ""
+    if author_model and detected and tier_declared is not None and tier_detected is not None \
+            and tier_declared < tier_detected:  # menor indice = mais capaz
+        overclaim = (f" [declaracao '{author_model}' IGNORADA: detectado '{detected}' no transcript "
+                     f"— declaracao nao pode superestimar a medicao (ADR-101)]")
+        am = detected
     fam = ""
     for f, mid in pol.get("model_ids", {}).items():
         if f in am or str(mid).lower() in am:
@@ -204,9 +229,10 @@ def check_author_tier(author_model=""):
                 "detail": f"AUTOR rodando em '{fam}' ABAIXO do baseline '{baseline}' (disponivel). "
                           f"TROQUE: /model {baseline} — ou declare {baseline} indisponivel "
                           f"(FRAMEWORK_MODELS_UNAVAILABLE). {crit}", "stamps": []}
-    return {"name": "author-tier", "status": "ok",
+    return {"name": "author-tier", "status": "warn" if overclaim else "ok",
             "detail": f"autor='{fam}' >= baseline='{baseline}'"
-                      + ("" if baseline_avail else f" (baseline {baseline} DECLARADO indisponivel -> downgrade ok)"),
+                      + ("" if baseline_avail else f" (baseline {baseline} DECLARADO indisponivel -> downgrade ok)")
+                      + overclaim,
             "stamps": []}
 
 
@@ -427,7 +453,62 @@ def write_proof(session_id, results):
     return proof
 
 
+ENV_INIT_DOC = (
+    "ADR-093/101 — GERADO de `--init-env` a partir da realidade viva desta maquina, nao copiado a "
+    "mao. Cada premissa foi MEDIDA no momento da geracao; o boot re-cruza a cada sessao e marca "
+    "APLICA/ESTALE/AUSENTE. ReGERE (`python tools/boot_check.py --init-env --force`) ao trocar de "
+    "maquina. NAO edite 'found' — ele nao existe aqui de proposito: o valor vivo vem do boot."
+)
+
+
+def init_env(force=False):
+    """Instancia .agent/environment.json MEDINDO a maquina (ADR-101).
+
+    O manifesto de premissas existia so como `.example.json` que alguem deveria copiar a mao —
+    e ninguem copiou, entao o gate `env-applicability` vivia em skip permanente. Enquanto isso a
+    prosa do repo afirmava 'Kaspersky veta hooks' como se fosse fato universal, quando e uma
+    premissa DE UMA MAQUINA e, pelo proprio ADR-094, VERIFICAVEL. Resultado relatado pelo dono:
+    'a IA supoe que existe bloqueio quando nao existe'. Aqui a suposicao vira medicao.
+    """
+    if os.path.isfile(ENV_MANIFEST) and not force:
+        print(f"[init-env] ja existe: {ENV_MANIFEST} (use --force p/ regerar)")
+        return 0
+    env = detect_environment()
+    edr_found = _process_running("avp|kaspersky|klnagent|MsMpEng|CrowdStrike|SentinelOne")
+    hooks_live = os.path.isdir(os.path.join(ROOT, ".claude", ".hooklive"))
+    manifest = {
+        "_doc": ENV_INIT_DOC,
+        "schema_version": 1,
+        "generated_on": {"host": env["host"], "os": env["os"]},
+        "assumptions": [
+            {"id": "edr-que-vetaria-hooks", "kind": "process", "expect_present": edr_found,
+             "value": "avp|kaspersky|klnagent",
+             "note": ("MEDIDO nesta maquina: " + ("EDR presente — veto e HIPOTESE a testar, nao "
+                      "conclusao" if edr_found else "NENHUM EDR desta lista rodando -> NAO alegue "
+                      "veto de hook aqui; se um gate nao rodou, a causa e outra (wiring/timing)"))},
+            {"id": "hooks-deixam-rastro", "kind": "hook", "expect_present": hooks_live,
+             "note": ("MEDIDO: hooks ja carimbaram liveness neste repo" if hooks_live else
+                      "MEDIDO: sem rastro de liveness ainda — rode `python tools/wire_gates.py "
+                      "--check` antes de culpar EDR")},
+            {"id": "host-de-origem", "kind": "host", "expect_present": True, "value": env["host"],
+             "note": "premissa vira ESTALE automaticamente em outra maquina (que e o ponto)"},
+        ],
+    }
+    os.makedirs(os.path.dirname(ENV_MANIFEST), exist_ok=True)
+    with open(ENV_MANIFEST, "w", encoding="utf-8") as f:
+        json.dump(manifest, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+    print(f"[init-env] gerado de medicao: {ENV_MANIFEST}")
+    print(f"[init-env] host={env['host']} os={env['os']} · EDR-da-lista rodando: "
+          f"{'SIM' if edr_found else 'NAO'} · rastro de hooks: {'SIM' if hooks_live else 'NAO'}")
+    if not edr_found:
+        print("[init-env] => NAO afirme 'EDR veta hooks' nesta maquina: foi medido e nao ha.")
+    return 0
+
+
 def main(argv):
+    if "--init-env" in argv:
+        return init_env(force="--force" in argv)
     session_id = ""
     if "--session" in argv:
         i = argv.index("--session")

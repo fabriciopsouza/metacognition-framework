@@ -15,6 +15,81 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.78.0] — 2026-08-07 — Gates portáteis, encerramento determinístico e correlação obrigatória (ADR-101)
+
+[EMERGENTE] · [CONFIRMADO — medido no disco, não inferido]
+
+Bloco nascido de uma auditoria falada do dono: onze queixas sobre o framework "só funcionar se
+provocado", e mais comuns **fora** deste repo. A medição mostrou que não eram onze problemas —
+eram **três buracos estruturais**.
+
+### Corrigido — buraco espacial: o enforcement não viajava
+
+- **Medição de origem:** `.claude/settings.json` do repo-framework tinha **17 gates**;
+  `~/.claude/settings.json` **global**, que é o que vale ao abrir qualquer outro repo, tinha **2** —
+  e ambos `.ps1`. Faltavam mission-gate, effect-gate, overwrite-guard, context-budget, author-tier,
+  compaction-gate. Sobrava a prosa do `CLAUDE.md`, que nem está nos outros repos.
+- **Causas por baixo:** `sync-global.ps1` espelhava skills/agents/workflows mas **nunca `tools/`**
+  (sem código lá, o global não tinha o que chamar); e `bootstrap.py` instalava por padrão o perfil
+  non-admin *"settings.json sem hooks"* — o medo de EDR virou política permanente do instalador.
+- **`tools/wire_gates.py` + `tools/gates-manifest.json`** — o wiring vira função de um manifesto
+  único, gerado para o projeto **e** para o global. **Resultado: global 2 → 13 gates.** Substitui
+  `ensure-global-wiring.ps1`. Preserva `model`/`permissions`/`effortLevel` e faz backup `.wire.bak`.
+- **Porte para Python** de `route-gate` e `inject-start-session` (auto-boot ADR-006) — os dois
+  últimos hooks PS do caminho crítico. PS fica como fallback.
+- **`tools/hooks/_project.py`** — resolvedor único da raiz do PROJETO. Corrige bug real:
+  `mission_gate` e `compaction_gate` faziam `cwd = ROOT`; wirados globalmente auditariam o
+  **framework** enquanto o dono trabalha noutro repo — falso-OK, pior que gate ausente.
+
+### Adicionado — buraco temporal: nada vigiava o fim
+
+- **`tools/hooks/closing_gate.py`** no evento **`Stop`**, que o framework nunca tinha usado. Mede o
+  estado real (commit/push pendente, correlato não atualizado, raiz poluída, checkpoint do dia
+  ausente, trabalho não registrado) e **bloqueia a parada**. Não infere intenção — lê estado.
+  Anti-loop obrigatório: honra `stop_hook_active` e bloqueia no máximo 1× por sessão. Soberania:
+  `session.lock` ou `.claude/.closing.ack`.
+- Fecha de uma vez: encerramento parcial sem commit/PR, memória/relatório final não-determinísticos,
+  relatórios cross-IA não registrados e documentação contínua "só se provocada" — os mecanismos já
+  existiam (`consistency-gate`, `dev-dogfood-gate`, `trabalhos.py`); faltava **quem os chamasse**.
+
+### Adicionado — buraco relacional: acoplamento não era modelado
+
+- **`tools/correlated.py` + `.agent/correlations.json`** — grupos de globs que mudam juntos; tocar
+  um membro sem tocar os outros é violação. Pedido do dono, verbatim: *"se estou atualizando as
+  regras para um agente vertexai/reasoning, o par text-2-sql só é atualizado se eu provocar.
+  DEVERIA ser automaticamente. TEM QUE SER TUDO"*. Por projeto (o par é do dono, não do núcleo
+  agnóstico). Sem manifesto → **skip declarado**, nunca falso-OK.
+
+### Corrigido — a suposição de EDR virou medição
+
+- **`boot_check.py --init-env`** instancia `.agent/environment.json` **medindo** a máquina. O
+  mecanismo ADR-093/094 já previa isto (`kind: process`, nota *"NÃO assumir o veto, VERIFICAR"*),
+  mas o manifesto nunca foi instanciado e o gate vivia em **skip permanente**. Medição desta
+  máquina: **nenhum EDR da lista rodando**. A prosa que mandava supor o veto saiu de `CLAUDE.md`,
+  `AGENTS.md`, `start-session.md` e `boot_check.py`; os ADRs históricos ficam intactos.
+
+### Adicionado — anti-repergunta
+
+- **`tools/hooks/boot_brief.py`** injeta no boot o inventário do que **já está decidido** (briefing,
+  glossário, ADRs, regras, correlações) com ponteiros, não conteúdo (ADR-029). Perguntar o que
+  consta no inventário passa a ser erro visível.
+
+### Canários
+
+- `tools/test_wire_gates.py` (23 verificações) — trava a regressão do global capado, exige que todo
+  hook seja Python e que o auto-boot não suma do escopo portátil.
+- `tools/test_closing_gate.py` (22 verificações) — anti-loop, 1×/sessão, escapes, higiene da raiz,
+  anti-falso-positivo e a matriz de correlação.
+- 3 capacidades novas em `capabilities.json` (81 no total): `portable-gate-wiring`, `closing-gate`,
+  `correlated-update`.
+
+### Limites declarados
+
+O `closing_gate` é o gate mais intrusivo do framework — bloqueia trabalho real. O path absoluto do
+framework no settings global quebra se o repo for movido (re-afirmado a cada boot; falha-soft).
+`correlations.json` é escrito à mão: grupo mal declarado gera ruído. O `PROMPT-CHAT-WEB` recebeu a
+regra §3.7 como **prosa**, porque ambiente sem filesystem não tem hook — limite honesto, não descuido.
+
 ## [1.77.0] — 2026-08-03 — Registro de trabalhos: o handoff sobrevive à sessão (ADR-100)
 
 [EMERGENTE] · [CONFIRMADO — gap observado na própria sessão que originou o ADR]

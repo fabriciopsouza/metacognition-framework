@@ -25,6 +25,13 @@ def main():
     fails = []
     # ambiente determinístico: sem indisponibilidade herdada
     saved = os.environ.pop("FRAMEWORK_MODELS_UNAVAILABLE", None)
+    # [ADR-101] Os 6 asserts abaixo provam a LOGICA DE TIER pura (declaração → veredito). A partir
+    # do ADR-101 a detecção do transcript pode SOBREPOR a declaração quando esta superestima; se
+    # deixássemos a detecção ativa aqui, o resultado dependeria de qual modelo roda o canário — o
+    # canário viraria não-determinístico. Neutralizamos a detecção para a lógica pura e provamos a
+    # sobreposição em asserts PRÓPRIOS (bloco anti-overclaim, no fim).
+    _real_detect = boot_check.detect_session_model
+    boot_check.detect_session_model = lambda: ""
     try:
         # autor ABAIXO do baseline (sonnet/haiku) -> warn LOUD (passa o id explicito p/ nao auto-detectar)
         for mid in ("claude-sonnet-4-6", "claude-haiku-4-5-20251001"):
@@ -55,12 +62,37 @@ def main():
             fails.append(f"baseline indisponivel: autor sonnet deveria OK (downgrade declarado), "
                          f"veio {r['status']}: {r['detail'][:60]}")
         os.environ.pop("FRAMEWORK_MODELS_UNAVAILABLE", None)
+
+        # ---- [ADR-101] DECLARACAO NAO PODE SUPERESTIMAR A MEDICAO -------------------------
+        # Falha REAL de 2026-08-08: o dono rodou `/model claude-fable-5`, o harness nao aplicou, e
+        # o agente declarou `--author-model claude-fable-5` ao boot_check. A flag sobrepos a
+        # deteccao e o gate carimbou "autor='fable' >= baseline" — repetindo a suposicao do
+        # auditado de volta como se fosse medicao. Um gate que aceita a autodeclaracao do auditado
+        # nao e gate. Aqui a deteccao e FIXADA em opus e provamos as 3 direcoes.
+        boot_check.detect_session_model = lambda: "claude-opus-5"
+
+        r = boot_check.check_author_tier("claude-fable-5")  # declara ACIMA do detectado
+        if r["status"] != "warn" or "IGNORADA" not in r["detail"] or "opus" not in r["detail"]:
+            fails.append("OVERCLAIM: declarar 'fable' com deteccao 'opus' deveria WARN e IGNORAR a "
+                         f"declaracao, veio {r['status']}: {r['detail'][:90]}")
+
+        r = boot_check.check_author_tier("claude-haiku-4-5-20251001")  # declara ABAIXO = confissao
+        if r["status"] != "warn" or "ABAIXO do baseline" not in r["detail"]:
+            fails.append("CONFISSAO: declarar 'haiku' abaixo do detectado deve continuar valendo "
+                         f"(rebaixar e permitido), veio {r['status']}: {r['detail'][:90]}")
+
+        r = boot_check.check_author_tier("claude-opus-5")  # declaracao BATE com a medicao
+        if r["status"] != "ok" or "IGNORADA" in r["detail"]:
+            fails.append("COERENTE: declarar o mesmo que o detectado deve ser OK e silencioso, "
+                         f"veio {r['status']}: {r['detail'][:90]}")
     finally:
+        boot_check.detect_session_model = _real_detect
         if saved is not None:
             os.environ["FRAMEWORK_MODELS_UNAVAILABLE"] = saved
 
-    print(f"author-tier comportamental (ADR-082): 6 asserts (sonnet/haiku warn, opus/fable ok, "
-          f"desconhecido warn, baseline-indisp downgrade) — {'OK' if not fails else 'FAIL'}")
+    print(f"author-tier comportamental (ADR-082/101): 9 asserts (sonnet/haiku warn, opus/fable ok, "
+          f"desconhecido warn, baseline-indisp downgrade, + overclaim/confissao/coerente) — "
+          f"{'OK' if not fails else 'FAIL'}")
     for f in fails:
         print("  -", f)
     print("-" * 50)

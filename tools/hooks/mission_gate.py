@@ -11,6 +11,8 @@ import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _project import project_root  # noqa: E402 — resolvedor unico da raiz do PROJETO (ADR-101)
 
 try:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -30,14 +32,15 @@ def emit(ctx):
 
 try:
     raw = sys.stdin.read()
-    cwd = ROOT
+    h = {}
     if raw:
         try:
-            h = json.loads(raw)
-            if h.get("cwd"):
-                cwd = str(h["cwd"])
+            h = json.loads(raw) or {}
         except Exception:
-            pass
+            h = {}
+    # ADR-101: raiz = PROJETO do usuario (payload.cwd > CLAUDE_PROJECT_DIR > getcwd), nunca o
+    # repo-framework. Wirado globalmente, `cwd = ROOT` auditaria o framework e daria falso-OK.
+    cwd = project_root(h if isinstance(h, dict) else {})
 
     # Modo de execucao (ADR-005)
     mode = "default"

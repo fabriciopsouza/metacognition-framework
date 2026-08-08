@@ -77,6 +77,21 @@ def main():
     readme = open(os.path.join(ROOT, "README.md"), encoding="utf-8-sig").read()
     gate("LIMITS.md" in readme, "README linka o LIMITS.md")
 
+    # (d2) [ADR-101] README x TOPO do CHANGELOG. Divida PRE-EXISTENTE exposta pelo qa-critic em
+    # v1.73.0 e registrada no backlog: a politica exige README+tag+zip subindo junto com o
+    # CHANGELOG, mas NENHUM canario comparava esse par — e (c) acima le a versao do proprio README,
+    # entao README(1.72.0) x CHANGELOG(1.73.0) passou verde. Corrigido pela porta que o proprio
+    # backlog propos: +1 assercao no gate que ja existe, nao canario novo (regua §0).
+    chg = open(os.path.join(ROOT, "CHANGELOG.md"), encoding="utf-8-sig").read()
+    m_chg = re.search(r"^##\s*\[(\d+\.\d+\.\d+)\]", chg, re.M)
+    m_rme = re.search(r"\*\*Vers[aã]o:\*\*\s*(\d+\.\d+\.\d+)", readme)
+    if not m_chg or not m_rme:
+        gate(False, "versao legivel em README e no topo do CHANGELOG "
+                    f"(changelog={bool(m_chg)} readme={bool(m_rme)})")
+    else:
+        gate(m_chg.group(1) == m_rme.group(1),
+             f"README ({m_rme.group(1)}) == topo do CHANGELOG ({m_chg.group(1)})")
+
     # (f) ADR-059 G2 — vitrine sem overclaim (absoluto-sem-hedge)
     if not os.path.isfile(VITRINE):
         gate(False, f"vitrine ausente: {VITRINE} [fail-closed]")

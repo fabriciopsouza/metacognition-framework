@@ -10,6 +10,8 @@ import os
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _project import project_root  # noqa: E402 — resolvedor unico da raiz do PROJETO (ADR-101)
 
 try:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -38,7 +40,7 @@ try:
 
     manifest = os.environ.get("OVERWRITE_GUARD_MANIFEST") or ""
     if not manifest:
-        cwd = str(hook.get("cwd") or ROOT)
+        cwd = project_root(hook)  # ADR-101: projeto do usuario, nao o repo-framework
         manifest = os.path.join(cwd, ".agent", "brain", "session-files.json")
 
     data: dict = {}

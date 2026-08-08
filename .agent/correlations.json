@@ -1,0 +1,36 @@
+{
+  "_doc": "ADR-101 — grupos de artefatos deste repo que MUDAM JUNTOS. Tocar um membro obriga tocar todos. Consumido por tools/correlated.py e pelo closing_gate (Stop). Cada grupo aqui e uma correcao de falha OBSERVADA, nao teoria: sao os pares que ate hoje so eram atualizados quando o dono lembrava de pedir.",
+  "schema_version": 1,
+  "groups": [
+    {
+      "id": "adr-changelog",
+      "note": "ADR novo/alterado exige entrada no CHANGELOG (o canario adr-changelog-sync ja checa o Aceito; aqui pega o par no ato da edicao)",
+      "rule": "all",
+      "members": ["docs/adr/*.md", "CHANGELOG.md"]
+    },
+    {
+      "id": "capacidade-indice",
+      "note": "capabilities.json e CAPABILITIES.md sao gerado/derivado — editar um sem regerar o outro cria drift silencioso",
+      "rule": "all",
+      "members": ["capabilities.json", "CAPABILITIES.md"]
+    },
+    {
+      "id": "gate-precisa-de-canario",
+      "note": "gate novo/alterado em tools/hooks/ exige canario — gate sem canario e prosa executavel",
+      "rule": "all",
+      "members": ["tools/hooks/*.py", "tools/test_*.py"]
+    },
+    {
+      "id": "wiring-e-manifesto",
+      "note": "o wiring de hooks e GERADO do manifesto: editar settings.json a mao sem o manifesto reintroduz a divergencia local-x-global que o ADR-101 corrigiu",
+      "rule": "all",
+      "members": ["tools/gates-manifest.json", ".claude/settings.json"]
+    },
+    {
+      "id": "prompt-web-seque-o-nucleo",
+      "note": "o PROMPT-CHAT-WEB e a encarnacao do nucleo p/ ambiente sem filesystem: mudanca nas regras inviolaveis do CLAUDE.md/AGENTS.md tem que chegar la",
+      "rule": "all",
+      "members": ["CLAUDE.md", "AGENTS.md", "PROMPT-CHAT-WEB-v4.5.md"]
+    }
+  ]
+}

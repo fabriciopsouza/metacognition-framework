@@ -7,8 +7,15 @@ Shadow-aware (ADR-070): so MASTER gera cross-IA. Detecta master pela presenca de
 (o cofre, stripado dos shadows por export-clean) -> num shadow, este canario PASSA (nao cobra cross-IA).
 
 FORWARD-floor honesto: exige que os artefatos EXISTAM (CI vermelho num master sem eles -> forca o
-dogfood). Frescor por-release e disciplina do /checkpoint (ADR-074 camada de oferta); o EXISTIR e o
-piso determinista que tira o "so gera se o dono pedir".
+dogfood).
+
+[ADR-101, 2026-08-08] FRESCOR TAMBEM E MECANISMO. Ate aqui o frescor por-release era "disciplina do
+/checkpoint" — ou seja, PROSA. Resultado medido pelo dono: o outbox cross-IA parou em 2026-06-09 e
+este canario seguiu VERDE por dois meses, porque arquivos velhos satisfazem "existe". Um gate que
+mede existencia e se anuncia como dogfood mede menos do que promete. Agora exige-se tambem que
+>=1 execution-report E >=1 handoff cross-IA CITEM a release do topo do CHANGELOG.
+Ancora por CONTEUDO, nao por mtime: clone/checkout do git reescreve mtime, entao data de arquivo
+nao e evidencia. Forward-only: cobra a release ATUAL, nao reprova o historico.
 
 Uso: python tools/test_dev_dogfood.py   (exit 0 PASS; 1 se falha)
 """
@@ -39,6 +46,29 @@ def _is_real_doc(path, min_chars):
         return False
     # ao menos um heading de secao real (nao so "# x") -> placeholder de 1 linha reprova
     return any(ln.lstrip().startswith("## ") for ln in t.splitlines())
+
+
+def _current_release():
+    """Versao do TOPO do CHANGELOG (ex.: '1.78.0'). None se ilegivel — frescor vira FAIL, nunca OK."""
+    import re
+    try:
+        t = open(os.path.join(ROOT, "CHANGELOG.md"), encoding="utf-8-sig").read()
+    except Exception:  # noqa: BLE001
+        return None
+    m = re.search(r"^##\s*\[(\d+\.\d+\.\d+)\]", t, re.M)
+    return m.group(1) if m else None
+
+
+def _cites(path, release):
+    """O artefato menciona a release atual? Ancora por CONTEUDO — mtime de arquivo nao e evidencia
+    (git reescreve na clonagem). Aceita '1.78.0' e 'v1.78.0'."""
+    if not release:
+        return False
+    try:
+        t = open(path, encoding="utf-8-sig").read()
+    except Exception:  # noqa: BLE001
+        return False
+    return release in t
 
 
 def _is_genuine_shadow():
@@ -85,8 +115,23 @@ def main():
         fails.append("MASTER sem handoff cross-IA nao-trivial (docs/_private/cross-ai/outbox/*.md, "
                      f">={MIN_HANDOFF_CHARS} chars + secao) — melhoria nao propagada/placeholder")
 
-    print(f"master(docs/_private)=True; execution-reports validos={len(execs)}; "
-          f"handoffs cross-IA validos={len(handoffs)} — {'OK' if not fails else 'FAIL'}")
+    # [ADR-101] FRESCOR por release, ancorado em CONTEUDO (mtime nao sobrevive a clone/checkout).
+    rel = _current_release()
+    fresh_e = [p for p in execs if _cites(p, rel)] if rel else []
+    fresh_h = [p for p in handoffs if _cites(p, rel)] if rel else []
+    if not rel:
+        fails.append("release do topo do CHANGELOG ilegivel — frescor NAO verificavel (nunca falso-OK)")
+    else:
+        if execs and not fresh_e:
+            fails.append(f"execution-report(s) existem mas NENHUM cita a release {rel} — "
+                         f"artefato velho satisfazia 'existe' e o gate passava verde (era o furo)")
+        if handoffs and not fresh_h:
+            fails.append(f"handoff cross-IA existe mas NENHUM cita a release {rel} — a propagacao "
+                         f"cross-IA parou e o gate nao acusava (relato do dono 2026-08-07)")
+
+    print(f"master(docs/_private)=True; execution-reports validos={len(execs)} (frescos p/ {rel}: "
+          f"{len(fresh_e)}); handoffs cross-IA validos={len(handoffs)} (frescos: {len(fresh_h)}) — "
+          f"{'OK' if not fails else 'FAIL'}")
     for f in fails:
         print("  -", f)
     print("-" * 50)

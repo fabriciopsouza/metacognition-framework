@@ -30,10 +30,18 @@ Por projeto preencha só `docs/briefing.md` + `.agent/rules/00-glossario.md`.
   Output-style governa TOM, nunca o processo (ADR-028).
 - **Modos de execução (ADR-005):** default · avançado · autosuficiente, ratchet forward-only
   em `~/.claude/framework-mode.json`. Detalhe: `_shared/execution-modes/SKILL.md`.
-- **Modo NON-ADMIN — gates anunciados (ADR-047):** onde GPO/EDR veta hooks, o agente **anuncia,
-  declara e aplica inline** cada gate (ROTA · mission/product_type · action-safety por efeito ·
-  ler-antes-de-sobrescrever).
-  Detalhe: `guia/MODO-NON-ADMIN.md`.
+- **Gates portáteis + causa VERIFICADA (ADR-101):** o wiring é gerado de `tools/gates-manifest.json`
+  para o projeto **e para o global** (`python tools/wire_gates.py --check|--install-global`) — é o que
+  faz os gates existirem em QUALQUER repo, não só neste. Gate que não rodou → **diagnostique**
+  (`--check`), nunca presuma veto de EDR: a premissa é medida (`boot_check.py --init-env`, ADR-093/094).
+  Só com veto CONFIRMADO vale o modo non-admin (ADR-047): anunciar, declarar e aplicar inline cada
+  gate. Detalhe: `guia/MODO-NON-ADMIN.md`.
+- **Encerramento é gate, não intenção (ADR-101):** o hook `Stop` (`closing_gate.py`) mede o estado
+  real e **bloqueia parada incompleta** — commit/push/PR pendente, correlato não atualizado, raiz
+  poluída, sem checkpoint. Pedido explícito do dono se confirma na hora e se **termina**; parar no
+  fim não é opção. Libera com `.claude/.closing.ack` declarando o porquê.
+- **Correlato é obrigatório (ADR-101):** `.agent/correlations.json` declara o que muda junto;
+  `python tools/correlated.py --check` reprova "atualizou metade do par". Tem que ser tudo.
 - **Auto-boot global (ADR-006):** squad acorda quando owner do `origin` bate com
   `~/.claude/squad-owners.txt`. Pular: `.claude/session.lock` (projeto) ou `~/.claude/session.lock`.
 - **Régua §0 — GANHO LÍQUIDO (ADR-007, princípio 10):** adição pura é rejeitada; só passa se

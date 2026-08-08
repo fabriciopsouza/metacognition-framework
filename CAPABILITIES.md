@@ -1,7 +1,7 @@
 <!-- GERADO por tools/build_capabilities.py a partir de capabilities.json — NAO editar a mao -->
 # CAPABILITIES — indice de capacidades (nivel 1: id + title)
 
-> **78 capacidades** — 68 ✅ PROVIDES · 10 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
+> **81 capacidades** — 71 ✅ PROVIDES · 10 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
 > **Como usar (file-first, boot):** leia esta lista p/ achar o `id`; o registro completo (mecanismo · canario · ADR · doc) vem por **`python tools/build_capabilities.py --show <id>`** ou `grep -A8 '"<id>"' capabilities.json`. Nao reexplore o repo antes disto.
 > **Manutencao:** feature nova -> +1 registro em `capabilities.json` + `python tools/build_capabilities.py`. Canario barra canario orfao (cobertura).
 
@@ -30,6 +30,7 @@
 - ✅ `byo-ci-gate` — Gate de merge dirigido pelos canarios LOCAIS (BYO-CI) — a seguranca do GHA sem GHA: posta commit-status verde so com 0 FAIL; branch protection exige o context
 - ✅ `capability-index` — Indice de capacidades derivado + canario anti-drift
 - ✅ `clean-env-gate` — Teste porta-do-usuario + ambiente limpo (sem residuo de dev na entrega)
+- ✅ `closing-gate` — Encerramento deterministico: hook Stop bloqueia parada com commit/PR, correlato, raiz ou checkpoint pendente
 - ✅ `compaction-gate` — Bloqueia compaction sem digest persistido (history.md sem checkpoint), fail-open
 - ✅ `completeness-gate` — Cobertura escopo-pedido x entrega: quantificador sem criterio em validation falha
 - ✅ `consistency-closing-ci` — Consistencia de fechamento FAIL-CLOSED no CI (dim do consistency-gate que o hook PS vetado nao enforcava)
@@ -38,6 +39,7 @@
 - ✅ `context-budget-gate` — context-budget: hook PreToolUse(Read) anuncia FRACIONAR (doc-intake) em fonte grande + tool chamavel
 - ✅ `context-budget-hook` — Hook PreToolUse(Read) que anuncia context-budget (mecaniza doc-intake p/ contexto maior; nao-bloqueante, fail-open)
 - ✅ `core-no-vendor` — Pureza do nucleo: nenhum nome de PRODUTO/VENDOR externo no conteudo operativo (_shared/.agent/skills/roteador); proveniencia so nos ADRs. Regression-guard do 'repo nao tem produtos' (P12)
+- ✅ `correlated-update` — Atualizacao correlacionada obrigatoria: tocar um membro do par obriga tocar todos (tem que ser tudo)
 - ✅ `delivery-floor-gate` — Piso de entregabilidade ao humano (teste binario de entrega minima)
 - ✅ `dev-dogfood-gate` — Dev-dogfood DETERMINISTA: master fechando bloco DEVE ter execution-report + handoff cross-IA (nao opt-in, shadow-aware)
 - ✅ `discovery-eval` — Discovery com eval executado (nao so prosa de plano)
@@ -64,6 +66,7 @@
 - ✅ `parity-cross-platform` — Paridade cross-platform dos canarios (Linux/Mac/Windows) na CI
 - 🟡 `party-mode` — Exploracao multi-perspectiva com personas em conflito deliberado
 - ✅ `path-resolves-at-destination` — Referencia a arquivo resolve no cwd do DESTINATARIO: raiz absoluta no Pacote P14 + auditoria de diretorio temporario e link markdown relativo
+- ✅ `portable-gate-wiring` — Wiring de gates gerado do manifesto p/ projeto E global (o framework deixa de rodar capado fora do repo-mae)
 - ✅ `posture-gate` — posture-gate (fail-closed): release exige evidencia de postura deep-research/squad (discovery+RRC+metodo-senior) atestada pelo qa-critic adversarial (ADR-074 emenda 3)
 - ✅ `premium-tier-export` — Tier premium na export-clean (mesma fonte, mantem camada premium; baseline single-source)
 - 🟡 `prepush-sync-guard` — Guarda de pre-push: evita push sobre base dessincronizada

@@ -25,9 +25,17 @@ Ver .agent/rules/ (todas referenciam _shared/).
   gate só explícito com custo informado (ADR-051). Output-style ≠ processo (ADR-028).
 - **Modos de execução (ADR-005):** default · avançado · autosuficiente (ratchet forward-only,
   `~/.claude/framework-mode.json`). Detalhe: `_shared/execution-modes/SKILL.md`.
-- **NON-ADMIN — gates anunciados (ADR-047):** sem hooks (GPO/EDR), o agente anuncia, declara e
-  aplica os gates inline (ROTA · mission · action-safety · ler-antes-de-sobrescrever).
+- **Gates portáteis + causa VERIFICADA (ADR-101):** wiring gerado de `tools/gates-manifest.json`
+  para o projeto **e o global** (`python tools/wire_gates.py --check|--install-global`) — é o que
+  faz os gates existirem em qualquer repo, não só no repo-mãe. Gate que não rodou →
+  **diagnostique**, nunca presuma veto de EDR (mede-se: `boot_check.py --init-env`, ADR-093/094).
+  Só com veto CONFIRMADO vale o NON-ADMIN (ADR-047): anunciar, declarar e aplicar inline.
   Detalhe: `guia/MODO-NON-ADMIN.md`.
+- **Encerramento é gate (ADR-101):** hook `Stop` (`closing_gate.py`) bloqueia parada incompleta —
+  commit/push/PR, correlato, raiz poluída, checkpoint. Pedido explícito do dono se confirma na hora
+  e se **termina**; parar no fim não é opção. Escape declarado: `.claude/.closing.ack`.
+- **Correlato obrigatório (ADR-101):** `.agent/correlations.json` declara o que muda junto;
+  `python tools/correlated.py --check` reprova meia-atualização. Tem que ser tudo.
 - **Auto-boot global (ADR-006):** owner do `origin` em `~/.claude/squad-owners.txt` acorda o squad;
   pular via `.claude/session.lock`.
 - **Régua §0 (ADR-007):** adição pura rejeitada — só (a) funde/remove ≥ adiciona, (b) reduz
@@ -43,7 +51,8 @@ Ver .agent/rules/ (todas referenciam _shared/).
   autor) fecha bloco com rewind; TODO QA adversarial; rastro por junção via
   `python tools/qa_evidence.py --junction J_n ...` (ADR-077).
 - **Runtime gates:** compaction (ADR-021) · mission (ADR-022) · route (ADR-027) · doc-intake
-  (ADR-029) · consistency/version-claim/raiz-limpa (ADR-030/077/079) · qa-evidence/posture (ADR-074).
+  (ADR-029) · consistency/version-claim/raiz-limpa (ADR-030/077/079) · qa-evidence/posture (ADR-074)
+  · **closing · correlated · boot-brief (ADR-101)**.
 
 ## Índice de capacidades
 **Antes de afirmar que falta algo, LEIA `CAPABILITIES.md`** (ADR-072/073). Feature nova → registro

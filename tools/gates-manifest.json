@@ -1,0 +1,156 @@
+{
+  "_doc": "ADR-101 — SSoT do WIRING de gates. Quem consome: tools/wire_gates.py, que GERA (a) o .claude/settings.json do repo-framework e (b) os hooks do ~/.claude/settings.json GLOBAL. Antes deste manifesto o wiring era escrito a mao em dois lugares e divergiu: 17 gates no repo-framework x 2 no global -> abrir QUALQUER outro projeto rodava o framework sem gates ('so acontece se provocado', relato do dono 2026-08-07). scope: 'both' = roda em qualquer projeto; 'framework' = so faz sentido no repo-framework (lintar o proprio nucleo, identidade de espelho). TODO comando e Python: hook .ps1 e refem de politica de EDR/GPO (ADR-060) e foi o que sobrou no global. Ordem = ordem de execucao.",
+  "schema_version": 1,
+  "gates": [
+    {
+      "key": "shadow-sync",
+      "event": "SessionStart",
+      "scope": "framework",
+      "script": "tools/hooks/shadow_sync.py",
+      "timeout": 30,
+      "status": "Shadow auto-sync: casa espelho publicado com origin (ADR-070; no-op em master)"
+    },
+    {
+      "key": "repo-mode",
+      "event": "SessionStart",
+      "scope": "framework",
+      "script": "tools/repo_mode.py",
+      "timeout": 10,
+      "status": "Modo por identidade: shadow=USER (aplica a dominio), master=DEV (ADR-070/072)"
+    },
+    {
+      "key": "sync-global",
+      "event": "SessionStart",
+      "scope": "framework",
+      "script": "tools/wire_gates.py --install-global --quiet",
+      "timeout": 60,
+      "status": "Ponto de Arquimedes (ADR-101): re-afirma skills + gates GLOBAIS a cada boot do framework"
+    },
+    {
+      "key": "inject-start-session",
+      "event": "SessionStart",
+      "scope": "both",
+      "script": "tools/hooks/inject_start_session.py",
+      "timeout": 15,
+      "status": "Auto-boot do squad (ADR-006) — owner-allowlist ou marker; delete .claude/session.lock p/ desligar"
+    },
+    {
+      "key": "check-repo-sync",
+      "event": "SessionStart",
+      "scope": "both",
+      "script": "tools/hooks/check_repo_sync.py",
+      "timeout": 30,
+      "status": "Verificando sincronizacao do repo com origin (ADR-019/060/084)"
+    },
+    {
+      "key": "check-core-agnostic",
+      "event": "SessionStart",
+      "scope": "framework",
+      "script": "tools/hooks/check_core_agnostic_hook.py",
+      "timeout": 20,
+      "status": "Verificando agnosticismo do nucleo (ADR-020/061)"
+    },
+    {
+      "key": "mission-gate",
+      "event": "SessionStart",
+      "scope": "both",
+      "script": "tools/hooks/mission_gate.py",
+      "timeout": 10,
+      "status": "Verificando product_type/escopo (mission-gate ADR-022)"
+    },
+    {
+      "key": "boot-brief",
+      "event": "SessionStart",
+      "scope": "both",
+      "script": "tools/hooks/boot_brief.py",
+      "timeout": 30,
+      "status": "Briefing de boot (ADR-101): injeta o que JA esta decidido/documentado — anti-repergunta"
+    },
+    {
+      "key": "route-gate",
+      "event": "UserPromptSubmit",
+      "scope": "both",
+      "script": "tools/hooks/route_gate.py",
+      "timeout": 10,
+      "status": "Roteamento deterministico (route-gate ADR-027)"
+    },
+    {
+      "key": "check-author-tier",
+      "event": "UserPromptSubmit",
+      "scope": "both",
+      "script": "tools/hooks/check_author_tier.py",
+      "timeout": 10,
+      "status": "Tier-autor: alerta se a sessao roda abaixo do baseline (ADR-082)"
+    },
+    {
+      "key": "effect-gate",
+      "event": "PreToolUse",
+      "matcher": "Bash|PowerShell",
+      "scope": "both",
+      "script": "tools/hooks/effect_gate.py",
+      "timeout": 10,
+      "status": "Gate de acoes destrutivas por efeito (effect-gate ADR-015)"
+    },
+    {
+      "key": "prepush-sync-guard",
+      "event": "PreToolUse",
+      "matcher": "Bash|PowerShell",
+      "scope": "both",
+      "script": "tools/hooks/prepush_sync_guard.py",
+      "timeout": 20,
+      "status": "Guard de pre-push: barra push sobre base atrasada (ADR-060)"
+    },
+    {
+      "key": "shadow-write-guard",
+      "event": "PreToolUse",
+      "matcher": "Bash|PowerShell",
+      "scope": "framework",
+      "script": "tools/hooks/shadow_write_guard.py",
+      "timeout": 20,
+      "status": "Shadow-write-guard: NEGA push de espelho publicado (ADR-070)"
+    },
+    {
+      "key": "overwrite-guard",
+      "event": "PreToolUse",
+      "matcher": "Write|Edit",
+      "scope": "both",
+      "script": "tools/hooks/overwrite_guard.py",
+      "timeout": 10,
+      "status": "Anti-overwrite cego de artefato (overwrite-guard ADR-037)"
+    },
+    {
+      "key": "context-budget",
+      "event": "PreToolUse",
+      "matcher": "Read",
+      "scope": "both",
+      "script": "tools/hooks/context_budget_gate.py",
+      "timeout": 10,
+      "status": "Context-budget: anuncia fracionar (doc-intake) em fonte grande (ADR-029)"
+    },
+    {
+      "key": "overwrite-register",
+      "event": "PostToolUse",
+      "matcher": "Read|Write|Edit|NotebookEdit",
+      "scope": "both",
+      "script": "tools/hooks/overwrite_guard.py",
+      "timeout": 10,
+      "status": "Registro de arquivos lidos/criados na sessao (overwrite-guard ADR-037)"
+    },
+    {
+      "key": "compaction-gate",
+      "event": "PreCompact",
+      "scope": "both",
+      "script": "tools/hooks/compaction_gate.py",
+      "timeout": 10,
+      "status": "Verificando digest antes de compactar (ADR-021)"
+    },
+    {
+      "key": "closing-gate",
+      "event": "Stop",
+      "scope": "both",
+      "script": "tools/hooks/closing_gate.py",
+      "timeout": 60,
+      "status": "Encerramento deterministico (ADR-101): commit/PR, checkpoint, correlatos, memoria"
+    }
+  ]
+}
