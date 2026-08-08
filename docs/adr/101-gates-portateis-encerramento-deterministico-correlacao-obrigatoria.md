@@ -130,6 +130,54 @@ com data e host.
 - **`correlations.json` é escrito à mão** — grupo mal declarado gera ruído. É dado versionado e
   revisável; o canário valida a forma, não a intenção.
 
+## EMENDA (2026-08-08) — o que o QA heterogêneo mostrou
+
+Esta seção **emenda** as anteriores; não as suplanta. O mecanismo decidido continua valendo — o que
+mudou é o que a medição adversarial revelou sobre a implementação.
+
+O bloco foi entregue em 07/08 **sem qa-critic heterogêneo**: três tentativas de subagente morreram
+por watchdog e restou auto-revisão (opus revisando opus). Na sessão seguinte a rodada foi destravada
+**fatiando o escopo** — 3 críticos `sonnet` concorrentes, cada um com alvo e lista de arquivos
+fechada. Os três reprovaram. **18 achados, 5 bloqueantes**, todos reproduzidos por execução.
+
+O padrão que emergiu não é "bugs de codificação". É **o gate mentindo sobre si mesmo** — quatro
+formas distintas:
+
+1. **O gate se desarma seguindo o próprio conselho.** `root_pollution` só via untracked; o agente
+   seguia a instrução "Commit + push" que o próprio gate emitia e o arquivo mal-posicionado ficava
+   invisível para sempre.
+2. **O gate mede o instante em que não há o que ver.** `correlated` olhava só o working tree, e o
+   `closing_gate` o chama no `Stop` — depois do commit. O par quebrado já havia saído do porcelain.
+3. **O gate aceita pela porta lateral o que barra pela porta da frente.** A trava anti-overclaim
+   cruzava a flag `--author-model` e ignorava três variáveis de ambiente equivalentes. Um gate criado
+   porque "aceitar a autodeclaração do auditado não é gate" aceitava por outras três vias.
+4. **O gate falha aberto e chama isso de OK.** Família fora das chains → `status="ok"`; `git` fora do
+   PATH → no-op mudo indistinguível de "não é repo git"; `.closing.ack` sem vínculo com estado →
+   um `echo ok` desligava tudo para sempre.
+
+**O caso mais didático foi um dano quase-consumado.** O `--check` comparava comandos contendo o path
+absoluto sem normalizar a letra do drive (`c:` × `C:`), produzindo `DIVERGE 13 × 13` — contagens
+iguais dos dois lados — e instruindo `--install-global`. Como o `write_settings` fazia overwrite
+total da chave `hooks`, seguir o conselho teria apagado hooks não-framework do `~/.claude` do dono.
+O conselho **foi emitido** no boot da sessão de QA; só não foi seguido porque o crítico chegou antes.
+Diagnóstico que conta em vez de nomear é diagnóstico que induz ao erro: o `--check` passou a dizer
+**o que** diverge.
+
+**Consequência recursiva, e a mais importante deste ADR.** O grupo `gate-precisa-de-canario` usava
+`rule="all"`, que se satisfaz com *qualquer* arquivo casando cada glob — mexer em qualquer
+`test_*.py` dispensava o canário do gate novo. Corrigido para `rule="pairwise"`, a primeira coisa
+que ele acusou foi **este próprio ADR**: `boot_brief`, `route_gate` e `inject_start_session` haviam
+sido entregues sem canário nenhum. A dívida foi paga no mesmo bloco (68 → 71 canários). Fica o
+registro: *um gate que nunca reprovou nada não é evidência de que está tudo certo — é hipótese não
+testada.*
+
+Vale também como método: um falso-**positivo** introduzido pelo próprio fix (o pareamento simétrico
+passou a exigir um `tools/hooks/wire_gates.py` que nunca existiu) foi detectado por execução e
+resolvido com `direction: "forward"` — a relação é direcional, gate exige canário e não o inverso.
+A saída foi tornar a semântica correta, não afrouxar a regra até parar de reclamar.
+
+Veredito completo, com as ressalvas **não** resolvidas: `_meta/qa/v1.78.0-adr-101-gates-portateis.json`.
+
 ## Pendências
 
 - Espelhar o `PROMPT-CHAT-WEB` (ambiente sem filesystem não tem hook — lá o equivalente é prosa,
@@ -137,3 +185,14 @@ com data e host.
 - `bootstrap.py` continua oferecendo o perfil non-admin; agora como **escolha informada por medição**
   e não default silencioso. Revisar se o modo ainda se justifica após o `--init-env`.
 - Porte dos hooks PS remanescentes (`check-execution-mode`) — trigger: 2ª máquina sem PS.
+- **`mirror_assets` sem backup** (2026-08-08): sobrescreve `~/.claude/skills` sem rotação, ao
+  contrário do `settings.json`. Aceito por serem assets regeneráveis do repo; colisão de nome entre
+  `_shared/` e `.agent/skills/` agora avisa em vez de sobrescrever calada.
+- **Sem lock de processo em `--install-global`**: duas sessões abrindo o repo-mãe ao mesmo tempo
+  escrevem no mesmo `path + ".tmp"`. Race benigna (last-write-wins), não testada.
+- **`HOME` × `USERPROFILE` divergentes** (git-bash/MSYS) podem fazer `expanduser("~")` resolver para
+  caminho diferente do que o runner de hooks usa. **INFERIDO pelo crítico, não reproduzido** —
+  trigger para investigar: 1º relato de wiring global que "sumiu".
+- **`checkpoint_today` lê 60KB do topo do `history.md`**: correto para a convenção mais-novo-primeiro
+  deste framework (agora documentado na função), mas falso-negativo em projeto que adote `history.md`
+  cronológico. Trigger: 1º projeto externo com essa convenção.

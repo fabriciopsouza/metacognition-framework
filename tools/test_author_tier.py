@@ -85,13 +85,62 @@ def main():
         if r["status"] != "ok" or "IGNORADA" in r["detail"]:
             fails.append("COERENTE: declarar o mesmo que o detectado deve ser OK e silencioso, "
                          f"veio {r['status']}: {r['detail'][:90]}")
+
+        # ---- [QA heterogeneo 2026-08-08] AS OUTRAS 3 PORTAS DA TRAVA ----------------------
+        # BLOQUEANTE achado pelo critico sonnet: a trava anti-overclaim acima so cruzava a flag
+        # `--author-model`. CLAUDE_CODE_MODEL / ANTHROPIC_MODEL / CLAUDE_MODEL alimentavam o
+        # veredito SEM passar por ela — 3 de 4 portas abertas. Reproduzido: detect=sonnet +
+        # CLAUDE_CODE_MODEL=claude-fable-5 devolvia "autor='fable' >= baseline='opus'".
+        boot_check.detect_session_model = lambda: "claude-sonnet-4-6"
+        for var in ("CLAUDE_CODE_MODEL", "ANTHROPIC_MODEL", "CLAUDE_MODEL"):
+            os.environ[var] = "claude-fable-5"
+            r = boot_check.check_author_tier("")
+            os.environ.pop(var, None)
+            if r["status"] != "warn":
+                fails.append(f"ENV-OVERCLAIM: {var}=fable com deteccao sonnet deveria WARN "
+                             f"(autor real abaixo do baseline), veio {r['status']}: {r['detail'][:90]}")
+
+        # ---- [QA heterogeneo] familia fora das chains NAO pode virar 'ok' ------------------
+        # BLOQUEANTE: `fam in order` falso pulava a comparacao e caia no return final como ok —
+        # trava falhando ABERTA. Drift plausivel: model-policy.json manda cadastrar modelo novo
+        # editando `model_ids` (dado), sem exigir tocar as chains.
+        boot_check.detect_session_model = lambda: ""
+        import copy
+        import json as _json
+        pol_path = os.path.join(ROOT, "tools", "model-policy.json")
+        with open(pol_path, encoding="utf-8") as f:
+            _bak = f.read()
+        _pol = copy.deepcopy(_json.loads(_bak))
+        _pol["model_ids"]["ghost"] = "claude-ghost-1"
+        try:
+            with open(pol_path, "w", encoding="utf-8") as f:
+                _json.dump(_pol, f, ensure_ascii=False, indent=2)
+            r = boot_check.check_author_tier("claude-ghost-1")
+            if r["status"] != "warn" or "INDETERMINADA" not in r["detail"]:
+                fails.append("FAIL-ABERTO: familia em model_ids mas fora das chains deveria WARN "
+                             f"'INDETERMINADA', veio {r['status']}: {r['detail'][:90]}")
+        finally:
+            with open(pol_path, "w", encoding="utf-8") as f:
+                f.write(_bak)
+
+        # ---- [QA heterogeneo] casamento de familia por TOKEN, nao substring ----------------
+        _pol_ok = _json.loads(_bak)
+        if boot_check._fam_of("supersonnetics-9", _pol_ok) != "":
+            fails.append("SUBSTRING: 'supersonnetics-9' nao pode casar a familia 'sonnet' "
+                         "(casamento tem que ser por token delimitado)")
+        for mid, fam in (("claude-opus-5", "opus"), ("claude-sonnet-5", "sonnet"),
+                         ("claude-fable-5", "fable")):
+            if boot_check._fam_of(mid, _pol_ok) != fam:
+                fails.append(f"TOKEN: '{mid}' deveria casar familia '{fam}', "
+                             f"veio '{boot_check._fam_of(mid, _pol_ok)}'")
     finally:
         boot_check.detect_session_model = _real_detect
         if saved is not None:
             os.environ["FRAMEWORK_MODELS_UNAVAILABLE"] = saved
 
-    print(f"author-tier comportamental (ADR-082/101): 9 asserts (sonnet/haiku warn, opus/fable ok, "
-          f"desconhecido warn, baseline-indisp downgrade, + overclaim/confissao/coerente) — "
+    print(f"author-tier comportamental (ADR-082/101): 16 asserts (sonnet/haiku warn, opus/fable ok, "
+          f"desconhecido warn, baseline-indisp downgrade, overclaim/confissao/coerente, "
+          f"+ 3 portas de env, familia-fora-da-chain, token-vs-substring) — "
           f"{'OK' if not fails else 'FAIL'}")
     for f in fails:
         print("  -", f)

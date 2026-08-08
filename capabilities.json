@@ -89,6 +89,24 @@
       ]
     },
     {
+      "id": "boot-brief",
+      "title": "Inventario do que JA ESTA DECIDIDO injetado no boot (anti-repergunta): ponteiro, nunca conteudo",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/hooks/boot_brief.py",
+      "test": "tools/test_boot_brief.py",
+      "adr": "docs/adr/101-gates-portateis-encerramento-deterministico-correlacao-obrigatoria.md",
+      "cross_ai": false,
+      "enforcement": "fail-soft",
+      "tags": [
+        "boot",
+        "anti-repergunta",
+        "file-first",
+        "contexto"
+      ],
+      "note": "Gap de campo do dono (2026-08-07): perguntas ja respondidas eram reperguntadas ou premissas presumidas porque 'leia a doc antes de comecar' era PROSA no CLAUDE.md — instrucao que compete com o vies de progredir e perde. Injeta a EXISTENCIA e o caminho (nao o conteudo, ADR-029), entao reperguntar vira erro visivel em vez de esquecimento."
+    },
+    {
       "id": "boot-self-check",
       "title": "Self-check de boot consolidado (sync+agnosticismo+boot-scan+versao) com prova checavel",
       "status": "PROVIDES",
@@ -1100,16 +1118,19 @@
     {
       "id": "route-gate",
       "title": "Lembrete de rota deterministico 1x/sessao (UserPromptSubmit), fail-open",
-      "status": "PARTIAL",
+      "status": "PROVIDES",
       "ai_owner": "claude",
-      "mechanism": "tools/hooks/route-gate.ps1",
+      "mechanism": "tools/hooks/route_gate.py",
       "adr": "docs/adr/027-roteamento-deterministico-e-wiring-global-self-heal.md",
       "cross_ai": false,
       "tags": [
         "routing",
         "gate",
         "runtime"
-      ]
+      ],
+      "test": "tools/test_route_gate.py",
+      "enforcement": "fail-soft",
+      "note": "Port Python (ADR-101): o wiring GLOBAL so tinha hooks .ps1, refens de EDR/GPO (ADR-060) e inexistentes fora do Windows. route-gate.ps1 fica como fallback. Canario comportamental adicionado no QA heterogeneo de 2026-08-08 (o port trocou a implementacao de um gate que roda a CADA prompt)."
     },
     {
       "id": "rules-parity-guard",
@@ -1189,6 +1210,24 @@
         "spec",
         "gate"
       ]
+    },
+    {
+      "id": "squad-auto-boot",
+      "title": "Auto-boot do squad por allowlist de owner do origin ou marker do framework (ADR-006), em Python",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/hooks/inject_start_session.py",
+      "test": "tools/test_inject_start_session.py",
+      "adr": "docs/adr/101-gates-portateis-encerramento-deterministico-correlacao-obrigatoria.md",
+      "cross_ai": false,
+      "enforcement": "fail-soft",
+      "tags": [
+        "boot",
+        "auto-boot",
+        "squad",
+        "allowlist"
+      ],
+      "note": "Port Python do inject-start-session-global.ps1 (ADR-101) — era o hook que faz o framework ACORDAR fora do repo-mae e dependia de PowerShell. Erra nas duas direcoes e as duas sao silenciosas: nao acordar onde devia (queixa do ADR-006) e acordar em repo de terceiro. O canario cobre allowlist, marker, os dois session.lock e o parse de owner em HTTPS e SSH."
     },
     {
       "id": "squad-enforcement-gate",

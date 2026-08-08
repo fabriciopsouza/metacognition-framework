@@ -16,8 +16,13 @@
     },
     {
       "id": "gate-precisa-de-canario",
-      "note": "gate novo/alterado em tools/hooks/ exige canario — gate sem canario e prosa executavel",
-      "rule": "all",
+      "note": "gate novo/alterado em tools/hooks/ exige o canario CORRESPONDENTE — gate sem canario e prosa executavel",
+      "rule": "pairwise",
+      "_qa": "QA heterogeneo 2026-08-08: com rule='all' este grupo era silenciado por QUALQUER test_*.py tocado (medido). rule='pairwise' pareia pelo radical; os afixos abaixo sao DADO declarado porque a convencao real do repo e irregular (check_author_tier.py <-> test_author_tier.py).",
+      "direction": "forward",
+      "strip_prefixes": ["check_"],
+      "strip_suffixes": ["_hook"],
+      "exempt": ["tools/hooks/_*.py"],
       "members": ["tools/hooks/*.py", "tools/test_*.py"]
     },
     {

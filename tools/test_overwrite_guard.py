@@ -126,6 +126,50 @@ def main():
             fails += 1
         print(f"{'OK  ' if ok else 'FAIL'} [ps1 rc {rc}, esperado 0] Read registra -> Write subsequente allow")
 
+        # --- [ADR-101] REGRESSAO NOMEADA: de ONDE vem o manifesto quando ninguem o declara.
+        # Todos os casos acima passam OVERWRITE_GUARD_MANIFEST no env, o que curto-circuita
+        # exatamente a linha que o ADR-101 mudou (`cwd = hook.get("cwd") or ROOT` ->
+        # `project_root(hook)`). Sem este bloco, a mudanca ficaria SEM cobertura: o hook wirado
+        # globalmente cairia no ROOT do framework e leria o manifesto de sessao ERRADO — ou
+        # liberando escrita cega no projeto do dono (falso-allow), ou bloqueando arquivo que ele
+        # acabou de ler (falso-block). Aqui o env e REMOVIDO de proposito.
+        proj = os.path.join(tmp, "projeto-do-dono")
+        os.makedirs(os.path.join(proj, ".agent", "brain"), exist_ok=True)
+        alvo = os.path.join(proj, "arquivo-do-dono.md")
+        with open(alvo, "w", encoding="utf-8") as fh:
+            fh.write("conteudo que nao pode ser sobrescrito as cegas\n")
+
+        def run_sem_manifesto(pl, proc_cwd):
+            exe, hook_path, is_ps = runner
+            cmd = ([exe, "-NoProfile", "-NonInteractive", "-File", hook_path] if is_ps
+                   else [exe, hook_path])
+            env = {k: v for k, v in os.environ.items() if k != "OVERWRITE_GUARD_MANIFEST"}
+            env.pop("CLAUDE_PROJECT_DIR", None)
+            p = subprocess.run(cmd, input=json.dumps(pl), capture_output=True, text=True,
+                               encoding="utf-8", errors="replace", env=env, cwd=proc_cwd)
+            return p.returncode
+
+        rc = run_sem_manifesto(payload("PreToolUse", "Write", alvo, proj), ROOT)
+        ok = rc == 2
+        if not ok:
+            fails += 1
+        print(f"{'OK  ' if ok else 'FAIL'} [rc {rc}, esperado 2] sem env: manifesto vem do "
+              f"PROJETO do payload (nao do repo-framework) e o Write cego bloqueia")
+
+        manifesto_proj = os.path.join(proj, ".agent", "brain", "session-files.json")
+        run_sem_manifesto(payload("PostToolUse", "Read", alvo, proj), ROOT)
+        criou = os.path.isfile(manifesto_proj)
+        if not criou:
+            fails += 1
+        print(f"{'OK  ' if criou else 'FAIL'} o registro de sessao e gravado DENTRO do projeto "
+              f"(.agent/brain/session-files.json), nao no framework")
+        rc = run_sem_manifesto(payload("PreToolUse", "Write", alvo, proj), ROOT)
+        ok = rc == 0
+        if not ok:
+            fails += 1
+        print(f"{'OK  ' if ok else 'FAIL'} [rc {rc}, esperado 0] Read no projeto -> Write "
+              f"subsequente allow (o manifesto certo foi lido)")
+
     print("-" * 50)
     print("RESULTADO:", f"FAIL ({fails})" if fails
           else f"PASS (overwrite-guard protege; {'paridade .ps1↔.sh ok' if parity else 'paridade .sh -> CI'})")

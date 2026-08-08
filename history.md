@@ -9,6 +9,59 @@
 
 ---
 
+## 2026-08-08 — QA heterogêneo do ADR-101: 18 achados, 5 bloqueantes, e o gate que acusou o próprio ADR
+
+Bloco de **fechamento** da v1.78.0 — o QA que a sessão anterior não conseguiu rodar. Três tentativas
+de subagente haviam morrido por watchdog (600s), sobrando auto-revisão opus→opus. A causa não era
+infraestrutura: era **escopo**. Fatiado em 3 críticos `sonnet` concorrentes, cada um com alvo e lista
+de arquivos fechada, a rodada completou em ~5 min. **FAIL nos três.**
+
+**O que os achados tinham em comum.** Não eram erros de codificação — eram quatro modos de um gate
+mentir sobre si mesmo: (1) *se desarmar seguindo o próprio conselho* — `root_pollution` só via
+untracked, e a instrução "Commit + push" que o gate emite tornava o arquivo invisível; (2) *medir o
+instante em que não há o que ver* — `correlated` olhava só o working tree, e o `closing_gate` o chama
+no `Stop`, depois do commit; (3) *aceitar pela porta lateral o que barra pela da frente* — a trava
+anti-overclaim cruzava a flag `--author-model` e ignorava três env vars equivalentes; (4) *falhar
+aberto e chamar de OK* — família fora das chains virava `status="ok"`, `git` fora do PATH virava
+no-op mudo, e o `.closing.ack` sem vínculo com estado desligava o gate para sempre no 1º `echo ok`.
+
+**Um dano quase-consumado, em tempo real.** O `--check` do `wire_gates` acusou `DIVERGE global
+13 × 13` no boot desta sessão e mandou rodar `--install-global`. Causa: comparação de comandos com o
+path absoluto sem normalizar a letra do drive (`c:` × `C:`) — divergência puramente cosmética. Como
+o `write_settings` fazia **overwrite total** da chave `hooks`, obedecer teria apagado hooks
+não-framework do `~/.claude` do dono. O conselho foi emitido; só não foi seguido porque o crítico
+chegou antes. Lição embutida no fix: diagnóstico que **conta** em vez de **nomear** induz ao erro.
+
+**O momento recursivo.** O grupo `gate-precisa-de-canario` usava `rule="all"`, satisfeita por
+*qualquer* arquivo casando cada glob — mexer em qualquer `test_*.py` dispensava o canário do gate
+novo. Corrigido para `pairwise`, a primeira coisa que ele reprovou foi o **próprio ADR-101**:
+`boot_brief`, `route_gate` e `inject_start_session` tinham sido entregues **sem canário nenhum**.
+Dívida paga no mesmo bloco. Fica o princípio: *gate que nunca reprovou nada não é prova de que está
+tudo certo — é hipótese não testada.*
+
+Vale como método também: o próprio fix introduziu um falso-**positivo** (pareamento simétrico
+exigindo um `tools/hooks/wire_gates.py` inexistente). Detectado por execução, resolvido com
+`direction: "forward"` — tornar a semântica correta, não afrouxar a regra até parar de reclamar.
+
+**Entregue:** 17 dos 18 achados corrigidos (1 parcial, declarado). Canários **68 → 71**
+(`test_boot_brief`, `test_route_gate`, `test_inject_start_session`), +21 asserts em
+`test_closing_gate`, +7 em `test_author_tier`, +12 em `test_wire_gates`, e a regressão de
+`cwd`-do-payload **nomeada** em `test_mission_gate`/`test_compaction_gate`/`test_overwrite_guard` —
+os três já exercitavam o caminho por acaso, sem que nada dissesse qual bug protegiam.
+`capabilities.json` 81 → 83 (`route-gate` ainda apontava para o `.ps1` que o ADR-101 substituiu).
+Evidência J4 no ledger; veredito em `_meta/qa/v1.78.0-adr-101-gates-portateis.json` com **5
+ressalvas não resolvidas**, declaradas em vez de silenciadas.
+
+**Nota de honestidade:** os 2 canários vermelhos herdados (`test_qa_evidence`, `test_posture_gate`)
+eram exatamente a ausência do artefato de veredito. Nenhum artefato foi fabricado para maquiá-los —
+ficaram vermelhos até o QA de fato acontecer.
+
+**Próximo passo:** abrir o PR e mergear. `gh` CLI **não está instalado nesta máquina** (confirmado no
+PATH do Windows, não só no git-bash); instalação por `winget` disparada nesta sessão. Sem `gh`, o
+status check `canarios-local` não é postado e a branch protection — corretamente — barra o merge.
+
+---
+
 ## 2026-08-08 — Release v1.78.0 (MINOR): gates portáteis, encerramento determinístico e correlação obrigatória (ADR-101)
 
 Bloco nascido de uma **auditoria falada do dono**: onze queixas de que o framework "só funciona se

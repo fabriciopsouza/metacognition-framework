@@ -29,7 +29,7 @@ def find_runner():
     return None
 
 
-def run_hook(runner, cwd):
+def run_hook(runner, cwd, proc_cwd=None):
     exe, hook, is_ps = runner
     payload = {"trigger": "auto", "cwd": cwd}
     cmd = [exe, "-NoProfile", "-NonInteractive", "-File", hook] if is_ps else [exe, hook]
@@ -40,6 +40,7 @@ def run_hook(runner, cwd):
         text=True,
         encoding="utf-8",
         errors="replace",
+        cwd=proc_cwd,
     )
     out = (proc.stdout or "").strip()
     is_block = False
@@ -86,8 +87,20 @@ def main():
             if not ok:
                 fails += 1
             print(f"{status} [{exp:5}->{verb:5}] {desc}")
+
+        # [ADR-101] REGRESSAO NOMEADA: audita o projeto do PAYLOAD, nunca o repo do framework.
+        # Antes do ADR-101 este gate fazia `cwd = ROOT`. Wirado globalmente, ele leria o
+        # history.md DO FRAMEWORK (que e cheio de checkpoints) e devolveria ALLOW para qualquer
+        # projeto — inclusive um que nunca persistiu nada. O gate existiria e nunca bloquearia:
+        # falso-OK, pior que gate ausente. Aqui o processo roda COM cwd = raiz do framework e o
+        # payload aponta p/ um projeto SEM history.md; so passa se o payload vencer.
+        got = run_hook(runner, empty_dir, proc_cwd=ROOT)
+        if not got:
+            fails += 1
+        print(f"{'OK  ' if got else 'FAIL'} [block->{'block' if got else 'allow'}] "
+              f"payload vence o cwd do processo (nao le o history.md do framework)")
     print("-" * 40)
-    print(f"RESULTADO: {'PASS (bloqueia o catastrofico; nao trava o normal)' if not fails else f'FAIL ({fails} caso(s))'}")
+    print(f"RESULTADO: {'PASS (bloqueia o catastrofico; nao trava o normal; cwd vem do payload)' if not fails else f'FAIL ({fails} caso(s))'}")
     return 1 if fails else 0
 
 

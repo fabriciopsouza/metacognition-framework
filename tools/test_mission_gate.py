@@ -27,7 +27,7 @@ def find_runner():
     return None
 
 
-def run_hook(runner, cwd):
+def run_hook(runner, cwd, proc_cwd=None):
     exe, hook, is_ps = runner
     payload = {"hook_event_name": "SessionStart", "cwd": cwd}
     cmd = [exe, "-NoProfile", "-NonInteractive", "-File", hook] if is_ps else [exe, hook]
@@ -38,6 +38,7 @@ def run_hook(runner, cwd):
         text=True,
         encoding="utf-8",
         errors="replace",
+        cwd=proc_cwd,
     )
     out = proc.stdout.strip()
     ctx = ""
@@ -88,8 +89,21 @@ def main():
             if not ok:
                 fails += 1
             print(f"{status} [esperado {expect:8}] {desc}  ->  {ctx[:70]}")
+
+        # [ADR-101] REGRESSAO NOMEADA: o hook audita o projeto do PAYLOAD, nunca o repo do
+        # framework. Antes do ADR-101 este gate fazia `cwd = ROOT`; wirado globalmente, ele
+        # auditaria o FRAMEWORK enquanto o dono trabalha noutro repo — e o framework nao tem
+        # mission.md, entao o veredito seria BRIEFING para todo mundo, sempre. Falso-OK pior
+        # que gate ausente, porque parece que rodou. Aqui o processo roda COM cwd = raiz do
+        # framework e o payload apontando p/ um projeto valido: so passa se o payload vencer.
+        ctx = run_hook(runner, standard, proc_cwd=ROOT)
+        ok = "STANDARD" in ctx
+        if not ok:
+            fails += 1
+        print(f"{'OK  ' if ok else 'FAIL'} [esperado STANDARD] payload vence o cwd do processo "
+              f"(nao audita o framework)  ->  {ctx[:60]}")
     print("-" * 40)
-    print(f"RESULTADO: {'PASS (BRIEFING/ADVANCE/STANDARD — 4 casos, incl. fallback heading)' if not fails else f'FAIL ({fails} caso(s))'}")
+    print(f"RESULTADO: {'PASS (BRIEFING/ADVANCE/STANDARD — 5 casos, incl. fallback heading e cwd-do-payload)' if not fails else f'FAIL ({fails} caso(s))'}")
     return 1 if fails else 0
 
 

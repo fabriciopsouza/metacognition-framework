@@ -83,12 +83,72 @@ eram **três buracos estruturais**.
 - 3 capacidades novas em `capabilities.json` (81 no total): `portable-gate-wiring`, `closing-gate`,
   `correlated-update`.
 
+### Corrigido — QA heterogêneo (2026-08-08): 18 achados, 5 bloqueantes
+
+Rodada de qa-critic adversarial que a infraestrutura havia impedido em 07/08 (3 tentativas mortas
+por watchdog). Destravada **fatiando o escopo**: 3 críticos `claude-sonnet-4-6` concorrentes, cada
+um com alvo e lista de arquivos fechada, contra autor `claude-opus-5`. **FAIL nos três.** Todo
+achado foi reproduzido por execução antes do fix e virou canário depois.
+
+- **`wire_gates` apagava hook do dono.** A chave `hooks` era overwrite total, e o gate `sync-global`
+  reescreve o `~/.claude/settings.json` a **cada boot** do repo-framework: hook próprio do dono (ou
+  de outro plugin) em evento fora do manifesto sumia em silêncio. Agora há merge — o wiring do
+  framework é substituído, o do dono é preservado, e o legado `.ps1` é removido na migração.
+- **O diagnóstico mandava fazer exatamente isso.** `--check` comparava comandos com o path absoluto
+  sem normalizar a letra do drive (`c:` × `C:`), acusando `DIVERGE 13 × 13` — contagens iguais dos
+  dois lados — e instruindo `--install-global`. No boot desta sessão o conselho foi emitido; seguido,
+  teria destruído configuração global. `_canon()` na origem e `_cmp_key()` na comparação; o
+  diagnóstico passa a **nomear** a divergência em vez de só contar.
+- **A trava anti-overclaim tinha 3 portas abertas.** Só cruzava a flag `--author-model`;
+  `CLAUDE_CODE_MODEL`/`ANTHROPIC_MODEL`/`CLAUDE_MODEL` chegavam ao veredito sem passar por ela. Um
+  gate que existe porque "aceitar a autodeclaração do auditado não é gate" aceitava a autodeclaração
+  por outras três vias. Família fora das chains dos tiers também caía em `ok` silencioso — falha
+  **aberta**; agora responde `INDETERMINADA`.
+- **`correlated` media o instante errado.** Só olhava `git status`; commitado o par quebrado, ele
+  sumia do porcelain. Como o `closing_gate` chama isso no `Stop` — depois do commit — o gate media
+  justamente quando não há mais nada para ver. Escopo passa a ser working tree ∪ commits do bloco.
+- **E o gate de canário era calado por qualquer teste.** `rule="all"` exigia que *algum* arquivo
+  casasse cada glob: mexer em qualquer `test_*.py` dispensava o canário do gate novo. Agora
+  `rule="pairwise"` pareia pelo radical, com `direction`/`strip_prefixes`/`exempt` como dado
+  declarado. **Consequência imediata:** o gate corrigido acusou que o próprio ADR-101 entregara
+  `boot_brief`, `route_gate` e `inject_start_session` **sem canário nenhum** — dívida paga aqui.
+- **`.closing.ack` era interruptor permanente.** Verificado só por `isfile`, sem vínculo com o
+  estado: o primeiro `echo ok` da vida do repo desligava o gate para sempre. Agora carimba a
+  impressão do estado que reconheceu e expira quando o estado muda — como o docstring já prometia.
+- **Poluição de raiz sobrevivia ao próprio conselho do gate.** Só olhava untracked; bastava seguir a
+  instrução "Commit + push" para o arquivo mal-posicionado ficar invisível. Passa a considerar o que
+  o bloco adicionou, commitado ou não.
+- **Anti-loop evaporava sem `session_id`** (3 chamadas → 3 bloqueios) e **`git` fora do PATH** virava
+  no-op mudo, indistinguível de "não é repo git". O fail-open continua — é a política correta para
+  um gate de saída — mas agora é **declarado** em stderr.
+
+Também: `rule` deixou de ser campo decorativo (nunca era lido); `fnmatch` → `fnmatchcase`
+(o mesmo manifesto dava veredito diferente em CI Linux e no Windows do dono); glob com typo agora é
+apontado como typo, em vez de virar violação permanente sem causa visível; `settings.json`
+corrompido aborta em vez de ser sobrescrito; backup rotaciona 3 gerações.
+
+**Canários: 68 → 71.** Novos: `test_boot_brief.py`, `test_route_gate.py`,
+`test_inject_start_session.py`. Ampliados: `test_closing_gate.py` (+21 asserts de regressão),
+`test_author_tier.py` (+7), `test_wire_gates.py` (+12) e a regressão de `cwd`-do-payload **nomeada**
+em `test_mission_gate`, `test_compaction_gate` e `test_overwrite_guard` — os três exercitavam o
+caminho por acaso, sem que nada dissesse qual bug estavam protegendo. `capabilities.json`: 83
+registros (`boot-brief`, `squad-auto-boot`; `route-gate` apontava para o `.ps1` que o ADR-101
+substituiu). Veredito em `_meta/qa/v1.78.0-adr-101-gates-portateis.json`.
+
 ### Limites declarados
 
 O `closing_gate` é o gate mais intrusivo do framework — bloqueia trabalho real. O path absoluto do
 framework no settings global quebra se o repo for movido (re-afirmado a cada boot; falha-soft).
 `correlations.json` é escrito à mão: grupo mal declarado gera ruído. O `PROMPT-CHAT-WEB` recebeu a
 regra §3.7 como **prosa**, porque ambiente sem filesystem não tem hook — limite honesto, não descuido.
+
+Ressalvas da rodada de QA, declaradas e **não** resolvidas: `mirror_assets` sobrescreve
+`~/.claude/skills` sem backup (assets são regeneráveis; colisão agora avisa); não há lock de processo
+em `--install-global` (duas sessões simultâneas = last-write-wins, não testado); `HOME` × `USERPROFILE`
+divergentes no git-bash podem resolver `~` para caminhos distintos — **inferido pelo crítico, não
+reproduzido** aqui; `checkpoint_today` lê 60KB do topo, correto para a convenção mais-novo-primeiro
+deste repo e agora documentado, mas falso-negativo em projeto com `history.md` cronológico. O gate de
+canário, agora que funciona, aumenta o atrito de PRs que tocam vários hooks — efeito desejado.
 
 ## [1.77.0] — 2026-08-03 — Registro de trabalhos: o handoff sobrevive à sessão (ADR-100)
 

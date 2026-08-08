@@ -25,6 +25,7 @@ SOBERANIA: `.claude/session.lock` (projeto) ou `~/.claude/session.lock` (global)
 FAIL-OPEN: qualquer erro inesperado -> permite parar. Um gate de saida com bug nao pode
 sequestrar a sessao do dono.
 """
+import hashlib
 import json
 import os
 import subprocess
@@ -32,7 +33,14 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from _project import project_root, read_payload  # noqa: E402
+try:
+    from _project import project_root, read_payload
+except Exception as _e:  # noqa: BLE001
+    # QA ADR-101: o import era a UNICA linha fora do contrato fail-open declarado no docstring.
+    # `_project.py` ausente/corrompido (sync parcial, merge quebrado) crashava o hook com
+    # traceback antes de qualquer tratamento — justamente o gate que nao pode sequestrar a sessao.
+    sys.stderr.write(f"[closing-gate] _project indisponivel ({_e}) — gate INERTE nesta sessao\n")
+    sys.exit(0)
 
 # Arquivos que podem viver na raiz. Qualquer outro .md novo la e poluicao (relato do dono:
 # "handoffs no root, alem de muita documentacao ali, poluindo e sujando o repo").
@@ -44,6 +52,7 @@ ROOT_ALLOW = {
 }
 ROOT_DOC_EXT = (".md", ".txt")
 HANDOFF_HINT = ("handoff", "relatorio", "report", "checkpoint", "digest", "resumo")
+ACK_TAG = "closing-ack-fp:"
 
 
 def allow():
@@ -53,6 +62,9 @@ def allow():
 def block(reason):
     print(json.dumps({"decision": "block", "reason": reason}, ensure_ascii=False))
     sys.exit(0)
+
+
+GIT_MISSING = []
 
 
 def git(root, *args, timeout=12):
@@ -65,6 +77,13 @@ def git(root, *args, timeout=12):
         r = subprocess.run(["git", "-C", root, *args], capture_output=True, text=True,
                            encoding="utf-8", errors="replace", timeout=timeout)
         return r.stdout.strip() if r.returncode == 0 else ""
+    except FileNotFoundError as e:
+        # QA ADR-101: `except OSError: return ""` engolia ate o `git` ausente do PATH. O gate
+        # virava no-op SILENCIOSO, indistinguivel de "esta pasta nao e um repo git" — reproduzido
+        # com PATH reduzido a System32. Fail-open continua (politica correta p/ gate de saida),
+        # mas agora e fail-open DECLARADO: sem diagnostico, ninguem descobre que o gate morreu.
+        GIT_MISSING.append(str(e))
+        return ""
     except (OSError, subprocess.SubprocessError):
         return ""
 
@@ -81,6 +100,13 @@ def git_raw(root, *args, timeout=12):
         r = subprocess.run(["git", "-C", root, *args], capture_output=True, text=True,
                            encoding="utf-8", errors="replace", timeout=timeout)
         return r.stdout if r.returncode == 0 else ""
+    except FileNotFoundError as e:
+        # QA ADR-101: `except OSError: return ""` engolia ate o `git` ausente do PATH. O gate
+        # virava no-op SILENCIOSO, indistinguivel de "esta pasta nao e um repo git" — reproduzido
+        # com PATH reduzido a System32. Fail-open continua (politica correta p/ gate de saida),
+        # mas agora e fail-open DECLARADO: sem diagnostico, ninguem descobre que o gate morreu.
+        GIT_MISSING.append(str(e))
+        return ""
     except (OSError, subprocess.SubprocessError):
         return ""
 
@@ -109,17 +135,49 @@ def unpushed(root):
         return 0, up
 
 
-def root_pollution(root, untracked):
-    """Doc novo solto na raiz — especialmente handoff/relatorio, que tem lar proprio."""
-    bad = []
-    for p in untracked:
+def base_ref(root):
+    """Ref base do bloco, RESOLVIDA — nao presumida.
+
+    `origin/main` fixo devolvia vazio em qualquer repo que nao o tenha (repo local, fork com
+    outro nome de default, o proprio repo temporario do canario) e a checagem sumia em silencio.
+    """
+    for cand in ("origin/main", "origin/master", "main", "master"):
+        if git(root, "rev-parse", "--verify", "--quiet", cand):
+            return cand
+    return ""
+
+
+def branch_added(root):
+    """Arquivos ADICIONADOS pelos commits deste bloco (merge-base..HEAD)."""
+    ref = base_ref(root)
+    if not ref:
+        return []
+    mb = git(root, "merge-base", ref, "HEAD")
+    if not mb:
+        return []
+    out = git(root, "diff", "--name-only", "--diff-filter=A", mb, "HEAD")
+    return [ln.strip() for ln in out.splitlines() if ln.strip()]
+
+
+def root_pollution(root, candidatos):
+    """Doc novo solto na raiz — especialmente handoff/relatorio, que tem lar proprio.
+
+    QA ADR-101 (GRAVE): olhava SO os untracked (`??`). Bastava o agente seguir a propria
+    instrucao do gate ("Commit + push + PR") para o arquivo mal-posicionado sair do porcelain e
+    virar invisivel PARA SEMPRE — o fluxo recomendado pelo gate desarmava a deteccao. Agora o
+    conjunto inclui o que ESTE BLOCO adicionou (merge-base..HEAD), commitado ou nao. Nao policia
+    arquivo antigo da raiz: so a poluicao que a sessao introduziu.
+    """
+    bad, visto = [], set()
+    for p in candidatos:
         norm = p.replace("\\", "/")
         if "/" in norm:
             continue
         base = os.path.basename(norm)
-        if base in ROOT_ALLOW:
+        if base in ROOT_ALLOW or base in visto:
             continue
         if base.lower().endswith(ROOT_DOC_EXT):
+            visto.add(base)
             hint = " (handoff/relatorio -> docs/_private/handoffs/)" \
                 if any(h in base.lower() for h in HANDOFF_HINT) else ""
             bad.append(base + hint)
@@ -140,7 +198,14 @@ def correlated_violations(root):
 
 
 def checkpoint_today(root):
-    """history.md tem checkpoint com a data de hoje? (documentacao continua, ADR-016/021)"""
+    """history.md tem checkpoint com a data de hoje? (documentacao continua, ADR-016/021)
+
+    Ler so o INICIO e correto, nao atalho: o history.md deste framework e append-only
+    MAIS-NOVO-PRIMEIRO (declarado no cabecalho do proprio arquivo e em .agent/workflows/
+    start-session.md). O checkpoint de hoje esta sempre no topo. A duvida levantada pelo QA
+    ("e se crescer em ordem cronologica?") nao se aplica a esta convencao — fica registrado
+    aqui para nao ser reaberta.
+    """
     import datetime
     hist = os.path.join(root, "history.md")
     if not os.path.isfile(hist):
@@ -171,7 +236,7 @@ def build_pendings(root):
         pend.append(f"**Correlato nao atualizado** (grupo `{v['id']}`): tocou "
                     f"{v['touched']} mas NAO tocou {v['missing']}. "
                     f"{v['note'] or 'Estes artefatos mudam juntos — tem que ser tudo.'}")
-    bad = root_pollution(root, untracked)
+    bad = root_pollution(root, list(untracked) + branch_added(root))
     if bad:
         pend.append(f"**Raiz poluida** — arquivo(s) novo(s) solto(s) na raiz: {', '.join(bad[:8])}. "
                     f"Mova p/ o diretorio proprio antes de fechar.")
@@ -185,6 +250,55 @@ def build_pendings(root):
     return pend
 
 
+def fingerprint(pend):
+    """Impressao do ESTADO pendente. O ack reconhece UM estado, nao a eternidade."""
+    return hashlib.sha256("\n".join(pend).encode("utf-8")).hexdigest()[:16]
+
+
+def ack_status(path, fp):
+    """'valido' (mesmo estado ja reconhecido) | 'novo' (`echo ok` cru) | 'estale' (mudou depois).
+
+    QA ADR-101 (GRAVE): o ack era verificado so por `os.path.isfile`, sem vinculo com o estado —
+    contradizendo o proprio docstring ("libera ate a proxima mudanca"). Reproduzido: com o ack
+    presente, um arquivo novo e nao relacionado aparecia e o gate continuava liberando. Na
+    pratica o primeiro `echo ok > .claude/.closing.ack` da vida do repo desligava o gate PARA
+    SEMPRE — teatro permanente, o modo de falha oposto ao loop e igualmente grave.
+    """
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            txt = f.read()
+    except OSError:
+        return "novo"
+    marcados = [ln.strip()[len(ACK_TAG):].strip() for ln in txt.splitlines()
+                if ln.strip().startswith(ACK_TAG)]
+    if not marcados:
+        return "novo"
+    return "valido" if fp in marcados else "estale"
+
+
+def ack_stamp(path, fp):
+    """Carimba no ack o estado que ele reconheceu (torna a expiracao verificavel)."""
+    try:
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(f"\n{ACK_TAG} {fp}\n")
+    except OSError:
+        pass
+
+
+def session_marker(root, session_id):
+    """Caminho do marcador 1x-por-sessao. Nunca vazio: sem isso o anti-loop nao existe.
+
+    QA ADR-101 (GRAVE): `marker` virava "" quando o payload nao trazia `session_id`, entao
+    `if marker and ...` nunca lia e `if marker:` nunca gravava — a promessa "bloqueia no maximo
+    1x por sessao" ficava sem efeito. Reproduzido: 3 chamadas seguidas sem session_id -> 3
+    bloqueios. Sem session_id caimos num marcador fixo: menos preciso, mas o dono nunca fica
+    preso — que e a garantia inegociavel.
+    """
+    state = os.path.join(root, ".claude", ".closing-state")
+    safe = "".join(c if c.isalnum() or c in "_-" else "_" for c in session_id).strip("_")
+    return os.path.join(state, safe or "_sem-session-id")
+
+
 def main():
     try:
         payload = read_payload()
@@ -195,30 +309,40 @@ def main():
 
         home = os.path.expanduser("~")
         if os.path.isfile(os.path.join(root, ".claude", "session.lock")) or \
-           os.path.isfile(os.path.join(home, ".claude", "session.lock")) or \
-           os.path.isfile(os.path.join(root, ".claude", ".closing.ack")):
+           os.path.isfile(os.path.join(home, ".claude", "session.lock")):
             allow()
 
         if not is_git(root):
+            if GIT_MISSING:
+                sys.stderr.write("[closing-gate] `git` nao encontrado no PATH do hook — gate "
+                                 "INERTE (fail-open declarado, nao 'tudo certo')\n")
             allow()
 
-        state = os.path.join(root, ".claude", ".closing-state")
-        marker = os.path.join(state, "".join(
-            c if c.isalnum() or c in "_.-" else "_" for c in session_id)) if session_id else ""
-        if marker and os.path.isfile(marker):  # no maximo 1 bloqueio por sessao
+        marker = session_marker(root, session_id)
+        if os.path.isfile(marker):  # no maximo 1 bloqueio por sessao
             allow()
 
         pend = build_pendings(root)
         if not pend:
             allow()
 
-        if marker:
-            try:
-                os.makedirs(state, exist_ok=True)
-                with open(marker, "w", encoding="utf-8") as f:
-                    f.write("blocked")
-            except OSError:
-                pass
+        fp = fingerprint(pend)
+        ack = os.path.join(root, ".claude", ".closing.ack")
+        if os.path.isfile(ack):
+            st = ack_status(ack, fp)
+            if st == "valido":
+                allow()
+            if st == "novo":  # `echo ok` cru: honra UMA vez e carimba o estado reconhecido
+                ack_stamp(ack, fp)
+                allow()
+            # 'estale': o repo mudou depois do ack — volta a valer, como o docstring promete.
+
+        try:
+            os.makedirs(os.path.dirname(marker), exist_ok=True)
+            with open(marker, "w", encoding="utf-8") as f:
+                f.write(fp)
+        except OSError:
+            pass
 
         items = "\n".join(f"{i}. {p}" for i, p in enumerate(pend, 1))
         block(
@@ -228,7 +352,8 @@ def main():
             "Se o dono pediu o trabalho explicitamente, **termine agora** — confirmar entendimento "
             "e seguir e o contrato; parar no fim, quando ele ja saiu, nao e.\n"
             "Se alguma pendencia nao se aplica, diga POR QUE e siga: "
-            "`echo ok > .claude/.closing.ack` libera este projeto. "
+            "`echo ok > .claude/.closing.ack` libera este projeto ATE o estado mudar "
+            "(o ack carimba o estado que reconheceu — nao e interruptor permanente). "
             "Este gate bloqueia no maximo 1x por sessao."
         )
     except SystemExit:

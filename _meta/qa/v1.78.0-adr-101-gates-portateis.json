@@ -1,0 +1,117 @@
+{
+  "bloco": "v1.78.0-adr-101-gates-portateis-encerramento-correlacao",
+  "release": "1.78.0",
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "autor": "claude-opus-5",
+  "critico": "claude-sonnet-4-6 x3 (subagentes isolados, modelo != autor — ADR-011/018/074/078)",
+  "veredito_1a_rodada": "NAO LIBERADO — FAIL nos 3 criticos",
+  "metodo": "3 qa-critics adversariais CONCORRENTES, cada um com alvo e lista de arquivos FECHADA (closing_gate+_project · wire_gates+manifesto · boot_check._fam_rank+correlated). O fatiamento foi a correcao de processo: as 3 tentativas anteriores (2026-08-08, 2x opus + 1x sonnet) morreram por watchdog 600s com escopo largo demais. Todo achado abaixo foi REPRODUZIDO por execucao antes do fix e virou canario depois.",
+  "problemas": [
+    {
+      "severidade": "BLOQUEANTE",
+      "local": "tools/wire_gates.py:89-112 (write_settings)",
+      "descricao": "CORRIGIDO. A chave `hooks` era OVERWRITE total (`new['hooks'] = hooks`), nao merge. Como o gate `sync-global` roda `--install-global` a CADA boot do repo-framework, qualquer hook proprio do dono (ou de outro plugin/MCP) em evento/matcher fora do manifesto sumia em silencio — sem prompt, sem log do que foi removido. Fix: `merge_hooks()` preserva bloco do dono e substitui so o do framework, reconhecendo tambem o wiring LEGADO .ps1 (senao a migracao 2 .ps1 -> 13 Python nunca limparia os antigos). Canario 7b prova preservacao + remocao do legado."
+    },
+    {
+      "severidade": "BLOQUEANTE",
+      "local": "tools/boot_check.py:199-215 (check_author_tier)",
+      "descricao": "CORRIGIDO. A trava anti-overclaim do ADR-101 so cruzava a flag `--author-model`; CLAUDE_CODE_MODEL / ANTHROPIC_MODEL / CLAUDE_MODEL alimentavam o veredito SEM passar por ela — 3 de 4 portas abertas no gate que existe justamente porque 'um gate que aceita a autodeclaracao do auditado nao e gate'. Reproduzido: detect=sonnet + CLAUDE_CODE_MODEL=claude-fable-5 devolvia \"autor='fable' >= baseline='opus'\", banner LOUD nunca disparava. Fix: toda entrada controlada pelo auditado vira `declarado` e passa pela mesma trava."
+    },
+    {
+      "severidade": "BLOQUEANTE",
+      "local": "tools/boot_check.py:227",
+      "descricao": "CORRIGIDO. Familia presente em `model_ids` mas AUSENTE das chains dos tiers fazia `fam in order` ser falso, pulando a comparacao com o baseline e caindo no return final como status='ok' — trava falhando ABERTA. Drift plausivel na operacao normal, nao hipotese: o proprio model-policy.json manda cadastrar modelo novo 'editando AQUI (dado)' sem exigir tocar as chains. Reproduzido com familia ficticia 'ghost'. Fix: sem posicao na escada nao ha veredito possivel -> warn 'INDETERMINADA', nunca 'ok'."
+    },
+    {
+      "severidade": "BLOQUEANTE",
+      "local": "tools/correlated.py:102-120 (git_touched)",
+      "descricao": "CORRIGIDO. 'Mudou' era medido so contra `git status --porcelain` no INSTANTE da chamada. Assim que o par quebrado era commitado ele sumia do porcelain e o `--check` passava trivialmente com a arvore limpa ('OK: 5 grupo(s) coerente(s)' com ZERO arquivos tocados). Como o closing_gate chama isto no Stop — DEPOIS do commit — o gate media exatamente o momento em que nao ha mais nada para ver. Fix: escopo default 'branch' = working tree UNIAO commits do bloco (merge-base..HEAD), com `--scope worktree` preservando o comportamento antigo."
+    },
+    {
+      "severidade": "BLOQUEANTE",
+      "local": "tools/correlated.py:82-99 (check) + .agent/correlations.json",
+      "descricao": "CORRIGIDO. rule='all' exigia apenas que ALGUM arquivo tocado casasse cada glob, nao que os membros CORRESPONDENTES do par fossem tocados. No grupo `gate-precisa-de-canario` (tools/hooks/*.py + tools/test_*.py) bastava mexer em QUALQUER test_*.py nao relacionado para calar a exigencia de canario do gate novo — exatamente o falso-negativo que a nota do grupo dizia evitar. Reproduzido. Fix: rule='pairwise' com pareamento por radical, direction='forward' (gate exige canario; canario nao exige gate), strip_prefixes/exempt como DADO declarado. CONSEQUENCIA IMEDIATA: o gate corrigido acusou que o proprio ADR-101 entregou 3 gates SEM canario — divida paga neste bloco."
+    },
+    {
+      "severidade": "GRAVE",
+      "local": "tools/wire_gates.py:145-164 (diagnose)",
+      "descricao": "CORRIGIDO. `have == want` comparava strings de comando contendo o path absoluto de ROOT sem normalizar a letra do drive Windows: o terminal dava 'C:\\...' e o runner de hooks do Claude Code dava 'c:\\...'. Resultado: `--check` acusava DIVERGE com contagens IGUAIS dos dois lados (13 x 13) e instruia rodar `--install-global` para 'corrigir' o que ja estava correto. RISCO REAL MATERIALIZADO: no boot desta sessao o diagnostico mandou rodar `--install-global`, que combinado ao BLOQUEANTE 1 teria APAGADO hooks nao-framework do ~/.claude do dono. Fix: `_canon()` na origem + `_cmp_key()` normcase na comparacao; diagnostico passa a NOMEAR a divergencia em vez de so contar."
+    },
+    {
+      "severidade": "GRAVE",
+      "local": "tools/hooks/closing_gate.py:196-200 (.closing.ack)",
+      "descricao": "CORRIGIDO. O ack era verificado so por `os.path.isfile`, sem vinculo com o estado — contradizendo o proprio docstring ('libera ate a proxima mudanca'). Reproduzido: com o ack presente, arquivo novo e nao relacionado aparecia e o gate continuava liberando. Na pratica o primeiro `echo ok > .claude/.closing.ack` da vida do repo desligava o gate PARA SEMPRE (teatro permanente — modo de falha oposto ao loop e igualmente grave). Fix: ack carimba a impressao do estado que reconheceu; estado diferente = ack estale, gate volta a valer."
+    },
+    {
+      "severidade": "GRAVE",
+      "local": "tools/hooks/closing_gate.py:112-126 (root_pollution)",
+      "descricao": "CORRIGIDO. So olhava untracked ('??'). Bastava o agente seguir a propria instrucao do gate ('Commit + push + PR') para o arquivo mal-posicionado sair do porcelain e ficar invisivel PARA SEMPRE — o fluxo recomendado pelo gate desarmava a deteccao. Reproduzido. Fix: o conjunto inclui o que ESTE BLOCO adicionou (merge-base..HEAD), commitado ou nao, sem policiar arquivo antigo da raiz. Junto: `base_ref()` resolve a ref base em vez de presumir 'origin/main' fixo (que devolvia vazio em qualquer repo sem esse remote, sumindo em silencio)."
+    },
+    {
+      "severidade": "GRAVE",
+      "local": "tools/hooks/closing_gate.py:205-209 (marcador 1x-por-sessao)",
+      "descricao": "CORRIGIDO. Sem `session_id` no payload o marker virava '' (falsy), entao nunca era lido nem gravado: a promessa 'bloqueia no maximo 1x por sessao. Nunca trava o dono num ciclo' ficava sem efeito. Reproduzido: 3 chamadas seguidas sem session_id -> 3 bloqueios. Fix: `session_marker()` nunca devolve vazio (fallback '_sem-session-id') e sanitiza valor patologico ('..' resolvia p/ o proprio .claude/)."
+    },
+    {
+      "severidade": "GRAVE",
+      "local": "tools/hooks/closing_gate.py:58-85 (git/git_raw)",
+      "descricao": "CORRIGIDO. `except (OSError, SubprocessError): return ''` engolia ate FileNotFoundError do binario `git` ausente do PATH do hook. O gate virava no-op SILENCIOSO, indistinguivel de 'esta pasta nao e um repo git'. Reproduzido com PATH reduzido a System32. Fix: fail-open MANTIDO (politica correta p/ gate de saida) mas DECLARADO em stderr — fail-open silencioso e falso-OK."
+    },
+    {
+      "severidade": "GRAVE",
+      "local": "tools/correlated.py:72-79 (matches) e campo `rule`",
+      "descricao": "CORRIGIDO (2 itens). (a) `fnmatch.fnmatch` aplica os.path.normcase: case-insensitive no Windows, sensitive no POSIX — o mesmo manifesto dava veredito diferente no CI Linux e na maquina do dono, contradizendo o 'determinismo total' do docstring. Fix: fnmatchcase. (b) O campo `rule` estava em todos os 5 grupos e no TEMPLATE mas NUNCA era lido: superficie de configuracao morta, quem declarasse outro valor nao tinha efeito nem aviso. Fix: rule passa a valer e valor invalido REPROVA declarado."
+    },
+    {
+      "severidade": "GRAVE",
+      "local": "tools/correlated.py:53-65 (load_manifest)",
+      "descricao": "CORRIGIDO. Nenhuma validacao de que os globs resolvem a caminho real: um typo ('tools/hoosk/*.py') criava membro impossivel de satisfazer, violacao PERMANENTE, e a mensagem nao distinguia 'Y esquecido' de 'Y inatingivel'. Como o closing_gate consome isto no Stop, um typo podia travar o encerramento indefinidamente sem causa visivel. Fix: violacao anota quais membros nao casam NENHUM arquivo do repo, apontando TYPO explicitamente."
+    },
+    {
+      "severidade": "GRAVE",
+      "local": "tools/test_wire_gates.py:70-90",
+      "descricao": "CORRIGIDO. O caminho `--install-global` real (escrita em ~/.claude/settings.json, mirror_assets) tinha cobertura ZERO — o BLOQUEANTE 1 passaria despercebido pela suite. O teste 8 aceitava DIVERGE igual a OK. Fix: 4 blocos novos (preservacao de hook do dono, remocao do legado, settings corrompido, rotacao de backup, normcase do drive) + o `--check` passa a exigir que a divergencia seja NOMEADA."
+    },
+    {
+      "severidade": "GRAVE",
+      "local": "tools/boot_check.py:172-175 (_fam_rank)",
+      "descricao": "CORRIGIDO. Casamento por substring pura, sem word-boundary: funcionava so por sorte da convencao atual (fable/opus/sonnet/haiku sao mutuamente exclusivos como substring), sem nenhuma protecao contra familia futura cujo nome contenha o de outra. Fix: `_fam_of()` casa model_id exato ou familia como token delimitado; canario prova que 'supersonnetics-9' nao casa 'sonnet'."
+    },
+    {
+      "severidade": "MENOR",
+      "local": "tools/hooks/closing_gate.py:35 (import de _project)",
+      "descricao": "CORRIGIDO. Import em nivel de modulo, FORA do try — unica janela do arquivo fora do contrato fail-open declarado no docstring. `_project.py` ausente/corrompido crashava o hook com traceback. Fix: try/except no import, com aviso e exit 0."
+    },
+    {
+      "severidade": "MENOR",
+      "local": "tools/wire_gates.py:79-86 (read_json) e :96-100 (backup)",
+      "descricao": "CORRIGIDO (2 itens). (a) JSON corrompido virava {} em silencio e a escrita seguinte gravava um arquivo contendo SO `hooks`, perdendo permissions/model/env/statusLine do dono. Fix: `CorruptSettings` fail-closed DECLARADO — o dono conserta o JSON, o script nao adivinha. (b) `.wire.bak` era de 1 geracao e o churn do falso-DIVERGE o queimava a cada boot. Fix: rotacao 3 geracoes."
+    },
+    {
+      "severidade": "MENOR",
+      "local": "tools/correlated.py:116-119 (rename)",
+      "descricao": "CORRIGIDO. Em rename ('R old -> new') so o destino era contabilizado; a origem sumia do escopo e um rename podia tirar arquivo de um glob de grupo sem que a correlacao percebesse. Fix: ambos os paths entram no conjunto tocado."
+    },
+    {
+      "severidade": "MENOR",
+      "local": "tools/wire_gates.py:115-142 (mirror_assets)",
+      "descricao": "PARCIAL — ressalva declarada. `_shared/` e `.agent/skills/` mapeiam para o MESMO destino ~/.claude/skills; colisao de nome fazia o segundo copytree sobrescrever o primeiro em silencio. Fix aplicado: DETECTA e AVISA a colisao nomeando os dois lados. NAO corrigido: continua sem backup dos assets espelhados (diferente do settings.json, que tem rotacao). Aceito porque assets sao regeneraveis a partir do repo; registrado como ressalva, nao como resolvido."
+    }
+  ],
+  "ressalvas": [
+    "mirror_assets sobrescreve ~/.claude/skills sem backup (assets sao regeneraveis do repo; colisao agora e avisada, nao silenciosa).",
+    "Sem lock de processo em --install-global: duas sessoes abrindo o repo-framework ao mesmo tempo escrevem no mesmo path+'.tmp' (race benigna last-write-wins, nao testada).",
+    "HOME x USERPROFILE divergentes (git-bash/MSYS) podem fazer expanduser('~') resolver para path diferente do que o runner de hooks usa. INFERIDO pelo critico, NAO reproduzido nesta maquina (os dois coincidem aqui).",
+    "checkpoint_today le so os primeiros 60KB do history.md. CORRETO para a convencao deste framework (append-only MAIS-NOVO-PRIMEIRO, declarada no cabecalho do arquivo e no start-session.md) e agora documentado na funcao; um projeto que adote history.md CRONOLOGICO teria falso-negativo. Limite conhecido, nao defeito nesta base.",
+    "O gate `gate-precisa-de-canario`, agora que funciona, e mais exigente: mudar um hook obriga tocar o canario correspondente. Isso e o comportamento desejado, mas aumenta o atrito de PRs que mexem em varios hooks."
+  ],
+  "canarios_apos_fix": "71 canarios (68 antes; +test_boot_brief, +test_route_gate, +test_inject_start_session — os 3 gates que o ADR-101 havia entregue sem canario e que o proprio gate corrigido acusou). 21 asserts de regressao novos em test_closing_gate; 7 em test_author_tier; 12 em test_wire_gates; regressao de cwd-do-payload nomeada em test_mission_gate, test_compaction_gate e test_overwrite_guard.",
+  "nota_de_processo": "Nenhum artefato de veredito foi fabricado para maquiar canario vermelho — os 2 FAIL herdados (test_qa_evidence, test_posture_gate) eram exatamente a ausencia DESTE arquivo, e so foram resolvidos depois que o QA de fato rodou. O achado GRAVE do wire_gates diagnose foi capturado a tempo de impedir uma escrita destrutiva no ~/.claude do dono que o proprio boot desta sessao havia recomendado.",
+  "postura": {
+    "discovery": "File-first ANTES de agir, no protocolo de abertura (ADR-024): boot_check (sync + agnosticismo + versao canonica + tier-autor), handoff.py (P14), trabalhos.py (3 trabalhos abertos), wire_gates --check, correlated --check, git fetch/status, CAPABILITIES.md e o registro do trabalho `adr-101-gates-portateis`. O escopo NAO foi elicitado do dono: ele ja estava declarado no proprio registro de trabalho (ADR-100), que nomeava os 3 alvos de maior risco — closing_gate (bloqueia o agente), wire_gates (escreve no ~/.claude do dono) e a trava anti-overclaim em boot_check (escrita as pressas, admitido pelo autor). Reperguntar o que ja estava escrito seria retrabalho — a falha que o boot-brief existe para impedir. O que FOI elicitado por medicao: o diff real (40 arquivos, +3129/-781) e a ausencia de gh CLI, confirmada no PATH do Windows e nao so no git-bash.",
+    "rrc": "PASSA: v1.78.0 permanece a versao correta (release nao mergeada; correcoes de QA sao do mesmo bloco, nao de um bump novo) e as surfaces estao em sync — README 1.78.0, topo do CHANGELOG, guia/web/index.html (5 ocorrencias), 6 web-bundles. ADR-101 Status=Aceito e citado no CHANGELOG (doc-sync OK, test_consistency_closing PASS: 97 ADRs, 0 duplicata, 0 entregue-mas-Proposto, 0 version-claim sem heading). capabilities.json 83 registros com mechanism/test/adr/enforcement e CAPABILITIES.md reconstruido em sync (test_capabilities PASS, 0 canario orfao). SemVer MINOR mantido: feature nova compativel; as correcoes de QA nao alteram contrato publico. CHANGELOG e ADR atualizados para o estado final do codigo APOS os fixes, com as ressalvas nao-resolvidas declaradas em vez de silenciadas.",
+    "metodo_senior": "aplicado: causa-raiz declarada por medicao, nao por leitura — cada um dos 18 achados foi REPRODUZIDO por execucao antes do fix (env var burlando a trava, familia 'ghost' fora das chains, par quebrado commitado passando, teste nao relacionado calando o gate, ack sobrevivendo a mudanca de estado, git fora do PATH, DIVERGE 13x13 por case do drive) e virou canario depois. Correcao de PROCESSO tambem: as 3 tentativas anteriores de qa-critic morreram por watchdog com escopo largo; o fatiamento em 3 criticos com lista de arquivos fechada foi o que destravou — a falha era de metodo, nao de infraestrutura. Um falso-positivo do MEU proprio fix (pareamento simetrico exigindo tools/hooks/wire_gates.py, que nunca existiu) foi detectado por execucao e corrigido com direction='forward' em vez de afrouxar a regra. Limites honestos: 5 ressalvas declaradas como NAO resolvidas, e o achado sobre HOME x USERPROFILE mantido como INFERIDO porque nao reproduziu nesta maquina.",
+    "fonte_canonica": true
+  }
+}

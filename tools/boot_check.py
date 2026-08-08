@@ -165,14 +165,31 @@ def detect_session_model(transcript_path=""):
     return model
 
 
+def _fam_of(model_str, pol):
+    """Familia do modelo. Casamento por TOKEN, nao substring solta.
+
+    QA ADR-101 (heterogeneo, 2026-08-08): `if f in model_str` funcionava so por sorte da
+    convencao de nomes atual (fable/opus/sonnet/haiku sao mutuamente exclusivos como
+    substring). Uma familia futura cujo nome contenha o de outra casaria a errada em silencio.
+    """
+    if not model_str:
+        return ""
+    s = str(model_str).lower()
+    for f, mid in pol.get("model_ids", {}).items():
+        if str(mid).lower() == s:
+            return f
+    for f in pol.get("model_ids", {}):
+        if re.search(r"(?<![a-z0-9])" + re.escape(f) + r"(?![a-z0-9])", s):
+            return f
+    return ""
+
+
 def _fam_rank(model_str, pol, order):
     """Indice da familia em `order` (0 = mais capaz). None se nao reconhecida. ADR-101."""
-    if not model_str:
+    fam = _fam_of(model_str, pol)
+    if not fam:
         return None
-    for f, mid in pol.get("model_ids", {}).items():
-        if f in model_str or str(mid).lower() in model_str:
-            return order.index(f) if f in order else None
-    return None
+    return order.index(fam) if fam in order else None
 
 
 def check_author_tier(author_model=""):
@@ -196,8 +213,14 @@ def check_author_tier(author_model=""):
                 order.append(fam)
     unavailable = {x.strip().lower() for x in os.environ.get("FRAMEWORK_MODELS_UNAVAILABLE", "").split(",") if x.strip()}
     baseline_avail = baseline and baseline not in unavailable
-    am = (author_model or os.environ.get("CLAUDE_CODE_MODEL") or os.environ.get("ANTHROPIC_MODEL")
-          or os.environ.get("CLAUDE_MODEL") or detect_session_model()).lower()
+    # QA ADR-101 (BLOQUEANTE, 2026-08-08): a trava anti-overclaim abaixo so cruzava a flag
+    # `--author-model`. As 3 variaveis de ambiente alimentavam `am` SEM passar pela checagem —
+    # 3 das 4 portas ficaram abertas. Medido: detect=sonnet + CLAUDE_CODE_MODEL=claude-fable-5
+    # devolvia "autor='fable' >= baseline='opus'" e o banner LOUD nunca disparava. Toda entrada
+    # que o auditado controla e DECLARACAO e passa pela mesma trava.
+    declarado = (author_model or os.environ.get("CLAUDE_CODE_MODEL")
+                 or os.environ.get("ANTHROPIC_MODEL") or os.environ.get("CLAUDE_MODEL") or "")
+    am = (declarado or detect_session_model()).lower()
     # [ADR-101, 2026-08-08] DECLARACAO NAO PODE SUPERESTIMAR A MEDICAO. Caso real desta sessao: o
     # dono rodou `/model claude-fable-5`, o harness NAO aplicou (fable indisponivel) e o agente
     # passou `--author-model claude-fable-5` — a flag sobrepos a deteccao e o gate declarou
@@ -205,25 +228,32 @@ def check_author_tier(author_model=""):
     # auto-declaracao do auditado nao e gate. A declaracao segue valendo p/ REBAIXAR (declarar-se
     # abaixo e confissao, nao overclaim); superestimar cai p/ o detectado, com aviso.
     detected = (detect_session_model() or "").lower()
-    tier_declared = _fam_rank(author_model.lower() if author_model else "", pol, order)
+    tier_declared = _fam_rank(declarado, pol, order)
     tier_detected = _fam_rank(detected, pol, order)
     overclaim = ""
-    if author_model and detected and tier_declared is not None and tier_detected is not None \
+    if declarado and detected and tier_declared is not None and tier_detected is not None \
             and tier_declared < tier_detected:  # menor indice = mais capaz
-        overclaim = (f" [declaracao '{author_model}' IGNORADA: detectado '{detected}' no transcript "
+        overclaim = (f" [declaracao '{declarado}' IGNORADA: detectado '{detected}' no transcript "
                      f"— declaracao nao pode superestimar a medicao (ADR-101)]")
         am = detected
-    fam = ""
-    for f, mid in pol.get("model_ids", {}).items():
-        if f in am or str(mid).lower() in am:
-            fam = f
-            break
+    fam = _fam_of(am, pol)
     crit = "Sonnet/Haiku so como CRITICO/docops, nunca como autor com baseline disponivel (ADR-082)."
     if not fam:
         return {"name": "author-tier", "status": "warn",
                 "detail": f"modelo-autor da sessao NAO detectado — DECLARE. Baseline de autor = {baseline or '?'}. "
                           f"Se a sessao roda < baseline com baseline disponivel, troque (/model {baseline}) "
                           f"ou declare indisponibilidade. {crit}", "stamps": []}
+    if baseline_avail and baseline in order and fam not in order:
+        # QA ADR-101 (BLOQUEANTE): familia declarada em `model_ids` mas AUSENTE das chains dos
+        # tiers pulava a comparacao e caia no `return` final como status=ok — trava falhando
+        # ABERTA. E drift plausivel: o proprio model-policy.json manda "editar AQUI (dado)" ao
+        # cadastrar modelo novo, sem exigir tocar as chains. Sem posicao na escada nao ha
+        # veredito possivel: avisar, nunca aprovar.
+        return {"name": "author-tier", "status": "warn",
+                "detail": f"familia '{fam}' esta em model_ids mas FORA das chains de tiers — "
+                          f"capacidade relativa a '{baseline}' INDETERMINADA (nao e 'ok'). "
+                          f"Adicione '{fam}' a uma chain em tools/model-policy.json. {crit}",
+                "stamps": []}
     if baseline_avail and fam in order and baseline in order and order.index(fam) > order.index(baseline):
         return {"name": "author-tier", "status": "warn",
                 "detail": f"AUTOR rodando em '{fam}' ABAIXO do baseline '{baseline}' (disponivel). "
