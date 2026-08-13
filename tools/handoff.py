@@ -87,13 +87,28 @@ def latest_checkpoint_field(field):
     # "<definir: nao havia Proximo passo no checkpoint>" mesmo com o campo presente, o que
     # esvaziava justamente o item que define o que a proxima sessao produz (bug observado
     # em 2026-08-02 contra os checkpoints de v1.75.0 e v1.76.0).
-    # EMENDA 2026-08-13 (5a rodada de revisao): `(.+)$` sem DOTALL casava so a PRIMEIRA LINHA
-    # FISICA. Checkpoint que escreve o campo como PARAGRAFO quebrado em varias linhas — o estilo
-    # usado no resto do history — saia truncado na primeira frase. Pior que o bug de 2026-08-02:
-    # aquele deixava placeholder VISIVEL; este entrega texto que PARECE completo e nao e'.
-    # Agora captura ate a linha em branco (fim do paragrafo) ou o proximo campo em negrito.
+    # HISTORICO DESTE TRECHO — tres defeitos, dois deles introduzidos por correcao:
+    #   2026-08-02: o regex nao previa campo em NEGRITO -> P14 saia com placeholder VISIVEL.
+    #   2026-08-13 (5a rodada): `(.+)$` sem DOTALL casava so a PRIMEIRA LINHA FISICA -> campo
+    #     escrito como paragrafo saia TRUNCADO, e truncado PARECE completo (pior que placeholder).
+    #   2026-08-13 (6a rodada): o lookahead so reconhecia linha-em-branco / negrito / fim, entao
+    #     no estilo TEXTO PLANO — 26 ocorrencias medidas neste history — o campo ENGOLIA o campo
+    #     seguinte inteiro e devolvia dois campos fundidos.
+    # Licao: o terminador precisa cobrir TODOS os estilos que o arquivo realmente usa, nao o
+    # estilo do checkpoint que estou escrevendo agora. Cobertura direta em test_handoff.py.
+    TERMINADORES = (
+        r"\n\s*\n"                     # linha em branco (fim de paragrafo)
+        r"|\n\s*\*\*"                  # proximo campo em **negrito**
+        r"|\n[A-Za-zÀ-ÿ][^\n:]{0,40}:" # proximo campo em TEXTO PLANO (`Riscos ativos:`)
+        r"|\n\s*[-*+]\s"               # item de lista
+        r"|\n\s*\d+\.\s"               # item de lista numerada
+        r"|\n\s*---"                   # regra horizontal
+        r"|\n\s*#{1,6}\s"              # cabecalho
+        r"|\n\s*```"                   # bloco de codigo
+        r"|\Z"
+    )
     fm = re.search(rf"(?im)^\s*\*{{0,2}}{re.escape(field)}\*{{0,2}}\s*:?\*{{0,2}}\s*(.+?)"
-                   rf"(?=\n\s*\n|\n\s*\*\*|\Z)",
+                   rf"(?={TERMINADORES})",
                    block, re.S)
     if not fm:
         return ""

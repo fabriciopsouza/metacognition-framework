@@ -270,9 +270,60 @@ def main():
     for f in fails:
         print("  -", f)
     print("-" * 50)
+    fails += check_extracao_de_campo()
+
     print("RESULTADO:", "PASS (gerador roda, regra papel+risco correta, deterministico)" if not fails
           else f"FAIL ({len(fails)})")
     return 1 if fails else 0
+
+
+def check_extracao_de_campo():
+    """Cobertura DIRETA de latest_checkpoint_field — sem monkeypatch (achado da 6a rodada).
+
+    O teste de determinismo substitui esta funcao por um lambda, entao o canario passava
+    verde enquanto a extracao real estava quebrada. Tres defeitos ja passaram por aqui:
+    placeholder visivel (02/08), truncagem silenciosa (13/08, 5a rodada) e engolir o campo
+    seguinte (13/08, 6a rodada). Este check exercita os ESTILOS que o history realmente usa.
+    """
+    import tempfile
+    import os as _os
+    NL = chr(10)
+    fails = []
+    CASOS = [
+        ("negrito + linha em branco",
+         ["## 2026-01-02 - x", "", "**Proximo passo:** fazer A", "e depois B.", "",
+          "**Riscos:** nenhum"],
+         "fazer A e depois B."),
+        ("texto plano + campo seguinte SEM linha em branco",
+         ["## 2026-01-02 - x", "", "Proximo passo: fazer A", "Riscos ativos: nenhum"],
+         "fazer A"),
+        ("paragrafo de varias linhas",
+         ["## 2026-01-02 - x", "", "**Proximo passo:** primeira", "segunda", "terceira.", "",
+          "**Fim:** z"],
+         "primeira segunda terceira."),
+        ("campo seguido de lista",
+         ["## 2026-01-02 - x", "", "Proximo passo: fazer", "- item um", "- item dois"],
+         "fazer"),
+        ("campo seguido de regra horizontal",
+         ["## 2026-01-02 - x", "", "Proximo passo: fazer", "---"],
+         "fazer"),
+        ("campo ausente -> vazio, nunca texto de outro campo",
+         ["## 2026-01-02 - x", "", "Riscos ativos: nenhum"],
+         ""),
+    ]
+    for nome, linhas, esperado in CASOS:
+        d = tempfile.mkdtemp()
+        with open(_os.path.join(d, "history.md"), "w", encoding="utf-8") as fh:
+            fh.write(NL.join(linhas) + NL)
+        salvo = handoff.ROOT
+        try:
+            handoff.ROOT = d
+            got = handoff.latest_checkpoint_field("Proximo passo")
+        finally:
+            handoff.ROOT = salvo
+        if got != esperado:
+            fails.append("extracao [%s]: esperado %r, veio %r" % (nome, esperado, got))
+    return fails
 
 
 if __name__ == "__main__":
