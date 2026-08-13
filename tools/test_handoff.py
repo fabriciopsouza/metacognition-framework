@@ -313,10 +313,20 @@ def check_extracao_de_campo():
         # 7a rodada: TODOS os casos acima tem o rotulo seguinte em LINHA PROPRIA, entao a
         # suite nao acusaria rotulo embutido na MESMA linha — que e' o defeito real medido
         # em 4 checkpoints. Sem este caso, o check era teatro parcial.
-        ("rotulo do proximo campo na MESMA linha, apos fim de frase",
+        # 8a rodada: os casos abaixo nasceram de PERDA DE CONTEUDO medida no corpus real.
+        # O esperado e derivado do COMPORTAMENTO CORRETO, nao do que o codigo fazia — calibrar
+        # a expectativa pelo bug foi o proprio anti-padrao que a regra 9(a) descreve.
+        ("rotulo NAO-canonico na mesma linha e CONTINUACAO, nao fim de campo",
          ["## 2026-01-02 - x", "",
-          "Proximo passo: fazer A (detalhe). Decisoes pendentes do dono: ratificar Y"],
-         "fazer A (detalhe)"),
+          "Proximo passo: fazer A (detalhe). Follow-up nao-bloqueante: revisar Z"],
+         "fazer A (detalhe). Follow-up nao-bloqueante: revisar Z"),
+        ("Sugestao: tambem e continuacao (perdia conteudo em v1.58.1/v1.59.0 reais)",
+         ["## 2026-01-02 - x", "", "Proximo passo: nenhum WIP. Sugestao de cadencia: boots em haiku."],
+         "nenhum WIP. Sugestao de cadencia: boots em haiku."),
+        ("campo CANONICO na mesma linha ENCERRA, e o ponto final sobrevive",
+         ["## 2026-01-02 - x", "",
+          "Proximo passo: fazer A (detalhe). Riscos ativos: nenhum"],
+         "fazer A (detalhe)."),
         ("continuacao legitima NAO encerra o campo",
          ["## 2026-01-02 - x", "", "Proximo passo: fazer A. Aceite: X respondeu."],
          "fazer A. Aceite: X respondeu."),

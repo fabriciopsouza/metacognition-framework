@@ -102,14 +102,27 @@ def latest_checkpoint_field(field):
     #     eu declarei "34 de 34 corretos" porque meu teste procurava uma LISTA HARDCODE de rotulos
     #     vizinhos — detector incompleto achando so o que eu ja esperava (a propria regra 9(a)).
     #   Agora o rotulo tambem termina o campo apos fronteira de frase (`. `, `! `, `? `).
-    # CONTINUACOES: rotulos que fazem parte da semantica do campo e NAO o encerram.
-    CONTINUACOES = r"(?!(?:Aceite|Crit[ée]rio de aceite|Criterio de aceite|Obs|Nota)\s*:)"
-    ROTULO = rf"{CONTINUACOES}[A-ZÀ-Ú][^.:\n]{{0,40}}:"
+    #   2026-08-13 (8a rodada) 5o defeito: a whitelist de CONTINUACOES era uma BLACKLIST
+    #     disfarcada — eu tentava enumerar todo rotulo de prosa que NAO encerra o campo, e esse
+    #     vocabulario e' INFINITO. Resultado: 'Follow-up nao-bloqueante:', 'Sugestao:' e
+    #     'Debito sinalizado:' encerravam o campo e PERDIAM conteudo real em 3 checkpoints.
+    #   CORRECAO ESTRUTURAL: inverter. So os NOMES DE CAMPO CANONICOS do template
+    #     (.agent/workflows/checkpoint.md) encerram; qualquer outro texto e' continuacao.
+    #     Conjunto FECHADO e definido em outro arquivo -> nao ha vocabulario a adivinhar.
+    CAMPOS_CANONICOS = (
+        r"Aprovado e funcionando|Nomenclaturas estabelecidas|Decis[õo]es permanentes"
+        r"|Pr[óo]ximo passo|Riscos ativos|RE-ORQUESTRA[ÇC][ÃA]O|RRC|Aprendizado|Telemetria"
+        r"|Entregue|Li[çc][ãa]o"
+    )
+    ROTULO = rf"(?:{CAMPOS_CANONICOS})[^:\n]{{0,30}}:"
     TERMINADORES = (
         r"\n\s*\n"                     # linha em branco (fim de paragrafo)
         r"|\n\s*\*\*"                  # proximo campo em **negrito**
         rf"|\n\s*{ROTULO}"             # proximo campo em TEXTO PLANO, em nova linha
-        rf"|[.!?]\s+{ROTULO}"          # proximo campo NA MESMA LINHA, apos fim de frase
+        rf"|(?<=[.!?])\s+{ROTULO}"     # proximo campo NA MESMA LINHA, apos fim de frase
+        #  ^ lookBEHIND: o ponto final PERTENCE ao texto do campo. Com `[.!?]` no
+        #    lookahead ele era consumido pelo terminador e sumia — 27 de 63 checkpoints
+        #    perdiam o ponto (achado da 8a rodada).
         r"|\n\s*[-*+]\s"               # item de lista
         r"|\n\s*\d+\.\s"               # item de lista numerada
         r"|\n\s*---"                   # regra horizontal
