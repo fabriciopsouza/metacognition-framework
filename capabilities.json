@@ -1250,6 +1250,24 @@
       ],
       "note": "advisory por desenho: trabalho pendente e INFORMACAO, nao erro — o gate check_trabalhos_abertos do boot_check nunca falha o boot, mas nunca fica silencioso ('nenhum aberto' e resultado declarado). Ciclo aberto->tratado; so o dono encerra. Persistencia em ~/.claude/trabalhos/ (fora do repo, porque um trabalho pode envolver varios repositorios).",
       "test": "tools/test_trabalhos.py"
+    },
+    {
+      "id": "project-docs-standard",
+      "title": "Padrao do conjunto documental de projeto (7 propriedades + conjunto graduado + 4 gates)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "_shared/project-docs/SKILL.md",
+      "test": "tools/test_capabilities.py",
+      "adr": "",
+      "cross_ai": false,
+      "enforcement": "manual",
+      "tags": [
+        "docs",
+        "projeto",
+        "handoff",
+        "anti-drift",
+        "adversarial"
+      ]
     }
   ],
   "registry_waivers": [
