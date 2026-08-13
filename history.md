@@ -9,7 +9,7 @@
 
 ---
 
-## 2026-08-13 — Release v1.79.0 (MINOR): padrão documental de projeto, e o gate de revisão que estava desligado (ADR-102, ADR-103)
+## 2026-08-13 — Release v1.79.0 (MINOR): padrão documental de projeto; matriz de revisão ampliada; ativação do gate desacoplada (ADR-102, ADR-103, ADR-104)
 
 Bloco nascido de uma **falha do próprio agente**, não de um pedido. Ao fechar a entrega
 anterior, a sessão declarou: *"revisão adversarial por modelo diferente do autor não foi
@@ -33,9 +33,19 @@ advisory+reforço ainda não bastam"*. Não bastaram. Este bloco é o caso empí
 projeto, em **propriedades** e não em lista de arquivos, com conjunto **graduado por porte**
 para não virar burocracia em projeto pequeno. Base da régua §0: **override explícito do dono**,
 com condição de quitação escrita; nenhuma das portas (a)/(b)/(c) foi alegada, porque alegá-las
-seria a racionalização que o ADR-099 cometeu. E o **`squad_gate` ATIVADO** (ADR-103) com a
-matriz ampliada para `_shared/`, `.agent/skills/`, `.agent/rules/`, a própria matriz e os
-roteadores da raiz — usando `prefix`, já suportado, **sem tocar no código do gate**.
+seria a racionalização que o ADR-099 cometeu. E a **matriz ampliada** para `_shared/`,
+`.agent/skills/`, `.agent/rules/`, a própria matriz e os roteadores da raiz — usando `prefix`,
+já suportado, **sem tocar no código do gate**.
+
+**O `squad_gate` chegou a ser ATIVADO como bloqueio (ADR-103) e foi DESACOPLADO na mesma sessão
+(ADR-104).** Três rodadas de revisão reprovaram, e a distribuição dos achados decidiu: 1ª rodada
+6 achados, todos no padrão documental; 2ª rodada 6, **todos na ativação**; 3ª rodada 4, **todos na
+ativação e zero no padrão**. A norma estava pronta e reprovando por defeito que não era dela. O
+dono aplicou a regra de escalonamento e mandou separar: o CI voltou a `continue-on-error: true`
+— **avalia e avisa, não barra** — e o endurecimento ficou preservado na branch
+`feat/adr-103-squad-gate-endurecimento`, com a condição de reativação escrita no ADR-104.
+Permanecem entregues, porque não dependem da ativação: a matriz, o `escopo_paths` obrigatório na
+evidência, o match ancorado de versão, 19 casos de teste (eram 8) e o canário de integridade.
 
 **QA heterogêneo (Sonnet isolado, ≠ autor Opus) — 1ª rodada REPROVOU: 2 bloqueantes, 1 grave,
 2 médios, 1 menor.** O mais instrutivo: o registro em `capabilities.json` nasceu
@@ -48,6 +58,11 @@ rebaixada para advisory, porque gate sem canário é o teatro que o ADR-085/P15 
 **Débito quitado de tabela:** o F1 dos débitos de fechamento do v1.77.0 — `history.md` fora de
 ordem, com o bloco de 08-03 abaixo do de 08-02, corrompendo em silêncio o "próximo passo" que
 o `handoff.py` extrai por posição. Reordenado nesta entrega.
+
+**Próximo passo:** reativar o `squad_gate` como bloqueio exige, antes, as duas condições escritas
+no ADR-104 — (a) um caminho que impeça evidência de QA ser gravada fora do `tools/qa_evidence.py`,
+e (b) o step de CI exercitado contra um PR real, não apenas raciocinado. O trabalho está em
+`feat/adr-103-squad-gate-endurecimento`. Enquanto isso não existir, reativar repete esta sessão.
 
 **Lição, e ela é maior que o bloco:** capacidade construída e não aplicada é indistinguível de
 capacidade ausente. O gate certo existia, testado, há semanas — e não impediu nada. O índice de

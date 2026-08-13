@@ -115,10 +115,32 @@ def validate_postura(postura, for_release=False):
     return probs
 
 
+def validate_problemas(problemas):
+    """Valida CADA item de `problemas`. Retorna lista de erros (vazia = OK).
+
+    ADR-104 (4a rodada de revisao, 13/08/2026): `write_artifact` so validava as chaves de TOPO.
+    Um veredito com itens fora do schema (`titulo`/`situacao` em vez de `local`/`descricao`)
+    passava, e `render_md` emitia a tabela com TODAS as celulas VAZIAS — sem erro, sem aviso.
+    O .md, que e' o que humano le, ficava sem os achados. Falha silenciosa: fail-closed agora.
+    """
+    erros = []
+    for i, p in enumerate(problemas or []):
+        if not isinstance(p, dict):
+            erros.append(f"problemas[{i}] nao e' objeto")
+            continue
+        faltam = [k for k in ("severidade", "local", "descricao") if not str(p.get(k, "")).strip()]
+        if faltam:
+            erros.append(f"problemas[{i}] sem {faltam} (schema: severidade, local, descricao)")
+    return erros
+
+
 def write_artifact(verdict, when=None):
     missing = [k for k in REQUIRED if k not in verdict]
     if missing:
         raise ValueError(f"veredito invalido — campos ausentes: {missing}")
+    pe = validate_problemas(verdict.get("problemas"))
+    if pe:
+        raise ValueError("veredito invalido — itens de 'problemas' fora do schema: " + "; ".join(pe))
     # ADR-074 emenda 3 (posture-gate): veredito que FECHA release exige bloco de postura valido.
     if verdict.get("release"):
         pp = validate_postura(verdict.get("postura"), for_release=True)

@@ -30,15 +30,17 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   ADR-099 cometeu).
 
 ### Alterado — enforcement
-- **`squad_gate` segue ADVISORY — a ativação como bloqueio foi DESACOPLADA (ADR-104).**
-  Ficou pronta e reverteu-se para advisory por decisão do dono após a 3ª reprovação seguida; o
-  trabalho está preservado na branch `feat/adr-103-squad-gate-endurecimento`. O que PERMANECE
-  entregue: matriz ampliada, `escopo_paths` obrigatório na evidência, match ancorado de versão,
-  19 casos de teste e o canário de integridade. Contexto original (ADR-103, emenda ao ADR-094): O ADR-094 o deixara
-  pronto-mas-desligado com a condição escrita *"se o dono concluir que advisory+reforço ainda não
-  bastam"*. **Não bastaram:** nesta sessão um bloco alterou o núcleo e foi commitado sem revisão
-  adversarial. Agora barra merge sem veredito atestado (`agentId` de subagente isolado +
-  modelo ≠ autor).
+- **`squad_gate` segue ADVISORY. A ativação como bloqueio foi construída e DESACOPLADA (ADR-104).**
+  O ADR-094 a deixara pronta-mas-desligada, com a condição escrita: *"se o dono concluir que
+  advisory + reforço ainda não bastam"*. Não bastaram — nesta sessão um bloco alterou o núcleo e
+  foi commitado sem revisão adversarial —, então ela **foi ativada** no meio do bloco. Três
+  reprovações seguidas depois, todas com achados na ativação e **nenhum** no padrão documental, o
+  dono aplicou a regra de escalonamento e mandou separar: o step de CI voltou a
+  `continue-on-error: true`, ou seja, **avalia e avisa, não barra**. O trabalho está preservado na
+  branch `feat/adr-103-squad-gate-endurecimento`, e a condição para reativar está escrita no
+  ADR-104. **O que PERMANECE entregue**, porque não depende da ativação: matriz ampliada,
+  `escopo_paths` obrigatório na evidência, match ancorado de versão na junção de release, 19 casos
+  de teste (eram 8) e o canário de integridade.
 - **Matriz de papéis ampliada** (`behaviors/manifest.json`): passou a cobrir `_shared/`,
   `.agent/skills/`, `.agent/rules/`, a **própria matriz**, e os roteadores da raiz. Antes exigia
   revisão para uma linha de `.py` e **nada** para reescrever a skill que governa toda sessão
@@ -49,8 +51,10 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 - `docops` passo 0 rebaixado de "não fecha bloco" para **advisory** — linguagem de bloqueio sem
   mecanismo é o teatro que o ADR-085/P15 proíbe.
 - Registro `project-docs-standard` corrigido de `PROVIDES/manual` para `PARTIAL/prose`, seguindo
-  o precedente de `validation-reporting`; `squad-enforcement-gate` passa a declarar
-  `fail-closed` porque agora **é** aplicado.
+  o precedente de `validation-reporting`. `squad-enforcement-gate` declara **`advisory`**, que é o
+  que o CI de fato faz — chegou a ser marcado `fail-closed` enquanto a ativação esteve de pé, e
+  voltou junto com ela. **`status` e `enforcement` descrevem o que está aplicado, nunca o que está
+  disponível.**
 
 ### Adicionado — integridade
 - **`tools/test_qa_evidence_integrity.py`**: canário que reprova quando `.json` e `.md` do mesmo

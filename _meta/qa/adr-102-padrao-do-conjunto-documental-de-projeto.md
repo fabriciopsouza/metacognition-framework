@@ -13,12 +13,12 @@
 
 | Sev | Local | Descricao |
 |---|---|---|
-| bloqueante |  |  |
-| bloqueante |  |  |
-| grave |  |  |
-| medio |  |  |
-| medio |  |  |
-| menor |  |  |
+| bloqueante | B1 | regua §0 nao resolvida: adicao pura sem ADR nem override escrito — CORRIGIDO em docs/adr/102 — override explicito do dono com condicao de quitacao |
+| bloqueante | B2 | docops dizia 'nao fecha bloco' sem nenhuma mecanizacao (ADR-085/P15) — CORRIGIDO — rebaixado para advisory, com o debito nomeado |
+| grave | G3 | capabilities com enforcement 'manual' sem script; reincidencia do achado A2 do ADR-099 — CORRIGIDO — PARTIAL/prose/test=None conforme precedente |
+| medio | M4 | sobreposicao nao declarada com validation-reporting — CORRIGIDO — ponte no §0 |
+| medio | M5 | tabela §3 com mais autoridade que a evidencia (portes INFERIDOS revelados so no §8) — CORRIGIDO — marca inline por linha |
+| menor | m6 | sabor residual de dominio nos exemplos — CORRIGIDO — generalizado; zero ocorrencias remanescentes |
 
 ## Verificacoes executadas (anti-fabricacao)
 

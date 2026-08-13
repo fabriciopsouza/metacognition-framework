@@ -17,76 +17,64 @@
   ],
   "problemas": [
     {
-      "id": "B1",
       "severidade": "bloqueante",
-      "titulo": "regua §0 nao resolvida: adicao pura sem ADR nem override escrito",
-      "situacao": "CORRIGIDO em docs/adr/102 — override explicito do dono com condicao de quitacao"
+      "local": "B1",
+      "descricao": "regua §0 nao resolvida: adicao pura sem ADR nem override escrito — CORRIGIDO em docs/adr/102 — override explicito do dono com condicao de quitacao"
     },
     {
-      "id": "B2",
       "severidade": "bloqueante",
-      "titulo": "docops dizia 'nao fecha bloco' sem nenhuma mecanizacao (ADR-085/P15)",
-      "situacao": "CORRIGIDO — rebaixado para advisory, com o debito nomeado"
+      "local": "B2",
+      "descricao": "docops dizia 'nao fecha bloco' sem nenhuma mecanizacao (ADR-085/P15) — CORRIGIDO — rebaixado para advisory, com o debito nomeado"
     },
     {
-      "id": "G3",
       "severidade": "grave",
-      "titulo": "capabilities com enforcement 'manual' sem script; reincidencia do achado A2 do ADR-099",
-      "situacao": "CORRIGIDO — PARTIAL/prose/test=None conforme precedente"
+      "local": "G3",
+      "descricao": "capabilities com enforcement 'manual' sem script; reincidencia do achado A2 do ADR-099 — CORRIGIDO — PARTIAL/prose/test=None conforme precedente"
     },
     {
-      "id": "M4",
       "severidade": "medio",
-      "titulo": "sobreposicao nao declarada com validation-reporting",
-      "situacao": "CORRIGIDO — ponte no §0"
+      "local": "M4",
+      "descricao": "sobreposicao nao declarada com validation-reporting — CORRIGIDO — ponte no §0"
     },
     {
-      "id": "M5",
       "severidade": "medio",
-      "titulo": "tabela §3 com mais autoridade que a evidencia (portes INFERIDOS revelados so no §8)",
-      "situacao": "CORRIGIDO — marca inline por linha"
+      "local": "M5",
+      "descricao": "tabela §3 com mais autoridade que a evidencia (portes INFERIDOS revelados so no §8) — CORRIGIDO — marca inline por linha"
     },
     {
-      "id": "m6",
       "severidade": "menor",
-      "titulo": "sabor residual de dominio nos exemplos",
-      "situacao": "CORRIGIDO — generalizado; zero ocorrencias remanescentes"
+      "local": "m6",
+      "descricao": "sabor residual de dominio nos exemplos — CORRIGIDO — generalizado; zero ocorrencias remanescentes"
     },
     {
-      "id": "B1-r2",
       "severidade": "bloqueante",
-      "titulo": "passo de CI quebra (exit 128) antes de o gate rodar, em todo PR",
-      "situacao": "CORRIGIDO: checkout fetch-depth 0 + base.sha do evento + --paths-from"
+      "local": "B1-r2",
+      "descricao": "passo de CI quebra (exit 128) antes de o gate rodar, em todo PR — CORRIGIDO: checkout fetch-depth 0 + base.sha do evento + --paths-from"
     },
     {
-      "id": "B2-r2",
       "severidade": "bloqueante",
-      "titulo": "evidencia sem escopo libera qualquer mudanca futura (auto-liberacao permanente)",
-      "situacao": "CORRIGIDO: escopo_paths obrigatorio; veredito sem escopo nao conta (fail-closed)"
+      "local": "B2-r2",
+      "descricao": "evidencia sem escopo libera qualquer mudanca futura (auto-liberacao permanente) — CORRIGIDO: escopo_paths obrigatorio; veredito sem escopo nao conta (fail-closed)"
     },
     {
-      "id": "G3-r2",
       "severidade": "grave",
-      "titulo": "_release_junction_closed casava versao por substring, sem teste",
-      "situacao": "CORRIGIDO: match ancorado + 6 testes novos"
+      "local": "G3-r2",
+      "descricao": "_release_junction_closed casava versao por substring, sem teste — CORRIGIDO: match ancorado + 6 testes novos"
     },
     {
-      "id": "M4-r2",
       "severidade": "medio",
-      "titulo": "$PATHS sem aspas no CI",
-      "situacao": "CORRIGIDO: --paths-from (imune a espaco e a limite de argv)"
+      "local": "M4-r2",
+      "descricao": "$PATHS sem aspas no CI — CORRIGIDO: --paths-from (imune a espaco e a limite de argv)"
     },
     {
-      "id": "M5-r2",
       "severidade": "medio",
-      "titulo": "SKILL.md §8 afirma enforcement 'manual' contradizendo capabilities.json ('prose')",
-      "situacao": "CORRIGIDO"
+      "local": "M5-r2",
+      "descricao": "SKILL.md §8 afirma enforcement 'manual' contradizendo capabilities.json ('prose') — CORRIGIDO"
     },
     {
-      "id": "M6-r2",
       "severidade": "medio",
-      "titulo": "condicao de quitacao do ADR-102 fora do '## Em aberto' do history.md",
-      "situacao": "CORRIGIDO"
+      "local": "M6-r2",
+      "descricao": "condicao de quitacao do ADR-102 fora do '## Em aberto' do history.md — CORRIGIDO"
     }
   ],
   "atestacao": {
