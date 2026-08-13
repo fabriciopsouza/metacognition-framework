@@ -123,6 +123,54 @@ boa vira mensagem perdida, e o conjunto cresce por acúmulo em vez de por decis�
 
 ---
 
+## §3.1 — Estado do projeto: o que o `QUADRO` tem de conter
+
+As 7 propriedades acima governam o **conhecimento** do projeto (o que se sabe, com que prova, quem é
+dono do quê). Elas não dizem nada sobre o **estado do trabalho** — o que está para fazer, o que está
+sendo feito, o que terminou, quem espera o quê. Um conjunto pode passar em todas as 7 e ainda assim
+não responder *"o que eu faço hoje?"*.
+
+Esta seção fecha isso. Vale para o porte médio em diante; num projeto de uma pessoa e duas semanas o
+`HANDOFF` (§2.5) já basta, e criar quadro é o mesmo excesso que esta skill combate.
+
+### Fonte única, artefato gerado
+
+Quadro, cronograma, entregáveis, envolvidos e ações vêm **de um só arquivo de estado**, e os
+documentos de leitura são **gerados** dele. Escritos à mão em paralelo, eles divergem — e o leitor
+descobre a divergência sem saber qual dos dois está velho. É a propriedade 2.1 (dono único por fato)
+aplicada ao estado do trabalho.
+
+### Os campos que não são opcionais, e a mentira que cada um evita
+
+| Campo | Onde é obrigatório | A mentira que ele evita |
+|---|---|---|
+| `responsável` | **sempre** em execução | o item que "todo mundo cuida" é o que ninguém faz |
+| `travado_em` (nome de quem destrava) | todo item travado | bloqueio sem nome não é bloqueio, é lamento: não há a quem cobrar, então nunca sai |
+| `prova` (como conferir) | todo item concluído | "feito" sem como conferir é opinião, e opinião não sobrevive à troca de pessoa |
+| `prazo` | toda ação | ação sem data não é ação, é intenção |
+| `depende_de` (id existente) | onde houver dependência | apontar para item inexistente faz o cronograma parecer coerente e ser mentira |
+| `limite de itens em execução` | no estado do projeto | trabalho em andamento além do que o time sustenta é a forma mais comum de nada terminar |
+
+**As três colunas são fixas** — para fazer, em execução, concluído. Coluna criada por conveniência
+vira coluna-limbo: item entra e não sai, porque não existe critério de saída escrito.
+
+### Entregáveis e envolvidos
+
+**Entregável** declara `estado · onde está · como conferir`. "Pronto" sem apontar o artefato e o
+comando é a mesma opinião do parágrafo acima. E o estado admite meio-termo honesto: *pronto e
+testado, não validado contra o sistema real* é uma resposta melhor que "pronto".
+
+**Envolvido** declara `papel · decide sobre o quê`. Lista de nomes sem o que cada um decide não
+resolve a pergunta que importa na hora do impasse, que é *quem bate o martelo nisto*.
+
+### O gate
+
+O estado é verificável por comando, e ele **reprova antes de gerar**: um quadro gerado a partir de
+estado inconsistente é pior que quadro nenhum, porque parece confiável. O gate precisa ser
+exercitado contra entrada que **deve** reprovar — gate nunca testado é decoração.
+
+---
+
 ## §4 — Gates executáveis (nenhum é opinião)
 
 Documentação sem gate apodrece sem avisar. Todo conjunto declara comandos com resposta objetiva.
@@ -219,3 +267,15 @@ aprova o próprio conjunto.
 - Os gates do §4 são descritos por intenção, não entregues como executável genérico — cada projeto
   escreve os seus. Quitação: extrair os dois primeiros (link quebrado, fronteira) para um
   utilitário do framework, se e quando repetirem em três projetos.
+- **O §3.1 tem implementação de referência em UM projeto, não no framework.** O gerador de quadro
+  com o gate das seis invariantes existe e está exercitado (8 casos que devem reprovar + a
+  contraprova de que estado íntegro passa), mas vive no projeto onde nasceu:
+  `copiloto-automacoes-sap/tools/quadro.py`. **Deliberadamente não foi promovido aqui**: um
+  utilitário genérico extraído de um caso só é exatamente a adição preemptiva que a régua §0
+  rejeita, e seria entregar como reutilizável algo nunca exercitado fora do berço. Quitação: ao
+  segundo projeto que adotar o §3.1, comparar as duas instâncias e promover **o que sobreviver a
+  ambas** — não a união das duas.
+- **Enquanto isso, o registro em `capabilities.json` desta capacidade continua `enforcement:
+  manual`, e isso está correto:** o padrão é prosa aqui. Trocar para determinístico só quando o
+  utilitário for promovido — declarar mecanismo que não existe neste repositório seria o teatro que
+  a auditoria anti-teatro procura.
