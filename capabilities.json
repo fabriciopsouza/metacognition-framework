@@ -1269,6 +1269,23 @@
         "anti-drift",
         "adversarial"
       ]
+    },
+    {
+      "id": "qa-evidence-integrity",
+      "title": "Canario de integridade da evidencia de QA: .json e .md do mesmo bloco nao podem contar historias opostas",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/test_qa_evidence_integrity.py",
+      "test": "tools/test_qa_evidence_integrity.py",
+      "adr": "docs/adr/103-ativacao-do-squad-gate-como-bloqueio.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "tags": [
+        "qa",
+        "integridade",
+        "anti-teatro",
+        "auditoria"
+      ]
     }
   ],
   "registry_waivers": [

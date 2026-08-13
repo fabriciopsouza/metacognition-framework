@@ -1,7 +1,7 @@
 <!-- GERADO por tools/build_capabilities.py a partir de capabilities.json — NAO editar a mao -->
 # CAPABILITIES — indice de capacidades (nivel 1: id + title)
 
-> **79 capacidades** — 68 ✅ PROVIDES · 11 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
+> **80 capacidades** — 69 ✅ PROVIDES · 11 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
 > **Como usar (file-first, boot):** leia esta lista p/ achar o `id`; o registro completo (mecanismo · canario · ADR · doc) vem por **`python tools/build_capabilities.py --show <id>`** ou `grep -A8 '"<id>"' capabilities.json`. Nao reexplore o repo antes disto.
 > **Manutencao:** feature nova -> +1 registro em `capabilities.json` + `python tools/build_capabilities.py`. Canario barra canario orfao (cobertura).
 
@@ -71,6 +71,7 @@
 - ✅ `project-onboarding` — Onboarding/wayfinding de projeto por COMPOSICAO (ADR-090): fork greenfield/brownfield no discovery + workflows generate-project-context/document-project (compoem handoff/explorer/docops) + guia user-facing POR-ONDE-COMECAR
 - ✅ `project-token-report` — Relatorio de tokens por projeto (custo de sessao)
 - ✅ `qa-evidence-gate` — qa-evidence (fail-closed): release exige veredito qa-critic aprovativo persistido em _meta/qa/ (ADR-074 emenda 2)
+- ✅ `qa-evidence-integrity` — Canario de integridade da evidencia de QA: .json e .md do mesmo bloco nao podem contar historias opostas
 - 🟡 `readiness-gate` — Gate pre-developer: valida alinhamento requirements+ADR antes de J3
 - ✅ `regulatory-coverage-gate` — Cobertura de perfis regulados declarados pelo discovery (catalogo agnostico)
 - ✅ `release-checkpoint-gate` — Process-evidence (fail-closed): release atual do CHANGELOG tem checkpoint no history (forward-only)

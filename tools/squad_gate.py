@@ -6,8 +6,15 @@ Corrige o "teatro" (qa-critic C2): evidencia de qa-critic so conta com ATESTACAO
 `atestacao.agentId` nao-vazio (subagente isolado) E `atestacao.modelo` != autor do bloco (ADR-074).
 String solta / auto-atestacao nao passa.
 
-Trava real (qa-critic C1): este check alimenta o commit-status no SHA (post_canary_status.py / ADR-088),
-que e server-side e o agente nao falsifica. O git-hook local e so conveniencia (provar por probe, nao assumir).
+Trava real (ADR-103, corrigido na 3a rodada de revisao): e o STEP DE CI em
+.github/workflows/ci.yml, que roda `squad_gate --paths-from <diff do PR>` em pull_request e
+reprova o check. O texto anterior citava post_canary_status.py como a trava — FALSO: aquele
+script roda run_canaries.py, que executa test_squad_gate.py (canario de LOGICA), nunca a
+avaliacao do diff real. Era overclaim de mecanismo, a mesma classe de defeito que este gate
+existe para pegar. O git-hook local nao existe nesta maquina (.git/hooks vazio) e nunca foi a trava.
+
+LIMITE DECLARADO: so roda em `pull_request`. Push direto numa branch nao aciona nada — a
+protecao contra isso e' exigir PR na configuracao do repositorio, que e' do dono, nao deste script.
 
 CLI:
   python tools/squad_gate.py            # avalia o que esta staged (git diff --cached) -> exit!=0 se faltar

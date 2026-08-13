@@ -1,8 +1,8 @@
 # QA-evidence — release-1.79.0-project-docs-e-squad-gate
 
 - **Data:** 2026-08-13T14:03:05Z
-- **Veredito (passou):** True
-- **Recomendacao:** aprovar_com_ressalvas
+- **Veredito (passou):** False
+- **Recomendacao:** reprovar
 - **Fecha release:** v1.79.0
 
 ## Postura (posture-gate — atestada pelo qa-critic adversarial)
@@ -20,6 +20,12 @@
 | medio |  |  |
 | medio |  |  |
 | menor |  |  |
+| bloqueante |  |  |
+| bloqueante |  |  |
+| grave |  |  |
+| medio |  |  |
+| medio |  |  |
+| medio |  |  |
 
 ## Verificacoes executadas (anti-fabricacao)
 

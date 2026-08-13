@@ -3,15 +3,6 @@
 > Single-writer = orquestrador (PMO). Checkpoints append-only, **mais-novo-primeiro** (o estado
 > atual é o checkpoint do TOPO; `## Em aberto` é WIP mutável; `## Aprendizado` append-only no fim).
 > Formalizado pelo ADR-007 (v1.9.0); boot lê o checkpoint do topo via `AGENT-FRAMEWORK.md` §2.B.
-
-- **Quitação do override da régua §0 do ADR-102** (aberto em 13/08/2026): o padrão documental
-  entrou como **adição pura** sob override explícito do dono. Duas condições fecham o débito, e
-  enquanto não fecharem o override permanece visível aqui: **(a)** aplicar o padrão em **dois
-  projetos de portes diferentes** e registrar o que sobrou e o que faltou — os portes *mínimo* e
-  *médio* do §3 são hoje **INFERIDOS** de um caso só; **(b)** extrair os gates 1 e 2 do §4 (link
-  quebrado, fronteira) para utilitário do framework **se e quando repetirem em três projetos** —
-  aí o registro sobe de `PARTIAL/prose` para `PROVIDES` com canário. Gatilho: toda vez que um
-  segundo projeto adotar o padrão, reavaliar (a).
 >
 > 3 seções: histórico cronológico de checkpoints (formato em `.agent/workflows/checkpoint.md`),
 > `## Em aberto` (WIP — ex-G11), `## Aprendizado` (fracassos — ex-G9, com firewall).
@@ -1051,6 +1042,15 @@ Riscos ativos: nenhum bloqueante. Risco residual ADR-010 §Riscos (detector de v
 ---
 
 ## Em aberto
+
+- **Quitação do override da régua §0 do ADR-102** (aberto em 13/08/2026): o padrão documental
+  entrou como **adição pura** sob override explícito do dono. Duas condições fecham o débito, e
+  enquanto não fecharem o override permanece visível aqui: **(a)** aplicar o padrão em **dois
+  projetos de portes diferentes** e registrar o que sobrou e o que faltou — os portes *mínimo* e
+  *médio* do §3 são hoje **INFERIDOS** de um caso só; **(b)** extrair os gates 1 e 2 do §4 (link
+  quebrado, fronteira) para utilitário do framework **se e quando repetirem em três projetos** —
+  aí o registro sobe de `PARTIAL/prose` para `PROVIDES` com canário. Gatilho: toda vez que um
+  segundo projeto adotar o padrão, reavaliar (a).
 
 > WIP atual (ex-G11). Reconciliar com branches do git e ADRs em status `Proposto` no `/start-session` (modo squad).
 
