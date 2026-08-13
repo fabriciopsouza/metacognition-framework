@@ -85,7 +85,7 @@
 - ✅ `shadow-write-guard` — Write-isolation: NEGA push de shadow E push pra remote != canonical (escreve so no proprio repo; read livre)
 - 🟡 `skill-contract` — Valida o contrato minimo de frontmatter das skills (ADR-013)
 - ✅ `spec-depth-gate` — Profundidade minima de spec (linter anti-spec-rasa)
-- ✅ `squad-enforcement-gate` — Enforcement deterministico do squad: manifesto declarativo de papeis + gate fail-closed com atestacao de isolamento — ATIVADO no CI em 13/08/2026 (ADR-103)
+- ✅ `squad-enforcement-gate` — Enforcement deterministico do squad: manifesto de papeis + gate com atestacao de isolamento — ADVISORY no CI (ativacao desacoplada, ADR-104)
 - ✅ `sycophancy-canary` — Canario adversarial anti-sicofancia (nao concordar para agradar)
 - ✅ `trabalhos-registro` — Registro persistente de trabalhos: handoff sobrevive a sessao e e oferecido ate ser tratado
 - 🟡 `validation-reporting` — Metodo de validacao ponto a ponto com reporte legivel por humano que decide

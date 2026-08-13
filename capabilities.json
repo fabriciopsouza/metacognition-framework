@@ -1166,12 +1166,12 @@
     },
     {
       "id": "squad-enforcement-gate",
-      "title": "Enforcement deterministico do squad: manifesto declarativo de papeis + gate fail-closed com atestacao de isolamento — ATIVADO no CI em 13/08/2026 (ADR-103)",
+      "title": "Enforcement deterministico do squad: manifesto de papeis + gate com atestacao de isolamento — ADVISORY no CI (ativacao desacoplada, ADR-104)",
       "status": "PROVIDES",
       "ai_owner": "claude",
       "mechanism": "tools/squad_gate.py",
       "test": "tools/test_squad_gate.py",
-      "adr": "docs/adr/103-ativacao-do-squad-gate-como-bloqueio.md",
+      "adr": "docs/adr/104-desacoplamento-padrao-documental-e-ativacao-do-gate.md",
       "cross_ai": false,
       "tags": [
         "squad",
@@ -1179,7 +1179,7 @@
         "fail-closed",
         "anti-drift"
       ],
-      "enforcement": "fail-closed"
+      "enforcement": "advisory"
     },
     {
       "id": "external-work-provenance",

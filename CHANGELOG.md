@@ -15,7 +15,7 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
-## [1.79.0] — 2026-08-13 — Padrão documental de projeto, e o gate de revisão que estava desligado (ADR-102, ADR-103)
+## [1.79.0] — 2026-08-13 — Padrão documental de projeto (ADR-102), matriz de revisão ampliada e desacoplamento da ativação do gate (ADR-103, ADR-104)
 
 [EMERGENTE] · [CONFIRMADO — os dois ADRs nascem de falha observada na própria sessão]
 
@@ -30,7 +30,11 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   ADR-099 cometeu).
 
 ### Alterado — enforcement
-- **`squad_gate` ATIVADO como bloqueio no CI (ADR-103, emenda o ADR-094).** O ADR-094 o deixara
+- **`squad_gate` segue ADVISORY — a ativação como bloqueio foi DESACOPLADA (ADR-104).**
+  Ficou pronta e reverteu-se para advisory por decisão do dono após a 3ª reprovação seguida; o
+  trabalho está preservado na branch `feat/adr-103-squad-gate-endurecimento`. O que PERMANECE
+  entregue: matriz ampliada, `escopo_paths` obrigatório na evidência, match ancorado de versão,
+  19 casos de teste e o canário de integridade. Contexto original (ADR-103, emenda ao ADR-094): O ADR-094 o deixara
   pronto-mas-desligado com a condição escrita *"se o dono concluir que advisory+reforço ainda não
   bastam"*. **Não bastaram:** nesta sessão um bloco alterou o núcleo e foi commitado sem revisão
   adversarial. Agora barra merge sem veredito atestado (`agentId` de subagente isolado +
@@ -48,10 +52,17 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   o precedente de `validation-reporting`; `squad-enforcement-gate` passa a declarar
   `fail-closed` porque agora **é** aplicado.
 
+### Adicionado — integridade
+- **`tools/test_qa_evidence_integrity.py`**: canário que reprova quando `.json` e `.md` do mesmo
+  veredito contam histórias opostas. Nasceu de defeito real desta sessão (evidência editada à mão,
+  `.md` dizendo "aprovar" e `.json` dizendo "reprovar") e foi provado não-teatro reproduzindo o
+  defeito numa cópia.
+
 ### Lição
 Capacidade construída e não aplicada é indistinguível de capacidade ausente — e o índice a
 exibia como `PROVIDES`. `status` deve descrever o que está **aplicado**, não o que está
-**disponível**.
+**disponível**. E: **maturidade diferente pede bloco diferente** — amarrar uma norma pronta a uma
+mudança de enforcement imatura fez a norma reprovar três vezes por defeitos que não eram dela.
 
 ## [1.77.0] — 2026-08-03 — Registro de trabalhos: o handoff sobrevive à sessão (ADR-100)
 

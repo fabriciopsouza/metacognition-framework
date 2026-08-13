@@ -62,26 +62,24 @@ jobs:
       - name: LIMITS.md em sync com os canários (ADR-044 — o doc não pode mentir)
         run: python tools/build_limits.py --check
 
-      - name: Squad gate ATIVADO — mudança exige evidência atestada do papel (ADR-092/094 emendado)
-        # ATIVAÇÃO 13/08/2026 (ADR-103). O ADR-094 deixou o squad_gate pronto-mas-desligado e
-        # escreveu a condição: "se o dono concluir que advisory+reforço ainda não bastam". Não
-        # bastaram — nesta data um bloco alterou o núcleo (_shared/**/SKILL.md) e foi commitado
-        # SEM revisão adversarial, porque a matriz não cobria skills e nada aplicava o gate.
-        # A partir daqui é BLOQUEIO: mudança em .py, ADR, skill de núcleo/papel, regra sempre-ativa
-        # ou roteador raiz exige veredito atestado (agentId de subagente isolado + modelo != autor).
-        # Roda só em pull_request: em push de branch de trabalho a evidência ainda está sendo produzida.
+      - name: Squad gate — ADVISORY nesta entrega (ADR-103 desacoplado, ver ADR-104)
+        # NAO bloqueia. A ativacao como bloqueio saiu desta entrega por decisao do dono apos a
+        # 3a reprovacao seguida (regra de escalonamento): o padrao documental (ADR-102) esta
+        # limpo e segue; a ativacao do gate volta em bloco proprio, com o endurecimento ja
+        # iniciado preservado na branch feat/adr-103-squad-gate-endurecimento.
+        # `continue-on-error` e' a diferenca entre AVISAR e BARRAR — e' o unico ponto a mexer
+        # quando o dono decidir ativar.
         if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-latest'
+        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
-          # base.sha vem do evento — nao depende de refspec de remoto nem de merge-base calculado
-          # a partir de clone raso (as duas coisas que quebraram na 1a tentativa).
           BASE='${{ github.event.pull_request.base.sha }}'
           git cat-file -e "$BASE^{commit}" || { echo "base SHA $BASE ausente — checkout raso?"; exit 1; }
           # -z + tr: imune a espaco em nome de arquivo; arquivo em vez de argv: imune ao limite de argv
           git diff --name-only -z "$BASE" HEAD | tr '\0' '\n' | sed '/^$/d' > /tmp/pr_paths.txt
           echo "paths do PR ($(wc -l < /tmp/pr_paths.txt)):"; sed 's/^/  /' /tmp/pr_paths.txt
-          python tools/squad_gate.py --paths-from /tmp/pr_paths.txt
+          python tools/squad_gate.py --paths-from /tmp/pr_paths.txt || echo "::warning::squad-gate apontou falta de evidencia (ADVISORY nesta entrega)"
 
       - name: Gate de agnosticismo do núcleo (ADR-020, tier norma)
         # Só o tier NORMA roda aqui: a FONTE PRIVADA carrega nomes do incidente de campo por

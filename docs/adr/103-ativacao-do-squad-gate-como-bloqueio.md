@@ -1,6 +1,11 @@
 # ADR-103 — Ativação do squad-gate como bloqueio, e a matriz que não cobria skills
 
-- **Status:** Aceito
+> **Leia o ADR-104 antes deste.** A ativação foi revertida para advisory na mesma sessão, por
+> decisão do dono, após a 3ª reprovação seguida. O que continua valendo aqui: o diagnóstico dos
+> dois defeitos medidos e a **ampliação da matriz**, que foi entregue.
+
+- **Status:** SUPERADO nesta entrega — ver ADR-104 (desacoplamento). O diagnostico e a
+  ampliacao da matriz permanecem validos e ENTREGUES; a ATIVACAO como bloqueio saiu.
 - **Data:** 2026-08-13
 - **Decisores:** dono (Fabricio), decisão explícita
 - **Substitui/emenda:** **emenda o ADR-094** (que registrou a decisão de NÃO ativar o
