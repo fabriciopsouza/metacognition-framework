@@ -87,9 +87,19 @@ def latest_checkpoint_field(field):
     # "<definir: nao havia Proximo passo no checkpoint>" mesmo com o campo presente, o que
     # esvaziava justamente o item que define o que a proxima sessao produz (bug observado
     # em 2026-08-02 contra os checkpoints de v1.75.0 e v1.76.0).
-    fm = re.search(rf"(?im)^\s*\*{{0,2}}{re.escape(field)}\*{{0,2}}\s*:?\*{{0,2}}\s*(.+)$",
-                   block)
-    return fm.group(1).strip().lstrip("*").strip() if fm else ""
+    # EMENDA 2026-08-13 (5a rodada de revisao): `(.+)$` sem DOTALL casava so a PRIMEIRA LINHA
+    # FISICA. Checkpoint que escreve o campo como PARAGRAFO quebrado em varias linhas — o estilo
+    # usado no resto do history — saia truncado na primeira frase. Pior que o bug de 2026-08-02:
+    # aquele deixava placeholder VISIVEL; este entrega texto que PARECE completo e nao e'.
+    # Agora captura ate a linha em branco (fim do paragrafo) ou o proximo campo em negrito.
+    fm = re.search(rf"(?im)^\s*\*{{0,2}}{re.escape(field)}\*{{0,2}}\s*:?\*{{0,2}}\s*(.+?)"
+                   rf"(?=\n\s*\n|\n\s*\*\*|\Z)",
+                   block, re.S)
+    if not fm:
+        return ""
+    # junta as linhas do paragrafo num texto unico e legivel
+    txt = " ".join(x.strip() for x in fm.group(1).splitlines() if x.strip())
+    return txt.strip().lstrip("*").strip()
 
 
 def em_aberto():

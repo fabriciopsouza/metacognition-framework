@@ -1176,8 +1176,8 @@
       "tags": [
         "squad",
         "enforcement",
-        "fail-closed",
-        "anti-drift"
+        "anti-drift",
+        "advisory"
       ],
       "enforcement": "advisory"
     },
