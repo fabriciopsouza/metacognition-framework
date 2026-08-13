@@ -1,17 +1,27 @@
 #!/usr/bin/env python3
 """squad_gate.py — GATE deterministico do squad (ADR-092). Dada a mudanca STAGED, exige a evidencia
-ATESTADA dos papeis obrigatorios (matriz em behaviors/manifest.json). Fail-closed.
+ATESTADA dos papeis obrigatorios (matriz em behaviors/manifest.json).
+
+ESTADO (ADR-104, 13/08/2026 — leia antes de confiar no que vem abaixo):
+Este script e' fail-closed NA PROPRIA LOGICA: invocado direto, sai com exit != 0 quando falta
+evidencia. Mas a ATIVACAO como bloqueio de merge foi DESACOPLADA: o passo do CI roda com
+`continue-on-error: true` e apenas AVISA (`::warning::`), nao reprova o check. Ou seja:
+**hoje ele nao barra ninguem** — e' advisory, coerente com `capabilities.json`
+(`enforcement: advisory`) e com o CHANGELOG. Condicao para reativar esta escrita no ADR-104.
+Este cabecalho ja afirmou "fail-closed" e "reprova o check" em tempo presente DEPOIS do
+desacoplamento: as rodadas 4-6 corrigiram essa classe no CHANGELOG e no history e esqueceram o
+proprio mecanismo (achado da 7a rodada). Mecanismo tambem mente quando o comentario envelhece.
 
 Corrige o "teatro" (qa-critic C2): evidencia de qa-critic so conta com ATESTACAO DE ISOLAMENTO —
 `atestacao.agentId` nao-vazio (subagente isolado) E `atestacao.modelo` != autor do bloco (ADR-074).
 String solta / auto-atestacao nao passa.
 
-Trava real (ADR-103, corrigido na 3a rodada de revisao): e o STEP DE CI em
-.github/workflows/ci.yml, que roda `squad_gate --paths-from <diff do PR>` em pull_request e
-reprova o check. O texto anterior citava post_canary_status.py como a trava — FALSO: aquele
-script roda run_canaries.py, que executa test_squad_gate.py (canario de LOGICA), nunca a
-avaliacao do diff real. Era overclaim de mecanismo, a mesma classe de defeito que este gate
-existe para pegar. O git-hook local nao existe nesta maquina (.git/hooks vazio) e nunca foi a trava.
+Onde ele roda: o STEP DE CI em .github/workflows/ci.yml executa
+`squad_gate --paths-from <diff do PR>` em pull_request — mas em modo ADVISORY (ver acima).
+Uma versao anterior deste cabecalho citava post_canary_status.py como "a trava" — FALSO:
+aquele script roda run_canaries.py, que executa test_squad_gate.py (canario de LOGICA), nunca
+a avaliacao do diff real. Era overclaim de mecanismo, a mesma classe de defeito que este gate
+existe para pegar. O git-hook local nao existe nesta maquina (.git/hooks vazio) e nunca foi trava.
 
 LIMITE DECLARADO: so roda em `pull_request`. Push direto numa branch nao aciona nada — a
 protecao contra isso e' exigir PR na configuracao do repositorio, que e' do dono, nao deste script.
