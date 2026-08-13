@@ -310,6 +310,16 @@ def check_extracao_de_campo():
         ("campo ausente -> vazio, nunca texto de outro campo",
          ["## 2026-01-02 - x", "", "Riscos ativos: nenhum"],
          ""),
+        # 7a rodada: TODOS os casos acima tem o rotulo seguinte em LINHA PROPRIA, entao a
+        # suite nao acusaria rotulo embutido na MESMA linha — que e' o defeito real medido
+        # em 4 checkpoints. Sem este caso, o check era teatro parcial.
+        ("rotulo do proximo campo na MESMA linha, apos fim de frase",
+         ["## 2026-01-02 - x", "",
+          "Proximo passo: fazer A (detalhe). Decisoes pendentes do dono: ratificar Y"],
+         "fazer A (detalhe)"),
+        ("continuacao legitima NAO encerra o campo",
+         ["## 2026-01-02 - x", "", "Proximo passo: fazer A. Aceite: X respondeu."],
+         "fazer A. Aceite: X respondeu."),
     ]
     for nome, linhas, esperado in CASOS:
         d = tempfile.mkdtemp()

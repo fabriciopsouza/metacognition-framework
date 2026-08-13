@@ -96,10 +96,20 @@ def latest_checkpoint_field(field):
     #     seguinte inteiro e devolvia dois campos fundidos.
     # Licao: o terminador precisa cobrir TODOS os estilos que o arquivo realmente usa, nao o
     # estilo do checkpoint que estou escrevendo agora. Cobertura direta em test_handoff.py.
+    #   2026-08-13 (7a rodada) 4o defeito: todo terminador exigia `\n` ANTES do rotulo, entao
+    #     rotulo escrito na MESMA LINHA ("...(fora do alcance). Decisoes pendentes do dono: ...")
+    #     nao disparava nada e o campo seguinte era engolido. 4 checkpoints reais afetados. Pior:
+    #     eu declarei "34 de 34 corretos" porque meu teste procurava uma LISTA HARDCODE de rotulos
+    #     vizinhos — detector incompleto achando so o que eu ja esperava (a propria regra 9(a)).
+    #   Agora o rotulo tambem termina o campo apos fronteira de frase (`. `, `! `, `? `).
+    # CONTINUACOES: rotulos que fazem parte da semantica do campo e NAO o encerram.
+    CONTINUACOES = r"(?!(?:Aceite|Crit[ée]rio de aceite|Criterio de aceite|Obs|Nota)\s*:)"
+    ROTULO = rf"{CONTINUACOES}[A-ZÀ-Ú][^.:\n]{{0,40}}:"
     TERMINADORES = (
         r"\n\s*\n"                     # linha em branco (fim de paragrafo)
         r"|\n\s*\*\*"                  # proximo campo em **negrito**
-        r"|\n[A-Za-zÀ-ÿ][^\n:]{0,40}:" # proximo campo em TEXTO PLANO (`Riscos ativos:`)
+        rf"|\n\s*{ROTULO}"             # proximo campo em TEXTO PLANO, em nova linha
+        rf"|[.!?]\s+{ROTULO}"          # proximo campo NA MESMA LINHA, apos fim de frase
         r"|\n\s*[-*+]\s"               # item de lista
         r"|\n\s*\d+\.\s"               # item de lista numerada
         r"|\n\s*---"                   # regra horizontal
