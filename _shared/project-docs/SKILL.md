@@ -290,7 +290,9 @@ aprova o próprio conjunto.
   rejeita, e seria entregar como reutilizável algo nunca exercitado fora do berço. Quitação: ao
   segundo projeto que adotar o §3.1, comparar as duas instâncias e promover **o que sobreviver a
   ambas** — não a união das duas.
-- **Enquanto isso, o registro em `capabilities.json` desta capacidade continua `enforcement:
-  manual`, e isso está correto:** o padrão é prosa aqui. Trocar para determinístico só quando o
-  utilitário for promovido — declarar mecanismo que não existe neste repositório seria o teatro que
-  a auditoria anti-teatro procura.
+- **O registro em `capabilities.json` desta capacidade é `status: PARTIAL` / `enforcement: prose`
+  / sem canário — e isso está correto:** o padrão é prosa aqui. Só sobe para determinístico quando
+  o utilitário for promovido; declarar mecanismo que não existe neste repositório seria o teatro que
+  a auditoria anti-teatro procura. *(A 1ª versão registrou `enforcement: manual`, que neste
+  vocabulário significa "script existe, só não está no CI" — e nenhum script existia. Corrigido na
+  1ª rodada de revisão; o texto acima ficou desatualizado e foi corrigido na 2ª.)*

@@ -64,18 +64,67 @@ def load_evidence(qa_dir: str = QA_DIR) -> list:
     return out
 
 
-def _qa_critic_attested(artifacts) -> bool:
-    """Existe veredito qa-critic APROVATIVO com ATESTACAO de isolamento valida? (anti-teatro)"""
-    for v in artifacts:
-        if v.get("recomendacao") not in APPROVING:
+def _atestacao_valida(v) -> bool:
+    """Veredito aprovativo COM atestacao de isolamento (agentId + modelo != autor)."""
+    if v.get("recomendacao") not in APPROVING:
+        return False
+    at = v.get("atestacao") or {}
+    agent = str(at.get("agentId", "")).strip()
+    modelo = str(at.get("modelo", "")).strip()
+    autor = str(at.get("autor", "") or at.get("modelo_autor", "")).strip()
+    return bool(agent and modelo and (not autor or modelo != autor))
+
+
+def _cobre(escopo, path: str) -> bool:
+    """O escopo declarado no veredito cobre este path? Prefixo exato ou path exato."""
+    p = path.replace("\\", "/").strip()
+    for e in escopo:
+        e = str(e).replace("\\", "/").strip()
+        if not e:
             continue
-        at = v.get("atestacao") or {}
-        agent = str(at.get("agentId", "")).strip()
-        modelo = str(at.get("modelo", "")).strip()
-        autor = str(at.get("autor", "")).strip()
-        if agent and modelo and (not autor or modelo != autor):
+        if e.endswith("/"):
+            if p.startswith(e):
+                return True
+        elif p == e or p.startswith(e + "/"):
             return True
     return False
+
+
+def _qa_critic_attested(artifacts, paths=None) -> bool:
+    """Existe veredito qa-critic APROVATIVO, ATESTADO **e ESCOPADO** aos paths avaliados?
+
+    ADR-103 emenda 1 (achado BLOQUEANTE 2 da 2a rodada, 2026-08-13): a versao anterior varria
+    TODOS os .json de _meta/qa/ e bastava UM veredito aprovativo em qualquer lugar do historico
+    para liberar QUALQUER mudanca futura. Uma vez commitada a evidencia, o gate nunca mais
+    barrava nada — "gate que se auto-libera para sempre".
+
+    Agora o veredito precisa DECLARAR o que revisou (`escopo_paths`) e o escopo precisa COBRIR
+    todos os paths avaliados. Veredito SEM `escopo_paths` NAO conta (fail-closed): evidencia
+    antiga nao vale como carta-branca retroativa.
+    """
+    if paths is None:
+        paths = []
+    alvo = [str(p).replace("\\", "/").strip() for p in paths if str(p).strip()]
+    for v in artifacts:
+        if not _atestacao_valida(v):
+            continue
+        escopo = v.get("escopo_paths") or []
+        if not escopo:
+            continue  # sem escopo declarado -> nao serve de evidencia (fail-closed)
+        if all(_cobre(escopo, p) for p in alvo):
+            return True
+    return False
+
+
+def _paths_sem_cobertura(artifacts, paths) -> list:
+    """Quais paths avaliados NENHUM veredito atestado cobre — para a mensagem de erro ser util."""
+    escopos = [v.get("escopo_paths") or [] for v in artifacts if _atestacao_valida(v)]
+    orfaos = []
+    for p in paths:
+        p = str(p).replace("\\", "/").strip()
+        if not any(_cobre(e, p) for e in escopos if e):
+            orfaos.append(p)
+    return orfaos
 
 
 def _release_junction_closed() -> bool:
@@ -93,6 +142,10 @@ def _release_junction_closed() -> bool:
     if not m:
         return False
     versao = m.group(1)
+    # ANCORADO (achado GRAVE 3 da 2a rodada): substring livre casava versao errada —
+    # "1.79.0" in "release-21.79.0-x" e True, e "1.7" casaria dentro de "1.79.0".
+    # Exige inicio do bloco, com "v" opcional, e um separador (ou fim) logo apos a versao.
+    padrao = re.compile(r"^v?" + re.escape(versao) + r"(?![\d.])")
     led_dir = os.path.join(QA_DIR, "junctions")
     if not os.path.isdir(led_dir):
         return False
@@ -107,7 +160,7 @@ def _release_junction_closed() -> bool:
                 rec = json.loads(line)
             except ValueError:
                 continue  # fail-closed em linha corrompida: não conta como fechamento
-            if rec.get("junction") in ("PC", "J6") and versao in str(rec.get("bloco", "")):
+            if rec.get("junction") in ("PC", "J6") and padrao.match(str(rec.get("bloco", ""))):
                 return True
     return False
 
@@ -118,7 +171,7 @@ def evaluate(paths, manifest, artifacts):
     faltam, detalhe = [], {}
     for role in sorted(required):
         if role == "qa_critic":
-            ok = _qa_critic_attested(artifacts)
+            ok = _qa_critic_attested(artifacts, paths)
         elif role == "architect":
             ok = any(str(p).replace("\\", "/").startswith("docs/adr/") for p in paths)
         elif role == "juncao_release":
@@ -136,21 +189,35 @@ def evaluate(paths, manifest, artifacts):
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--paths", nargs="*", help="paths a avaliar (default: git diff --cached)")
+    ap.add_argument("--paths-from", help="arquivo com 1 path por linha. Preferir no CI: imune a "
+                                         "espaco em nome de arquivo e ao limite de argv "
+                                         "(achado MEDIO 4 da 2a rodada)")
     a = ap.parse_args(argv)
     paths = a.paths
+    if a.paths_from:
+        with open(a.paths_from, encoding="utf-8") as fh:
+            paths = [x.strip() for x in fh if x.strip()]
     if paths is None:
         r = subprocess.run(["git", "diff", "--cached", "--name-only"],
                            capture_output=True, text=True, cwd=ROOT)
         paths = [x for x in r.stdout.splitlines() if x.strip()]
     manifest = load_manifest()
-    faltam, detalhe = evaluate(paths, manifest, load_evidence())
+    artifacts = load_evidence()
+    faltam, detalhe = evaluate(paths, manifest, artifacts)
     req = classify(paths, manifest)
     print(f"[squad-gate] {len(paths)} path(s) staged -> papeis exigidos: {sorted(req) or 'nenhum'}")
     for role, ok in detalhe.items():
         print(f"   {'OK ' if ok else 'FALTA'} {role}")
     if faltam:
         print(f"[squad-gate] BLOQUEADO (fail-closed): faltam evidencias atestadas: {faltam}")
-        print("   -> rode o papel (ex.: qa-critic isolado) e registre via tools/qa_evidence.py com atestacao.")
+        if "qa_critic" in faltam:
+            orfaos = _paths_sem_cobertura(artifacts, paths)
+            if orfaos:
+                print(f"   paths SEM veredito que os cubra ({len(orfaos)}): {orfaos[:10]}")
+            else:
+                print("   ha veredito atestado, mas nenhum DECLARA escopo_paths cobrindo estes paths.")
+        print("   -> rode o papel (ex.: qa-critic isolado) e registre via tools/qa_evidence.py")
+        print("      com atestacao E com o campo escopo_paths listando o que foi revisado.")
         return 1
     print("[squad-gate] OK — evidencia atestada presente para os papeis exigidos.")
     return 0

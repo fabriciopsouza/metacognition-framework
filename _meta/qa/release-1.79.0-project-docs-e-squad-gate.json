@@ -1,10 +1,10 @@
 {
   "bloco": "release-1.79.0-project-docs-e-squad-gate",
   "papel": "qa_critic",
-  "passou": true,
-  "recomendacao": "aprovar_com_ressalvas",
-  "veredito": "aprovar_com_ressalvas",
-  "resumo": "1a rodada REPROVOU (2 BLOQUEANTES + 4 achados). Todos tratados; ressalva: a skill permanece PROSA sem canario, com condicao de quitacao escrita no ADR-102. Escopo do release v1.79.0: ADR-102 (padrao documental) + ADR-103 (ativacao do squad_gate e ampliacao da matriz) + quitacao do debito F1 (ordem do history.md).",
+  "passou": false,
+  "recomendacao": "reprovar",
+  "veredito": "reprovar",
+  "resumo": "2a RODADA: REPROVAR. 2 BLOQUEANTES NOVOS, introduzidos pela propria correcao. (B1) o passo de CI falhava com exit 128 ANTES de o gate rodar, em TODO PR: clone raso nao cria refs/remotes/origin/<base> e nao ha merge-base — reproduzido localmente pelo critico. A ativacao era ILUSAO de gate. (B2) _qa_critic_attested varria TODOS os .json de _meta/qa/ sem escopo: uma vez commitada a evidencia, qualquer commit futuro passava livre — gate que se auto-libera para sempre. (G3) _release_junction_closed casava por substring (\"1.79.0\" in \"release-21.79.0-x\") e nao tinha teste algum.",
   "verificacoes_executadas": [
     "leitura de CLAUDE.md e AGENT-FRAMEWORK.md (regua §0, ADR-072/073, agnosticismo)",
     "python tools/check_core_agnostic.py -> PASS",
@@ -51,6 +51,42 @@
       "severidade": "menor",
       "titulo": "sabor residual de dominio nos exemplos",
       "situacao": "CORRIGIDO — generalizado; zero ocorrencias remanescentes"
+    },
+    {
+      "id": "B1-r2",
+      "severidade": "bloqueante",
+      "titulo": "passo de CI quebra (exit 128) antes de o gate rodar, em todo PR",
+      "situacao": "CORRIGIDO: checkout fetch-depth 0 + base.sha do evento + --paths-from"
+    },
+    {
+      "id": "B2-r2",
+      "severidade": "bloqueante",
+      "titulo": "evidencia sem escopo libera qualquer mudanca futura (auto-liberacao permanente)",
+      "situacao": "CORRIGIDO: escopo_paths obrigatorio; veredito sem escopo nao conta (fail-closed)"
+    },
+    {
+      "id": "G3-r2",
+      "severidade": "grave",
+      "titulo": "_release_junction_closed casava versao por substring, sem teste",
+      "situacao": "CORRIGIDO: match ancorado + 6 testes novos"
+    },
+    {
+      "id": "M4-r2",
+      "severidade": "medio",
+      "titulo": "$PATHS sem aspas no CI",
+      "situacao": "CORRIGIDO: --paths-from (imune a espaco e a limite de argv)"
+    },
+    {
+      "id": "M5-r2",
+      "severidade": "medio",
+      "titulo": "SKILL.md §8 afirma enforcement 'manual' contradizendo capabilities.json ('prose')",
+      "situacao": "CORRIGIDO"
+    },
+    {
+      "id": "M6-r2",
+      "severidade": "medio",
+      "titulo": "condicao de quitacao do ADR-102 fora do '## Em aberto' do history.md",
+      "situacao": "CORRIGIDO"
     }
   ],
   "atestacao": {
@@ -67,5 +103,19 @@
     "fonte_canonica": true
   },
   "data": "2026-08-13T14:03:05Z",
-  "release": "1.79.0"
+  "release": "1.79.0",
+  "escopo_paths": [
+    "_shared/project-docs/",
+    ".agent/skills/docops/",
+    "capabilities.json",
+    "CAPABILITIES.md",
+    "docs/adr/102-padrao-do-conjunto-documental-de-projeto.md",
+    "docs/adr/103-ativacao-do-squad-gate-como-bloqueio.md",
+    "behaviors/manifest.json",
+    ".github/workflows/ci.yml",
+    "tools/squad_gate.py",
+    "CHANGELOG.md",
+    "history.md"
+  ],
+  "rodada": 2
 }

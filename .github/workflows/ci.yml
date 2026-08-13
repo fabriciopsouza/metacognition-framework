@@ -34,6 +34,12 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
+        with:
+          # fetch-depth: 0 e' PRE-REQUISITO do squad-gate abaixo. Com o default (raso, depth=1)
+          # nao existe merge-base com a base do PR e `git diff base...HEAD` sai com exit 128
+          # ANTES de o gate rodar — falha medida na 2a rodada de revisao (13/08/2026), que
+          # transformava o gate em ilusao: o step quebrava em TODO PR, inclusive nos limpos.
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -67,10 +73,15 @@ jobs:
         if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
-          git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
-          PATHS=$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD)
-          echo "paths do PR:"; echo "$PATHS" | sed 's/^/  /'
-          python tools/squad_gate.py --paths $PATHS
+          set -euo pipefail
+          # base.sha vem do evento — nao depende de refspec de remoto nem de merge-base calculado
+          # a partir de clone raso (as duas coisas que quebraram na 1a tentativa).
+          BASE='${{ github.event.pull_request.base.sha }}'
+          git cat-file -e "$BASE^{commit}" || { echo "base SHA $BASE ausente — checkout raso?"; exit 1; }
+          # -z + tr: imune a espaco em nome de arquivo; arquivo em vez de argv: imune ao limite de argv
+          git diff --name-only -z "$BASE" HEAD | tr '\0' '\n' | sed '/^$/d' > /tmp/pr_paths.txt
+          echo "paths do PR ($(wc -l < /tmp/pr_paths.txt)):"; sed 's/^/  /' /tmp/pr_paths.txt
+          python tools/squad_gate.py --paths-from /tmp/pr_paths.txt
 
       - name: Gate de agnosticismo do núcleo (ADR-020, tier norma)
         # Só o tier NORMA roda aqui: a FONTE PRIVADA carrega nomes do incidente de campo por
