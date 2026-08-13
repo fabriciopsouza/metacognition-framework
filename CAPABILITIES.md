@@ -1,7 +1,7 @@
 <!-- GERADO por tools/build_capabilities.py a partir de capabilities.json — NAO editar a mao -->
 # CAPABILITIES — indice de capacidades (nivel 1: id + title)
 
-> **79 capacidades** — 69 ✅ PROVIDES · 10 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
+> **79 capacidades** — 68 ✅ PROVIDES · 11 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
 > **Como usar (file-first, boot):** leia esta lista p/ achar o `id`; o registro completo (mecanismo · canario · ADR · doc) vem por **`python tools/build_capabilities.py --show <id>`** ou `grep -A8 '"<id>"' capabilities.json`. Nao reexplore o repo antes disto.
 > **Manutencao:** feature nova -> +1 registro em `capabilities.json` + `python tools/build_capabilities.py`. Canario barra canario orfao (cobertura).
 
@@ -67,7 +67,7 @@
 - ✅ `posture-gate` — posture-gate (fail-closed): release exige evidencia de postura deep-research/squad (discovery+RRC+metodo-senior) atestada pelo qa-critic adversarial (ADR-074 emenda 3)
 - ✅ `premium-tier-export` — Tier premium na export-clean (mesma fonte, mantem camada premium; baseline single-source)
 - 🟡 `prepush-sync-guard` — Guarda de pre-push: evita push sobre base dessincronizada
-- ✅ `project-docs-standard` — Padrao do conjunto documental de projeto (7 propriedades + conjunto graduado + 4 gates)
+- 🟡 `project-docs-standard` — Padrao do conjunto documental de projeto (7 propriedades + conjunto graduado + 4 gates) — PROSA, sem canario proprio
 - ✅ `project-onboarding` — Onboarding/wayfinding de projeto por COMPOSICAO (ADR-090): fork greenfield/brownfield no discovery + workflows generate-project-context/document-project (compoem handoff/explorer/docops) + guia user-facing POR-ONDE-COMECAR
 - ✅ `project-token-report` — Relatorio de tokens por projeto (custo de sessao)
 - ✅ `qa-evidence-gate` — qa-evidence (fail-closed): release exige veredito qa-critic aprovativo persistido em _meta/qa/ (ADR-074 emenda 2)
@@ -84,7 +84,7 @@
 - ✅ `shadow-write-guard` — Write-isolation: NEGA push de shadow E push pra remote != canonical (escreve so no proprio repo; read livre)
 - 🟡 `skill-contract` — Valida o contrato minimo de frontmatter das skills (ADR-013)
 - ✅ `spec-depth-gate` — Profundidade minima de spec (linter anti-spec-rasa)
-- ✅ `squad-enforcement-gate` — Enforcement deterministico do squad: manifesto declarativo de papeis/comportamentos + gate fail-closed com atestacao de isolamento
+- ✅ `squad-enforcement-gate` — Enforcement deterministico do squad: manifesto declarativo de papeis + gate fail-closed com atestacao de isolamento — ATIVADO no CI em 13/08/2026 (ADR-103)
 - ✅ `sycophancy-canary` — Canario adversarial anti-sicofancia (nao concordar para agradar)
 - ✅ `trabalhos-registro` — Registro persistente de trabalhos: handoff sobrevive a sessao e e oferecido ate ser tratado
 - 🟡 `validation-reporting` — Metodo de validacao ponto a ponto com reporte legivel por humano que decide

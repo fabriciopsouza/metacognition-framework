@@ -1166,19 +1166,20 @@
     },
     {
       "id": "squad-enforcement-gate",
-      "title": "Enforcement deterministico do squad: manifesto declarativo de papeis/comportamentos + gate fail-closed com atestacao de isolamento",
+      "title": "Enforcement deterministico do squad: manifesto declarativo de papeis + gate fail-closed com atestacao de isolamento — ATIVADO no CI em 13/08/2026 (ADR-103)",
       "status": "PROVIDES",
       "ai_owner": "claude",
       "mechanism": "tools/squad_gate.py",
       "test": "tools/test_squad_gate.py",
-      "adr": "docs/adr/092-camada-enforcement-comportamentos-manifesto-gate-githook.md",
+      "adr": "docs/adr/103-ativacao-do-squad-gate-como-bloqueio.md",
       "cross_ai": false,
       "tags": [
         "squad",
         "enforcement",
         "fail-closed",
         "anti-drift"
-      ]
+      ],
+      "enforcement": "fail-closed"
     },
     {
       "id": "external-work-provenance",
@@ -1253,14 +1254,14 @@
     },
     {
       "id": "project-docs-standard",
-      "title": "Padrao do conjunto documental de projeto (7 propriedades + conjunto graduado + 4 gates)",
-      "status": "PROVIDES",
+      "title": "Padrao do conjunto documental de projeto (7 propriedades + conjunto graduado + 4 gates) — PROSA, sem canario proprio",
+      "status": "PARTIAL",
       "ai_owner": "claude",
       "mechanism": "_shared/project-docs/SKILL.md",
-      "test": "tools/test_capabilities.py",
-      "adr": "",
+      "test": null,
+      "adr": "docs/adr/102-padrao-do-conjunto-documental-de-projeto.md",
       "cross_ai": false,
-      "enforcement": "manual",
+      "enforcement": "prose",
       "tags": [
         "docs",
         "projeto",

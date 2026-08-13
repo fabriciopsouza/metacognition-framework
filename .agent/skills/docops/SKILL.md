@@ -32,7 +32,10 @@ conjunto completo num projeto pequeno viola a régua §0 tanto quanto não docum
 
 ## Sequência
 0. Se o bloco tocou documentação de projeto: aplicar `_shared/project-docs` (§1 teste binário,
-   §4 gates) **antes** do CHANGELOG — doc que não passa no teste binário não fecha bloco.
+   §4 gates). **ADVISORY, não bloqueia release** — a skill é prosa e não tem canário próprio
+   (registro `project-docs-standard`: PARTIAL/prose). Chamá-la de gate sem mecanismo por trás
+   seria o teatro que o ADR-085/P15 proíbe. Vira bloqueante quando o canário existir; débito de
+   quitação declarado no §8 da própria skill.
 1. CHANGELOG.md (Keep a Changelog + SemVer).
 2. dicionario-de-dados.md (se campo/cálculo novo).
 3. 00-glossario.md (se nome novo via ADR).

@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 
@@ -77,6 +78,40 @@ def _qa_critic_attested(artifacts) -> bool:
     return False
 
 
+def _release_junction_closed() -> bool:
+    """Existe junção de FECHAMENTO (PC ou J6) no ledger para o release do topo do CHANGELOG?
+
+    ADR-103: enquanto o gate era advisory, `juncao_release` ficava sempre False ("delegado").
+    Ao ATIVAR o gate isso vira bloqueio permanente de todo release — defeito que só a ativação
+    revela. Aqui o papel passa a ser VERIFICÁVEL: lê o ledger de junções (ADR-077) e exige o
+    fechamento declarado para a versão que o CHANGELOG está publicando.
+    """
+    ch = os.path.join(ROOT, "CHANGELOG.md")
+    if not os.path.isfile(ch):
+        return False
+    m = re.search(r"^##\s*\[(\d+\.\d+\.\d+)\]", open(ch, encoding="utf-8").read(), re.M)
+    if not m:
+        return False
+    versao = m.group(1)
+    led_dir = os.path.join(QA_DIR, "junctions")
+    if not os.path.isdir(led_dir):
+        return False
+    for fn in os.listdir(led_dir):
+        if not fn.endswith(".jsonl"):
+            continue
+        for line in open(os.path.join(led_dir, fn), encoding="utf-8"):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                rec = json.loads(line)
+            except ValueError:
+                continue  # fail-closed em linha corrompida: não conta como fechamento
+            if rec.get("junction") in ("PC", "J6") and versao in str(rec.get("bloco", "")):
+                return True
+    return False
+
+
 def evaluate(paths, manifest, artifacts):
     """Retorna (faltam, detalhe). faltam=[] => gate PASSA."""
     required = classify(paths, manifest)
@@ -86,9 +121,11 @@ def evaluate(paths, manifest, artifacts):
             ok = _qa_critic_attested(artifacts)
         elif role == "architect":
             ok = any(str(p).replace("\\", "/").startswith("docs/adr/") for p in paths)
+        elif role == "juncao_release":
+            ok = _release_junction_closed()
         else:
-            # research_ou_ratificacao / juncao_release: delegado (research_evidence.py / ledger de juncoes).
-            # Aqui marca como EXIGIDO-nao-verificavel-localmente -> falta (fail-closed) ate o check proprio rodar.
+            # research_ou_ratificacao: delegado (research_evidence.py).
+            # Marca como EXIGIDO-nao-verificavel-localmente -> falta (fail-closed) ate o check proprio rodar.
             ok = False
         detalhe[role] = ok
         if not ok:

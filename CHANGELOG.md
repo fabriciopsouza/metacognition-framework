@@ -15,6 +15,44 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.79.0] — 2026-08-13 — Padrão documental de projeto, e o gate de revisão que estava desligado (ADR-102, ADR-103)
+
+[EMERGENTE] · [CONFIRMADO — os dois ADRs nascem de falha observada na própria sessão]
+
+### Adicionado
+- **`_shared/project-docs/SKILL.md` (ADR-102)** — núcleo SSoT do **conjunto documental de
+  projeto**, que o `docops` não cobria: ele fecha *bloco*, não *projeto*. Codifica o teste
+  binário ("a próxima pessoa retoma sem perguntar nada"), 7 propriedades, conjunto **graduado
+  por porte** e 6 modos de falha **observados** numa revisão adversarial real de 5 rodadas com
+  3 reprovações. Registro honesto: **PARTIAL / prose / sem canário** — é orientação cobrável em
+  revisão, não gate. Base da régua §0: **override explícito do dono**, com condição de quitação
+  escrita (nenhuma das portas (a)/(b)/(c) foi alegada — alegá-las seria a racionalização que o
+  ADR-099 cometeu).
+
+### Alterado — enforcement
+- **`squad_gate` ATIVADO como bloqueio no CI (ADR-103, emenda o ADR-094).** O ADR-094 o deixara
+  pronto-mas-desligado com a condição escrita *"se o dono concluir que advisory+reforço ainda não
+  bastam"*. **Não bastaram:** nesta sessão um bloco alterou o núcleo e foi commitado sem revisão
+  adversarial. Agora barra merge sem veredito atestado (`agentId` de subagente isolado +
+  modelo ≠ autor).
+- **Matriz de papéis ampliada** (`behaviors/manifest.json`): passou a cobrir `_shared/`,
+  `.agent/skills/`, `.agent/rules/`, a **própria matriz**, e os roteadores da raiz. Antes exigia
+  revisão para uma linha de `.py` e **nada** para reescrever a skill que governa toda sessão
+  futura — medido: `papeis exigidos: nenhum`. Usa `prefix`, já suportado; o código do gate não
+  foi tocado.
+
+### Corrigido
+- `docops` passo 0 rebaixado de "não fecha bloco" para **advisory** — linguagem de bloqueio sem
+  mecanismo é o teatro que o ADR-085/P15 proíbe.
+- Registro `project-docs-standard` corrigido de `PROVIDES/manual` para `PARTIAL/prose`, seguindo
+  o precedente de `validation-reporting`; `squad-enforcement-gate` passa a declarar
+  `fail-closed` porque agora **é** aplicado.
+
+### Lição
+Capacidade construída e não aplicada é indistinguível de capacidade ausente — e o índice a
+exibia como `PROVIDES`. `status` deve descrever o que está **aplicado**, não o que está
+**disponível**.
+
 ## [1.77.0] — 2026-08-03 — Registro de trabalhos: o handoff sobrevive à sessão (ADR-100)
 
 [EMERGENTE] · [CONFIRMADO — gap observado na própria sessão que originou o ADR]

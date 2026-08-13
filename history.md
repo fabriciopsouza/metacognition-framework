@@ -9,6 +9,72 @@
 
 ---
 
+## 2026-08-13 — Release v1.79.0 (MINOR): padrão documental de projeto, e o gate de revisão que estava desligado (ADR-102, ADR-103)
+
+Bloco nascido de uma **falha do próprio agente**, não de um pedido. Ao fechar a entrega
+anterior, a sessão declarou: *"revisão adversarial por modelo diferente do autor não foi
+feita"*. O dono perguntou o óbvio — **por que não?** — e a resposta expôs dois problemas
+distintos, um de comportamento e um de mecanismo.
+
+**O de comportamento:** o agente resolveu um conflito entre uma restrição de harness e a
+regra do projeto **escolhendo declarar em vez de pular em silêncio** — o que é correto — mas
+surfou a lacuna **no fim do relato**, não no momento. Declarar tarde não é surface-and-reconcile;
+é aviso post-mortem. Quem lê descobre que o gate ficou aberto quando já não pode decidir.
+
+**O de mecanismo, medido:** `behaviors/manifest.json` exigia `qa_critic` para `.py` e
+`docs/adr/` e **para mais nada de comportamento**. Rodando o gate nos paths do commit:
+`papeis exigidos: nenhum`. Alterar uma linha de código exigia revisão adversarial;
+**reescrever a skill que governa toda sessão futura não exigia nada.** E o `squad_gate`,
+construído no ADR-092 e testado a cada rodada de canário, estava **desligado** por decisão
+registrada no ADR-094 — que escrevera a condição de ativação: *"se o dono concluir que
+advisory+reforço ainda não bastam"*. Não bastaram. Este bloco é o caso empírico.
+
+**Entregue:** `_shared/project-docs/SKILL.md` (ADR-102) — padrão do conjunto documental de
+projeto, em **propriedades** e não em lista de arquivos, com conjunto **graduado por porte**
+para não virar burocracia em projeto pequeno. Base da régua §0: **override explícito do dono**,
+com condição de quitação escrita; nenhuma das portas (a)/(b)/(c) foi alegada, porque alegá-las
+seria a racionalização que o ADR-099 cometeu. E o **`squad_gate` ATIVADO** (ADR-103) com a
+matriz ampliada para `_shared/`, `.agent/skills/`, `.agent/rules/`, a própria matriz e os
+roteadores da raiz — usando `prefix`, já suportado, **sem tocar no código do gate**.
+
+**QA heterogêneo (Sonnet isolado, ≠ autor Opus) — 1ª rodada REPROVOU: 2 bloqueantes, 1 grave,
+2 médios, 1 menor.** O mais instrutivo: o registro em `capabilities.json` nasceu
+`PROVIDES/enforcement:manual` apontando um canário que só valida a integridade do próprio
+registro — **reincidência do achado A2 do ADR-099**, poucos dias depois de corrigido no mesmo
+repositório. Corrigido para `PARTIAL/prose`, seguindo o precedente. O 2º bloqueante era uma
+frase com poder de barrar release inserida no `docops` **sem nenhum mecanismo por trás** —
+rebaixada para advisory, porque gate sem canário é o teatro que o ADR-085/P15 proíbe.
+
+**Débito quitado de tabela:** o F1 dos débitos de fechamento do v1.77.0 — `history.md` fora de
+ordem, com o bloco de 08-03 abaixo do de 08-02, corrompendo em silêncio o "próximo passo" que
+o `handoff.py` extrai por posição. Reordenado nesta entrega.
+
+**Lição, e ela é maior que o bloco:** capacidade construída e não aplicada é indistinguível de
+capacidade ausente. O gate certo existia, testado, há semanas — e não impediu nada. O índice de
+capacidades ainda a exibia como `PROVIDES`. `status` tem que descrever o que está **aplicado**,
+não o que está **disponível**.
+
+---
+
+## 2026-08-03 — Release v1.77.0 (MINOR): o handoff sobrevive à sessão e é oferecido até ser tratado (ADR-100)
+
+Bloco nascido de um pedido preciso do dono ao fim de uma validação real: *"o handoff não deve ser perdido se eu iniciar os trabalhos, mas deve ser oferecido até que eu trate o assunto"* — organizado **por trabalho**, com objetivo, resumo do feito e pendências.
+
+**O gap era real e foi observado na própria sessão.** O Pacote P14 (ADR-012) e seu gerador determinístico (ADR-076) resolvem **o que o handoff contém**; nada resolvia **o que acontece com ele depois**. Era gerado, exibido no chat e **perdido**. Um trabalho de validação com 2,88 milhões de comparações, 17 objetos pendentes e três decisões esperando o dono terminaria sem nenhum mecanismo que o trouxesse de volta — dependeria de memória humana.
+
+**Entregue:** `tools/trabalhos.py` — registro persistente em `~/.claude/trabalhos/<slug>.md`, **fora do repositório de propósito**, porque um trabalho pode envolver vários repositórios (o caso de origem envolve dois) e não pode depender de qual pasta foi aberta. Ciclo `aberto` → `tratado`; **só o dono encerra**, porque quem executa não decide que a pendência do dono acabou. Gate `trabalhos-abertos` no `boot_check` — **nunca falha o boot** (trabalho pendente é informação, não erro) e **nunca fica silencioso** ("nenhum aberto" é resultado declarado). Passo 3.5 no `start-session` obriga o agente a **mencionar na abertura**: registro que existe e não é oferecido é igual a não existir, que é exatamente a falha corrigida.
+
+**Anti-reinvenção respeitada (ADR-072):** o índice de capacidades foi consultado ANTES de projetar. Existiam `handoff-generator` (P14) e o boot-scan cross-IA — o primeiro é efêmero, o segundo é comunicação **entre agentes** e exige hub externo. Nenhum guarda os trabalhos do dono. O módulo novo **não regera** o pacote: guarda e oferece; o conteúdo técnico continua vindo de `handoff.py`. Régua §0 pela porta (c).
+
+**Dois erros próprios, pegos pelos canários do próprio repo — e vale registrar por isso.** Numerei o ADR como 099 e **colidi** com o ADR-099 já existente (validation-reporting): renumerado para 100, mesma classe de erro que já ocorrera em 095→097. E registrei a capacidade com campo `canary` e status `OK`, quando o schema exige `test` e `PROVIDES` — o `test_capabilities` acusou os dois. Canário que pega o erro de quem o mantém é o melhor argumento a favor dele.
+
+Nomenclaturas: "trabalho" (unidade de continuidade, acima de repo e de sessão) · "aberto até ser tratado" · "oferecer, não obstruir".
+Decisões permanentes: **ADR-100 Aceito**. Persistência fora do git é escolha declarada, com a consequência dita: **não é versionado nem tem backup** — é o preço de ser cross-repositório.
+Riscos ativos: registro desatualizado é pior que ausente (mitigação: `listar` sempre mostra o comando de encerramento) · o conteúdo do resumo é escrito pelo agente e **não é mecanizável** — só o ciclo de vida é.
+**RRC:** ADR-100 no CHANGELOG [1.77.0] · `capabilities.json` + `CAPABILITIES.md` regerados (78 capacidades) · canário `test_trabalhos.py` (16 verificações) · `test_boot_check.py` estendido para 7 checks.
+
+**Próximo passo:** validar o mecanismo no uso real — abrir a próxima sessão e confirmar que o trabalho registrado é oferecido na abertura sem que ninguém peça. Critério de aceite: o agente cita nome e próximo passo do trabalho aberto na primeira resposta, e o dono consegue encerrá-lo com um comando.
+
 ## 2026-08-02 — Release v1.76.0 (MINOR): método de validação ponto a ponto com reporte para humano (ADR-099)
 
 Bloco nascido **fora** do núcleo: uma sessão de validação de dados em repositório de domínio,
@@ -65,25 +131,6 @@ o bloco de origem já construiu um gerador assim, logo é alcançável.
 cujo veredito seja derivado de códigos de saída, e um teste que **mute** o artefato e exija
 que o veredito vire REPROVADO. Critério de aceite: o canário foi **visto reprovar**, e o
 registro sobe de `PARTIAL`/`prose` para `PROVIDES`, quitando o débito §0.
-
-## 2026-08-03 — Release v1.77.0 (MINOR): o handoff sobrevive à sessão e é oferecido até ser tratado (ADR-100)
-
-Bloco nascido de um pedido preciso do dono ao fim de uma validação real: *"o handoff não deve ser perdido se eu iniciar os trabalhos, mas deve ser oferecido até que eu trate o assunto"* — organizado **por trabalho**, com objetivo, resumo do feito e pendências.
-
-**O gap era real e foi observado na própria sessão.** O Pacote P14 (ADR-012) e seu gerador determinístico (ADR-076) resolvem **o que o handoff contém**; nada resolvia **o que acontece com ele depois**. Era gerado, exibido no chat e **perdido**. Um trabalho de validação com 2,88 milhões de comparações, 17 objetos pendentes e três decisões esperando o dono terminaria sem nenhum mecanismo que o trouxesse de volta — dependeria de memória humana.
-
-**Entregue:** `tools/trabalhos.py` — registro persistente em `~/.claude/trabalhos/<slug>.md`, **fora do repositório de propósito**, porque um trabalho pode envolver vários repositórios (o caso de origem envolve dois) e não pode depender de qual pasta foi aberta. Ciclo `aberto` → `tratado`; **só o dono encerra**, porque quem executa não decide que a pendência do dono acabou. Gate `trabalhos-abertos` no `boot_check` — **nunca falha o boot** (trabalho pendente é informação, não erro) e **nunca fica silencioso** ("nenhum aberto" é resultado declarado). Passo 3.5 no `start-session` obriga o agente a **mencionar na abertura**: registro que existe e não é oferecido é igual a não existir, que é exatamente a falha corrigida.
-
-**Anti-reinvenção respeitada (ADR-072):** o índice de capacidades foi consultado ANTES de projetar. Existiam `handoff-generator` (P14) e o boot-scan cross-IA — o primeiro é efêmero, o segundo é comunicação **entre agentes** e exige hub externo. Nenhum guarda os trabalhos do dono. O módulo novo **não regera** o pacote: guarda e oferece; o conteúdo técnico continua vindo de `handoff.py`. Régua §0 pela porta (c).
-
-**Dois erros próprios, pegos pelos canários do próprio repo — e vale registrar por isso.** Numerei o ADR como 099 e **colidi** com o ADR-099 já existente (validation-reporting): renumerado para 100, mesma classe de erro que já ocorrera em 095→097. E registrei a capacidade com campo `canary` e status `OK`, quando o schema exige `test` e `PROVIDES` — o `test_capabilities` acusou os dois. Canário que pega o erro de quem o mantém é o melhor argumento a favor dele.
-
-Nomenclaturas: "trabalho" (unidade de continuidade, acima de repo e de sessão) · "aberto até ser tratado" · "oferecer, não obstruir".
-Decisões permanentes: **ADR-100 Aceito**. Persistência fora do git é escolha declarada, com a consequência dita: **não é versionado nem tem backup** — é o preço de ser cross-repositório.
-Riscos ativos: registro desatualizado é pior que ausente (mitigação: `listar` sempre mostra o comando de encerramento) · o conteúdo do resumo é escrito pelo agente e **não é mecanizável** — só o ciclo de vida é.
-**RRC:** ADR-100 no CHANGELOG [1.77.0] · `capabilities.json` + `CAPABILITIES.md` regerados (78 capacidades) · canário `test_trabalhos.py` (16 verificações) · `test_boot_check.py` estendido para 7 checks.
-
-**Próximo passo:** validar o mecanismo no uso real — abrir a próxima sessão e confirmar que o trabalho registrado é oferecido na abertura sem que ninguém peça. Critério de aceite: o agente cita nome e próximo passo do trabalho aberto na primeira resposta, e o dono consegue encerrá-lo com um comando.
 
 ## 2026-08-01 — Release v1.75.0 (MINOR): referência a arquivo resolve no cwd do DESTINATÁRIO (ADR-098)
 

@@ -26,8 +26,16 @@ Não substitui os núcleos vizinhos; **instancia** três deles para o caso "docu
   escreveu.
 - **`traceability`** define o rastro. Aqui ele vira exigência de formato: prova com **consulta
   reproduzível** (§2.3).
+- **`validation-reporting`** é dona de **validar dado contra uma referência** (campo a campo, com
+  níveis por consequência e veredito). Esta skill é dona de **registrar um fato de projeto** com
+  rastro. Fronteira: *"os valores conferem com a referência?"* é lá; *"como este projeto guarda o
+  que já provou?"* é aqui. O §2.3 usa o formato de prova, não redefine método de validação.
 - **`docops`** fecha o *bloco* (CHANGELOG, ADR, execution-report). Esta skill trata do *projeto*.
   Ordem: docops chama esta quando o bloco entrega ou altera documentação de projeto.
+
+**Esta skill é PROSA, não gate.** Não tem canário próprio (registro `project-docs-standard`:
+PARTIAL/prose). Ela orienta e é cobrável em revisão adversarial; não bloqueia release. Tratá-la
+como bloqueio sem mecanismo seria o teatro de conformidade que o próprio framework proíbe.
 
 **Régua §0 (ganho líquido) se aplica a esta skill também.** O conjunto do §3 é **graduado**:
 adotar os 15 arquivos num projeto de duas semanas é o mesmo defeito que esta skill combate.
@@ -59,7 +67,7 @@ Cada afirmação tem **um** arquivo dono. Os demais **apontam**, nunca copiam.
 Um mapa de fontes declara quem é dono do quê e o que vive fora do repositório.
 
 *Por que:* duas cópias divergem, e a divergência é descoberta pelo leitor, não pelo autor.
-*Modo de falha real:* a volumetria da base aparecia por extenso em cinco arquivos — e o próprio
+*Modo de falha real:* uma métrica-chave da base aparecia por extenso em cinco arquivos — e o próprio
 mapa de fontes afirmava que os demais "apontavam". Não apontavam.
 
 ### 2.2 Marca de confiança em toda afirmação relevante
@@ -109,11 +117,16 @@ razão de existir.
 
 **Adote o menor conjunto que sustente as 7 propriedades.** Crescer é barato; encolher, não.
 
-| Porte | Conjunto mínimo | O que cada um responde |
-|---|---|---|
-| **Mínimo** (1 pessoa, semanas) | `README` · `HANDOFF` · `GLOSSARIO` · `provas/` | O que é · onde paramos · como se chamam as coisas · o que está provado |
-| **Médio** (equipe, meses) | + `AGENTS`/contrato · `DECISOES` · `BLOQUEIOS` · `MAPA-DE-FONTES` | Como se trabalha aqui · o que já foi decidido e a que custo · o que trava e quem destrava · quem é dono de dizer o quê |
-| **Completo** (regulado, multi-time) | + `CONCEITOS-E-PROVAS` · `CRITICA-DOS-METODOS` · `HIPOTESES` · `ELICITACAO` · `COMO-VERIFICAR` · `QUADRO` · `PLANO-IMPLANTACAO` | Conhecimento estável e refutado · onde a lógica atual quebra · o que ainda é aposta · o que falta perguntar ao dono · como conferir cada afirmação · o dia a dia · o que a implantação custa |
+> **Marca de confiança desta tabela (a skill obedece à própria §2.2):** só a linha **Completo** é
+> **CONFIRMADO** — é o conjunto do caso real que originou o padrão. As linhas **Mínimo** e **Médio**
+> são **INFERIDAS** por decomposição desse mesmo caso; **nenhum projeto as adotou e reportou ainda**.
+> Trate-as como ponto de partida a ajustar, não como norma medida. Débito no §8.
+
+| Porte | Conjunto mínimo | Marca | O que cada um responde |
+|---|---|---|---|
+| **Mínimo** (1 pessoa, semanas) | `README` · `HANDOFF` · `GLOSSARIO` · `provas/` | INFERIDO | O que é · onde paramos · como se chamam as coisas · o que está provado |
+| **Médio** (equipe, meses) | + `AGENTS`/contrato · `DECISOES` · `BLOQUEIOS` · `MAPA-DE-FONTES` | INFERIDO | Como se trabalha aqui · o que já foi decidido e a que custo · o que trava e quem destrava · quem é dono de dizer o quê |
+| **Completo** (regulado, multi-time) | + `CONCEITOS-E-PROVAS` · `CRITICA-DOS-METODOS` · `HIPOTESES` · `ELICITACAO` · `COMO-VERIFICAR` · `QUADRO` · `PLANO-IMPLANTACAO` | **CONFIRMADO** | Conhecimento estável e refutado · onde a lógica atual quebra · o que ainda é aposta · o que falta perguntar ao dono · como conferir cada afirmação · o dia a dia · o que a implantação custa |
 
 **Três documentos carregam peso desproporcional** — se só três existirem, sejam estes:
 `HANDOFF` (§2.5), `GLOSSARIO` (fonte da verdade dos nomes, com as crenças refutadas) e `provas/`.
@@ -178,8 +191,10 @@ Os quatro abaixo são o mínimo; adapte os alvos ao projeto.
 
 1. **Link quebrado** — nenhum documento cita arquivo inexistente. *Esperado: 0.*
 2. **Fronteira** — a parte reutilizável não cita o domínio consumidor. *Esperado: 0.*
-3. **Anti-duplicação** — um número-chave (volumetria, contagem de referência) aparece por extenso
-   só nos arquivos declarados donos. *Esperado: o número declarado, nem mais.*
+3. **Anti-duplicação** — um número-chave (contagem de referência, total do conjunto) aparece por
+   extenso só no arquivo declarado dono. *Esperado: um arquivo, nem mais.*
+   **Cuidado:** contar em quantos arquivos a string aparece é gate SINTÁTICO — ele passa enquanto o
+   número já está velho. O gate útil confere o número **contra a fonte viva**, não contra si mesmo.
 4. **Verdade contra o mundo** — uma consulta que confere as invariantes do produto contra a fonte
    viva. *Esperado: tudo PASS.*
 
