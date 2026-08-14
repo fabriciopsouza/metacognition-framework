@@ -63,7 +63,7 @@ def main(argv):
         # pytest PURO (funcoes `def test_*` sem bloco `__main__`) so e' importado: as
         # funcoes sao definidas, nada e' chamado, o processo sai com 0 e o runner
         # reportava PASS — sem rodar UMA assercao. Caso real: test_squad_gate.py,
-        # 19 testes do gate que governa o squad inteiro, verde e nunca executado.
+        # os testes do gate que governa o squad inteiro: verdes e nunca executados.
         # Deteccao estatica, deterministica e barata (regex no fonte); FALHA, nao avisa.
         # ---------------------------------------------------------------------
         try:

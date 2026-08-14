@@ -45,7 +45,10 @@ no lugar errado por um match posicional frágil.
   reescrever a skill que governa toda sessão futura não exigia nada.
 - **Escopo obrigatório na evidência** (`escopo_paths`) — sem isso, um veredito aprovativo em
   qualquer ponto do histórico liberava qualquer mudança futura, para sempre.
-- **Match ancorado de versão** e **19 casos de teste** onde antes havia zero para as funções novas.
+- **Match ancorado de versão** e **cobertura de teste** onde antes havia zero para as funções
+  novas (`pytest tools/test_squad_gate.py -q` diz quantos são hoje — o número envelhece, a
+  consulta continua respondendo; princípio do ADR-105, aplicado depois que este ADR nasceu
+  dizendo "19" e o valor virou 20).
 - **Canário de integridade** `.json` × `.md` — nasceu do defeito da 3ª rodada e o reprova.
 
 ## Consequências

@@ -56,6 +56,11 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   voltou junto com ela. **`status` e `enforcement` descrevem o que está aplicado, nunca o que está
   disponível.**
 
+### Adicionado — núcleo
+- **`_shared/output-format/SKILL.md`, Parte A.0** — regra de núcleo: *o texto se sustenta sozinho*,
+  e isso vale para a **conversa**, não só para o artefato entregue. Estava fora deste registro
+  desde a 3ª rodada de revisão, que já a apontou como ausente; entra agora.
+
 ### Adicionado — integridade
 - **`tools/test_qa_evidence_integrity.py`**: canário que reprova quando `.json` e `.md` do mesmo
   veredito contam histórias opostas. Nasceu de defeito real desta sessão (evidência editada à mão,

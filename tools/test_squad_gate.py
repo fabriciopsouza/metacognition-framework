@@ -217,7 +217,7 @@ def test_juncao_release_linha_corrompida_nao_libera(tmp_path, monkeypatch):
 # ADR-103 emenda 2 (3a e 4a rodadas, 2026-08-13/14): este arquivo e' pytest PURO. Sem o
 # bloco abaixo, `run_canaries.py` o executava como script, o import definia as funcoes,
 # o processo saia com 0 e o runner reportava PASS -- SEM rodar uma unica assercao.
-# 19 testes do gate que governa o squad inteiro nunca haviam rodado no runner canonico.
+# os testes do gate que governa o squad inteiro nunca haviam rodado no runner canonico.
 #
 # 4a RODADA — a 1a versao deste bloco delegava a `python -m pytest` e REPROVOU: o ADR-040
 # ja rejeitara "pytest como entrypoint dos canarios", `pytest` nao esta em
@@ -287,7 +287,7 @@ def _rodar_sem_pytest():
     testes = _descobrir()
 
     # ------------------------------------------------------------------
-    # BARREIRA DE COMPLETUDE (5a rodada, 2026-08-14). Sem ela, um `def test_*`
+    # BARREIRA DE COMPLETUDE (5a rodada, 2026-08-13). Sem ela, um `def test_*`
     # escrito DEPOIS do bloco `if __name__` — o lugar mais natural para um dev
     # acrescentar codigo — nao existe em globals() quando a descoberta roda, e o
     # canario reporta "20 PASS / 0 FAIL" ignorando o teste novo em silencio.

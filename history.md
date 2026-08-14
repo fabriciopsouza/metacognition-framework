@@ -45,7 +45,8 @@ dono aplicou a regra de escalonamento e mandou separar: o CI voltou a `continue-
 — **avalia e avisa, não barra** — e o endurecimento ficou preservado na branch
 `feat/adr-103-squad-gate-endurecimento`, com a condição de reativação escrita no ADR-104.
 Permanecem entregues, porque não dependem da ativação: a matriz, o `escopo_paths` obrigatório na
-evidência, o match ancorado de versão, 19 casos de teste (eram 8) e o canário de integridade.
+evidência, o match ancorado de versão, a cobertura de teste do gate (eram 8; conte com
+`pytest tools/test_squad_gate.py -q`) e o canário de integridade.
 
 **QA heterogêneo (Sonnet isolado, ≠ autor Opus) — 1ª rodada REPROVOU: 2 bloqueantes, 1 grave,
 2 médios, 1 menor.** O mais instrutivo: o registro em `capabilities.json` nasceu
