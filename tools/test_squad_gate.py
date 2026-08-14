@@ -243,18 +243,68 @@ class _MonkeyPatch:
         self._undo.clear()
 
 
-def _rodar_sem_pytest():
+def _descobrir():
+    """Funcoes `test_*` DEFINIDAS NESTE ARQUIVO, em ordem de linha.
+
+    Filtra por `__module__` e `isfunction` porque um callable `test_*` importado de outro
+    modulo faria `getsourcelines` levantar OSError e derrubar a descoberta inteira antes de
+    qualquer teste rodar (achado GRAVE latente da 5a rodada).
+    """
     import inspect
+
+    achadas = []
+    for nome, obj in globals().items():
+        if not nome.startswith("test_") or not inspect.isfunction(obj):
+            continue
+        if obj.__module__ != __name__:
+            continue
+        try:
+            linha = inspect.getsourcelines(obj)[1]
+        except OSError:
+            linha = 10 ** 9  # nao localizavel: roda por ultimo, mas RODA
+        achadas.append((linha, nome, obj))
+    return [(n, f) for _, n, f in sorted(achadas)]
+
+
+def _contar_no_fonte():
+    """Quantos `def test_` existem no ARQUIVO — independe do que o import expos."""
+    import re
+
+    try:
+        src = open(__file__, encoding="utf-8", errors="replace").read()
+    except OSError:
+        return None
+    return len(re.findall(r"^def (test_\w+)", src, re.M))
+
+
+def _rodar_sem_pytest():
     import pathlib
     import shutil
-    import sys
     import tempfile
     import traceback
+    import inspect
 
-    testes = sorted(
-        ((n, f) for n, f in globals().items() if n.startswith("test_") and callable(f)),
-        key=lambda kv: inspect.getsourcelines(kv[1])[1],
-    )
+    testes = _descobrir()
+
+    # ------------------------------------------------------------------
+    # BARREIRA DE COMPLETUDE (5a rodada, 2026-08-14). Sem ela, um `def test_*`
+    # escrito DEPOIS do bloco `if __name__` — o lugar mais natural para um dev
+    # acrescentar codigo — nao existe em globals() quando a descoberta roda, e o
+    # canario reporta "20 PASS / 0 FAIL" ignorando o teste novo em silencio.
+    # O guard estatico do run_canaries.py nao pega isso: o bloco `if __name__`
+    # ESTA no arquivo. Aqui a conta e' direta: descoberto tem de bater com o que
+    # existe no fonte. Divergencia REPROVA.
+    # ------------------------------------------------------------------
+    no_fonte = _contar_no_fonte()
+    if no_fonte is not None and no_fonte != len(testes):
+        print(f"FAIL barreira-de-completude: o arquivo tem {no_fonte} `def test_` mas o "
+              f"entrypoint descobriu {len(testes)}.")
+        print("     Causa provavel: teste definido DEPOIS do bloco `if __name__ == \"__main__\":`, "
+              "que nao existe em globals() no momento da descoberta.")
+        print("     Mova o teste para ANTES do bloco. Um teste que nao roda e' pior que ausente.")
+        print(f"RESULTADO: 0 PASS / {no_fonte} FAIL (de {no_fonte} testes do squad_gate)")
+        return 1
+
     falhas = []
     for nome, fn in testes:
         params = inspect.signature(fn).parameters
@@ -274,13 +324,21 @@ def _rodar_sem_pytest():
                     f"— implemente-o aqui ou o teste NAO roda no runner canonico"
                 )
             fn(**kwargs)
-        except Exception:
+        # BaseException, nao Exception (5a rodada): `SystemExit` herda de BaseException.
+        # Um `sys.exit(0)` no meio da suite matava o processo ANTES da linha RESULTADO,
+        # com stdout vazio e returncode 0 — e o run_canaries.py taggeava PASS sem que
+        # uma unica assercao tivesse rodado. KeyboardInterrupt segue interrompendo.
+        except KeyboardInterrupt:
+            raise
+        except BaseException:
             falhas.append((nome, traceback.format_exc()))
         finally:
-            if mp is not None:
-                mp.desfazer()
-            if tmp:
-                shutil.rmtree(tmp, ignore_errors=True)
+            try:
+                if mp is not None:
+                    mp.desfazer()
+            finally:
+                if tmp:
+                    shutil.rmtree(tmp, ignore_errors=True)
 
     for nome, tb in falhas:
         print(f"FAIL {nome}\n{tb}")
