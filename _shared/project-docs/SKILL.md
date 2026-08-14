@@ -176,6 +176,37 @@ testado, não validado contra o sistema real* é uma resposta melhor que "pronto
 **Envolvido** declara `papel · decide sobre o quê`. Lista de nomes sem o que cada um decide não
 resolve a pergunta que importa na hora do impasse, que é *quem bate o martelo nisto*.
 
+### Quando atualizar, e o que entregar ao fechar
+
+**Não é sob demanda.** O quadro se atualiza a cada entrega que muda o estado do
+projeto — não quando alguém lembra, e não quando o dono cobra. Cobrança do dono
+para atualizar documentação é sintoma de que o mecanismo não existe.
+
+**Ao fechar uma sessão de trabalho, entregue sempre:** onde a documentação está
+(caminho), a situação em uma linha, o que ficou parado e **em quem**, e as ações
+com responsável e prazo. Curto — relatório longo no fim de conversa longa não é
+lido, e relatório não lido não informa ninguém.
+
+**O conteúdo sai do estado, não da memória de quem escreveu.** Se for redigido à
+mão, ele diverge do quadro na primeira pressa, e aí existem duas versões da
+situação do projeto.
+
+### Ação tem que ser entendida por quem não estava na conversa
+
+Este é o defeito que mais reduz o valor de um quadro, e ele passa despercebido
+porque quem escreveu **entende o que escreveu**.
+
+> *"Decidir entre A, B, C e D"* — o próprio dono não soube dizer o que era, e não
+> tinha como repassar a um gerente.
+
+A ação diz **o que fazer, em palavras**. O ponteiro para o documento vai num campo
+**separado**: assim a referência continua existindo para quem quer conferir, sem
+virar pré-requisito para entender.
+
+É verificável por comparação de texto: reprova ação que cite opção por letra,
+seção por número ou identificador de item. Não tenta julgar se o texto "está bom"
+— isso não é mecanizável, e gate que adivinha qualidade erra e acaba desligado.
+
 ### O gate
 
 O estado é verificável por comando, e ele **reprova antes de gerar**: um quadro gerado a partir de
