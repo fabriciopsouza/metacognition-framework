@@ -146,7 +146,14 @@ def _recente_o_bastante(v, paths) -> bool:
         if ultimo is None:
             return False          # sem git/erro -> fail-closed
         if not ultimo:
-            continue              # path sem historico (arquivo novo nao commitado): nao libera nem barra
+            # Path SEM historico no git (arquivo novo, staged ou untracked). A 8a rodada
+            # pegou aqui o gemeo do defeito que esta funcao conserta: antes isto era
+            # `continue`, e um veredito de escopo amplo (ex.: "tools/") com sha valido
+            # liberava um arquivo que NENHUM critico jamais viu — "revisado uma vez =
+            # liberado para sempre" virava "nunca revisado = liberado mesmo assim".
+            # Conteudo que nao existe em nenhum commit nao pode estar coberto por um
+            # veredito ancorado num commit. Fail-closed.
+            return False
         if _git("merge-base", "--is-ancestor", ultimo, sha) is None:
             return False          # ultimo commit do path NAO e' ancestral do revisado
     return True
