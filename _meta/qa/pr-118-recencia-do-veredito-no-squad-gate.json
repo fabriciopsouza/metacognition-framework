@@ -5,7 +5,7 @@
   "passou": true,
   "recomendacao": "aprovar_com_ressalvas",
   "veredito": "aprovar_com_ressalvas",
-  "sha_revisado": "6792400",
+  "sha_revisado": "92c5e70",
   "resumo": "PR #118 (ADR-103 emenda 3): o squad_gate passa a exigir RECENCIA, nao so escopo. 9a rodada, Sonnet isolado contra autor Opus, revisando em worktree isolado no commit 6792400. O fix principal esta correto e provado ao vivo: no fluxo real de CI (diff entre commits do PR) arquivos novos ja tem historico, entao nao ha falso positivo; o bloqueio de path sem historico so aparece no fluxo local pre-commit, que e' o comportamento pretendido e declarado. Uma ressalva MEDIA e LATENTE: a contagem estrutural do guard de canario cego desce em if/try/with mas nao em for/while/match — reproduzida ao vivo com canario sintetico, sem nenhuma ocorrencia nos 67 canarios reais (varredura AST). Tratada como PR proprio, nao corrigida aqui, para nao invalidar o escopo deste veredito.",
   "verificacoes_executadas": [
     "git worktree add --detach em 6792400 -> revisao isolada do trabalho em curso na arvore principal",
@@ -62,5 +62,6 @@
     "varredura exaustiva dos 65 demais canarios por padroes AST exoticos alem dos testados",
     "concorrencia entre execucoes simultaneas do squad_gate e encoding exotico de path"
   ],
-  "data": "2026-08-14T14:39:09Z"
+  "data": "2026-08-14T14:39:09Z",
+  "nota_de_correcao": "O veredito foi emitido sobre o conteudo do commit 6792400, que por engano do orquestrador tinha sido criado na branch errada (o diretorio de trabalho e' compartilhado com outra sessao e trocou de branch). O commit foi trazido para esta branch por cherry-pick, virando 92c5e70 — MESMO conteudo, sha novo. O carimbo aponta para o sha que sera de fato mergeado. Registrado explicitamente porque o proprio erro e' da classe que este PR conserta: evidencia apontando para um estado que nao e' o que entra."
 }
