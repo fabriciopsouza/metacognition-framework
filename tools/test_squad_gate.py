@@ -214,15 +214,81 @@ def test_juncao_release_linha_corrompida_nao_libera(tmp_path, monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# ADR-103 emenda 2 (3a rodada, 2026-08-13): este arquivo e' pytest PURO. Sem o bloco
-# abaixo, `run_canaries.py` o executava como script, o import definia as funcoes,
+# ADR-103 emenda 2 (3a e 4a rodadas, 2026-08-13/14): este arquivo e' pytest PURO. Sem o
+# bloco abaixo, `run_canaries.py` o executava como script, o import definia as funcoes,
 # o processo saia com 0 e o runner reportava PASS -- SEM rodar uma unica assercao.
 # 19 testes do gate que governa o squad inteiro nunca haviam rodado no runner canonico.
-# O guard em run_canaries.py impede que a classe reapareca; este bloco conserta o caso.
+#
+# 4a RODADA — a 1a versao deste bloco delegava a `python -m pytest` e REPROVOU: o ADR-040
+# ja rejeitara "pytest como entrypoint dos canarios", `pytest` nao esta em
+# `requirements-dev.txt`, e a CI quebrou nos 3 SOs com "No module named pytest".
+# Isso feria o principio declarado no proprio requirements-dev.txt: **ambiente nao
+# reprova build**. Agora o entrypoint e' STDLIB PURA: implementa os dois unicos fixtures
+# que estes testes usam (`tmp_path`, `monkeypatch`), descobre as funcoes `test_*` por
+# introspecao e as executa. O arquivo continua coletavel por pytest para quem o tiver.
 # ---------------------------------------------------------------------------
+class _MonkeyPatch:
+    """Substituto stdlib do fixture `monkeypatch` — so o que estes testes usam."""
+
+    def __init__(self):
+        self._undo = []
+
+    def setattr(self, alvo, nome, valor):
+        self._undo.append((alvo, nome, getattr(alvo, nome)))
+        setattr(alvo, nome, valor)
+
+    def desfazer(self):
+        for alvo, nome, antigo in reversed(self._undo):
+            setattr(alvo, nome, antigo)
+        self._undo.clear()
+
+
+def _rodar_sem_pytest():
+    import inspect
+    import pathlib
+    import shutil
+    import sys
+    import tempfile
+    import traceback
+
+    testes = sorted(
+        ((n, f) for n, f in globals().items() if n.startswith("test_") and callable(f)),
+        key=lambda kv: inspect.getsourcelines(kv[1])[1],
+    )
+    falhas = []
+    for nome, fn in testes:
+        params = inspect.signature(fn).parameters
+        tmp = mp = None
+        try:
+            kwargs = {}
+            if "tmp_path" in params:
+                tmp = tempfile.mkdtemp(prefix="canario_sg_")
+                kwargs["tmp_path"] = pathlib.Path(tmp)
+            if "monkeypatch" in params:
+                mp = _MonkeyPatch()
+                kwargs["monkeypatch"] = mp
+            desconhecidos = set(params) - set(kwargs)
+            if desconhecidos:
+                raise RuntimeError(
+                    f"fixture nao suportado pelo entrypoint stdlib: {sorted(desconhecidos)} "
+                    f"— implemente-o aqui ou o teste NAO roda no runner canonico"
+                )
+            fn(**kwargs)
+        except Exception:
+            falhas.append((nome, traceback.format_exc()))
+        finally:
+            if mp is not None:
+                mp.desfazer()
+            if tmp:
+                shutil.rmtree(tmp, ignore_errors=True)
+
+    for nome, tb in falhas:
+        print(f"FAIL {nome}\n{tb}")
+    print(f"RESULTADO: {len(testes) - len(falhas)} PASS / {len(falhas)} FAIL "
+          f"(de {len(testes)} testes do squad_gate)")
+    return 1 if falhas else 0
+
+
 if __name__ == "__main__":
-    import subprocess
     import sys as _sys
-    _r = subprocess.run([_sys.executable, "-m", "pytest", __file__, "-q"],
-                        stdin=subprocess.DEVNULL)
-    _sys.exit(_r.returncode)
+    _sys.exit(_rodar_sem_pytest())

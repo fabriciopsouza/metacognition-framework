@@ -2,10 +2,17 @@
 """Runner único dos canários do framework (ADR-040 — CI cross-platform).
 
 CONTEXTO: os `tools/test_*.py` deste repo são **canários standalone** (exit 0 = PASS,
-exit != 0 = FAIL), NÃO casos pytest-collectáveis — vários executam trabalho em import-time
-e chamam `sys.exit()`. Rodar `pytest tools/` quebra na importação. Este runner é o
-entrypoint canônico (local e CI): descobre cada `test_*.py`, roda como subprocesso com o
-MESMO interpretador, agrega e devolve exit = nº de canários que falharam.
+exit != 0 = FAIL) — vários executam trabalho em import-time e chamam `sys.exit()`, então
+`pytest tools/` quebra na importação e foi rejeitado como entrypoint (ADR-040). Este runner
+é o entrypoint canônico (local e CI): descobre cada `test_*.py`, roda como subprocesso com
+o MESMO interpretador, agrega e devolve exit = nº de canários que falharam.
+
+Um canário PODE, além disso, ser coletável por pytest (hoje: `test_squad_gate.py`, escrito
+em `def test_*` com fixtures). Isso é permitido desde que ele traga um entrypoint
+**stdlib-only** que execute os próprios testes — nunca delegando a `python -m pytest`, que
+criaria dependência que o repo decidiu não ter e faria o ambiente reprovar o build. A 4ª
+rodada de revisão do v1.79.0 pegou exatamente esse erro: a 1ª versão do entrypoint chamava
+pytest e derrubou a CI nos 3 SOs com "No module named pytest".
 
 Cross-platform por construção (ADR-040): nenhuma suposição de shell — só `sys.executable`.
 Canários que dependem de pwsh/bash/jq se auto-marcam SKIP (exit 0) quando o shell falta,
