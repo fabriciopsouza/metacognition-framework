@@ -46,6 +46,37 @@ def discover(filters):
     return out
 
 
+def _contar_testes_e_entrypoint(src):
+    """(nº de funcoes `test_*`, tem bloco `if __name__ ==`?) — por AST, com fallback regex.
+
+    Conta funcoes de topo E dentro de `if`/`try`/`with` de modulo (elas existem em globals()
+    e sao coletadas pelo pytest), alem de metodos `test_*` de classes `Test*` — todas rodam
+    sob pytest e portanto contam como teste que precisa de entrypoint.
+    Fonte que nao parseia cai no regex antigo: nao e' motivo para o runner desistir.
+    """
+    import ast
+
+    try:
+        arvore = ast.parse(src)
+    except SyntaxError:
+        return len(re.findall(r"^def test_", src, re.M)), bool(
+            re.search(r"^if __name__\s*==", src, re.M))
+
+    n = 0
+    entrypoint = False
+    for no in ast.walk(arvore):
+        if isinstance(no, (ast.FunctionDef, ast.AsyncFunctionDef)) and no.name.startswith("test_"):
+            n += 1
+        elif isinstance(no, ast.ClassDef) and no.name.startswith("Test"):
+            pass  # metodos ja contados pelo walk acima
+        elif isinstance(no, ast.If):
+            alvo = no.test
+            if (isinstance(alvo, ast.Compare) and isinstance(alvo.left, ast.Name)
+                    and alvo.left.id == "__name__"):
+                entrypoint = True
+    return n, entrypoint
+
+
 def main(argv):
     verbose = "-v" in argv
     filters = [a for a in argv[1:] if not a.startswith("-")]
@@ -66,12 +97,14 @@ def main(argv):
         # os testes do gate que governa o squad inteiro: verdes e nunca executados.
         # Deteccao estatica, deterministica e barata (regex no fonte); FALHA, nao avisa.
         # ---------------------------------------------------------------------
+        # AST, nao regex (7a rodada do v1.79.0): `^def test_` contava linha dentro de
+        # docstring como definicao, e um arquivo cujo texto de documentacao mostrasse um
+        # exemplo virava FAIL(cego) falso. Texto nao e' codigo.
         try:
             src = open(path, encoding="utf-8", errors="replace").read()
         except OSError:
             src = ""
-        n_testfn = len(re.findall(r"^def test_", src, re.M))
-        tem_entrypoint = bool(re.search(r"^if __name__\s*==", src, re.M))
+        n_testfn, tem_entrypoint = _contar_testes_e_entrypoint(src)
         if n_testfn and not tem_entrypoint:
             failed.append(fn)
             print(f"{'FAIL(cego)':9} {fn}")
