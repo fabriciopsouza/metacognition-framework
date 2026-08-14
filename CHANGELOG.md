@@ -15,7 +15,7 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
-## [1.79.0] — 2026-08-13 — Padrão documental de projeto (ADR-102), matriz de revisão ampliada e desacoplamento da ativação do gate (ADR-103, ADR-104)
+## [1.79.0] — 2026-08-13 — Padrão documental de projeto (ADR-102), matriz de revisão ampliada e desacoplamento da ativação do gate e da extração do P14 (ADR-103, ADR-104, ADR-105)
 
 [EMERGENTE] · [CONFIRMADO — os dois ADRs nascem de falha observada na própria sessão]
 
@@ -39,7 +39,7 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   `continue-on-error: true`, ou seja, **avalia e avisa, não barra**. O trabalho está preservado na
   branch `feat/adr-103-squad-gate-endurecimento`, e a condição para reativar está escrita no
   ADR-104. **O que PERMANECE entregue**, porque não depende da ativação: matriz ampliada,
-  `escopo_paths` obrigatório na evidência, match ancorado de versão na junção de release, 19 casos
+  `escopo_paths` obrigatório na evidência, match ancorado de versão na junção de release, 20 casos
   de teste (eram 8) e o canário de integridade.
 - **Matriz de papéis ampliada** (`behaviors/manifest.json`): passou a cobrir `_shared/`,
   `.agent/skills/`, `.agent/rules/`, a **própria matriz**, e os roteadores da raiz. Antes exigia
@@ -61,6 +61,15 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   veredito contam histórias opostas. Nasceu de defeito real desta sessão (evidência editada à mão,
   `.md` dizendo "aprovar" e `.json` dizendo "reprovar") e foi provado não-teatro reproduzindo o
   defeito numa cópia.
+
+### Não entregue — desacoplado (ADR-105)
+- **`tools/handoff.py` volta ao estado do `main`.** A correção da extração de campo do P14 sofreu
+  **6 defeitos consecutivos** na mesma função (placeholder → truncagem → engolir em 3 variantes →
+  vazar sufixo). A 9ª rodada aplicou a regra de escalonamento: o problema é o **desenho** — uma
+  regex de alternação não enumera fronteira de campo em prosa livre, é problema ilimitado. Vira
+  bloco próprio com decisão de design pendente. **A limitação antiga (campo em parágrafo sai
+  truncado) volta**, e a mitigação imediata é escrever o campo em **uma linha** — que é o formato
+  que a versão do `main` sempre leu corretamente.
 
 ### Lição
 Capacidade construída e não aplicada é indistinguível de capacidade ausente — e o índice a

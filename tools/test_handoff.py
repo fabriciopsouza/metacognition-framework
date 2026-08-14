@@ -270,80 +270,9 @@ def main():
     for f in fails:
         print("  -", f)
     print("-" * 50)
-    fails += check_extracao_de_campo()
-
     print("RESULTADO:", "PASS (gerador roda, regra papel+risco correta, deterministico)" if not fails
           else f"FAIL ({len(fails)})")
     return 1 if fails else 0
-
-
-def check_extracao_de_campo():
-    """Cobertura DIRETA de latest_checkpoint_field — sem monkeypatch (achado da 6a rodada).
-
-    O teste de determinismo substitui esta funcao por um lambda, entao o canario passava
-    verde enquanto a extracao real estava quebrada. Tres defeitos ja passaram por aqui:
-    placeholder visivel (02/08), truncagem silenciosa (13/08, 5a rodada) e engolir o campo
-    seguinte (13/08, 6a rodada). Este check exercita os ESTILOS que o history realmente usa.
-    """
-    import tempfile
-    import os as _os
-    NL = chr(10)
-    fails = []
-    CASOS = [
-        ("negrito + linha em branco",
-         ["## 2026-01-02 - x", "", "**Proximo passo:** fazer A", "e depois B.", "",
-          "**Riscos:** nenhum"],
-         "fazer A e depois B."),
-        ("texto plano + campo seguinte SEM linha em branco",
-         ["## 2026-01-02 - x", "", "Proximo passo: fazer A", "Riscos ativos: nenhum"],
-         "fazer A"),
-        ("paragrafo de varias linhas",
-         ["## 2026-01-02 - x", "", "**Proximo passo:** primeira", "segunda", "terceira.", "",
-          "**Fim:** z"],
-         "primeira segunda terceira."),
-        ("campo seguido de lista",
-         ["## 2026-01-02 - x", "", "Proximo passo: fazer", "- item um", "- item dois"],
-         "fazer"),
-        ("campo seguido de regra horizontal",
-         ["## 2026-01-02 - x", "", "Proximo passo: fazer", "---"],
-         "fazer"),
-        ("campo ausente -> vazio, nunca texto de outro campo",
-         ["## 2026-01-02 - x", "", "Riscos ativos: nenhum"],
-         ""),
-        # 7a rodada: TODOS os casos acima tem o rotulo seguinte em LINHA PROPRIA, entao a
-        # suite nao acusaria rotulo embutido na MESMA linha — que e' o defeito real medido
-        # em 4 checkpoints. Sem este caso, o check era teatro parcial.
-        # 8a rodada: os casos abaixo nasceram de PERDA DE CONTEUDO medida no corpus real.
-        # O esperado e derivado do COMPORTAMENTO CORRETO, nao do que o codigo fazia — calibrar
-        # a expectativa pelo bug foi o proprio anti-padrao que a regra 9(a) descreve.
-        ("rotulo NAO-canonico na mesma linha e CONTINUACAO, nao fim de campo",
-         ["## 2026-01-02 - x", "",
-          "Proximo passo: fazer A (detalhe). Follow-up nao-bloqueante: revisar Z"],
-         "fazer A (detalhe). Follow-up nao-bloqueante: revisar Z"),
-        ("Sugestao: tambem e continuacao (perdia conteudo em v1.58.1/v1.59.0 reais)",
-         ["## 2026-01-02 - x", "", "Proximo passo: nenhum WIP. Sugestao de cadencia: boots em haiku."],
-         "nenhum WIP. Sugestao de cadencia: boots em haiku."),
-        ("campo CANONICO na mesma linha ENCERRA, e o ponto final sobrevive",
-         ["## 2026-01-02 - x", "",
-          "Proximo passo: fazer A (detalhe). Riscos ativos: nenhum"],
-         "fazer A (detalhe)."),
-        ("continuacao legitima NAO encerra o campo",
-         ["## 2026-01-02 - x", "", "Proximo passo: fazer A. Aceite: X respondeu."],
-         "fazer A. Aceite: X respondeu."),
-    ]
-    for nome, linhas, esperado in CASOS:
-        d = tempfile.mkdtemp()
-        with open(_os.path.join(d, "history.md"), "w", encoding="utf-8") as fh:
-            fh.write(NL.join(linhas) + NL)
-        salvo = handoff.ROOT
-        try:
-            handoff.ROOT = d
-            got = handoff.latest_checkpoint_field("Proximo passo")
-        finally:
-            handoff.ROOT = salvo
-        if got != esperado:
-            fails.append("extracao [%s]: esperado %r, veio %r" % (nome, esperado, got))
-    return fails
 
 
 if __name__ == "__main__":

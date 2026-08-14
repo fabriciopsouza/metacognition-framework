@@ -59,10 +59,7 @@ rebaixada para advisory, porque gate sem canário é o teatro que o ADR-085/P15 
 ordem, com o bloco de 08-03 abaixo do de 08-02, corrompendo em silêncio o "próximo passo" que
 o `handoff.py` extrai por posição. Reordenado nesta entrega.
 
-**Próximo passo:** reativar o `squad_gate` como bloqueio exige, antes, as duas condições escritas
-no ADR-104 — (a) um caminho que impeça evidência de QA ser gravada fora do `tools/qa_evidence.py`,
-e (b) o step de CI exercitado contra um PR real, não apenas raciocinado. O trabalho está em
-`feat/adr-103-squad-gate-endurecimento`. Enquanto isso não existir, reativar repete esta sessão.
+**Próximo passo:** decidir o desenho da extração de campo do `handoff.py` — 6 defeitos consecutivos na mesma regex provaram que enumerar fronteira de campo em prosa livre é problema ilimitado; as opções são impor campo em linha própria (lint) ou trocar por parser linha-a-linha. Critério de aceite: o P14 extrai o campo inteiro em todos os 63 checkpoints do corpus, verificado por detector genérico, sem lista de vocabulário.
 
 **Lição, e ela é maior que o bloco:** capacidade construída e não aplicada é indistinguível de
 capacidade ausente. O gate certo existia, testado, há semanas — e não impediu nada. O índice de

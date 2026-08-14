@@ -87,57 +87,9 @@ def latest_checkpoint_field(field):
     # "<definir: nao havia Proximo passo no checkpoint>" mesmo com o campo presente, o que
     # esvaziava justamente o item que define o que a proxima sessao produz (bug observado
     # em 2026-08-02 contra os checkpoints de v1.75.0 e v1.76.0).
-    # HISTORICO DESTE TRECHO — tres defeitos, dois deles introduzidos por correcao:
-    #   2026-08-02: o regex nao previa campo em NEGRITO -> P14 saia com placeholder VISIVEL.
-    #   2026-08-13 (5a rodada): `(.+)$` sem DOTALL casava so a PRIMEIRA LINHA FISICA -> campo
-    #     escrito como paragrafo saia TRUNCADO, e truncado PARECE completo (pior que placeholder).
-    #   2026-08-13 (6a rodada): o lookahead so reconhecia linha-em-branco / negrito / fim, entao
-    #     no estilo TEXTO PLANO — 26 ocorrencias medidas neste history — o campo ENGOLIA o campo
-    #     seguinte inteiro e devolvia dois campos fundidos.
-    # Licao: o terminador precisa cobrir TODOS os estilos que o arquivo realmente usa, nao o
-    # estilo do checkpoint que estou escrevendo agora. Cobertura direta em test_handoff.py.
-    #   2026-08-13 (7a rodada) 4o defeito: todo terminador exigia `\n` ANTES do rotulo, entao
-    #     rotulo escrito na MESMA LINHA ("...(fora do alcance). Decisoes pendentes do dono: ...")
-    #     nao disparava nada e o campo seguinte era engolido. 4 checkpoints reais afetados. Pior:
-    #     eu declarei "34 de 34 corretos" porque meu teste procurava uma LISTA HARDCODE de rotulos
-    #     vizinhos — detector incompleto achando so o que eu ja esperava (a propria regra 9(a)).
-    #   Agora o rotulo tambem termina o campo apos fronteira de frase (`. `, `! `, `? `).
-    #   2026-08-13 (8a rodada) 5o defeito: a whitelist de CONTINUACOES era uma BLACKLIST
-    #     disfarcada — eu tentava enumerar todo rotulo de prosa que NAO encerra o campo, e esse
-    #     vocabulario e' INFINITO. Resultado: 'Follow-up nao-bloqueante:', 'Sugestao:' e
-    #     'Debito sinalizado:' encerravam o campo e PERDIAM conteudo real em 3 checkpoints.
-    #   CORRECAO ESTRUTURAL: inverter. So os NOMES DE CAMPO CANONICOS do template
-    #     (.agent/workflows/checkpoint.md) encerram; qualquer outro texto e' continuacao.
-    #     Conjunto FECHADO e definido em outro arquivo -> nao ha vocabulario a adivinhar.
-    CAMPOS_CANONICOS = (
-        r"Aprovado e funcionando|Nomenclaturas estabelecidas|Decis[õo]es permanentes"
-        r"|Pr[óo]ximo passo|Riscos ativos|RE-ORQUESTRA[ÇC][ÃA]O|RRC|Aprendizado|Telemetria"
-        r"|Entregue|Li[çc][ãa]o"
-    )
-    ROTULO = rf"(?:{CAMPOS_CANONICOS})[^:\n]{{0,30}}:"
-    TERMINADORES = (
-        r"\n\s*\n"                     # linha em branco (fim de paragrafo)
-        r"|\n\s*\*\*"                  # proximo campo em **negrito**
-        rf"|\n\s*{ROTULO}"             # proximo campo em TEXTO PLANO, em nova linha
-        rf"|(?<=[.!?])\s+{ROTULO}"     # proximo campo NA MESMA LINHA, apos fim de frase
-        #  ^ lookBEHIND: o ponto final PERTENCE ao texto do campo. Com `[.!?]` no
-        #    lookahead ele era consumido pelo terminador e sumia — 27 de 63 checkpoints
-        #    perdiam o ponto (achado da 8a rodada).
-        r"|\n\s*[-*+]\s"               # item de lista
-        r"|\n\s*\d+\.\s"               # item de lista numerada
-        r"|\n\s*---"                   # regra horizontal
-        r"|\n\s*#{1,6}\s"              # cabecalho
-        r"|\n\s*```"                   # bloco de codigo
-        r"|\Z"
-    )
-    fm = re.search(rf"(?im)^\s*\*{{0,2}}{re.escape(field)}\*{{0,2}}\s*:?\*{{0,2}}\s*(.+?)"
-                   rf"(?={TERMINADORES})",
-                   block, re.S)
-    if not fm:
-        return ""
-    # junta as linhas do paragrafo num texto unico e legivel
-    txt = " ".join(x.strip() for x in fm.group(1).splitlines() if x.strip())
-    return txt.strip().lstrip("*").strip()
+    fm = re.search(rf"(?im)^\s*\*{{0,2}}{re.escape(field)}\*{{0,2}}\s*:?\*{{0,2}}\s*(.+)$",
+                   block)
+    return fm.group(1).strip().lstrip("*").strip() if fm else ""
 
 
 def em_aberto():
