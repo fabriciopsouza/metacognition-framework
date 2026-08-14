@@ -1,0 +1,63 @@
+{
+  "bloco": "adr-102-padrao-do-conjunto-documental-de-projeto",
+  "papel": "qa_critic",
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "resumo": "1a rodada REPROVOU (2 BLOQUEANTES + 4 achados). Todos tratados; ressalva: a skill permanece PROSA sem canario, com condicao de quitacao escrita no ADR-102.",
+  "verificacoes_executadas": [
+    "leitura de CLAUDE.md e AGENT-FRAMEWORK.md (regua §0, ADR-072/073, agnosticismo)",
+    "python tools/check_core_agnostic.py -> PASS",
+    "grep em tools/ por 'project-docs' e 'teste binario' -> zero ocorrencias (base do achado B2)",
+    "comparacao com precedentes de registro em capabilities.json (validation-reporting, readiness-gate, edge-case-hunter)",
+    "leitura dos nucleos vizinhos (_shared/traceability, confidence-classification, validation-reporting, doc-intake, output-format) para caçar duplicacao",
+    "git diff --stat contra main para medir adicao pura (221 linhas novas x 13 de ponteiro)",
+    "leitura de _meta/qa/adr-099-*.md para checar reincidencia de defeito ja corrigido"
+  ],
+  "problemas": [
+    {
+      "severidade": "bloqueante",
+      "local": "B1",
+      "descricao": "regua §0 nao resolvida: adicao pura sem ADR nem override escrito — CORRIGIDO em docs/adr/102 — override explicito do dono com condicao de quitacao"
+    },
+    {
+      "severidade": "bloqueante",
+      "local": "B2",
+      "descricao": "docops dizia 'nao fecha bloco' sem nenhuma mecanizacao (ADR-085/P15) — CORRIGIDO — rebaixado para advisory, com o debito nomeado"
+    },
+    {
+      "severidade": "grave",
+      "local": "G3",
+      "descricao": "capabilities com enforcement 'manual' sem script; reincidencia do achado A2 do ADR-099 — CORRIGIDO — PARTIAL/prose/test=None conforme precedente"
+    },
+    {
+      "severidade": "medio",
+      "local": "M4",
+      "descricao": "sobreposicao nao declarada com validation-reporting — CORRIGIDO — ponte no §0"
+    },
+    {
+      "severidade": "medio",
+      "local": "M5",
+      "descricao": "tabela §3 com mais autoridade que a evidencia (portes INFERIDOS revelados so no §8) — CORRIGIDO — marca inline por linha"
+    },
+    {
+      "severidade": "menor",
+      "local": "m6",
+      "descricao": "sabor residual de dominio nos exemplos — CORRIGIDO — generalizado; zero ocorrencias remanescentes"
+    }
+  ],
+  "atestacao": {
+    "agentId": "af152032c70ae4002",
+    "modelo": "claude-sonnet-4-6",
+    "modelo_autor": "claude-opus-4-8",
+    "isolamento": "subagente isolado, contexto proprio, sem acesso ao contexto do autor",
+    "escada_adr_078": "autor tier-alto (opus) -> critico tier balanced (sonnet), conforme heterogeneous_preference.order_if_high"
+  },
+  "postura": {
+    "discovery": "inline: CAPABILITIES.md e capabilities.json lidos antes de afirmar gap; nucleos vizinhos inspecionados; precedentes de registro conferidos",
+    "rrc": "PASSA — o critico rodou greps e canarios proprios em vez de aceitar as alegacoes do autor",
+    "metodo_senior": "aplicado: docs/adr/102-padrao-do-conjunto-documental-de-projeto.md",
+    "fonte_canonica": true
+  },
+  "data": "2026-08-13T14:03:05Z"
+}

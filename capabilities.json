@@ -1166,19 +1166,20 @@
     },
     {
       "id": "squad-enforcement-gate",
-      "title": "Enforcement deterministico do squad: manifesto declarativo de papeis/comportamentos + gate fail-closed com atestacao de isolamento",
+      "title": "Enforcement deterministico do squad: manifesto de papeis + gate com atestacao de isolamento — ADVISORY no CI (ativacao desacoplada, ADR-104)",
       "status": "PROVIDES",
       "ai_owner": "claude",
       "mechanism": "tools/squad_gate.py",
       "test": "tools/test_squad_gate.py",
-      "adr": "docs/adr/092-camada-enforcement-comportamentos-manifesto-gate-githook.md",
+      "adr": "docs/adr/104-desacoplamento-padrao-documental-e-ativacao-do-gate.md",
       "cross_ai": false,
       "tags": [
         "squad",
         "enforcement",
-        "fail-closed",
-        "anti-drift"
-      ]
+        "anti-drift",
+        "advisory"
+      ],
+      "enforcement": "advisory"
     },
     {
       "id": "external-work-provenance",
@@ -1250,6 +1251,41 @@
       ],
       "note": "advisory por desenho: trabalho pendente e INFORMACAO, nao erro — o gate check_trabalhos_abertos do boot_check nunca falha o boot, mas nunca fica silencioso ('nenhum aberto' e resultado declarado). Ciclo aberto->tratado; so o dono encerra. Persistencia em ~/.claude/trabalhos/ (fora do repo, porque um trabalho pode envolver varios repositorios).",
       "test": "tools/test_trabalhos.py"
+    },
+    {
+      "id": "project-docs-standard",
+      "title": "Padrao do conjunto documental de projeto (7 propriedades + conjunto graduado + 4 gates) — PROSA, sem canario proprio",
+      "status": "PARTIAL",
+      "ai_owner": "claude",
+      "mechanism": "_shared/project-docs/SKILL.md",
+      "test": null,
+      "adr": "docs/adr/102-padrao-do-conjunto-documental-de-projeto.md",
+      "cross_ai": false,
+      "enforcement": "prose",
+      "tags": [
+        "docs",
+        "projeto",
+        "handoff",
+        "anti-drift",
+        "adversarial"
+      ]
+    },
+    {
+      "id": "qa-evidence-integrity",
+      "title": "Canario de integridade da evidencia de QA: .json e .md do mesmo bloco nao podem contar historias opostas",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/test_qa_evidence_integrity.py",
+      "test": "tools/test_qa_evidence_integrity.py",
+      "adr": "docs/adr/103-ativacao-do-squad-gate-como-bloqueio.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "tags": [
+        "qa",
+        "integridade",
+        "anti-teatro",
+        "auditoria"
+      ]
     }
   ],
   "registry_waivers": [

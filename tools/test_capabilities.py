@@ -40,6 +40,31 @@ KEBAB = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 PTR_FIELDS = ("mechanism", "test", "adr", "doc")
 
 
+ENFORCEMENT_TAGS = {"fail-closed", "fail-soft", "advisory", "prose", "manual", "ci-ready",
+                    "physical"}
+
+
+def check_tag_enforcement_coerente(caps):
+    """A tag de enforcement nao pode CONTRADIZER o campo `enforcement`.
+
+    Achado da 5a rodada de revisao (2026-08-13): `squad-enforcement-gate` foi corrigido de
+    fail-closed para advisory no CAMPO, mas manteve a tag `fail-closed` — e
+    `build_capabilities.py --find fail-closed` seguia devolvendo a capacidade. O indice
+    anti-reinvencao passou a mentir na busca. Correcao parcial que deixa residuo contraditorio
+    em outro campo do mesmo registro foi o defeito reincidente de 5 rodadas seguidas.
+    """
+    probs = []
+    for c in caps:
+        enf = str(c.get("enforcement", "")).strip()
+        if not enf:
+            continue
+        conflitantes = [t for t in c.get("tags", [])
+                        if t in ENFORCEMENT_TAGS and t != enf]
+        if conflitantes:
+            probs.append(f"{c['id']}: enforcement='{enf}' mas tags dizem {conflitantes}")
+    return probs
+
+
 def main():
     fails = []
     try:
@@ -144,8 +169,10 @@ def main():
         for cid, enf in debt:
             print(f"  · {cid} — {enf}")
 
+    fails += check_tag_enforcement_coerente(caps)
+
     print(f"{len(caps)} capacidades; ponteiros vivos; PROVIDES tem canario; cross_ai com enforcement; "
-          f"indice em sync — {'OK' if not fails else 'FAIL'}")
+          f"tag x enforcement coerentes; indice em sync — {'OK' if not fails else 'FAIL'}")
     for f in fails:
         print("  -", f)
     print("-" * 50)

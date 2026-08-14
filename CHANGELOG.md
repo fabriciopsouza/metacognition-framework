@@ -15,6 +15,73 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.79.0] — 2026-08-13 — Padrão documental de projeto (ADR-102), matriz de revisão ampliada e desacoplamento da ativação do gate e da extração do P14 (ADR-103, ADR-104, ADR-105)
+
+[EMERGENTE] · [CONFIRMADO — os dois ADRs nascem de falha observada na própria sessão]
+
+### Adicionado
+- **`_shared/project-docs/SKILL.md` (ADR-102)** — núcleo SSoT do **conjunto documental de
+  projeto**, que o `docops` não cobria: ele fecha *bloco*, não *projeto*. Codifica o teste
+  binário ("a próxima pessoa retoma sem perguntar nada"), 7 propriedades, conjunto **graduado
+  por porte** e 6 modos de falha **observados** numa revisão adversarial real de 5 rodadas com
+  3 reprovações. Registro honesto: **PARTIAL / prose / sem canário** — é orientação cobrável em
+  revisão, não gate. Base da régua §0: **override explícito do dono**, com condição de quitação
+  escrita (nenhuma das portas (a)/(b)/(c) foi alegada — alegá-las seria a racionalização que o
+  ADR-099 cometeu).
+
+### Alterado — enforcement
+- **`squad_gate` segue ADVISORY. A ativação como bloqueio foi construída e DESACOPLADA (ADR-104).**
+  O ADR-094 a deixara pronta-mas-desligada, com a condição escrita: *"se o dono concluir que
+  advisory + reforço ainda não bastam"*. Não bastaram — nesta sessão um bloco alterou o núcleo e
+  foi commitado sem revisão adversarial —, então ela **foi ativada** no meio do bloco. Três
+  reprovações seguidas depois, todas com achados na ativação e **nenhum** no padrão documental, o
+  dono aplicou a regra de escalonamento e mandou separar: o step de CI voltou a
+  `continue-on-error: true`, ou seja, **avalia e avisa, não barra**. O trabalho está preservado na
+  branch `feat/adr-103-squad-gate-endurecimento`, e a condição para reativar está escrita no
+  ADR-104. **O que PERMANECE entregue**, porque não depende da ativação: matriz ampliada,
+  `escopo_paths` obrigatório na evidência, match ancorado de versão na junção de release, 20 casos
+  de teste (eram 8) e o canário de integridade.
+- **Matriz de papéis ampliada** (`behaviors/manifest.json`): passou a cobrir `_shared/`,
+  `.agent/skills/`, `.agent/rules/`, a **própria matriz**, e os roteadores da raiz. Antes exigia
+  revisão para uma linha de `.py` e **nada** para reescrever a skill que governa toda sessão
+  futura — medido: `papeis exigidos: nenhum`. Usa `prefix`, já suportado; o código do gate não
+  foi tocado.
+
+### Corrigido
+- `docops` passo 0 rebaixado de "não fecha bloco" para **advisory** — linguagem de bloqueio sem
+  mecanismo é o teatro que o ADR-085/P15 proíbe.
+- Registro `project-docs-standard` corrigido de `PROVIDES/manual` para `PARTIAL/prose`, seguindo
+  o precedente de `validation-reporting`. `squad-enforcement-gate` declara **`advisory`**, que é o
+  que o CI de fato faz — chegou a ser marcado `fail-closed` enquanto a ativação esteve de pé, e
+  voltou junto com ela. **`status` e `enforcement` descrevem o que está aplicado, nunca o que está
+  disponível.**
+
+### Adicionado — núcleo
+- **`_shared/output-format/SKILL.md`, Parte A.0** — regra de núcleo: *o texto se sustenta sozinho*,
+  e isso vale para a **conversa**, não só para o artefato entregue. Estava fora deste registro
+  desde a 3ª rodada de revisão, que já a apontou como ausente; entra agora.
+
+### Adicionado — integridade
+- **`tools/test_qa_evidence_integrity.py`**: canário que reprova quando `.json` e `.md` do mesmo
+  veredito contam histórias opostas. Nasceu de defeito real desta sessão (evidência editada à mão,
+  `.md` dizendo "aprovar" e `.json` dizendo "reprovar") e foi provado não-teatro reproduzindo o
+  defeito numa cópia.
+
+### Não entregue — desacoplado (ADR-105)
+- **`tools/handoff.py` volta ao estado do `main`.** A correção da extração de campo do P14 sofreu
+  **6 defeitos consecutivos** na mesma função (placeholder → truncagem → engolir em 3 variantes →
+  vazar sufixo). A 9ª rodada aplicou a regra de escalonamento: o problema é o **desenho** — uma
+  regex de alternação não enumera fronteira de campo em prosa livre, é problema ilimitado. Vira
+  bloco próprio com decisão de design pendente. **A limitação antiga (campo em parágrafo sai
+  truncado) volta**, e a mitigação imediata é escrever o campo em **uma linha** — que é o formato
+  que a versão do `main` sempre leu corretamente.
+
+### Lição
+Capacidade construída e não aplicada é indistinguível de capacidade ausente — e o índice a
+exibia como `PROVIDES`. `status` deve descrever o que está **aplicado**, não o que está
+**disponível**. E: **maturidade diferente pede bloco diferente** — amarrar uma norma pronta a uma
+mudança de enforcement imatura fez a norma reprovar três vezes por defeitos que não eram dela.
+
 ## [1.77.0] — 2026-08-03 — Registro de trabalhos: o handoff sobrevive à sessão (ADR-100)
 
 [EMERGENTE] · [CONFIRMADO — gap observado na própria sessão que originou o ADR]
