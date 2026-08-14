@@ -144,13 +144,27 @@ def _paths_sem_cobertura(artifacts, paths) -> list:
     return orfaos
 
 
-def _release_junction_closed() -> bool:
-    """Existe junção de FECHAMENTO (PC ou J6) no ledger para o release do topo do CHANGELOG?
+def _release_junction_closed(artifacts=None) -> bool:
+    """Existe junção de FECHAMENTO (PC ou J6) **ainda válida** para o release do topo do CHANGELOG?
 
     ADR-103: enquanto o gate era advisory, `juncao_release` ficava sempre False ("delegado").
     Ao ATIVAR o gate isso vira bloqueio permanente de todo release — defeito que só a ativação
     revela. Aqui o papel passa a ser VERIFICÁVEL: lê o ledger de junções (ADR-077) e exige o
     fechamento declarado para a versão que o CHANGELOG está publicando.
+
+    ADR-103 emenda 2 (achado BLOQUEANTE da 3a rodada, 2026-08-13): a versão anterior olhava só a
+    PRESENÇA do registro no ledger. Como o ledger é append-only e o registro é escrito UMA vez,
+    um PC gravado no primeiro commit da série continuava liberando o papel depois de o QA
+    REPROVAR o release — sem noção de recência nem de invalidação. Foi reproduzido ao vivo neste
+    próprio repo: o único registro de `v1.79.0` foi escrito em `4faf971` (1o commit), seu campo
+    `evidencia` diz "REPROVOU a 1a rodada", vieram 10 commits e 2 reprovações depois, e
+    `squad_gate --paths CHANGELOG.md` respondia OK. É a mesma classe do achado B2/B2-r2
+    (evidência antiga virando carta-branca permanente), reaberta no papel irmão.
+
+    Agora o fechamento exige DUAS coisas, não uma: (a) o registro PC/J6 no ledger **e** (b) um
+    veredito APROVATIVO E ATESTADO cujo `release` seja essa mesma versão. Reprovação vigente
+    invalida a junção — que é o que "fechamento" sempre quis dizer. Fail-closed: sem veredito
+    aprovativo para a versão, o papel não passa, mesmo com o registro no ledger.
     """
     ch = os.path.join(ROOT, "CHANGELOG.md")
     if not os.path.isfile(ch):
@@ -178,7 +192,27 @@ def _release_junction_closed() -> bool:
             except ValueError:
                 continue  # fail-closed em linha corrompida: não conta como fechamento
             if rec.get("junction") in ("PC", "J6") and padrao.match(str(rec.get("bloco", ""))):
-                return True
+                # (b) o registro só vale se o veredito VIGENTE do release for aprovativo e atestado.
+                return _release_verdict_approving(artifacts or [], padrao)
+    return False
+
+
+def _release_verdict_approving(artifacts, padrao) -> bool:
+    """Algum veredito ATESTADO e APROVATIVO declara este release? (emenda 2 do ADR-103)
+
+    `padrao` já vem ancorado na versão do topo do CHANGELOG. Casa contra o campo `release` do
+    veredito (gravado como "1.79.0") e, por tolerância, contra `bloco` (gravado como
+    "release-1.79.0-..."), sem cair em substring solta.
+    """
+    for v in artifacts:
+        if not _atestacao_valida(v):        # já exige recomendacao aprovativa + agentId + modelo != autor
+            continue
+        rel = str(v.get("release", "")).strip()
+        if rel and padrao.match(rel):
+            return True
+        bloco = str(v.get("bloco", "")).strip()
+        if bloco.startswith("release-") and padrao.match(bloco[len("release-"):]):
+            return True
     return False
 
 
@@ -192,7 +226,7 @@ def evaluate(paths, manifest, artifacts):
         elif role == "architect":
             ok = any(str(p).replace("\\", "/").startswith("docs/adr/") for p in paths)
         elif role == "juncao_release":
-            ok = _release_junction_closed()
+            ok = _release_junction_closed(artifacts)
         else:
             # research_ou_ratificacao: delegado (research_evidence.py).
             # Marca como EXIGIDO-nao-verificavel-localmente -> falta (fail-closed) ate o check proprio rodar.

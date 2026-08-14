@@ -1,109 +1,84 @@
 {
   "bloco": "release-1.79.0-project-docs-e-squad-gate",
   "papel": "qa_critic",
+  "rodada": 3,
+  "release": "1.79.0",
   "passou": false,
-  "recomendacao": "reprovar",
+  "recomendacao": "corrigir",
   "veredito": "reprovar",
-  "resumo": "2a RODADA: REPROVAR. 2 BLOQUEANTES NOVOS, introduzidos pela propria correcao. (B1) o passo de CI falhava com exit 128 ANTES de o gate rodar, em TODO PR: clone raso nao cria refs/remotes/origin/<base> e nao ha merge-base — reproduzido localmente pelo critico. A ativacao era ILUSAO de gate. (B2) _qa_critic_attested varria TODOS os .json de _meta/qa/ sem escopo: uma vez commitada a evidencia, qualquer commit futuro passava livre — gate que se auto-libera para sempre. (G3) _release_junction_closed casava por substring (\"1.79.0\" in \"release-21.79.0-x\") e nao tinha teste algum.",
+  "data": "2026-08-13T23:55:00Z",
+  "resumo": "Rodada 3 (Sonnet isolado, autor Opus), sobre o estado pos-r8 (HEAD efae6ef) — REPROVAR por 1 bloqueante NOVO, nao coberto pelas 8 rodadas anteriores nem por nenhum teste existente. O papel `juncao_release` do squad_gate (exigido por qualquer mudanca em CHANGELOG.md) e satisfeito pela mera PRESENCA de um registro PC/J6 cujo `bloco` bate com a versao do topo do CHANGELOG — sem checar se esse registro e o veredito MAIS RECENTE, sem cruzar com o `passou` de qualquer artefato em _meta/qa/, e sem nocao de invalidacao por reprovacao posterior. E a mesma classe do achado B2/B2-r2 (evidencia antiga virando carta-branca permanente), reaberta no papel irmao que nunca ganhou escopo_paths nem checagem de recencia. Ambos os achados foram reproduzidos de forma independente pelo orquestrador antes do registro.",
   "verificacoes_executadas": [
-    "leitura de CLAUDE.md e AGENT-FRAMEWORK.md (regua §0, ADR-072/073, agnosticismo)",
-    "python tools/check_core_agnostic.py -> PASS",
-    "grep em tools/ por 'project-docs' e 'teste binario' -> zero ocorrencias (base do achado B2)",
-    "comparacao com precedentes de registro em capabilities.json (validation-reporting, readiness-gate, edge-case-hunter)",
-    "leitura dos nucleos vizinhos (_shared/traceability, confidence-classification, validation-reporting, doc-intake, output-format) para caçar duplicacao",
-    "git diff --stat contra main para medir adicao pura (221 linhas novas x 13 de ponteiro)",
-    "leitura de _meta/qa/adr-099-*.md para checar reincidencia de defeito ja corrigido",
-    "squad_gate rodado nos paths do bloco ANTES e DEPOIS da correcao da matriz: antes \"papeis exigidos: nenhum\"; depois BLOQUEADO fail-closed; com evidencia atestada, OK"
+    "python tools/squad_gate.py --paths CHANGELOG.md -> 'OK — evidencia atestada presente para os papeis exigidos' (REPRODUZIDO pelo orquestrador)",
+    "leitura de _meta/qa/junctions/v1.79.0-project-docs-e-squad-gate.jsonl -> 1 unica linha; o campo `evidencia` dela diz literalmente 'REPROVOU a 1a rodada com 2 bloqueantes' — um registro de reprovacao gravado como PASS de juncao",
+    "git log --diff-filter=A -- _meta/qa/junctions/v1.79.0-*.jsonl -> registro introduzido em 4faf971, o PRIMEIRO commit da serie; 10 commits vieram depois, incluindo a rodada 2 que reprovou com 2 bloqueantes novos (REPRODUZIDO)",
+    "leitura de tools/test_squad_gate.py inteiro -> nenhum teste exercita 'reprovar depois de PC registrado'; so match de versao, tipo de juncao e ledger corrompido",
+    "python tools/squad_gate.py --paths-from <34 paths do diff main...HEAD> -> BLOQUEADO fail-closed por falta de qa_critic escopado (comportamento CORRETO para o papel qa_critic)",
+    "delimitacao exata da entrada [1.79.0] do CHANGELOG (linhas 18-71) -> 0 mencoes a 'output-format', embora 6a42ce1 (_shared/output-format/SKILL.md, +60 linhas) esteja no diff da release (REPRODUZIDO; a 1a checagem do orquestrador usou faixa errada e deu falso negativo)",
+    "python tools/handoff.py -> 'Proximo passo' extraido bate com o checkpoint 2026-08-13 do history.md, sem truncar nem engolir o campo seguinte (os defeitos r5/r6/r7 do regex nao reincidem)",
+    "python -m pytest tools/test_handoff.py tools/test_squad_gate.py tools/test_qa_evidence_integrity.py -q -> 19 passed",
+    "python tools/run_canaries.py -> 64 PASS / 1 SKIP / 2 FAIL (test_posture_gate, test_qa_evidence), ambos por ausencia de veredito aprovativo do release — esperado, nao e defeito a corrigir",
+    "python tools/test_capabilities.py -> PASS, incluindo check_tag_enforcement_coerente",
+    "leitura de tools/squad_gate.py + docstring + ADR-103/104 + capabilities.json + CAPABILITIES.md -> o estado declarado (advisory) bate em todos os lugares; a incoerencia das rodadas anteriores nao reincide",
+    "leitura de .github/workflows/ci.yml -> fetch-depth 0, base.sha do evento e --paths-from coerentes com o ADR-104"
   ],
   "problemas": [
     {
       "severidade": "bloqueante",
-      "local": "B1",
-      "descricao": "regua §0 nao resolvida: adicao pura sem ADR nem override escrito — CORRIGIDO em docs/adr/102 — override explicito do dono com condicao de quitacao"
-    },
-    {
-      "severidade": "bloqueante",
-      "local": "B2",
-      "descricao": "docops dizia 'nao fecha bloco' sem nenhuma mecanizacao (ADR-085/P15) — CORRIGIDO — rebaixado para advisory, com o debito nomeado"
-    },
-    {
-      "severidade": "grave",
-      "local": "G3",
-      "descricao": "capabilities com enforcement 'manual' sem script; reincidencia do achado A2 do ADR-099 — CORRIGIDO — PARTIAL/prose/test=None conforme precedente"
+      "local": "tools/squad_gate.py:147-182 (_release_junction_closed)",
+      "descricao": "O papel `juncao_release` e satisfeito pela PRESENCA de um registro PC/J6 no ledger cujo `bloco` casa com a versao do topo do CHANGELOG, sem checar recencia nem cruzar com o veredito vigente em _meta/qa/. Registro escrito uma vez libera o papel para sempre, mesmo apos reprovacoes posteriores.",
+      "cenario_de_falha": "Estado real agora: o unico registro do ledger deste release foi escrito em 4faf971, antes da rodada 2 reprovar e antes das rodadas r3-r8. `python tools/squad_gate.py --paths CHANGELOG.md` responde OK. Quando o ADR-104 for revertido (tirar `continue-on-error: true`, que o proprio ADR descreve como mudanca de uma linha), o papel `juncao_release` ja estaria satisfeito e nao barraria o merge, em silencio, mesmo com o QA reprovando."
     },
     {
       "severidade": "medio",
-      "local": "M4",
-      "descricao": "sobreposicao nao declarada com validation-reporting — CORRIGIDO — ponte no §0"
-    },
-    {
-      "severidade": "medio",
-      "local": "M5",
-      "descricao": "tabela §3 com mais autoridade que a evidencia (portes INFERIDOS revelados so no §8) — CORRIGIDO — marca inline por linha"
-    },
-    {
-      "severidade": "menor",
-      "local": "m6",
-      "descricao": "sabor residual de dominio nos exemplos — CORRIGIDO — generalizado; zero ocorrencias remanescentes"
-    },
-    {
-      "severidade": "bloqueante",
-      "local": "B1-r2",
-      "descricao": "passo de CI quebra (exit 128) antes de o gate rodar, em todo PR — CORRIGIDO: checkout fetch-depth 0 + base.sha do evento + --paths-from"
-    },
-    {
-      "severidade": "bloqueante",
-      "local": "B2-r2",
-      "descricao": "evidencia sem escopo libera qualquer mudanca futura (auto-liberacao permanente) — CORRIGIDO: escopo_paths obrigatorio; veredito sem escopo nao conta (fail-closed)"
-    },
-    {
-      "severidade": "grave",
-      "local": "G3-r2",
-      "descricao": "_release_junction_closed casava versao por substring, sem teste — CORRIGIDO: match ancorado + 6 testes novos"
-    },
-    {
-      "severidade": "medio",
-      "local": "M4-r2",
-      "descricao": "$PATHS sem aspas no CI — CORRIGIDO: --paths-from (imune a espaco e a limite de argv)"
-    },
-    {
-      "severidade": "medio",
-      "local": "M5-r2",
-      "descricao": "SKILL.md §8 afirma enforcement 'manual' contradizendo capabilities.json ('prose') — CORRIGIDO"
-    },
-    {
-      "severidade": "medio",
-      "local": "M6-r2",
-      "descricao": "condicao de quitacao do ADR-102 fora do '## Em aberto' do history.md — CORRIGIDO"
+      "local": "CHANGELOG.md:18-71 (entrada [1.79.0])",
+      "descricao": "O commit 6a42ce1 entrega 60 linhas novas em _shared/output-format/SKILL.md (regra de nucleo, Parte A.0) e esta no diff main...HEAD desta release, mas a entrada [1.79.0] do CHANGELOG nao o cita em nenhuma secao. Doc-sync incompleto.",
+      "cenario_de_falha": "Quem le o CHANGELOG para saber o que mudou em v1.79.0 nao descobre que uma regra nova de nucleo passou a valer para toda conversa — so lendo o diff."
     }
   ],
-  "atestacao": {
-    "agentId": "af152032c70ae4002",
-    "modelo": "claude-sonnet-4-6",
-    "modelo_autor": "claude-opus-4-8",
-    "isolamento": "subagente isolado, contexto proprio, sem acesso ao contexto do autor",
-    "escada_adr_078": "autor tier-alto (opus) -> critico tier balanced (sonnet), conforme heterogeneous_preference.order_if_high"
-  },
-  "postura": {
-    "discovery": "inline: CAPABILITIES.md e capabilities.json lidos antes de afirmar gap; nucleos vizinhos inspecionados; precedentes de registro conferidos",
-    "rrc": "PASSA — o critico rodou greps e canarios proprios em vez de aceitar as alegacoes do autor",
-    "metodo_senior": "aplicado: docs/adr/102-padrao-do-conjunto-documental-de-projeto.md",
-    "fonte_canonica": true
-  },
-  "data": "2026-08-13T14:03:05Z",
-  "release": "1.79.0",
   "escopo_paths": [
-    "_shared/project-docs/",
-    ".agent/skills/docops/",
+    "tools/squad_gate.py",
+    "tools/test_squad_gate.py",
+    "tools/qa_evidence.py",
+    "tools/test_qa_evidence_integrity.py",
+    "tools/handoff.py",
+    "tools/test_handoff.py",
+    "tools/test_capabilities.py",
+    ".github/workflows/ci.yml",
+    "behaviors/manifest.json",
     "capabilities.json",
     "CAPABILITIES.md",
+    "CHANGELOG.md",
+    "history.md",
+    "_shared/project-docs/SKILL.md",
+    "_shared/output-format/SKILL.md",
+    ".agent/skills/docops/SKILL.md",
     "docs/adr/102-padrao-do-conjunto-documental-de-projeto.md",
     "docs/adr/103-ativacao-do-squad-gate-como-bloqueio.md",
-    "behaviors/manifest.json",
-    ".github/workflows/ci.yml",
-    "tools/squad_gate.py",
-    "CHANGELOG.md",
-    "history.md"
+    "docs/adr/104-desacoplamento-padrao-documental-e-ativacao-do-gate.md",
+    "_meta/qa/junctions/v1.79.0-project-docs-e-squad-gate.jsonl",
+    "_meta/qa/release-1.79.0-project-docs-e-squad-gate.json"
   ],
-  "rodada": 2
+  "atestacao": {
+    "modelo": "claude-sonnet-4-6",
+    "modelo_autor": "claude-opus-5",
+    "isolamento": "subagente qa-critic isolado, contexto proprio, sem acesso ao raciocinio do autor",
+    "instrucao": "hipotese default de que existe defeito; instruido a tentar reprovar e a cacar teatro de gate",
+    "verificacao_independente": "orquestrador reproduziu os 2 achados antes de registrar; o achado medio foi inicialmente contestado por erro de delimitacao do orquestrador e depois confirmado"
+  },
+  "postura": {
+    "rrc": "PASSA — o critico nao aceitou nenhuma alegacao do autor: rodou squad_gate, handoff, pytest e run_canaries por conta propria, e o orquestrador reproduziu de forma independente os 2 achados antes do registro (inclusive derrubando e depois reconfirmando o achado medio por erro proprio de delimitacao). A reconciliacao encontrada no BLOCO revisado, essa sim, esta incompleta — e o motivo da reprovacao.",
+    "metodo_senior": "N/A: revisao adversarial de PROCESSO sobre bloco alheio, sem autoria de norma/spec/ADR nova por parte do critico (fonte_canonica=false).",
+    "fonte_canonica": false,
+    "discovery": "leitura do artefato da rodada 2, do diff main...HEAD (34 arquivos), das ADR-102/103/104 e do ledger de juncoes antes de afirmar qualquer coisa",
+    "adversarial": "execucao real dos comandos (squad_gate, handoff, pytest, run_canaries), nao avaliacao por leitura de diff",
+    "lacunas_declaradas": "o CI real em PR do GitHub nao foi exercitado (o proprio ADR-104 nomeia isso como condicao pendente); handoff --provenance/--write nao testado end-to-end; os 8 commits de correcao nao foram revisados linha a linha; web-bundles e guia/web tratados como baixo risco por volume"
+  },
+  "o_que_NAO_verifiquei": [
+    "step de CI real em PR do GitHub contra um base.sha de evento pull_request",
+    "tools/handoff.py --provenance e --write end-to-end contra diretorio externo; logica de _inside_repo com symlink/junction",
+    "revisao linha a linha dos 8 commits de correcao r3-r8 individualmente",
+    "SKIP de test_parity.py (pwsh ausente) e passo equivalence/HITL do ci.yml (HUB_MANIFEST ausente)",
+    "web-bundles/*.md e guia/web/index.html com o mesmo rigor (mudancas de 1-10 linhas)"
+  ]
 }

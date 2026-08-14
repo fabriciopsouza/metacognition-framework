@@ -19,6 +19,7 @@ Uso:
 Exit 0 se todos passaram; N>0 = nº de canários que falharam.
 """
 import os
+import re
 import subprocess
 import sys
 
@@ -49,6 +50,29 @@ def main(argv):
     failed, skipped, passed = [], [], []
     for fn in canaries:
         path = os.path.join(TOOLS, fn)
+        # ---------------------------------------------------------------------
+        # GUARD DE CANARIO CEGO (ADR-103 emenda 2 — achado da 3a rodada, 2026-08-13).
+        # Este runner executa cada canario COMO SCRIPT e le o exit code. Um arquivo
+        # pytest PURO (funcoes `def test_*` sem bloco `__main__`) so e' importado: as
+        # funcoes sao definidas, nada e' chamado, o processo sai com 0 e o runner
+        # reportava PASS — sem rodar UMA assercao. Caso real: test_squad_gate.py,
+        # 19 testes do gate que governa o squad inteiro, verde e nunca executado.
+        # Deteccao estatica, deterministica e barata (regex no fonte); FALHA, nao avisa.
+        # ---------------------------------------------------------------------
+        try:
+            src = open(path, encoding="utf-8", errors="replace").read()
+        except OSError:
+            src = ""
+        n_testfn = len(re.findall(r"^def test_", src, re.M))
+        tem_entrypoint = bool(re.search(r"^if __name__\s*==", src, re.M))
+        if n_testfn and not tem_entrypoint:
+            failed.append(fn)
+            print(f"{'FAIL(cego)':9} {fn}")
+            print(f"    | {n_testfn} funcao(oes) `def test_` e NENHUM bloco `if __name__ ==`.")
+            print("    | Rodado como script, este arquivo nao executa assercao alguma —")
+            print("    | passaria como PASS sem testar nada. Adicione um entrypoint que")
+            print("    | delegue ao pytest e propague o exit code.")
+            continue
         proc = subprocess.run(
             [sys.executable, path],
             capture_output=True,

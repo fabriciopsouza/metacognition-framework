@@ -149,10 +149,50 @@ def test_juncao_release_match_ANCORADO(tmp_path, monkeypatch):
                    encoding="utf-8")
     assert sg._release_junction_closed() is False
 
-    # (d) fechamento legitimo da versao corrente -> libera
+    # (d) fechamento da versao corrente MAS sem veredito aprovativo vigente -> NAO libera
+    #     (emenda 2 do ADR-103: presenca no ledger nao basta; ver o teste dedicado abaixo)
     led.write_text(json.dumps({"junction": "PC", "bloco": "v1.79.0-project-docs"}) + "\n",
                    encoding="utf-8")
-    assert sg._release_junction_closed() is True
+    assert sg._release_junction_closed([]) is False
+
+    # (e) fechamento legitimo + veredito aprovativo atestado do MESMO release -> libera
+    ok = _ev(agentId="a1", modelo="sonnet", autor="opus")
+    ok["release"] = "1.79.0"
+    assert sg._release_junction_closed([ok]) is True
+
+
+def test_juncao_release_REPROVACAO_POSTERIOR_invalida_o_PC(tmp_path, monkeypatch):
+    """Achado BLOQUEANTE da 3a rodada (2026-08-13), reproduzido no repo real.
+
+    O ledger e append-only e o PC e escrito UMA vez, no inicio do bloco. Sem checagem de
+    veredito vigente, esse registro seguia liberando `juncao_release` mesmo depois de o QA
+    REPROVAR o release duas vezes. Caso real: o unico registro de v1.79.0 nasceu em 4faf971
+    (1o commit da serie) com `evidencia` dizendo "REPROVOU a 1a rodada", vieram 10 commits e
+    2 reprovacoes, e `squad_gate --paths CHANGELOG.md` respondia OK.
+    """
+    qa = tmp_path / "qa"
+    (qa / "junctions").mkdir(parents=True)
+    (tmp_path / "CHANGELOG.md").write_text("## [1.79.0] - x\n", encoding="utf-8")
+    monkeypatch.setattr(sg, "QA_DIR", str(qa))
+    monkeypatch.setattr(sg, "ROOT", str(tmp_path))
+    (qa / "junctions" / "l.jsonl").write_text(
+        json.dumps({"junction": "PC", "bloco": "v1.79.0-project-docs"}) + "\n", encoding="utf-8")
+
+    reprovado = _ev(recomendacao="reprovar", agentId="a1", modelo="sonnet", autor="opus")
+    reprovado["release"] = "1.79.0"
+    assert sg._release_junction_closed([reprovado]) is False, \
+        "PC no ledger nao pode liberar release cujo veredito vigente REPROVA"
+
+    # auto-atestacao (critico no MESMO modelo do autor) tambem nao vale como fechamento
+    homogeneo = _ev(agentId="a1", modelo="opus", autor="opus")
+    homogeneo["release"] = "1.79.0"
+    assert sg._release_junction_closed([homogeneo]) is False, \
+        "veredito sem heterogeneidade de modelo nao fecha juncao de release"
+
+    # veredito aprovativo de OUTRO release nao serve
+    outro = _ev(agentId="a1", modelo="sonnet", autor="opus")
+    outro["release"] = "1.58.0"
+    assert sg._release_junction_closed([outro]) is False
 
 
 def test_juncao_release_SEM_ledger_bloqueia(tmp_path, monkeypatch):
@@ -171,3 +211,18 @@ def test_juncao_release_linha_corrompida_nao_libera(tmp_path, monkeypatch):
     monkeypatch.setattr(sg, "ROOT", str(tmp_path))
     (qa / "junctions" / "l.jsonl").write_text("{lixo nao-json\n", encoding="utf-8")
     assert sg._release_junction_closed() is False
+
+
+# ---------------------------------------------------------------------------
+# ADR-103 emenda 2 (3a rodada, 2026-08-13): este arquivo e' pytest PURO. Sem o bloco
+# abaixo, `run_canaries.py` o executava como script, o import definia as funcoes,
+# o processo saia com 0 e o runner reportava PASS -- SEM rodar uma unica assercao.
+# 19 testes do gate que governa o squad inteiro nunca haviam rodado no runner canonico.
+# O guard em run_canaries.py impede que a classe reapareca; este bloco conserta o caso.
+# ---------------------------------------------------------------------------
+if __name__ == "__main__":
+    import subprocess
+    import sys as _sys
+    _r = subprocess.run([_sys.executable, "-m", "pytest", __file__, "-q"],
+                        stdin=subprocess.DEVNULL)
+    _sys.exit(_r.returncode)
