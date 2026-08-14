@@ -107,6 +107,51 @@ def _cobre(escopo, path: str) -> bool:
     return False
 
 
+def _git(*args):
+    """git no ROOT. Devolve stdout limpo, ou None se o comando falhar/git ausente."""
+    import subprocess
+    try:
+        r = subprocess.run(["git", "-C", ROOT, *args], capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", stdin=subprocess.DEVNULL)
+    except (OSError, ValueError):
+        return None
+    return r.stdout.strip() if r.returncode == 0 else None
+
+
+def _recente_o_bastante(v, paths) -> bool:
+    """O veredito cobre o ESTADO ATUAL dos paths, ou e' anterior a eles? (ADR-103 emenda 3)
+
+    Achado BLOQUEANTE da 7a rodada (2026-08-14), reproduzido ao vivo: o gate conferia
+    recomendacao aprovativa, atestacao e ESCOPO — e nada mais. Um veredito gravado as 22:50
+    seguia liberando `tools/test_squad_gate.py` e `tools/run_canaries.py` depois de eles
+    serem modificados as 22:55, indefinidamente. Escopo diz O QUE foi revisado; nao diz
+    QUANDO. Sem esta checagem, "revisado uma vez" virava "liberado para sempre" — a mesma
+    doenca dos achados B2/B2-r2 e da emenda 2, agora no papel `qa_critic`.
+
+    Criterio: **ancestralidade de commit, nao timestamp.** Timestamp se reordena em rebase e
+    depende do relogio de quem gravou; ancestralidade e' fato do grafo. Para cada path
+    avaliado, o ultimo commit que o tocou tem de ser ancestral-ou-igual ao `sha_revisado`
+    declarado no veredito.
+
+    Fail-closed: veredito SEM `sha_revisado` nao passa. Evidencia que nao diz sobre qual
+    estado do codigo foi emitida nao e' evidencia — e' data sem denominador.
+    """
+    sha = str(v.get("sha_revisado", "") or "").strip()
+    if not sha:
+        return False
+    if _git("cat-file", "-e", sha + "^{commit}") is None:
+        return False  # sha declarado nao existe neste repo -> nao serve de prova
+    for p in paths:
+        ultimo = _git("log", "-1", "--format=%H", "--", p)
+        if ultimo is None:
+            return False          # sem git/erro -> fail-closed
+        if not ultimo:
+            continue              # path sem historico (arquivo novo nao commitado): nao libera nem barra
+        if _git("merge-base", "--is-ancestor", ultimo, sha) is None:
+            return False          # ultimo commit do path NAO e' ancestral do revisado
+    return True
+
+
 def _qa_critic_attested(artifacts, paths=None) -> bool:
     """Existe veredito qa-critic APROVATIVO, ATESTADO **e ESCOPADO** aos paths avaliados?
 
@@ -128,7 +173,10 @@ def _qa_critic_attested(artifacts, paths=None) -> bool:
         escopo = v.get("escopo_paths") or []
         if not escopo:
             continue  # sem escopo declarado -> nao serve de evidencia (fail-closed)
-        if all(_cobre(escopo, p) for p in alvo):
+        if not all(_cobre(escopo, p) for p in alvo):
+            continue
+        # escopo cobre, mas o veredito e' anterior as edicoes? (emenda 3, 7a rodada)
+        if _recente_o_bastante(v, alvo):
             return True
     return False
 

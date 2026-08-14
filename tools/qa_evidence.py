@@ -134,6 +134,18 @@ def validate_problemas(problemas):
     return erros
 
 
+def _head_sha():
+    """SHA do HEAD deste repo, ou None se git nao responder."""
+    import subprocess
+    try:
+        r = subprocess.run(["git", "-C", ROOT, "rev-parse", "HEAD"], capture_output=True,
+                           text=True, encoding="utf-8", errors="replace",
+                           stdin=subprocess.DEVNULL)
+    except (OSError, ValueError):
+        return None
+    return r.stdout.strip() if r.returncode == 0 else None
+
+
 def write_artifact(verdict, when=None):
     missing = [k for k in REQUIRED if k not in verdict]
     if missing:
@@ -147,6 +159,12 @@ def write_artifact(verdict, when=None):
         if pp:
             raise ValueError(f"veredito de release sem postura valida: {pp}")
     verdict.setdefault("data", when or _now_iso())
+    # ADR-103 emenda 3 (7a rodada): carimba SOBRE QUAL ESTADO do codigo o veredito foi
+    # emitido. Sem isto o squad_gate nao tem como saber se a evidencia e' anterior as
+    # edicoes que ela diz cobrir — e "revisado uma vez" virava "liberado para sempre".
+    # O campo ja existia no schema e nao era escrito por ninguem: decoracao.
+    if not str(verdict.get("sha_revisado", "") or "").strip():
+        verdict["sha_revisado"] = _head_sha() or ""
     os.makedirs(QA_DIR, exist_ok=True)
     slug = _slug(verdict["bloco"])
     jpath = os.path.join(QA_DIR, slug + ".json")

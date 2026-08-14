@@ -14,11 +14,20 @@ import squad_gate as sg
 MANIFEST = sg.load_manifest()
 
 
-def _ev(recomendacao="aprovar", agentId="", modelo="", autor="", escopo=("src/", "docs/adr/")):
-    """Veredito de teste. `escopo` = escopo_paths declarado (ADR-103 emenda 1): veredito sem
-    escopo NAO conta como evidencia — passe escopo=() para exercitar esse caso."""
+def _ev(recomendacao="aprovar", agentId="", modelo="", autor="", escopo=("src/", "docs/adr/"),
+        sha="__HEAD__"):
+    """Veredito de teste.
+
+    `escopo` = escopo_paths declarado (ADR-103 emenda 1): veredito sem escopo NAO conta —
+    passe escopo=() para exercitar esse caso.
+    `sha` = sha_revisado (emenda 3): por padrao usa o HEAD, para que os testes de caminho
+    feliz continuem exercitando o que querem exercitar; passe sha="" ou um sha antigo para
+    exercitar a checagem de recencia.
+    """
+    if sha == "__HEAD__":
+        sha = sg._git("rev-parse", "HEAD") or ""
     return {"bloco": "x", "passou": True, "recomendacao": recomendacao,
-            "escopo_paths": list(escopo),
+            "escopo_paths": list(escopo), "sha_revisado": sha,
             "atestacao": {"agentId": agentId, "modelo": modelo, "autor": autor}}
 
 
@@ -211,6 +220,52 @@ def test_juncao_release_linha_corrompida_nao_libera(tmp_path, monkeypatch):
     monkeypatch.setattr(sg, "ROOT", str(tmp_path))
     (qa / "junctions" / "l.jsonl").write_text("{lixo nao-json\n", encoding="utf-8")
     assert sg._release_junction_closed() is False
+
+
+def test_recencia_veredito_SEM_sha_revisado_NAO_libera():
+    """Emenda 3 (7a rodada): evidencia que nao diz sobre qual estado foi emitida nao vale."""
+    ev = _ev(agentId="a1", modelo="sonnet", autor="opus", escopo=("src/",), sha="")
+    assert sg._recente_o_bastante(ev, ["src/x.py"]) is False
+
+
+def test_recencia_sha_inexistente_NAO_libera():
+    ev = _ev(agentId="a1", modelo="sonnet", autor="opus", escopo=("src/",))
+    ev["sha_revisado"] = "0" * 40  # sha que nao existe no repo
+    assert sg._recente_o_bastante(ev, ["tools/squad_gate.py"]) is False
+
+
+def test_recencia_sha_ANTIGO_nao_cobre_arquivo_editado_depois():
+    """O caso real: veredito de 22:50 liberando arquivo modificado as 22:55.
+
+    Pega o penultimo commit que tocou o proprio squad_gate.py e usa como `sha_revisado`:
+    o ultimo commit do arquivo NAO e' ancestral dele, entao nao pode liberar.
+    """
+    historico = (sg._git("log", "-2", "--format=%H", "--", "tools/squad_gate.py") or "").split()
+    if len(historico) < 2:
+        return  # repo raso demais para exercitar; nao inventa resultado
+    ev = _ev(agentId="a1", modelo="sonnet", autor="opus", escopo=("tools/",))
+    ev["sha_revisado"] = historico[1]          # penultimo = anterior a ultima edicao
+    assert sg._recente_o_bastante(ev, ["tools/squad_gate.py"]) is False
+
+
+def test_recencia_sha_ATUAL_cobre():
+    ultimo = sg._git("log", "-1", "--format=%H", "--", "tools/squad_gate.py")
+    if not ultimo:
+        return
+    ev = _ev(agentId="a1", modelo="sonnet", autor="opus", escopo=("tools/",))
+    ev["sha_revisado"] = ultimo
+    assert sg._recente_o_bastante(ev, ["tools/squad_gate.py"]) is True
+
+
+def test_evidencia_escopada_mas_ANTIGA_nao_libera_o_gate():
+    """Integracao: escopo cobre, mas o veredito e' anterior -> `qa_critic` continua faltando."""
+    historico = (sg._git("log", "-2", "--format=%H", "--", "tools/squad_gate.py") or "").split()
+    if len(historico) < 2:
+        return
+    ev = _ev(agentId="a1", modelo="sonnet", autor="opus", escopo=("tools/",))
+    ev["sha_revisado"] = historico[1]
+    faltam, _ = sg.evaluate(["tools/squad_gate.py"], MANIFEST, artifacts=[ev])
+    assert "qa_critic" in faltam, "veredito anterior a edicao nao pode liberar o gate"
 
 
 # ---------------------------------------------------------------------------
