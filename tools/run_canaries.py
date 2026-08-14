@@ -62,18 +62,38 @@ def _contar_testes_e_entrypoint(src):
         return len(re.findall(r"^def test_", src, re.M)), bool(
             re.search(r"^if __name__\s*==", src, re.M))
 
-    n = 0
-    entrypoint = False
-    for no in ast.walk(arvore):
-        if isinstance(no, (ast.FunctionDef, ast.AsyncFunctionDef)) and no.name.startswith("test_"):
-            n += 1
-        elif isinstance(no, ast.ClassDef) and no.name.startswith("Test"):
-            pass  # metodos ja contados pelo walk acima
-        elif isinstance(no, ast.If):
-            alvo = no.test
-            if (isinstance(alvo, ast.Compare) and isinstance(alvo.left, ast.Name)
-                    and alvo.left.id == "__name__"):
-                entrypoint = True
+    def _e_teste(no):
+        return (isinstance(no, (ast.FunctionDef, ast.AsyncFunctionDef))
+                and no.name.startswith("test_"))
+
+    def _contar(corpo, dentro_de_classe_teste=False):
+        """So conta o que o pytest coletaria: funcao de modulo (inclusive dentro de
+        if/try/with) e metodo de classe `Test*`. Funcao aninhada DENTRO de outra funcao
+        nunca e' coletada — conta-la gerava FAIL(cego) falso (achado MENOR da 8a rodada)."""
+        total = 0
+        for no in corpo:
+            if _e_teste(no):
+                total += 1                      # nao desce: closures dentro dela nao contam
+            elif isinstance(no, ast.ClassDef):
+                if no.name.startswith("Test"):
+                    total += _contar(no.body, True)
+            elif isinstance(no, (ast.If, ast.Try, ast.With, ast.AsyncWith)):
+                total += _contar(no.body, dentro_de_classe_teste)
+                total += _contar(getattr(no, "orelse", []), dentro_de_classe_teste)
+                total += _contar(getattr(no, "finalbody", []), dentro_de_classe_teste)
+                for h in getattr(no, "handlers", []):
+                    total += _contar(h.body, dentro_de_classe_teste)
+        return total
+
+    def _e_entrypoint(teste):
+        # aceita `__name__ == "__main__"` E a forma invertida `"__main__" == __name__`
+        if not isinstance(teste, ast.Compare):
+            return False
+        lados = [teste.left] + list(teste.comparators)
+        return any(isinstance(x, ast.Name) and x.id == "__name__" for x in lados)
+
+    n = _contar(arvore.body)
+    entrypoint = any(isinstance(no, ast.If) and _e_entrypoint(no.test) for no in arvore.body)
     return n, entrypoint
 
 

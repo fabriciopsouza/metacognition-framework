@@ -14,7 +14,7 @@ import squad_gate as sg
 MANIFEST = sg.load_manifest()
 
 
-def _ev(recomendacao="aprovar", agentId="", modelo="", autor="", escopo=("src/", "docs/adr/"),
+def _ev(recomendacao="aprovar", agentId="", modelo="", autor="", escopo=("tools/", "docs/adr/"),
         sha="__HEAD__"):
     """Veredito de teste.
 
@@ -47,7 +47,7 @@ def test_codigo_sem_evidencia_BLOQUEIA():
 
 def test_codigo_com_evidencia_atestada_PASSA():
     ev = _ev(agentId="a4c1ac49", modelo="claude-haiku", autor="claude-opus")
-    faltam, _ = sg.evaluate(["src/x.py"], MANIFEST, artifacts=[ev])
+    faltam, _ = sg.evaluate(["tools/squad_gate.py"], MANIFEST, artifacts=[ev])
     assert "qa_critic" not in faltam
 
 
@@ -70,7 +70,7 @@ def test_doc_comum_nao_exige_qa():
 
 def test_adr_com_qa_atestado_passa():
     ev = _ev(agentId="a4c1", modelo="claude-haiku", autor="claude-opus")
-    faltam, _ = sg.evaluate(["docs/adr/099-foo.md"], MANIFEST, artifacts=[ev])
+    faltam, _ = sg.evaluate(["docs/adr/103-ativacao-do-squad-gate-como-bloqueio.md"], MANIFEST, artifacts=[ev])
     # architect OK (path e adr) e qa_critic OK (atestado) -> nada falta
     assert faltam == []
 
@@ -117,7 +117,8 @@ def test_evidencia_de_OUTRO_escopo_NAO_libera():
 def test_evidencia_ESCOPADA_libera_so_o_que_cobre():
     ev = _ev(agentId="a1", modelo="claude-sonnet", autor="claude-opus",
              escopo=("_shared/", "docs/adr/"))
-    faltam, _ = sg.evaluate(["_shared/project-docs/SKILL.md", "docs/adr/102-x.md"],
+    faltam, _ = sg.evaluate(["_shared/project-docs/SKILL.md",
+                             "docs/adr/102-padrao-do-conjunto-documental-de-projeto.md"],
                             MANIFEST, artifacts=[ev])
     assert faltam == []
 
@@ -220,6 +221,18 @@ def test_juncao_release_linha_corrompida_nao_libera(tmp_path, monkeypatch):
     monkeypatch.setattr(sg, "ROOT", str(tmp_path))
     (qa / "junctions" / "l.jsonl").write_text("{lixo nao-json\n", encoding="utf-8")
     assert sg._release_junction_closed() is False
+
+
+def test_arquivo_NOVO_sem_historico_NAO_e_liberado_por_escopo_amplo():
+    """Achado GRAVE da 8a rodada: o gemeo do defeito que a emenda 3 conserta.
+
+    Antes, path sem historico no git fazia `continue`, e um veredito de escopo amplo
+    ("tools/") com sha valido liberava um arquivo que nenhum critico jamais viu.
+    """
+    ev = _ev(agentId="a1", modelo="sonnet", autor="opus", escopo=("tools/",))
+    assert sg._recente_o_bastante(ev, ["tools/_arquivo_que_nunca_existiu_xyz.py"]) is False
+    faltam, _ = sg.evaluate(["tools/_arquivo_que_nunca_existiu_xyz.py"], MANIFEST, artifacts=[ev])
+    assert "qa_critic" in faltam, "arquivo sem historico nao pode ser liberado por escopo amplo"
 
 
 def test_recencia_veredito_SEM_sha_revisado_NAO_libera():
