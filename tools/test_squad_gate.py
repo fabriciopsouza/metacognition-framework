@@ -267,14 +267,27 @@ def _descobrir():
 
 
 def _contar_no_fonte():
-    """Quantos `def test_` existem no ARQUIVO — independe do que o import expos."""
-    import re
+    """Quantas funcoes `test_*` de TOPO existem no ARQUIVO, por AST.
+
+    A 1a versao usava regex `^def (test_\\w+)` e a 6a rodada achou o falso positivo: um
+    exemplo dentro de docstring cuja linha comeca com `def test_algo():` era contado como
+    definicao, a barreira disparava e reprovava o release inteiro por um artefato de prosa,
+    com diagnostico enganoso. AST nao confunde texto com codigo.
+
+    Retorna `None` so se o fonte nao puder ser lido — e nesse caso a barreira reprova, em
+    vez de ser pulada em silencio (a versao anterior era fail-open aqui, contradizendo o
+    proprio cabecalho FAIL-CLOSED deste arquivo).
+    """
+    import ast
 
     try:
         src = open(__file__, encoding="utf-8", errors="replace").read()
-    except OSError:
+        arvore = ast.parse(src)
+    except (OSError, SyntaxError):
         return None
-    return len(re.findall(r"^def (test_\w+)", src, re.M))
+    return sum(1 for no in arvore.body
+               if isinstance(no, (ast.FunctionDef, ast.AsyncFunctionDef))
+               and no.name.startswith("test_"))
 
 
 def _rodar_sem_pytest():
@@ -296,12 +309,21 @@ def _rodar_sem_pytest():
     # existe no fonte. Divergencia REPROVA.
     # ------------------------------------------------------------------
     no_fonte = _contar_no_fonte()
-    if no_fonte is not None and no_fonte != len(testes):
-        print(f"FAIL barreira-de-completude: o arquivo tem {no_fonte} `def test_` mas o "
-              f"entrypoint descobriu {len(testes)}.")
-        print("     Causa provavel: teste definido DEPOIS do bloco `if __name__ == \"__main__\":`, "
-              "que nao existe em globals() no momento da descoberta.")
-        print("     Mova o teste para ANTES do bloco. Um teste que nao roda e' pior que ausente.")
+    if no_fonte is None:
+        # fail-closed: nao conseguir ler o proprio fonte nao pode virar "barreira pulada"
+        print("FAIL barreira-de-completude: nao foi possivel ler/parsear o proprio arquivo "
+              "para conferir a contagem de testes.")
+        print("RESULTADO: 0 PASS / 1 FAIL (barreira de completude inoperante)")
+        return 1
+    if no_fonte != len(testes):
+        print(f"FAIL barreira-de-completude: o arquivo define {no_fonte} funcao(oes) `test_*` "
+              f"de topo, mas o entrypoint descobriu {len(testes)}.")
+        print("     Causas possiveis, em ordem: (a) teste definido DEPOIS do bloco "
+              "`if __name__ == \"__main__\":` — nao existe em globals() na hora da descoberta;")
+        print("     (b) teste registrado dinamicamente em globals(), que nao aparece no fonte;")
+        print("     (c) funcao `test_*` importada de outro modulo (o filtro por __module__ a "
+              "descarta).")
+        print("     Um teste que nao roda e' pior que um teste ausente: o verde mente.")
         print(f"RESULTADO: 0 PASS / {no_fonte} FAIL (de {no_fonte} testes do squad_gate)")
         return 1
 

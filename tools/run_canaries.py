@@ -77,8 +77,11 @@ def main(argv):
             print(f"{'FAIL(cego)':9} {fn}")
             print(f"    | {n_testfn} funcao(oes) `def test_` e NENHUM bloco `if __name__ ==`.")
             print("    | Rodado como script, este arquivo nao executa assercao alguma —")
-            print("    | passaria como PASS sem testar nada. Adicione um entrypoint que")
-            print("    | delegue ao pytest e propague o exit code.")
+            print("    | passaria como PASS sem testar nada. Adicione um entrypoint")
+            print("    | STDLIB-ONLY que execute os testes e propague o exit code.")
+            print("    | NAO delegue a `python -m pytest`: o ADR-040 rejeitou pytest como")
+            print("    | entrypoint e a 4a rodada do v1.79.0 mediu a CI caindo nos 3 SOs.")
+            print("    | Modelo pronto: o bloco final de test_squad_gate.py.")
             continue
         proc = subprocess.run(
             [sys.executable, path],
