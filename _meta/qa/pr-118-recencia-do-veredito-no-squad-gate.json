@@ -1,0 +1,67 @@
+{
+  "bloco": "pr-118-recencia-do-veredito-no-squad-gate",
+  "papel": "qa_critic",
+  "rodada": 9,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "sha_revisado": "742745cf5af2664ec190052a08a3b800e507e314",
+  "resumo": "PR #118 (ADR-103 emenda 3): o squad_gate passa a exigir RECENCIA, nao so escopo. 9a rodada, Sonnet isolado contra autor Opus, revisando em worktree isolado no commit 6792400. O fix principal esta correto e provado ao vivo: no fluxo real de CI (diff entre commits do PR) arquivos novos ja tem historico, entao nao ha falso positivo; o bloqueio de path sem historico so aparece no fluxo local pre-commit, que e' o comportamento pretendido e declarado. Uma ressalva MEDIA e LATENTE: a contagem estrutural do guard de canario cego desce em if/try/with mas nao em for/while/match — reproduzida ao vivo com canario sintetico, sem nenhuma ocorrencia nos 67 canarios reais (varredura AST). Tratada como PR proprio, nao corrigida aqui, para nao invalidar o escopo deste veredito.",
+  "verificacoes_executadas": [
+    "git worktree add --detach em 6792400 -> revisao isolada do trabalho em curso na arvore principal",
+    "python tools/run_canaries.py no worktree -> 66 PASS / 1 SKIP / 0 FAIL; nenhum FAIL(cego)",
+    "python tools/test_squad_gate.py -> 26 PASS / 0 FAIL; python -m pytest -> 26 passed (paridade confirmada)",
+    "Arquivo novo COMMITADO + diff estilo CI (git diff --name-only BASE HEAD) -> ja tem historico -> squad_gate responde OK: o fix NAO cria falso positivo no fluxo de CI",
+    "Arquivo novo apenas STAGED + veredito de escopo amplo -> BLOQUEADO (exit 1): confirma o fail-closed pretendido no fluxo local",
+    "Canario sintetico com `def test_*` dentro de `for` de modulo e `assert False` -> reportado PASS sem executar a assercao (ressalva media reproduzida ao vivo)",
+    "Mesmo caso com `while` e `match` -> (0, False): o gap nao e' exclusivo do `for`",
+    "Varredura AST em todos os tools/test_*.py -> nenhum define test_* dentro de for/while: gap LATENTE, nao ativo",
+    "Sanidade da contagem: closure dentro de funcao -> nao conta (correto, pytest nao coleta); classe 'TestesDoGate' -> conta (prefixo Test); 'GateTests' -> nao conta (alinhado ao default do pytest); try/except/else/finally -> os 4 ramos contados",
+    "Leitura linha a linha dos 3 testes repontados: confirmado que ANTES desta correcao eles passavam EXPLORANDO o bug do `continue` (path ficticio sem historico escapava da ancestralidade); agora usam paths reais com historico verificado",
+    "grep sha_revisado em qa_evidence.py -> carimbado no momento da gravacao; a divida declarada no commit continua real e nao foi silenciosamente resolvida nem sobre-alegada",
+    "git worktree remove --force; git status identico ao snapshot inicial, sem residuo de sabotagem",
+    "RECARIMBO (2026-08-15, nao pelo critico): o rebase sobre origin/main orfanou 6792400 — 'git merge-base --is-ancestor 6792400 HEAD' -> falso, nenhuma branch o contem. O sobrevivente e' 742745c, e 'git patch-id --stable' devolve 5c72015a1396aab0efaaf359ec750771d3afe7b1 para OS DOIS: a mudanca revisada e' identica. RESSALVA: as ARVORES nao sao identicas — a de 742745c tem a mais 'docs/_private/reports/emendas-ao-prompt-de-retomada-2026-08-14.md' (+192 linhas, doc-only, entrou pelo PR #119), arquivo que o critico NAO viu. Nenhum path de escopo_paths difere."
+  ],
+  "problemas": [
+    {
+      "severidade": "medio",
+      "local": "tools/run_canaries.py:69-86 (_contar dentro de _contar_testes_e_entrypoint)",
+      "descricao": "A contagem desce em if/try/with mas nao em for/while/match. Uma funcao `test_*` definida no nivel de modulo dentro de um `for` vira nome em globals() e E' coletada pelo pytest, mas a contagem devolve 0 — entao o guard de canario cego nao dispara e o runner reporta PASS sem executar assercao. E' a mesma classe que o guard existe para impedir.",
+      "cenario_de_falha": "Canario sem bloco `if __name__` que define `def test_Y()` dentro de um `for` de modulo (parametrizacao manual). Reproduzido ao vivo com `assert False` dentro: reportado PASS. LATENTE: varredura AST confirma zero ocorrencias nos 67 canarios reais."
+    },
+    {
+      "severidade": "baixo",
+      "local": "tools/squad_gate.py:144-159 (_recente_o_bastante)",
+      "descricao": "Nao e' defeito, e' assimetria documentada: no fluxo local (git diff --cached) um arquivo novo apenas staged e' bloqueado; no CI, ja commitado, passa. O comportamento local e' mais estrito por desenho, e o comentario do codigo declara a intencao.",
+      "cenario_de_falha": "Desenvolvedor roda o gate localmente com arquivo staged e ve BLOQUEADO; no PR o mesmo arquivo passa. Confirmado nos dois fluxos."
+    }
+  ],
+  "escopo_paths": [
+    "tools/squad_gate.py",
+    "tools/run_canaries.py",
+    "tools/test_squad_gate.py",
+    "tools/qa_evidence.py"
+  ],
+  "atestacao": {
+    "agentId": "acf45d30674124877",
+    "modelo": "claude-sonnet-4-6",
+    "modelo_autor": "claude-opus-5",
+    "isolamento": "subagente qa-critic isolado, contexto proprio, revisao em git worktree separado do trabalho em curso",
+    "instrucao": "hipotese default de que existe defeito; instruido a tentar reprovar e a cacar teatro de gate",
+    "cadeia": "9a rodada da serie; as 8 anteriores reprovaram, e em 5 delas o defeito veio da correcao anterior"
+  },
+  "postura": {
+    "rrc": "PASSA — o critico revisou em worktree isolado no commit exato, rodou a suite, o pytest e o gate por conta propria, e reproduziu ao vivo tanto o caso que aprova quanto a ressalva que levanta, em vez de aceitar a mensagem do commit.",
+    "metodo_senior": "N/A: revisao adversarial de PROCESSO sobre bloco alheio, sem autoria de norma/spec/ADR nova pelo critico.",
+    "discovery": "leitura do historico das 8 rodadas anteriores, do diff completo e do ci.yml antes de afirmar qualquer coisa sobre o fluxo real",
+    "fonte_canonica": false,
+    "lacunas_declaradas": "CI real nos 3 SOs nao executado (simulado localmente); a funcao irma _contar_no_fonte nao foi auditada quanto ao mesmo gap por estar fora do diff; concorrencia nao testada"
+  },
+  "o_que_NAO_verifiquei": [
+    "pipeline de CI real no GitHub Actions nos 3 SOs — o fluxo --paths-from foi simulado localmente",
+    "o mesmo gap for/while/match na funcao irma _contar_no_fonte de test_squad_gate.py (fora do diff deste PR)",
+    "varredura exaustiva dos 65 demais canarios por padroes AST exoticos alem dos testados",
+    "concorrencia entre execucoes simultaneas do squad_gate e encoding exotico de path"
+  ],
+  "data": "2026-08-14T14:39:09Z"
+}
