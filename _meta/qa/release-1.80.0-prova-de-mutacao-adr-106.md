@@ -31,3 +31,4 @@
 - python tools/audit_enforcement.py no capabilities.json real: 24 em conformidade, 0 novas sem prova, 57 no passivo — sem regressao nas 23 fail-closed reais
 - python tools/test_audit_enforcement.py: 19/19, exit 0
 - conferencia 1:1 dos 6 nomes de caso citados na tabela de fraudes do ADR-106 contra os nomes reais de caso() no canario: todos batem; contagem de resultados.append = 19, bate com '19 verificacoes' do ADR e do CHANGELOG
+- APOS o commit: 'python tools/audit_enforcement.py --provar --id enforcement-mutation-audit' -> [PROVADO], a mutacao em tools/audit_enforcement.py deixou tools/test_audit_enforcement.py VERMELHO (codigo 1). Esta prova era impossivel antes do commit (o modo --provar opera sobre o HEAD, por desenho) e estava declarada em 'nao_verificado' na rodada 3 — agora esta EXECUTADA.
