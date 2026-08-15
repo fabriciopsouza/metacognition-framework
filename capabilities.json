@@ -1286,6 +1286,29 @@
         "anti-teatro",
         "auditoria"
       ]
+    },
+    {
+      "id": "enforcement-mutation-audit",
+      "title": "Prova de mutacao obrigatoria: capacidade fail-closed declara a sabotagem que deixa seu canario VERMELHO",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/audit_enforcement.py",
+      "test": "tools/test_audit_enforcement.py",
+      "adr": "docs/adr/106-prova-de-mutacao-para-capacidade-fail-closed.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "mutacao": {
+        "arquivo": "tools/audit_enforcement.py",
+        "de": "problema = \"declara `fail-closed` sem `mutacao` declarada\"",
+        "para": "problema = None",
+        "canario": "tools/test_audit_enforcement.py"
+      },
+      "tags": [
+        "qa",
+        "anti-teatro",
+        "auditoria",
+        "enforcement"
+      ]
     }
   ],
   "registry_waivers": [

@@ -9,6 +9,49 @@
 
 ---
 
+## 2026-08-14 — Release v1.80.0 (MINOR): prova de mutação para capacidade `fail-closed` — verde só conta depois de saber ficar vermelho (ADR-106)
+
+Bloco nascido **fora** do framework. O dono mandou auditar um gate de status de projeto no
+repositório `agente-copilot-studio` com uma pergunta seca: *"é real ou hardcodado? funciona
+de verdade ou engana?"*. O teste que sustentava aquele gate anunciava **9/9 verificações
+passaram**. Apagada **toda** a lógica de detecção do gate, o teste continuou **9/9** — porque
+conferia só `código de saída ≠ 0` e outra checagem já derrubava o processo. Crítico
+independente reproduziu.
+
+**O que isso expôs aqui dentro.** A mesma classe já tinha acontecido duas vezes: ADR-096
+achado A2 (canário aferia só o `returncode`; a mutação que removia o campo **passava**) e
+v1.79.0 (canário fazia *monkeypatch da própria função* que deveria testar). E o ADR-096
+registra, com todas as letras, *"provado por mutação"* — **a técnica já existia, funcionou,
+achou defeito real, e nunca virou exigência.** Dívida de institucionalização, não de invenção.
+
+Passivo medido antes da emenda: **80 capacidades · 35 sem nenhum campo `enforcement` · 22
+`fail-closed` que ninguém jamais sabotou para conferir · zero auditores**. O ADR-015 se chama
+"enforcement executável" e era, ele próprio, prosa não verificada.
+
+**Entregue:** `tools/audit_enforcement.py` — capacidade `fail-closed` declara a mutação que
+faz o canário dela falhar, em campos executáveis; `--provar` aplica num worktree isolado e
+**exige vermelho**. Recusa seis formas de fraude, cada uma com caso de teste nomeado. Decisão
+do dono sobre escopo: **(a) fail-closed para capacidade nova · (b) advisory para o passivo**,
+congelado e **pinado por sha256**. Mais a rule **#12** do `qa-critic` e
+`tools/test_audit_enforcement.py` (**19 verificações**), que roda o auditor contra o
+`capabilities.json` **real** — é essa chamada que faz do modo (a) um gate de CI e não um
+script que alguém precisa lembrar de rodar.
+
+**Três rodadas adversariais: `reprovar` → `corrigir` → `aprovar`.** Os dois bloqueantes da
+rodada 1 foram contra o **texto**, não contra o código: (i) o ADR afirmava que as três fraudes
+tinham *"cada uma seu caso de teste"* e **uma não tinha** — o crítico sabotou justamente essa
+checagem e o canário seguiu verde; (ii) nada chamava o auditor contra o estado real. A rodada 2
+achou o cross-check `mutacao` × `mechanism`/`test` sendo **opt-in**: bastava omitir os campos
+para a proteção sumir em silêncio. Afirmação antes da verificação, no documento que institui a
+norma contra isso — registrado no ADR porque é a melhor evidência de que a norma é necessária.
+
+**Régua §0:** adição pura, sem porta (a)/(b)/(c). Segue por **override explícito do dono**, com
+condição de quitação escrita: migrar o passivo. **Não mecanizado, declarado:** coerência entre
+o adjetivo do índice e o campo `enforcement`.
+
+**Próximo passo:** migrar o passivo das 57 capacidades — cada uma ganha `mutacao` provada ou é
+rebaixada ao `enforcement` que de fato tem. É a condição que quita o override da régua §0.
+
 ## 2026-08-13 — Release v1.79.0 (MINOR): padrão documental de projeto; matriz de revisão ampliada; ativação do gate desacoplada (ADR-102, ADR-103, ADR-104)
 
 Bloco nascido de uma **falha do próprio agente**, não de um pedido. Ao fechar a entrega

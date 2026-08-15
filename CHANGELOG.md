@@ -15,6 +15,46 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.80.0] — 2026-08-14 — Prova de mutação para capacidade `fail-closed`: verde só conta depois de saber ficar vermelho (ADR-106)
+
+[EMERGENTE] · [CONFIRMADO — nasce de falha medida três vezes, uma delas fora do framework]
+
+**Origem.** Auditoria, a pedido do dono, de um gate num projeto que usa o framework. O teste que
+anunciava *"9/9 — o gate BLOQUEIA mesmo"* continuou **9/9 com toda a lógica do gate apagada**:
+conferia só `rc != 0`, e outra checagem já derrubava o processo. Reproduzido por crítico
+independente em modelo diferente do autor.
+
+**O que a auditoria expôs dentro de casa.** A mesma classe já tinha acontecido duas vezes — ADR-096
+achado A2 (canário aferia só o `returncode`; a mutação passava) e v1.79.0 (canário fazia monkeypatch
+da própria função que deveria testar). O ADR-096 registra *"provado por mutação"*: **a técnica já
+existia, funcionava, e nunca virou exigência.** Passivo medido: 80 capacidades, 35 sem campo
+`enforcement`, 22 `fail-closed` nunca sabotadas para conferir, zero auditores.
+
+**Entregue (ADR-106, emenda ao ADR-015):** `tools/audit_enforcement.py` — capacidade que declara
+`fail-closed` declara também a mutação que faz seu canário falhar, em campos executáveis; o modo
+`--provar` aplica a mutação num worktree isolado e **exige vermelho**. Recusa mutação que não sabota
+(`de` == `para`), mutação obsoleta e canário que já estava vermelho antes. Decisão do dono sobre
+escopo: **(a) fail-closed para capacidade nova · (b) advisory para o passivo**, congelado e **pinado
+por sha256** em `_meta/enforcement-baseline.json`. Mais a rule **#12** do `qa-critic` e o canário
+`tools/test_audit_enforcement.py` (**19 verificações**), que roda o auditor contra o
+`capabilities.json` real — é isso que faz do modo (a) um gate de CI e não um script manual —,
+**prova a mutação de si mesmo** e exercita o modo `--provar` contra um repo-fixture.
+
+**A rodada 1 foi REPROVADA pelo crítico adversarial, e o achado bloqueante foi contra este próprio
+texto:** o ADR afirmava que as três fraudes tinham *"cada uma seu caso de teste"* e uma não tinha —
+o crítico sabotou essa checagem e o canário seguiu verde. Afirmação antes da verificação, no
+documento que institui a norma contra isso. Corrigido na rodada 2, junto com: cross-check entre a
+mutação e o `mechanism`/`test` reais da capacidade, pino do passivo (fechando o escape de
+simplesmente acrescentar o próprio id à lista), `git worktree prune` contra órfão, e — na rodada 3 — o fechamento do buraco residual em que omitir `mechanism`/`test` desligava o cross-check em silêncio. Mais um defeito que
+a cobertura nova revelou — `--gerar-baseline` gravava o arquivo e **depois** quebrava ao formatar
+caminho fora do repo.
+
+**Régua §0:** adição pura, sem porta (a)/(b)/(c). Segue por **override explícito do dono**, com
+condição de quitação escrita no ADR: migrar o passivo.
+
+**Não mecanizado, declarado:** coerência entre o adjetivo do índice e o campo `enforcement`; e a
+migração das 57 capacidades do passivo.
+
 ## [1.79.0] — 2026-08-13 — Padrão documental de projeto (ADR-102), matriz de revisão ampliada e desacoplamento da ativação do gate e da extração do P14 (ADR-103, ADR-104, ADR-105)
 
 [EMERGENTE] · [CONFIRMADO — os dois ADRs nascem de falha observada na própria sessão]

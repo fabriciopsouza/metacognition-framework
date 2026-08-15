@@ -1,0 +1,287 @@
+#!/usr/bin/env python3
+"""
+test_audit_enforcement.py — canario do auditor de enforcement (ADR-106).
+
+Este canario obedece a propria rule #12 que o ADR-106 institui:
+  1. confere a MENSAGEM, nunca so o codigo de saida (bloqueio pelo motivo errado
+     e' indistinguivel de bloqueio pelo motivo certo quando so se olha `rc != 0`);
+  2. prova o COMPORTAMENTO contra fixtures em pasta temporaria (teste que depende do
+     estado do repo passa por acidente) — E, no fim, roda o auditor UMA vez contra o
+     `capabilities.json` real. Sem essa ultima chamada, nada no CI olharia o registro
+     de verdade e o modo (a) seria script manual, nao gate (achado 2 do qa-critic);
+  3. traz a PROVA DE MUTACAO de si mesmo: sabota o auditor e exige que o caso que
+     antes barrava passe a nao barrar — provando que a checagem e' quem carrega o peso.
+
+Uso: python tools/test_audit_enforcement.py     (exit 0 = PASS)
+NAO usa IA.
+"""
+import hashlib
+import json
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+RAIZ = Path(__file__).resolve().parent.parent
+AUDITOR = RAIZ / "tools" / "audit_enforcement.py"
+PY = sys.executable
+
+# Passivo congelado na adocao do ADR-106. Mudar exige atualizar estes dois valores no
+# MESMO commit, com motivo — e' o que impede escapar do modo (a) acrescentando o proprio
+# id ao passivo (achado #4 do qa-critic, 2026-08-14).
+BASELINE_N = 80
+BASELINE_SHA = "242303796e01f06be26c5a9f4e2694f4121641d7876924e65f945e024828dc74"
+
+MUTACAO_OK = {"arquivo": "tools/x.py", "de": "return 1", "para": "return 0",
+              "canario": "tools/test_x.py"}
+
+
+def rodar(auditor, caps, baseline, *extra):
+    """Executa o auditor contra fixtures. Devolve (codigo, saida)."""
+    r = subprocess.run([PY, "-X", "utf8", str(auditor), "--capabilities", str(caps),
+                        "--baseline", str(baseline), *extra],
+                       capture_output=True, text=True, encoding="utf-8", cwd=str(RAIZ))
+    return r.returncode, (r.stdout or "") + (r.stderr or "")
+
+
+def escrever(tmp, capacidades, ids_baseline=()):
+    caps = tmp / "caps.json"
+    base = tmp / "baseline.json"
+    caps.write_text(json.dumps({"capabilities": capacidades}, ensure_ascii=False),
+                    encoding="utf-8")
+    base.write_text(json.dumps({"ids": list(ids_baseline)}, ensure_ascii=False),
+                    encoding="utf-8")
+    return caps, base
+
+
+def caso(nome, codigo_esperado, trecho_esperado, codigo, saida, resultados):
+    """Confere codigo E mensagem. Sem a mensagem, o teste nao e' falsificavel."""
+    ok = codigo == codigo_esperado and trecho_esperado.lower() in saida.lower()
+    print(f"  [{'PASS' if ok else 'FALHA'}] {nome}")
+    print(f"          codigo {codigo} (esperado {codigo_esperado}) · "
+          f"mensagem contem {trecho_esperado!r}: "
+          f"{'sim' if trecho_esperado.lower() in saida.lower() else 'NAO'}")
+    if not ok:
+        print(f"          saida: {saida.strip()[:300]}")
+    resultados.append(ok)
+    return ok
+
+
+def main():
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except AttributeError:
+        pass
+    print("=== O AUDITOR DE ENFORCEMENT BARRA MESMO? ===\n")
+    resultados = []
+    with tempfile.TemporaryDirectory(prefix="audit-enf-") as t:
+        tmp = Path(t)
+
+        # (a) capacidade NOVA que se declara fail-closed sem prova -> BARRA
+        caps, base = escrever(tmp, [{"id": "nova", "enforcement": "fail-closed"}])
+        c, s = rodar(AUDITOR, caps, base)
+        caso("nova `fail-closed` sem `mutacao` declarada", 1,
+             "sem `mutacao` declarada", c, s, resultados)
+
+        # (a) capacidade NOVA sem o campo enforcement -> BARRA
+        caps, base = escrever(tmp, [{"id": "nova", "title": "x"}])
+        c, s = rodar(AUDITOR, caps, base)
+        caso("nova sem campo `enforcement`", 1, "invisivel a auditoria", c, s, resultados)
+
+        # mutacao que nao sabota nada -> BARRA
+        m = dict(MUTACAO_OK, para="return 1")
+        caps, base = escrever(tmp, [{"id": "nova", "enforcement": "fail-closed", "mutacao": m}])
+        c, s = rodar(AUDITOR, caps, base)
+        caso("`mutacao` com `de` == `para`", 1, "nao sabota nada", c, s, resultados)
+
+        # mutacao incompleta -> BARRA, dizendo QUAL campo falta
+        m = {k: v for k, v in MUTACAO_OK.items() if k != "canario"}
+        caps, base = escrever(tmp, [{"id": "nova", "enforcement": "fail-closed", "mutacao": m}])
+        c, s = rodar(AUDITOR, caps, base)
+        caso("`mutacao` sem o campo `canario`", 1, "sem os campos: canario", c, s, resultados)
+
+        # (b) MESMA falta, mas no passivo herdado -> NAO barra (decisao do dono)
+        caps, base = escrever(tmp, [{"id": "velha", "enforcement": "fail-closed"}],
+                              ids_baseline=["velha"])
+        c, s = rodar(AUDITOR, caps, base)
+        caso("passivo herdado sem prova (modo b: advisory)", 0, "no passivo herdado",
+             c, s, resultados)
+
+        # o relatorio do passivo mostra o item, sem barrar
+        c, s = rodar(AUDITOR, caps, base, "--passivo")
+        caso("relatorio do passivo cita o item", 0, "velha", c, s, resultados)
+
+        # caso legitimo -> PASSA. Auditor que barra tudo tambem e' inutil.
+        caps, base = escrever(tmp, [{"id": "nova", "enforcement": "fail-closed",
+                                     "mechanism": "tools/x.py", "test": "tools/test_x.py",
+                                     "mutacao": MUTACAO_OK}])
+        c, s = rodar(AUDITOR, caps, base)
+        caso("nova com `mutacao` completa (deve passar)", 0, "nenhuma nova sem prova",
+             c, s, resultados)
+
+        # Omitir `mechanism`/`test` NAO pode desligar o cross-check em silencio — bastaria
+        # nao declarar os campos para a prova provar qualquer arquivo (achado 3 residual,
+        # qa-critic rodada 2).
+        caps, base = escrever(tmp, [{"id": "nova", "enforcement": "fail-closed",
+                                     "mutacao": MUTACAO_OK}])
+        c, s = rodar(AUDITOR, caps, base)
+        caso("`fail-closed` sem `mechanism`/`test` declarados", 1,
+             "sem mechanism e sem test", c, s, resultados)
+
+        # JSON quebrado -> mensagem tratada, nao stack trace (achado 8 da auditoria externa)
+        ruim = tmp / "ruim.json"
+        ruim.write_text('{"capabilities": [ }', encoding="utf-8")
+        c, s = rodar(AUDITOR, ruim, base)
+        ok = caso("JSON invalido devolve mensagem tratada", 1, "nao e' json valido",
+                  c, s, resultados)
+        if ok and "Traceback" in s:
+            print("          FALHA extra: ainda imprime Traceback")
+            resultados[-1] = False
+
+        # --- modo --provar exercitado contra um repo-fixture --------------------------
+        # O modo forte do auditor (aplica a mutacao de verdade e exige vermelho) so vale
+        # se ele proprio for exercitado. Fixture: um repo git com um mecanismo e um canario.
+        print("\n  --- modo --provar, contra repo-fixture ---")
+        fix = tmp / "fixture"
+        (fix / "tools").mkdir(parents=True)
+        (fix / "tools" / "x.py").write_text("# comentario inofensivo\nVALOR = 42\n",
+                                            encoding="utf-8")
+        (fix / "tools" / "test_x.py").write_text(
+            "import sys, pathlib\n"
+            "t = (pathlib.Path(__file__).parent / 'x.py').read_text(encoding='utf-8')\n"
+            "sys.exit(0 if 'VALOR = 42' in t else 1)\n", encoding="utf-8")
+        git = ["git", "-c", "user.email=c@x", "-c", "user.name=canario"]
+        pronto = all(subprocess.run(c, capture_output=True, cwd=str(fix)).returncode == 0
+                     for c in (["git", "init", "-q"], ["git", "add", "-A"],
+                               git + ["commit", "-qm", "fixture"]))
+        if not pronto:
+            print("  [SKIP declarado] git indisponivel para montar o fixture — "
+                  "modo --provar NAO exercitado nesta execucao.")
+        else:
+            # (i) mutacao que REALMENTE quebra -> o canario fica vermelho -> PROVADO
+            caps, base = escrever(tmp, [{"id": "fx", "enforcement": "fail-closed",
+                "mechanism": "tools/x.py", "test": "tools/test_x.py", "mutacao": {
+                "arquivo": "tools/x.py", "de": "VALOR = 42", "para": "VALOR = 99",
+                "canario": "tools/test_x.py"}}])
+            c, s = rodar(AUDITOR, caps, base, "--provar", "--raiz", str(fix))
+            caso("mutacao real derruba o canario", 0, "[provado]", c, s, resultados)
+
+            # (ii) mutacao que o canario NAO enxerga -> auditor acusa, codigo 2
+            caps, base = escrever(tmp, [{"id": "fx", "enforcement": "fail-closed",
+                "mechanism": "tools/x.py", "test": "tools/test_x.py", "mutacao": {
+                "arquivo": "tools/x.py", "de": "# comentario inofensivo",
+                "para": "# nada muda", "canario": "tools/test_x.py"}}])
+            c, s = rodar(AUDITOR, caps, base, "--provar", "--raiz", str(fix))
+            caso("canario cego a mutacao e' acusado", 2, "continuou verde", c, s, resultados)
+
+            # (iii) mutacao obsoleta (trecho `de` nao existe mais) -> acusa, nao passa calado
+            caps, base = escrever(tmp, [{"id": "fx", "enforcement": "fail-closed",
+                "mechanism": "tools/x.py", "test": "tools/test_x.py", "mutacao": {
+                "arquivo": "tools/x.py", "de": "TRECHO QUE NAO EXISTE", "para": "z",
+                "canario": "tools/test_x.py"}}])
+            c, s = rodar(AUDITOR, caps, base, "--provar", "--raiz", str(fix))
+            caso("mutacao obsoleta e' acusada", 2, "obsoleta", c, s, resultados)
+
+            # (iv) canario que JA nasce vermelho -> a prova nao diz nada, tem de acusar.
+            # Este caso faltava na 1a rodada, e o ADR AFIRMAVA que ele existia — achado
+            # bloqueante #1 do qa-critic em 2026-08-14. A afirmacao veio antes do teste.
+            (fix / "tools" / "test_sempre_vermelho.py").write_text(
+                "import sys\nsys.exit(1)\n", encoding="utf-8")
+            subprocess.run(["git", "add", "-A"], capture_output=True, cwd=str(fix))
+            subprocess.run(git + ["commit", "-qm", "canario sempre vermelho"],
+                           capture_output=True, cwd=str(fix))
+            caps, base = escrever(tmp, [{"id": "fx", "enforcement": "fail-closed",
+                "mechanism": "tools/x.py", "test": "tools/test_sempre_vermelho.py", "mutacao": {
+                "arquivo": "tools/x.py", "de": "VALOR = 42", "para": "VALOR = 99",
+                "canario": "tools/test_sempre_vermelho.py"}}])
+            c, s = rodar(AUDITOR, caps, base, "--provar", "--raiz", str(fix))
+            caso("canario ja vermelho ANTES da mutacao e' acusado", 2,
+                 "ja estava vermelho antes", c, s, resultados)
+
+        # mutacao apontando para arquivo que NAO e' o mecanismo da capacidade -> BARRA.
+        # Sem isto, a "prova" provaria outra coisa (achado 3 do qa-critic).
+        caps, base = escrever(tmp, [{"id": "nova", "enforcement": "fail-closed",
+                                     "mechanism": "tools/verdadeiro.py",
+                                     "test": "tools/test_verdadeiro.py",
+                                     "mutacao": MUTACAO_OK}])
+        c, s = rodar(AUDITOR, caps, base)
+        caso("`mutacao.arquivo` diferente do `mechanism` declarado", 1,
+             "nao e' o mecanismo", c, s, resultados)
+
+        caps, base = escrever(tmp, [{"id": "nova", "enforcement": "fail-closed",
+                                     "mechanism": "tools/x.py",
+                                     "test": "tools/test_verdadeiro.py",
+                                     "mutacao": MUTACAO_OK}])
+        c, s = rodar(AUDITOR, caps, base)
+        caso("`mutacao.canario` diferente do `test` declarado", 1,
+             "nao e' o canario", c, s, resultados)
+
+        # --gerar-baseline tinha zero cobertura (achado 7 do qa-critic)
+        alvo_base = tmp / "gerado.json"
+        caps, _ = escrever(tmp, [{"id": "um"}, {"id": "dois"}])
+        c, s = rodar(AUDITOR, caps, alvo_base, "--gerar-baseline")
+        ok = c == 0 and alvo_base.is_file() and \
+            json.loads(alvo_base.read_text(encoding="utf-8")).get("ids") == ["dois", "um"]
+        print(f"  [{'PASS' if ok else 'FALHA'}] --gerar-baseline congela os ids ordenados")
+        resultados.append(ok)
+
+        # --- PROVA DE MUTACAO DO PROPRIO CANARIO (rule #12) --------------------------
+        # Sabota o auditor e exige que o 1o caso deixe de barrar. Se continuar barrando,
+        # e' porque outra coisa estava derrubando o processo e este canario nao provava nada.
+        print("\n  --- prova de mutacao: sabotando o proprio auditor ---")
+        fonte = AUDITOR.read_text(encoding="utf-8")
+        alvo = 'problema = "declara `fail-closed` sem `mutacao` declarada"'
+        if alvo not in fonte:
+            print("  [FALHA] trecho da mutacao nao encontrado — prova obsoleta")
+            resultados.append(False)
+        else:
+            sabotado = tmp / "audit_sabotado.py"
+            sabotado.write_text(fonte.replace(alvo, "problema = None", 1), encoding="utf-8")
+            caps, base = escrever(tmp, [{"id": "nova", "enforcement": "fail-closed"}])
+            c, s = rodar(sabotado, caps, base)
+            ok = c == 0
+            print(f"  [{'PASS' if ok else 'FALHA'}] auditor sabotado deixa de barrar "
+                  f"(codigo {c}, esperado 0)")
+            if not ok:
+                print("          A checagem sabotada NAO era a responsavel pelo bloqueio.")
+                print(f"          saida: {s.strip()[:300]}")
+            resultados.append(ok)
+
+    # --- O ESTADO REAL DO REPO, e nao so fixtures ---------------------------------
+    # Fixtures provam o COMPORTAMENTO; sem esta secao nada no CI olharia o
+    # `capabilities.json` de verdade, e o modo (a) seria script manual, nao gate
+    # (achado bloqueante #2 do qa-critic, 2026-08-14). E' esta chamada que faz o
+    # `run_canaries.py` barrar uma capacidade nova sem prova de mutacao.
+    print("\n  --- o repo REAL passa no modo (a)? ---")
+    r = subprocess.run([PY, "-X", "utf8", str(AUDITOR)], capture_output=True, text=True,
+                       encoding="utf-8", cwd=str(RAIZ))
+    saida = (r.stdout or "") + (r.stderr or "")
+    ok = r.returncode == 0 and "nenhuma nova sem prova" in saida
+    print(f"  [{'PASS' if ok else 'FALHA'}] capabilities.json real sem capacidade nova "
+          f"sem prova (codigo {r.returncode})")
+    if not ok:
+        print(f"          {saida.strip()[:400]}")
+    resultados.append(ok)
+
+    # Baseline PINADO: sem isto, escapar do modo (a) seria so acrescentar o proprio id
+    # a lista do passivo (achado #4 do qa-critic). Mexer no passivo agora quebra o CI
+    # e exige decisao explicita — que e' o ponto.
+    ids = json.loads((RAIZ / "_meta" / "enforcement-baseline.json")
+                     .read_text(encoding="utf-8")).get("ids", [])
+    h = hashlib.sha256("\n".join(sorted(ids)).encode("utf-8")).hexdigest()
+    ok = len(ids) == BASELINE_N and h == BASELINE_SHA
+    print(f"  [{'PASS' if ok else 'FALHA'}] passivo intacto: {len(ids)} ids "
+          f"(esperado {BASELINE_N}), sha256 {'confere' if h == BASELINE_SHA else 'DIVERGE'}")
+    if not ok:
+        print("          O passivo mudou. Migrar capacidade do passivo e' decisao "
+              "declarada: atualize BASELINE_N/BASELINE_SHA no mesmo commit, com motivo.")
+    resultados.append(ok)
+
+    print(f"\nRESULTADO: {sum(resultados)}/{len(resultados)} verificacoes passaram")
+    if not all(resultados):
+        print("O AUDITOR NAO FAZ O QUE PROMETE. Corrigir antes de confiar nele.")
+    return 0 if all(resultados) else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
