@@ -49,8 +49,7 @@ norma contra isso — registrado no ADR porque é a melhor evidência de que a n
 condição de quitação escrita: migrar o passivo. **Não mecanizado, declarado:** coerência entre
 o adjetivo do índice e o campo `enforcement`.
 
-**Próximo passo:** migrar o passivo das 57 capacidades — cada uma ganha `mutacao` provada ou é
-rebaixada ao `enforcement` que de fato tem. É a condição que quita o override da régua §0.
+**Próximo passo:** migrar o passivo das 57 capacidades, começando por `handoff-generator` — cada uma ganha `mutacao` provada ou é rebaixada ao `enforcement` que de fato tem; é a condição que quita o override da régua §0. (Campo em UMA linha de propósito: o extrator do P14 trunca na quebra, medido em 14/08 — pendência #1, decisão do dono.)
 
 ## 2026-08-13 — Release v1.79.0 (MINOR): padrão documental de projeto; matriz de revisão ampliada; ativação do gate desacoplada (ADR-102, ADR-103, ADR-104)
 

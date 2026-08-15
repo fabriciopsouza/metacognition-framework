@@ -182,6 +182,32 @@ falsa em documento**. São classes distintas, com causas distintas, e misturá-l
 
 ---
 
+## K. Pendência #1 (extração do P14) — 7ª ocorrência, medida no checkpoint desta sessão
+
+Ao gerar o P14 de fechamento, o campo saiu **truncado na quebra de linha**. Fonte no `history.md`:
+
+    **Próximo passo:** migrar o passivo das 57 capacidades — cada uma ganha `mutacao` provada ou é
+    rebaixada ao `enforcement` que de fato tem. É a condição que quita o override da régua §0.
+
+O que o P14 entregou:
+
+    **Objetivo:** migrar o passivo das 57 capacidades — cada uma ganha `mutacao` provada ou é
+
+**O truncamento é invisível** — *"...provada ou é"* não parece cortado o bastante para alguém
+desconfiar, e a próxima sessão receberia o objetivo pela metade sem nenhum aviso. É o defeito #2 da
+tabela do ADR-105 (*"truncado parece completo"*) reaparecendo pela porta da continuação de linha,
+que é o defeito #5 da mesma tabela.
+
+**Não corrigi o parser.** É núcleo em disputa, a decisão entre *canário que exige campo em linha
+própria* × *parser linha-a-linha* é sua, e mexer ali no fim de uma sessão é exatamente o padrão que
+produziu seis defeitos consecutivos. Corrigi **o dado**: o `Próximo passo` deste checkpoint está em
+uma linha só, com o motivo declarado no próprio texto. O P14 agora extrai o campo inteiro.
+
+**Evidência para a decisão:** o critério do prompt é *"extrair o campo inteiro nos 63 checkpoints,
+verificado por detector genérico"*. Este é o **64º**, e ele reprova. Se a opção escolhida for o
+canário que exige campo em linha própria, ele precisa **falhar** neste caso — o que é uma prova de
+mutação pronta, no sentido do ADR-106.
+
 ## J. Estado e autorização — pendente de decisão do dono
 
 O bloco `v1.80.0` está **não-commitado**, na branch `docs/relatorio-sessao-2026-08-13` (ahead 1 de
