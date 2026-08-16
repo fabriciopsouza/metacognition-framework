@@ -1,0 +1,77 @@
+{
+  "bloco": "release-1.81.0-rotacao-do-history",
+  "release": "1.81.0",
+  "papel": "qa_critic",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "sha_revisado": "1a1b3af",
+  "resumo": "Fable isolado contra autor Opus. R1 REPROVOU com achado ALTO real: o merge manteve o history.md da main (66 checkpoints, nunca rotacionado) E o history-archive.md herdado da branch (46 checkpoints) — os 46 existiam nos DOIS. Rodar a ferramenta nesse estado acrescentaria 56 ao frio, dos quais 46 ja estavam la, produzindo 102 blocos com 46 duplicados e violando o contrato 'sem deletar, mesma ordem' do proprio ADR-107. Corrigido apagando o frio herdado e executando a rotacao de verdade. R2 confirmou por conta propria e aprovou, com uma ressalva operacional que evitou um segundo acidente: o arquivo frio aparecia simultaneamente como deletado no indice e nao-rastreado, e um commit sem `git add` explicito teria apagado os 56 checkpoints do repositorio, deixando o quente com um ponteiro para arquivo inexistente.",
+  "verificacoes_executadas": [
+    "R1 em worktree isolado em 1a1b3af: interseccao de cabecalhos entre quente e frio -> 56 duplicados; dry-run confirmando arquivo total=102",
+    "R1: verificou que NAO houve perda de trabalho no merge — ferramenta, canario, ADR-107, arquivo frio e a capacidade sobreviveram; a capacidade aponta para o ADR renumerado",
+    "R1: confirmou que existe um unico docs/adr/092-* (enforcement, legitimo da main) e um unico docs/adr/107-* (rotacao)",
+    "R1: exercitou a ferramenta em history de mentira — zero perda, secoes inteiras no quente, idempotente em duas rodadas",
+    "R2 sobre a correcao: quente 10 + frio 56 = 66 do original; interseccao vazia; zero duplicata interna no frio; todo bloco BYTE-IDENTICO ao que existia em 1a1b3af; CRLF preservado nos dois arquivos",
+    "R2: ordem do frio e' subsequencia da ordem original; `## Em aberto` e `## Aprendizado` inteiras SO' no quente (a ocorrencia no frio era substring em prosa de checkpoint arquivado, nao linha de secao)",
+    "R2: release 1.81.0 e ponteiro para o frio presentes no quente; segunda rotacao devolve changed=False",
+    "R2: `git status --porcelain -uall` mostrando o frio como D no indice e ?? na arvore — risco de o commit apagar o arquivo; encenado e corrigido com `git add` explicito, conferido por `git diff --cached --stat` (152 linhas indo para o commit)",
+    "autor: 66 -> 10 quentes + 56 frios medidos contra `git show HEAD:history.md`; history.md encolheu 836 linhas"
+  ],
+  "problemas": [
+    {
+      "severidade": "alto",
+      "local": "history.md x docs/history/history-archive.md",
+      "descricao": "CORRIGIDO. O merge preservou o quente da main e o frio da branch, duplicando 46 checkpoints e deixando a ferramenta em estado onde usa-la corromperia o arquivo frio.",
+      "cenario_de_falha": "`python tools/rotate_history.py` no estado pos-merge: 56 blocos ao frio, 46 ja presentes, total 102 com duplicata."
+    },
+    {
+      "severidade": "medio",
+      "local": "docs/history/history-archive.md (indice do git)",
+      "descricao": "CORRIGIDO antes do commit. O arquivo aparecia como deletado no indice e nao-rastreado na arvore ao mesmo tempo; commit sem `git add` explicito o teria apagado do repositorio.",
+      "cenario_de_falha": "Commit direto: o quente fica com 10 checkpoints e um ponteiro para arquivo que nao existe no clone."
+    },
+    {
+      "severidade": "baixo",
+      "local": "tools/test_rotate_history.py (docstring)",
+      "descricao": "CORRIGIDO. Citava ADR-092 para a rotacao; quem seguisse a referencia cairia no ADR-092 legitimo, que e' sobre enforcement do squad.",
+      "cenario_de_falha": "Leitor segue a referencia e le o documento errado."
+    },
+    {
+      "severidade": "baixo",
+      "local": "docs/_private/handoffs/2026-08-07-debitos-de-fechamento-v1.77.0.md",
+      "descricao": "NAO corrigido, por acordo entre autor e critico: e' registro datado de epoca e a renumeracao so existe desde ontem. Editar retroativamente violaria a preservacao de registro.",
+      "cenario_de_falha": "Leitor futuro do handoff segue a referencia ao numero antigo."
+    }
+  ],
+  "escopo_paths": [
+    "tools/rotate_history.py",
+    "tools/test_rotate_history.py",
+    "docs/adr/107-rotacao-history-poda-de-contexto.md",
+    "docs/history/history-archive.md",
+    "history.md",
+    "capabilities.json"
+  ],
+  "atestacao": {
+    "agentId": "aaba4f69bf67ca0e9",
+    "modelo": "claude-fable-5",
+    "modelo_autor": "claude-opus-5",
+    "isolamento": "subagente qa-critic isolado; R1 em git worktree separado, R2 na arvore principal a pedido, sem comando destrutivo",
+    "instrucao": "hipotese default de defeito; comparar o que a branch trazia com o que sobreviveu ao merge e exercitar a ferramenta de verdade",
+    "cadeia": "R1 REPROVOU (1 ALTO, 2 BAIXOS) -> autor corrigiu -> R2 aprovou com 1 ressalva operacional que evitou perda de arquivo no commit"
+  },
+  "postura": {
+    "rrc": "PASSA — o critico comparou byte a byte contra o commit anterior via git show, em vez de aceitar a contagem do autor, e foi isso que revelou tanto a duplicata quanto o risco do indice.",
+    "metodo_senior": "N/A: desencalhe de branch sob ADR ja aceito.",
+    "discovery": "comparacao do que a branch trazia originalmente contra o que sobreviveu ao merge, antes de julgar",
+    "fonte_canonica": false,
+    "lacunas_declaradas": "o checkpoint de release nao foi lido linha a linha; o cabecalho do novo arquivo frio nao foi comparado ao formato do antigo"
+  },
+  "nao_verificado": [
+    "as ~29 linhas do checkpoint da v1.81.0 no quente, linha a linha",
+    "se o cabecalho do novo arquivo frio difere em formato do arquivo frio antigo da branch",
+    "rotacao com --keep diferente do default de 10"
+  ],
+  "data": "2026-08-16T11:10:00Z"
+}

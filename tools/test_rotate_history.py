@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""test_rotate_history.py — canario de tools/rotate_history.py (ADR-092). Standalone: exit 0 = PASS.
+"""test_rotate_history.py — canario de tools/rotate_history.py (ADR-107). Standalone: exit 0 = PASS.
 
 Prova as invariantes que tornam a rotacao SEGURA (mover != deletar):
   1. quente + arquivo = conjunto ORIGINAL de checkpoints (zero perda, zero duplicata);
