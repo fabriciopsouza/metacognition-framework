@@ -9,6 +9,35 @@
 
 ---
 
+## 2026-08-16 — Release v1.81.0 (MINOR): rotação determinística do `history.md` — a branch de dois meses entra sem levar junto uma colisão de numeração (ADR-107)
+
+Bloco de **desencalhe**, não de invenção. O trabalho existia desde 20/06 numa branch aberta em
+24/06 e nunca revisada: `tools/rotate_history.py` mantém quentes os últimos N checkpoints mais as
+seções `## Em aberto` e `## Aprendizado` inteiras, e move os antigos para
+`docs/history/history-archive.md`. Nada some, e rodar duas vezes não muda o resultado.
+
+**O que quase entrou junto.** O ADR chegava numerado como **092**, e a `main` já usa esse número
+para a camada de enforcement do squad. Mergear assim criaria **dois ADRs com o mesmo número** —
+exatamente a dimensão de duplicata que o gate de consistência, cabeado nesta mesma sessão, acabou
+de ganhar. Renumerado para **107**, com as referências corrigidas no documento, na ferramenta, no
+arquivo frio e no registro de QA da época. A colisão foi detectada por leitura antes do merge, não
+pelo gate — o gate teria pego depois, o que já é melhor do que ninguém pegar.
+
+**Dois meses de divergência.** A branch tocava README, CHANGELOG, registro de capacidades e os
+seis pacotes web, todos alterados desde então. Reconciliado por **merge** e não rebase — force-push
+segue negado por regra da máquina, e rebase orfanaria vereditos de QA. Arquivos gerados resolvidos
+na versão da `main` e regenerados a partir do dado, nunca editados à mão.
+
+**Também nesta sessão, fora do bloco:** as quatro tags de release ausentes desde 02/06 foram
+criadas e publicadas (v1.76.0, v1.77.0, v1.79.0, v1.80.0), fechando o achado F2 do handoff de
+07/08; o PR #116 foi fechado porque dois dos três achados dele já não existiam; e o recibo do gate
+de fechamento, que eu criara sem entrada no `.gitignore`, parou de sujar a árvore a cada sessão.
+
+**Próximo passo:** implementar o ADR-092 (manifesto de comportamento com portão automático) e o
+ADR-097 (medir executado × desenhado), ambos ratificados pelo dono nesta sessão. Critério de
+aceite do 097 está escrito no próprio documento: `tools/conformance.py` verde na suíte — *"sem
+isso há intenção de rigor, não rigor"*.
+
 ## 2026-08-16 — Release v1.80.1 (PATCH): a prova de mutação não provava — três defeitos no auditor recém-nascido (ADR-106, emendas 2 e 3)
 
 O dono abriu a sessão pedindo sete coisas do framework: gates e canários que sejam reais e não

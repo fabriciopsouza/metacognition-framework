@@ -15,6 +15,29 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.81.0] — 2026-08-16 — Rotação determinística do `history.md`: poda de contexto sem perder nada (ADR-107)
+
+[CONSOLIDADO] · [CONFIRMADO — canário próprio, idempotência verificada]
+
+O `history.md` é lido na abertura de toda sessão e passou de 1100 linhas. Ele é a memória do
+projeto, então apagar não é opção — mas carregar tudo a cada boot custa contexto que faz falta
+para o trabalho.
+
+`tools/rotate_history.py` mantém **quentes** os últimos N checkpoints mais as seções `## Em aberto`
+e `## Aprendizado` **inteiras** — as duas que o boot precisa por completo — e move os checkpoints
+antigos para `docs/history/history-archive.md`. Nada é descartado: o arquivo frio fica no repo,
+com ponteiro no quente. A operação é **idempotente**: rodar duas vezes não muda o resultado.
+
+O trabalho estava numa branch parada desde **24/06**. Ao retomar, dois problemas foram corrigidos
+antes do merge:
+
+- **Colisão de numeração.** O ADR entrava como 092, número que a `main` já usa para a camada de
+  enforcement do squad. Renumerado para **107**, com as referências atualizadas no próprio
+  documento, na ferramenta, no arquivo frio e no registro de QA da época.
+- **Dois meses de divergência.** A branch tocava README, CHANGELOG, registro de capacidades e os
+  seis pacotes web, todos alterados desde então. Reconciliado por merge, com os arquivos gerados
+  mantidos na versão da `main` e regenerados a partir do dado.
+
 ## [1.80.1] — 2026-08-16 — A prova de mutação não provava: crash em mecanismo não-Python e cache de bytecode (ADR-106, emendas 2 e 3)
 
 [CONSOLIDADO] · [CONFIRMADO — os três defeitos foram reproduzidos, dois por crítico independente e um por experimento determinístico]
