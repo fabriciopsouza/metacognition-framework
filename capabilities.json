@@ -1391,6 +1391,23 @@
         "history",
         "canary"
       ]
+    },
+    {
+      "id": "squad-gate-git-hook",
+      "title": "Instalador do pre-commit que faz o squad-gate rodar sozinho, com escapatoria declarada",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/install_git_hooks.py",
+      "test": "tools/test_install_git_hooks.py",
+      "adr": "docs/adr/092-camada-enforcement-comportamentos-manifesto-gate-githook.md",
+      "cross_ai": false,
+      "enforcement": "fail-soft",
+      "tags": [
+        "enforcement",
+        "squad",
+        "git",
+        "determinismo"
+      ]
     }
   ],
   "registry_waivers": [

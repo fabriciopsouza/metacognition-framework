@@ -1,6 +1,6 @@
 # ADR-092 — Camada de enforcement de comportamentos: manifesto declarativo (forma BMAD) + gate determinístico por git-hook
 
-- **Status:** **Proposto — revisão v2 pós-qa-critic** (2026-06-22). qa-critic REPROVOU a v1 (3 CRÍTICOS);
+- **Status:** **Aceito** (2026-08-16 — ratificado pelo dono; implementação fechada em v1.82.0). Histórico: v1 foi **reprovada** pelo qa-critic com 3 achados críticos; a v2 corrigiu e ficou parada em Proposto por dois meses. Ao retomar, foi medido que 3 das 4 peças já existiam e faltava o instalador do gancho — escrito e instalado em v1.82.0. Pendência remanescente, registrada em `## Em aberto`: `tools/research_evidence.py`. qa-critic REPROVOU a v1 (3 CRÍTICOS);
   esta v2 corrige. Aguarda ratificação do dono + novo qa-critic.
 - **Autor:** sessão `claude-opus-4-8` (papel architect). Decide e documenta; NÃO implementa aqui.
 

@@ -15,6 +15,37 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.82.0] — 2026-08-16 — O gate do squad passa a rodar sozinho: instalador do gancho de pre-commit (ADR-092)
+
+[CONSOLIDADO] · [CONFIRMADO — 15 verificações, instalado e exercitado neste próprio repositório]
+
+O ADR-092 previu quatro peças. Três existiam desde junho: a matriz declarativa de quais papéis
+são obrigatórios por tipo de mudança (`behaviors/manifest.json`), o gate que a lê
+(`tools/squad_gate.py`) e o canário dele. **A quarta nunca foi escrita** — e era justamente a que
+faz as outras funcionarem sem alguém pedir.
+
+Medido antes de escrever: `.git/hooks/pre-commit` não existia, e na integração contínua o gate
+roda com `|| echo "::warning::"` — avisa e deixa passar. O mecanismo estava construído e
+desligado, que é a falha mais repetida deste repositório.
+
+`tools/install_git_hooks.py` instala o gancho que roda o gate antes de cada commit. Quatro
+decisões de desenho, todas para ele não virar o gancho que alguém desinstala no primeiro aperto:
+
+- **Bloqueia só quando o gate diz que falta evidência.** Python ausente, gate quebrado ou qualquer
+  outro código de saída **libera** o commit. Ferramenta com defeito não pode impedir trabalho.
+- **A saída de emergência é declarada no próprio texto do bloqueio:** `git commit --no-verify`.
+  Gate sem escapatória visível é gate desinstalado — e aí não protege mais nada.
+- **Não sobrescreve gancho alheio.** Se já existe um `pre-commit` de outra origem, recusa e diz o
+  que fazer.
+- **Respeita `core.hooksPath`.** Instalar em `.git/hooks` quando o git foi configurado para ler
+  outro diretório daria falsa sensação de proteção.
+
+Instalado e exercitado neste repositório — o passo de dogfooding que o próprio ADR listava como
+pendência. Registro de capacidades: 84 → **85**. Suíte: **72 PASS · 1 SKIP · 0 FAIL** de 73.
+
+Continua pendente do ADR-092: `tools/research_evidence.py`, ligado ao comportamento de busca
+exaustiva antes de declarar DESCONHECIDO. É feature própria, registrada em `## Em aberto`.
+
 ## [1.81.0] — 2026-08-16 — Rotação determinística do `history.md`: poda de contexto sem perder nada (ADR-107)
 
 [CONSOLIDADO] · [CONFIRMADO — canário próprio, idempotência verificada]

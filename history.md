@@ -13,6 +13,35 @@
 > **Poda de contexto (ADR-107):** este arquivo quente mantem os ultimos **10** checkpoints + `## Em aberto` + `## Aprendizado`. **56** checkpoints mais antigos estao em [`docs/history/history-archive.md`](docs/history/history-archive.md) (nada deletado — so realocado). Rotacao: `python tools/rotate_history.py`.
 <!-- history-archive-pointer -->
 
+## 2026-08-16 — Release v1.82.0 (MINOR): o gate do squad passa a rodar sozinho — a quarta peça do ADR-092, que nunca foi escrita (ADR-092 Aceito)
+
+O dono mandou implementar os ADRs 092 e 097. A primeira coisa foi medir, não codar: **o 092 já
+estava 60% pronto** desde junho. A matriz declarativa de quais papéis são obrigatórios por tipo de
+mudança existia, o gate que a lê existia, o canário dele existia. **A quarta peça — o instalador
+do gancho — nunca foi escrita**, e era justamente a que faz as outras rodarem sem alguém pedir.
+
+Medido antes de escrever: `.git/hooks/pre-commit` não existia neste repositório, e na integração
+contínua o gate roda com `|| echo "::warning::"`. Construído e desligado — a falha mais repetida
+deste repo, agora na sua terceira aparição nesta mesma sessão (o gate de consistência do ADR-030
+e o cache de bytecode foram as outras duas).
+
+**Quatro decisões para o gancho não virar o gancho que alguém desinstala:** bloqueia só quando o
+gate diz que falta evidência (ferramenta quebrada libera o commit); a saída de emergência
+`--no-verify` é declarada no próprio texto do bloqueio; recusa sobrescrever gancho alheio; e
+respeita `core.hooksPath`, porque instalar onde o git não lê dá falsa sensação de proteção.
+
+Instalado e exercitado aqui — era o item 4 das pendências do próprio ADR. Com isso o **ADR-092
+passa a Aceito**, com uma pendência remanescente declarada: `tools/research_evidence.py`.
+
+**O ADR-097, ao contrário, é trabalho real e não começou.** Medido: `tools/conformance.py` não
+existe e o ledger não tem os campos `resource` e `status` que ele exige. As três pendências
+listadas no próprio documento continuam abertas.
+
+**Próximo passo:** implementar o ADR-097. Critério de aceite escrito por ele mesmo:
+`tools/conformance.py` + canário rodando verde na suíte — *"sem isso há intenção de rigor, não
+rigor"*. Pré-requisito: estender o schema do ledger com `resource` e `status`, e escrever o modelo
+formal das junções J0–J6, que é o que o verificador compara contra o executado.
+
 ## 2026-08-16 — Release v1.81.0 (MINOR): rotação determinística do `history.md` — a branch de dois meses entra sem levar junto uma colisão de numeração (ADR-107)
 
 Bloco de **desencalhe**, não de invenção. O trabalho existia desde 20/06 numa branch aberta em
@@ -379,6 +408,12 @@ Riscos ativos: corte do release feito de `9TRP7H4` (não-kerberus); se kerberus 
 > entra/permanece se está ABERTO; fechar = remover daqui + checkpoint registra.
 
 - **[2026-08-07] Débitos de fechamento do bloco v1.77.0 — 3 achados, NADA aplicado.** Handoff completo (com comando de re-validação e predicado "aplicar SÓ SE" por item) em `docs/_private/handoffs/2026-08-07-debitos-de-fechamento-v1.77.0.md`. Resumo: **F1** ordem do `history.md` invertida (v1.77.0 abaixo de v1.76.0) — quebra a invariante mais-novo-primeiro e faz `handoff.py` emitir o "Próximo passo" errado, em silêncio · **F2** tags `v1.76.0`/`v1.77.0` ausentes (local e `origin`) — **2ª ocorrência** da falha catalogada em 2026-06-02, gatilho atingido · **F3** registro do ADR-100 nunca alimentado (`~/.claude/trabalhos/` inexistente) — critério de aceite do próprio checkpoint não atendido; **não verificável de outra máquina**. Candidato §0: 2 asserções em `test_consistency_closing.py`, fundindo com o item de backlog "Canário README × topo do CHANGELOG". **Aplicar só após revisão e re-validação contra a versão vigente** — o handoff congela o estado em `main` @ `8820608`. Fechar = remover esta linha + checkpoint datado.
+- **`tools/research_evidence.py` — última peça do ADR-092** (aberto em 16/08/2026, ao aceitar o
+  ADR): o manifesto declara o comportamento *busca exaustiva antes de declarar DESCONHECIDO*, mas
+  a ferramenta que colhe e confere a evidência dessa busca nunca foi escrita. Sem ela, esse
+  comportamento específico continua sendo prosa, mesmo com o gate e o gancho já rodando. Fechar =
+  escrever a ferramenta + canário, ou rebaixar o comportamento no manifesto para o que ele de fato
+  exige hoje. Gatilho: próxima vez que um DESCONHECIDO for declarado sem busca registrada.
 - **Pendência permanente (não-código, dono/TI):** exclusão do Kaspersky `.claude\hooks\*` (afeta só os hooks .ps1 remanescentes; ADR-060/079).
 - **Backlog ativo (trigger-gated, NÃO WIP):**
   - **Canário README × topo do CHANGELOG inexistente** (dívida PRÉ-EXISTENTE exposta pelo qa-critic em v1.73.0, 2026-07-22): a política do repo exige que README, tag e .zip subam junto com o CHANGELOG, mas **nenhum canário compara esse par**. `test_marketing_claims` cobre vitrine × README e **lê a versão do próprio README** — então README(1.72.0) × CHANGELOG(1.73.0) passou verde. Em v1.73.0 o sintoma foi corrigido à mão; o mecanismo não existe. **Candidato §0:** +1 asserção em `test_consistency_closing.py` (que já é o gate de version-claim), não canário novo. Trigger: 2ª ocorrência OU dono declarar.
