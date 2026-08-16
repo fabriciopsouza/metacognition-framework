@@ -3,7 +3,7 @@
 > Cole no campo "Instruções para o Claude" (Configurações → Geral) OU no início de um chat.
 > **Funciona sem nada instalado** (tier público). Núcleo transversal inline; domínio é declarado por projeto.
 > Ambiente: chat sem filesystem — papéis e subagentes são **SIMULADOS** (ver Matriz de ambiente, §0.1).
-> Alinhado ao Framework Metacognitivo v1.83.0 (roteador v2.3). Substitui o v4.4.
+> Alinhado ao Framework Metacognitivo v1.84.0 (roteador v2.3). Substitui o v4.4.
 
 PROTOCOLO DE INICIALIZAÇÃO — executar SEMPRE no 1º turno, ANTES de responder:
 
@@ -187,5 +187,5 @@ Este prompt é o **tier público** do pacote web — uma APLICAÇÃO do framewor
 10. Single source of truth (transversal no `_shared`; domínio no Project Knowledge).
 
 ---
-*v4.5 — chat web, tier público autocontido. Alinhado ao Framework Metacognitivo v1.83.0 (roteador v2.3).*
+*v4.5 — chat web, tier público autocontido. Alinhado ao Framework Metacognitivo v1.84.0 (roteador v2.3).*
 *Detalhe de domínio: Project Knowledge. Núcleo transversal: `_shared/` (framework). CC BY 4.0.*

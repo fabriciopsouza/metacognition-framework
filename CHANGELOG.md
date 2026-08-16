@@ -15,6 +15,57 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.84.0] — 2026-08-16 — "O processo foi seguido?" deixa de ser opinião e vira número (ADR-097 Aceito)
+
+[CONSOLIDADO] · [CONFIRMADO — 20 verificações; o crítico reprovou a primeira versão com um achado que esvaziava o mecanismo]
+
+Fecha o último ADR em `Proposto`. Ele nasceu de uma frase do dono em 23/06 — *"onde sou advisory
+dá pra ficar hard?"* — e listava três pendências, com um critério de aceite escrito por ele mesmo:
+*"sem isso há intenção de HARD, não HARD"*.
+
+### As três pendências, fechadas
+
+**O ledger virou event log.** `qa_evidence.py` passa a gravar `status` explícito (antes o sucesso
+era implícito — existir o registro significava ter passado, e o rewind ficava invisível),
+`resource` (quem produziu o PASS) e `prova` (ponteiro que **resolve**: arquivo existente, objeto
+git, ou digest bem-formado). Ponteiro que não resolve é recusado na escrita.
+
+**O fluxo virou modelo conferível.** `_meta/conformance/modelo-juncoes.json` descreve J0–J6 com as
+regras e o porquê de cada uma. Versionado de propósito: quando o fluxo mudar, muda ali e o
+verificador acompanha, sem tocar em código.
+
+**`tools/conformance.py` compara executado contra desenhado** e devolve *fitness* mais violações
+nomeadas por regra. Rodado no ledger real na primeira execução: 6 blocos, um deles com **fitness
+0.0** — a junção final registrada sem nenhuma anterior. Isso deixou de depender de alguém notar.
+
+O ratchet que o próprio ADR pediu: as duas regras de calibração apenas avisam nos primeiros cinco
+blocos medidos e reprovam depois. Gate calibrado no chute é gate desligado na primeira semana.
+
+### O crítico reprovou a primeira versão, e estava certo
+
+A flag `rewind: true` sozinha desligava **as duas** checagens de topologia, em **qualquer
+direção**. Um bloco que registrasse só a junção final com a flag pendurada devolvia fitness 1.0 e
+zero violações — "processo completo e conforme" sem ter passado por etapa alguma. Esvaziava o ADR
+inteiro.
+
+Agora o rewind só vale **declarado no status e regredindo**; salto para frente mascarado de rewind
+é violação nomeada. Mais três achados corrigidos: `status` passou a ser conjunto fechado (um
+`"TALVEZ"` passava silencioso), trace vazio deixou de valer 1.0 (ausência de dado não é
+conformidade), e o texto passou a declarar o que a prova **não** garante.
+
+### O teto, dito sem rodeio
+
+O agente escreve o ledger que o verificador lê. Isso é **auditabilidade** — um terceiro re-roda e
+chega ao mesmo número —, não constrangimento externo. Hard de verdade exigiria árbitro neutro
+escrevendo o log, e está fora do escopo. Chamar de "hard" sem essa ressalva seria o overclaim que
+este repositório inteiro persegue.
+
+Continua pendente do ADR-097, registrado em `## Em aberto`: o hook de camada rápida e o HITL
+criptográfico como pré-condição de ação irreversível. Nenhum dos dois é pré-requisito — o ADR
+declara o canário como a lei e o hook como conveniência.
+
+Capacidades: 87 → **88**. Suíte: **75 PASS · 1 SKIP · 0 FAIL** de 76 canários.
+
 ## [1.83.0] — 2026-08-16 — "NÃO SEI" só vale depois de busca provada, e a instalação passa a se verificar (ADR-092 fechado)
 
 [CONSOLIDADO] · [CONFIRMADO — 22 verificações novas, cada guarda vista reprovando antes de valer]

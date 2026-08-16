@@ -1,0 +1,78 @@
+{
+  "bloco": "release-1.84.0-conformance-de-topologia",
+  "release": "1.84.0",
+  "papel": "qa_critic",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "sha_revisado": "1a0390f",
+  "resumo": "Sonnet isolado contra autor Opus, sobre a implementacao do ADR-097. R1 REPROVOU com achado CRITICO e o pior possivel para este mecanismo: a flag booleana `rewind: true` sozinha desligava AS DUAS checagens de topologia, em QUALQUER direcao. Um bloco com um unico registro — a juncao final com a flag pendurada — devolvia fitness 1.0 e zero violacoes, ou seja, 'processo completo e conforme' sem ter passado por etapa alguma. O verificador criado para provar que o processo foi seguido aprovava exatamente o contrario. Mais tres achados: `status` fora do conjunto fechado passava silencioso; trace vazio devolvia fitness 1.0 (vacuo lido como conformidade); e a validacao de prova aceita qualquer arquivo existente sem conferir relevancia — sendo que o proprio canario do autor usava CLAUDE.md como prova das oito juncoes, demonstrando o buraco. Os quatro corrigidos com caso de regressao nomeado.",
+  "verificacoes_executadas": [
+    "R1 construiu os traces adversariais e reproduziu cada um por chamada direta a avaliar_trace",
+    "R1 provou a falsificabilidade do canario sabotando uma regra DIFERENTE da que o autor ja cobria (sem-salto em vez de forward-only): 3 falhas especificas, exit 1; restaurou por copia de backup, sem git, e confirmou identidade byte a byte",
+    "R1 confirmou que a arvore ficou identica ao inicio, sem arquivo espurio",
+    "correcao do CRITICO: rewind so' vale declarado no `status` E regredindo em ordem; flag sem status e' violacao nomeada; rewind que nao regride e' salto mascarado, tambem violacao",
+    "correcao: STATUS_VALIDOS como conjunto fechado; status fora dele e' violacao",
+    "correcao: trace vazio devolve fitness 0.0 e violacao `vacuo` — ausencia de dado nao e' conformidade",
+    "correcao: o teto real da validacao de prova passou a ser declarado nos dois arquivos, e o canario deixou de usar o mesmo arquivo como prova de todas as juncoes",
+    "canario 15 -> 20 verificacoes; suite 75 PASS / 1 SKIP / 0 FAIL de 76",
+    "primeira execucao sobre o ledger real: 6 blocos, um com fitness 0.0 (juncao final sem nenhuma anterior)"
+  ],
+  "problemas": [
+    {
+      "severidade": "critico",
+      "local": "tools/conformance.py (avaliar_trace)",
+      "descricao": "CORRIGIDO. A flag `rewind: true` isolada desligava forward-only E sem-salto em qualquer direcao, contando o passo como aceito. Esvaziava o proposito central do ADR.",
+      "cenario_de_falha": "avaliar_trace([{juncao J6, rewind: true}]) devolvia fitness 1.0 e zero violacoes — processo inteiro dado por conforme com um unico registro."
+    },
+    {
+      "severidade": "medio",
+      "local": "tools/conformance.py (avaliar_trace)",
+      "descricao": "CORRIGIDO. `status` nao era validado contra conjunto fechado; string arbitraria escapava das comparacoes e o passo contava como aceito.",
+      "cenario_de_falha": "status 'TALVEZ' em J1 -> fitness 1.0, zero violacoes."
+    },
+    {
+      "severidade": "medio",
+      "local": "tools/qa_evidence.py (_validar_prova)",
+      "descricao": "CORRIGIDO NO TEXTO, nao no comportamento — por decisao. A validacao confere que o ponteiro RESOLVE, nao que seja relevante nem que o digest corresponda a algo. Conferir relevancia exigiria semantica; conferir digest exigiria a fonte. O docstring passou a declarar as duas ausencias, porque chamar de 'ponteiro verificavel' sem elas era overclaim.",
+      "cenario_de_falha": "CLAUDE.md aceito como prova de qualquer juncao; sha256 de 64 hex inventado aceito sem conferencia."
+    },
+    {
+      "severidade": "baixo",
+      "local": "tools/conformance.py (fitness de trace vazio)",
+      "descricao": "CORRIGIDO. Trace sem nenhum passo devolvia 1.0, indistinguivel de fluxo inteiro bem executado.",
+      "cenario_de_falha": "ledger criado e nunca alimentado aparecia como bloco conforme."
+    }
+  ],
+  "escopo_paths": [
+    "tools/conformance.py",
+    "tools/test_conformance.py",
+    "tools/qa_evidence.py",
+    "_meta/conformance/modelo-juncoes.json",
+    "capabilities.json",
+    "docs/adr/097-conformance-topologia-hard-event-log-canario-process-mining.md"
+  ],
+  "atestacao": {
+    "agentId": "a60a8246b50f08eca",
+    "modelo": "claude-sonnet-4-6",
+    "modelo_autor": "claude-opus-5",
+    "isolamento": "subagente qa-critic isolado, revisao na arvore de trabalho com proibicao explicita de comando destrutivo; devolveu a arvore identica e declarou o metodo de restauracao",
+    "instrucao": "hipotese default de defeito; construir traces adversariais concretos e sabotar uma regra DIFERENTE da ja coberta pelo autor",
+    "cadeia": "R1 REPROVOU (1 CRITICO, 2 MEDIOS, 1 BAIXO) -> autor corrigiu os 4 com prova de mutacao -> veredito registrado. 9a rodada da sessao."
+  },
+  "postura": {
+    "rrc": "PASSA — o critico nao aceitou a demonstracao do autor: escolheu de proposito sabotar uma regra que o teste do autor NAO cobria, e foi assim que mediu se o canario tinha valor real.",
+    "metodo_senior": "N/A: implementacao de ADR ja desenhado, sem autoria de norma nova.",
+    "discovery": "leitura do ADR-097 e do modelo formal antes de julgar o verificador; construcao dos traces a partir das regras declaradas, nao de intuicao",
+    "fonte_canonica": false,
+    "lacunas_declaradas": "o caso 'blocos diferentes misturados no mesmo arquivo' foi INFERIDO por leitura, nao reproduzido; concorrencia no ratchet nao testada; gravacao real via CLI do ledger nao exercitada de ponta a ponta"
+  },
+  "nao_verificado": [
+    "mistura de blocos diferentes no mesmo arquivo .jsonl — o campo `bloco` da linha nao e' comparado ao nome do arquivo; INFERIDO por leitura, nao reproduzido",
+    "concorrencia no arquivo de ratchet, e --gate chamado fora de ordem entre blocos",
+    "gravacao real de um registro pelo CLI `qa_evidence.py --junction` de ponta a ponta",
+    "os itens 4 e 5 do mecanismo do ADR-097 (hook de camada rapida e HITL como pre-condicao T3) — nao implementados, registrados em `## Em aberto`"
+  ],
+  "data": "2026-08-16T16:10:00Z"
+}

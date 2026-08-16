@@ -13,6 +13,36 @@
 > **Poda de contexto (ADR-107):** este arquivo quente mantem os ultimos **10** checkpoints + `## Em aberto` + `## Aprendizado`. **56** checkpoints mais antigos estao em [`docs/history/history-archive.md`](docs/history/history-archive.md) (nada deletado — so realocado). Rotacao: `python tools/rotate_history.py`.
 <!-- history-archive-pointer -->
 
+## 2026-08-16 — Release v1.84.0 (MINOR): "o processo foi seguido?" deixa de ser opinião e vira número (ADR-097 Aceito)
+
+Fecha o **último ADR em `Proposto`**. Ele nasceu de uma frase sua em 23/06 — *"onde sou advisory
+dá pra ficar hard?"* — e trazia um critério de aceite escrito por ele mesmo: *"sem isso há intenção
+de HARD, não HARD"*.
+
+**As três pendências.** O ledger virou event log: `status` explícito (antes o sucesso era
+implícito e o rewind ficava invisível), `resource` e `prova` — ponteiro que resolve, recusado na
+escrita se não resolver. O fluxo J0–J6 virou modelo versionado. E `tools/conformance.py` compara
+executado contra desenhado, devolvendo fitness e violações nomeadas por regra.
+
+**Na primeira execução sobre o ledger real:** 6 blocos, um com **fitness 0.0** — a junção final
+registrada sem nenhuma anterior. Estava lá desde sempre; ninguém tinha como ver.
+
+**O crítico reprovou minha primeira versão com o pior achado possível para este mecanismo.** A
+flag `rewind: true` sozinha desligava as duas checagens de topologia, em qualquer direção — um
+bloco com um único registro, a junção final com a flag pendurada, devolvia fitness 1.0 e zero
+violações. "Processo completo e conforme" sem ter passado por etapa alguma. O verificador criado
+para provar que o processo foi seguido aprovava o inverso. Mais três: `status` inventado passava
+silencioso, trace vazio valia 1.0, e o meu próprio canário usava `CLAUDE.md` como prova das oito
+junções — **demonstrando o buraco que eu não tinha declarado**.
+
+**Padrão que se repete e vale registrar:** das nove rodadas adversariais desta sessão, cinco
+reprovaram, e em quatro delas o defeito estava no mecanismo *criado para impedir aquele mesmo tipo
+de defeito*. Não é coincidência — é o que acontece quando se escreve a régua e se mede com ela na
+mesma sessão.
+
+**Próximo passo:** o documento cross-IA de aprendizado com erros, e a varredura de alinhamento dos
+demais guias contra o estado real. Nenhum ADR permanece em `Proposto`.
+
 ## 2026-08-16 — Release v1.83.0 (MINOR): "NÃO SEI" só vale depois de busca provada, e a instalação passa a se verificar (ADR-092 fechado)
 
 Fecha a última peça do ADR-092 e responde ao pedido do dono de um runbook que permita instalar em
@@ -446,6 +476,13 @@ Riscos ativos: corte do release feito de `9TRP7H4` (não-kerberus); se kerberus 
   comportamento específico continua sendo prosa, mesmo com o gate e o gancho já rodando. Fechar =
   escrever a ferramenta + canário, ou rebaixar o comportamento no manifesto para o que ele de fato
   exige hoje. Gatilho: próxima vez que um DESCONHECIDO for declarado sem busca registrada.
+- **ADR-097 itens 4 e 5 do §Mecanismo** (aberto em 16/08/2026, ao aceitar o ADR): a camada-mestra
+  (canário fail-closed sobre o event log) está entregue; faltam o **hook PreToolUse** que nega ação
+  de papel downstream sem PASS upstream — camada rápida, best-effort por desenho — e cabear o
+  **HITL criptográfico** como pré-condição de ação T3 em bloco high-stakes (`verify_hitl_proofs.py`
+  já existe; falta a ligação). Nenhum dos dois é pré-requisito da conformance: o ADR declara o
+  canário como a lei e o hook como conveniência. Gatilho: dono declarar, ou primeira vez que uma
+  ação downstream sem upstream passar despercebida até a release.
 - **Pendência permanente (não-código, dono/TI):** exclusão do Kaspersky `.claude\hooks\*` (afeta só os hooks .ps1 remanescentes; ADR-060/079).
 - **Backlog ativo (trigger-gated, NÃO WIP):**
   - **Canário README × topo do CHANGELOG inexistente** (dívida PRÉ-EXISTENTE exposta pelo qa-critic em v1.73.0, 2026-07-22): a política do repo exige que README, tag e .zip subam junto com o CHANGELOG, mas **nenhum canário compara esse par**. `test_marketing_claims` cobre vitrine × README e **lê a versão do próprio README** — então README(1.72.0) × CHANGELOG(1.73.0) passou verde. Em v1.73.0 o sintoma foi corrigido à mão; o mecanismo não existe. **Candidato §0:** +1 asserção em `test_consistency_closing.py` (que já é o gate de version-claim), não canário novo. Trigger: 2ª ocorrência OU dono declarar.

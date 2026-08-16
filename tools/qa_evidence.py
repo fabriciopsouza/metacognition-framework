@@ -33,6 +33,7 @@ import datetime
 import json
 import os
 import re
+import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -174,8 +175,52 @@ def write_artifact(verdict, when=None):
     return jpath, mpath
 
 
+def _validar_prova(prova):
+    """Devolve o ponteiro se ele RESOLVE; levanta ValueError se nao (ADR-097 mecanismo ii).
+
+    Tres formas aceitas, todas conferiveis por terceiro que tenha o repo:
+      · caminho de arquivo que existe            -> `_meta/qa/x.json`
+      · objeto git que existe                     -> `a1b2c3d` (commit, tag, blob)
+      · digest declarado com o algoritmo          -> `sha256:<64 hex>`
+
+    Por que validar na ESCRITA e nao so' na leitura: ponteiro quebrado gravado hoje vira
+    "evidencia" que ninguem confere amanha.
+
+    O QUE ISTO **NAO** GARANTE — dito sem rodeio, porque chamar de "ponteiro verificavel" sem a
+    ressalva seria o proprio overclaim que este repo persegue (achado do qa-critic, 2026-08-16):
+      · NAO confere RELEVANCIA. `CLAUDE.md` e' aceito como prova de qualquer juncao.
+      · NAO confere CORRESPONDENCIA. Um `sha256:<64 hex>` inventado passa: ninguem calcula o
+        digest de nada para comparar.
+    O que ele garante e' menor e ainda assim util: o ponteiro **resolve** — existe arquivo, existe
+    objeto git, ou o digest esta bem-formado. Elimina o campo preenchido com prosa ou com caminho
+    que nunca existiu. Nao elimina o teto de auto-atestacao; estreita o buraco.
+    """
+    p = str(prova).strip()
+    if not p:
+        raise ValueError("`prova` vazia — use caminho de arquivo, sha de commit ou sha256:<hex>")
+    if p.lower().startswith("sha256:"):
+        h = p.split(":", 1)[1].strip()
+        if len(h) == 64 and all(c in "0123456789abcdefABCDEF" for c in h):
+            return p
+        raise ValueError(f"`prova` sha256 malformada ({h[:16]}...): esperado 64 digitos hex")
+    if os.path.isfile(os.path.join(ROOT, p)) or os.path.isfile(p):
+        return p
+    if 7 <= len(p) <= 40 and all(c in "0123456789abcdefABCDEF" for c in p):
+        try:
+            r = subprocess.run(["git", "-C", ROOT, "cat-file", "-e", p + "^{object}"],
+                               capture_output=True, timeout=20)
+            if r.returncode == 0:
+                return p
+        except (OSError, subprocess.SubprocessError):
+            pass
+        raise ValueError(f"`prova` parece sha ({p}) mas nao existe neste repositorio")
+    raise ValueError(f"`prova` ({p}) nao resolve: nao e' arquivo existente, nem objeto git, "
+                     f"nem sha256:<hex>. Ponteiro que nao resolve nao e' prova.")
+
+
 def append_junction(bloco, junction, artefato, evidencia,
-                    validation=None, justificativa=None, rewind=False, when=None):
+                    validation=None, justificativa=None, rewind=False, when=None,
+                    resource=None, prova=None):
     """Ledger de juncoes (P3/P4, ADR-077): 1 linha JSONL por gate PASS declarado em /handoff.
 
     Da rastro mecanico a J0-J3 (antes prosa pura) e materia-prima objetiva a dim (iv)
@@ -217,7 +262,21 @@ def append_junction(bloco, junction, artefato, evidencia,
         raise ValueError(f"forward-only violado: ultima juncao registrada {last}, tentando {j} "
                          f"sem --rewind (rewind cascata do PC deve ser explicito — ADR-011)")
     rec = {"junction": j, "bloco": bloco, "artefato": artefato or "", "evidencia": evidencia,
-           "data": when or _now_iso()}
+           "data": when or _now_iso(),
+           # ADR-097 mecanismo (i): `status` EXPLICITO. Antes o PASS era implicito — existir o
+           # registro significava ter passado. Implicito nao se audita: um log onde so' o sucesso
+           # aparece nao distingue "passou" de "ninguem registrou", e o rewind ficava invisivel.
+           "status": "REPROVADO_REWIND" if rewind else "PASS",
+           # ADR-097 mecanismo (i): `resource` — QUEM produziu este PASS. Sem isto o event log nao
+           # responde a pergunta mais basica do process mining, e a atestacao anti-auto-aprovacao
+           # (modelo != autor) nao tem como ser conferida no fluxo, so' no artefato.
+           "resource": str(resource or "").strip() or "nao-declarado"}
+    if prova:
+        # ADR-097 mecanismo (ii): `evidencia` e' prosa e continua sendo (o criterio binario, para
+        # humano ler). `prova` e' o PONTEIRO VERIFICAVEL — sem ele a topologia e' falsificavel pelo
+        # proprio agente que a registra (achado A3 do qa-critic sobre o ADR). Validado na hora:
+        # ponteiro que nao resolve nao entra no ledger.
+        rec["prova"] = _validar_prova(prova)
     if validation:
         rec["validation"] = validation
     if justificativa:
@@ -237,6 +296,9 @@ def main(argv=None):
     ap.add_argument("--bloco", help="id do bloco (com --junction)")
     ap.add_argument("--artefato", default="", help="path/link do artefato-gate (com --junction)")
     ap.add_argument("--evidencia", default="", help="criterio binario + prova objetiva (com --junction)")
+    ap.add_argument("--resource", default="", help="QUEM produziu o PASS: modelo/agente (ADR-097)")
+    ap.add_argument("--prova", default="", help="ponteiro VERIFICAVEL: caminho de arquivo, sha de "
+                                                "commit, ou sha256:<hex> (ADR-097)")
     ap.add_argument("--validation", help="path do validation.md (exigido em J3, ou --justificativa)")
     ap.add_argument("--justificativa", help="justificativa explicita quando J3 sem validation.md")
     ap.add_argument("--rewind", action="store_true", help="declara rewind cascata (permite voltar juncao)")
@@ -248,7 +310,7 @@ def main(argv=None):
         try:
             path = append_junction(args.bloco, args.junction, args.artefato, args.evidencia,
                                    validation=args.validation, justificativa=args.justificativa,
-                                   rewind=args.rewind)
+                                   rewind=args.rewind, resource=args.resource, prova=args.prova)
         except ValueError as e:
             print(f"[junction-ledger] RECUSADO: {e}")
             return 1

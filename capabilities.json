@@ -1456,6 +1456,30 @@
         "runbook",
         "non-admin"
       ]
+    },
+    {
+      "id": "conformance-topologia",
+      "title": "Executado x desenhado no fluxo de juncoes: fitness auditavel em vez de julgamento",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/conformance.py",
+      "test": "tools/test_conformance.py",
+      "adr": "docs/adr/097-conformance-topologia-hard-event-log-canario-process-mining.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "mutacao": {
+        "arquivo": "tools/conformance.py",
+        "de": "        if o < ultima_ordem and not rewind:",
+        "para": "        if False:",
+        "canario": "tools/test_conformance.py",
+        "espera": "[FALHA] regressao SEM rewind e' VIOLACAO"
+      },
+      "tags": [
+        "conformance",
+        "process-mining",
+        "topologia",
+        "anti-teatro"
+      ]
     }
   ],
   "registry_waivers": [
