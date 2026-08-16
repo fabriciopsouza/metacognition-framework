@@ -1469,10 +1469,10 @@
       "enforcement": "fail-closed",
       "mutacao": {
         "arquivo": "tools/conformance.py",
-        "de": "        if o < ultima_ordem and not rewind:",
+        "de": "        if status not in STATUS_VALIDOS:",
         "para": "        if False:",
         "canario": "tools/test_conformance.py",
-        "espera": "[FALHA] regressao SEM rewind e' VIOLACAO"
+        "espera": "[FALHA] status fora do conjunto fechado"
       },
       "tags": [
         "conformance",
