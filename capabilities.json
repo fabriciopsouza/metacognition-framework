@@ -1331,6 +1331,30 @@
         "auditoria",
         "enforcement"
       ]
+    },
+    {
+      "id": "canary-runner-bytecode-isolation",
+      "title": "O executor da suite nao pode ser enganado por bytecode velho",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/run_canaries.py",
+      "test": "tools/test_run_canaries.py",
+      "adr": "docs/adr/106-prova-de-mutacao-para-capacidade-fail-closed.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "mutacao": {
+        "arquivo": "tools/run_canaries.py",
+        "de": "\"PYTHONPYCACHEPREFIX\": str(prefixo_cache)}",
+        "para": "\"PYTHONPYCACHEPREFIX\": os.environ.get(\"PYTHONPYCACHEPREFIX\", \"\")}",
+        "canario": "tools/test_run_canaries.py",
+        "espera": "o ambiente do runner NAO e' enganado pela mesma corrida"
+      },
+      "tags": [
+        "qa",
+        "anti-teatro",
+        "canario",
+        "determinismo"
+      ]
     }
   ],
   "registry_waivers": [

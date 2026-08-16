@@ -25,10 +25,13 @@ Uso:
 
 Exit 0 se todos passaram; N>0 = nº de canários que falharam.
 """
+import atexit
 import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TOOLS = os.path.join(ROOT, "tools")
@@ -97,8 +100,62 @@ def _contar_testes_e_entrypoint(src):
     return n, entrypoint
 
 
+# ---------------------------------------------------------------------------------
+# BYTECODE VELHO FALSIFICA A SUITE (achado 2026-08-16, medido ao vivo nesta arvore).
+# O Python decide reusar um `.pyc` comparando TAMANHO e HORARIO do fonte, e o horario
+# tem resolucao de 1 SEGUNDO. Se um fonte mudar mantendo o mesmo numero de bytes e a
+# gravacao cair no mesmo segundo do `.pyc`, o interpretador roda o codigo VELHO.
+#
+# Caso real: `test_autonomy_policy` FALHOU com `tools/autonomy_policy.py` identico ao
+# commit — o `.pyc` guardava o bytecode de uma sondagem. O inverso e' pior: um canario
+# pode passar VERDE sobre codigo que nao esta mais no disco.
+#
+# Duas travas, porque uma so seria confianca: nao escrever bytecode, e apagar o que
+# porventura exista antes de comecar.
+# ---------------------------------------------------------------------------------
+# Nao basta `PYTHONDONTWRITEBYTECODE`: ele impede ESCREVER, nao impede LER um `.pyc` que ja
+# exista — furo apontado pelo qa-critic e confirmado pelo canario deste arquivo, que reprovou
+# a 1a versao desta correcao. `PYTHONPYCACHEPREFIX` apontando para um diretorio VAZIO resolve
+# a leitura: com o prefixo definido, o interpretador procura cache SO' ali, e ali nao ha nada.
+def ambiente_canario(prefixo_cache, sem_escrita=False):
+    """Env que isola o canario de bytecode velho.
+
+    O isolamento vem do PREFIXO NOVO por execucao da suite: com `PYTHONPYCACHEPREFIX`
+    definido, o interpretador procura cache SO' ali, e ali comeca vazio — nenhum `.pyc`
+    de antes pode ser lido, inclusive os que estejam ao lado do fonte.
+
+    A escrita fica LIBERADA de proposito. Proibir tambem (`sem_escrita=True`) faz cada
+    subprocesso recompilar a biblioteca padrao inteira: medido, a suite saltou de segundos
+    para mais de dois minutos. Dentro de uma execucao os fontes nao mudam, entao reusar o
+    cache do proprio prefixo e' seguro. `sem_escrita` existe para quem MUDA o fonte no meio
+    da execucao — o caso do `audit_enforcement.py --provar`.
+    """
+    env = {**os.environ, "PYTHONPYCACHEPREFIX": str(prefixo_cache)}
+    if sem_escrita:
+        env["PYTHONDONTWRITEBYTECODE"] = "1"
+    return env
+
+
+def purgar_bytecode(raiz):
+    """Remove todo `__pycache__` sob `raiz`, menos o que estiver dentro de `.git`."""
+    removidos = 0
+    for atual, dirs, _ in os.walk(raiz):
+        if ".git" in atual.split(os.sep):
+            dirs[:] = []
+            continue
+        if "__pycache__" in dirs:
+            shutil.rmtree(os.path.join(atual, "__pycache__"), ignore_errors=True)
+            dirs.remove("__pycache__")
+            removidos += 1
+    return removidos
+
+
 def main(argv):
     verbose = "-v" in argv
+    purgar_bytecode(ROOT)
+    prefixo_cache = tempfile.mkdtemp(prefix="canario-pyc-")
+    atexit.register(shutil.rmtree, prefixo_cache, True)
+    env_canario = ambiente_canario(prefixo_cache)
     filters = [a for a in argv[1:] if not a.startswith("-")]
     canaries = discover(filters)
     if not canaries:
@@ -146,6 +203,7 @@ def main(argv):
             # canario NUNCA espera stdin interativo: pipe herdado aberto = suite pendurada
             # (caso real 2026-06-11: test_repo_sync -> hook check_repo_sync.read(stdin) deadlock)
             stdin=subprocess.DEVNULL,
+            env=env_canario,
         )
         out = (proc.stdout or "") + (proc.stderr or "")
         is_skip = proc.returncode == 0 and "SKIP" in out and "PASS" not in out.upper()

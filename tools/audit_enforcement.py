@@ -41,6 +41,7 @@ Codigos de saida: 0 OK · 1 capacidade nova sem prova · 2 mutacao NAO derrubou 
 NAO usa IA.
 """
 import argparse
+import atexit
 import json
 import os
 import shutil
@@ -85,7 +86,16 @@ MARCAS_DE_CRASH = ("Traceback (most recent call last)", "SyntaxError", "Indentat
 #
 # Duas travas, porque uma so seria confianca: nao escrever bytecode nenhum, e apagar o que
 # porventura exista antes de rodar o canario sabotado.
-ENV_SEM_BYTECODE = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
+# Emenda 4 (2026-08-16): `PYTHONDONTWRITEBYTECODE` impede ESCREVER, nao impede LER um `.pyc`
+# pre-existente — ressalva MEDIA do qa-critic, confirmada depois pelo canario do
+# `run_canaries.py`, que reprovou a mesma correcao la'. `PYTHONPYCACHEPREFIX` apontando para
+# um diretorio VAZIO fecha a leitura: com o prefixo definido, o interpretador procura cache
+# SO' ali. O prefixo e' criado por execucao e removido na saida.
+_PREFIXO_CACHE = tempfile.mkdtemp(prefix="prova-pyc-")
+atexit.register(shutil.rmtree, _PREFIXO_CACHE, True)
+ENV_SEM_BYTECODE = {**os.environ,
+                    "PYTHONDONTWRITEBYTECODE": "1",
+                    "PYTHONPYCACHEPREFIX": _PREFIXO_CACHE}
 
 
 def _purgar_bytecode(raiz_wt):
