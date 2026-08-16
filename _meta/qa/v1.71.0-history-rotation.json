@@ -1,0 +1,34 @@
+{
+  "passou": true,
+  "release": "1.71.0",
+  "bloco": "v1.71.0-history-rotation",
+  "juncao": "PC",
+  "problemas": [
+    {"severidade": "ALTO", "descricao": "Release inacabado: 4 canários (release_checkpoint, qa_evidence, posture_gate, marketing_claims) + web_bundles ficaram vermelhos pós-bump 1.70->1.71 — faltavam checkpoint v1.71.0, artefato qa, bump da vitrine e regeneracao dos bundles. CORRIGIDO: fechamento de release completo (checkpoint datado + este artefato + vitrine 1.71.0 + 6 coaches regenerados).", "estado": "corrigido"},
+    {"severidade": "MEDIO", "descricao": "pointer-note enganoso: chamar `--keep N` com N > numero de blocos no quente gravava 'mantem os ultimos N' quando ha menos (ex.: '20' havendo 10). CORRIGIDO: pointer usa a contagem REAL de blocos mantidos (len(kept)/len(blocks)), nao o alvo --keep. Verificado: `--keep 20` com 10 blocos imprime 'ultimos **10**'.", "estado": "corrigido"},
+    {"severidade": "BAIXO", "descricao": "CRLF->LF: a tool lia utf-8-sig e escrevia sem newline='' -> convertia line endings, poluindo o git diff (~667 linhas falsas) num repo CRLF. CORRIGIDO: leitura/escrita com newline='' + deteccao do EOL dominante (_detect_eol). Verificado: `file history.md` = CRLF; 238 CRLF / 0 LF; diff reflete so os 45 blocos movidos.", "estado": "corrigido"}
+  ],
+  "verificacoes_executadas": [
+    "INTEGRIDADE DE DADO CONFIRMADA (qa-critic Sonnet): quente + arquivo = 55/55 checkpoints do original IDENTICOS (uniao por id, ordem preservada, zero perda/duplicata); comparacao bloco-a-bloco apos normalizacao CRLF = 0 diffs",
+    "## Em aberto e ## Aprendizado byte-a-byte intactos (tail orig == tail hot, len identico); sub-header-trap '## Aprendizado (append...)' DENTRO de checkpoint nao quebrou o bloco nem virou checkpoint",
+    "CANARIO NAO-TEATRO (Sonnet, 3 mutacoes reais): off-by-one no keep -> 3 FAILs; drop-tail -> 2 FAILs (Em aberto/Aprendizado); keep-1 -> 3 FAILs. Asercoes ancoradas em id de checkpoint + contagens exatas + presenca literal das secoes vivas",
+    "idempotencia: 2a/3a rodada com mesmo keep = changed=False, 0 movidos; keep > nº blocos = nada a rotacionar",
+    "consumidores verdes: compaction_gate (>=1 checkpoint, cwd Windows), handoff.py (latest_checkpoint_field + em_aberto), test_release_checkpoint PASS",
+    "check_reorchestration.py FALHA IDENTICA antes (git show HEAD:history.md) e depois -> pre-existente/ortogonal (casa 'APROVADO_LIMPO' em prosa no Aprendizado); NAO e regressao desta branch",
+    "test_capabilities PASS (73 caps; history-rotation indexada; sem canario orfao); test_adr_changelog_sync PASS (ADR-107 no CHANGELOG); test_web_bundles PASS (6 coaches v1.71.0, sem drift); test_marketing_claims PASS (vitrine 1.71.0, zero overclaim)",
+    "suite completa pos-fechamento: 62 PASS / 1 SKIP / 0 FAIL"
+  ],
+  "recomendacao": "aprovar_com_ressalvas",
+  "postura": {
+    "heterogeneidade": "autor=Opus 4.8; process-critic=Sonnet via Agent(subagent_type:qa-critic, model:sonnet) isolado (escada ADR-078/018 — autor tier-max -> critico tier inferior). NAO rodei o adversarial no proprio modelo (licao Aprendizado 2026-06-16).",
+    "rounds": 1,
+    "r1_sonnet": "corrigir — integridade de dado CONFIRMADA, canario nao-teatro provado; 1 ALTO (release inacabado) + 1 MEDIO (pointer) + 1 BAIXO (CRLF). 96 tool-uses, comparacao bloco-a-bloco real.",
+    "verificacao_dos_fixes": "DETERMINISTICA, nao 2a opiniao LLM (SendMessage indisponivel nesta sessao; spawnar fresh-R2 ~20min contraria a pausa pedida): os 3 fixes sao provados pelo gate mecanizado (prosa->mecanismo) — pointer guard verificado por output direto ('--keep 20' com 10 blocos imprime '10'); CRLF por `file`+byte-count (238 CRLF/0 LF); release inacabado por suite 62 PASS/0 FAIL incluindo o proprio test_rotate_history (canario ja provado nao-teatro por 3 mutacoes no R1). HONESTO: R2 adversarial-LLM NAO re-executado.",
+    "canarios_estado_real": "62 PASS / 1 SKIP / 0 FAIL.",
+    "discovery": "N/A: pedido direto do dono com decisao explicita (keep=10, mover-nao-deletar) via AskUserQuestion.",
+    "rrc": "PASSA: ADR-107 Aceito no CHANGELOG; capability history-rotation nova; README+vitrine+web-bundles 1.71.0; canario nao-teatro = guard; suite 0 FAIL.",
+    "metodo_senior": "N/A.",
+    "ressalvas_residuais": "check_reorchestration (linter, fora do run_canaries) falha pre-existente por 'APROVADO_LIMPO' em prosa no Aprendizado — flag no ## Em aberto, fora do escopo (regua §0). Rotacao e sob demanda (sem hook PreCompact dedicado). #85/#86/54-57 travados por ausencia de gh/PAT."
+  },
+  "data": "2026-06-20T12:00:00Z"
+}

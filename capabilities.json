@@ -1374,6 +1374,23 @@
         "decisoes",
         "determinismo"
       ]
+    },
+    {
+      "id": "history-rotation",
+      "title": "Rotacao deterministica do history.md — ultimos N checkpoints quentes + Em aberto/Aprendizado inteiros; antigos -> docs/history/history-archive.md (poda de contexto, zero perda, idempotente)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/rotate_history.py",
+      "test": "tools/test_rotate_history.py",
+      "adr": "docs/adr/107-rotacao-history-poda-de-contexto.md",
+      "cross_ai": false,
+      "enforcement": "fail-soft",
+      "tags": [
+        "context",
+        "tokens",
+        "history",
+        "canary"
+      ]
     }
   ],
   "registry_waivers": [

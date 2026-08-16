@@ -1,4 +1,4 @@
-# Handoff — v1.80.1 · 2026-08-16T11:04:59-03:00 · papel-alvo: developer
+# Handoff — v1.81.0 · 2026-08-16T12:39:19-03:00 · papel-alvo: developer
 
 > Pacote P14 (ADR-012) gerado DETERMINISTICAMENTE do estado do repo por `tools/handoff.py` (ADR-076).
 > Teste binario (P14): a proxima sessao comeca SEM perguntar nada de volta?
@@ -7,19 +7,19 @@
 - **Proxima sessao: `claude-opus-4-8`** (opus). Motivo: developer -> tier baseline (opus): papel AUTORAL roda no baseline (= modelo padrao/standard); custo do erro a montante > custo do token (ADR-082). Subagente developer spawnado < baseline = proibido; risco sobrepoe p/ tier max..
 
 ## [P14] Artefato consumivel — com versao
-- Repo na versao **v1.80.1** (topo do CHANGELOG). Branch `main` @ `f5213c1`.
+- Repo na versao **v1.81.0** (topo do CHANGELOG). Branch `feature/history-rotation` @ `1a1b3af`.
 
 ## [P14] Localizacao
 - origin: https://github.com/fabriciopsouza/metacognition-framework
-- branch/commit: `main` @ `f5213c1` · (sem PR aberto para esta branch)
+- branch/commit: `feature/history-rotation` @ `1a1b3af` · PR #108 (OPEN) https://github.com/fabriciopsouza/metacognition-framework/pull/108
 - raiz absoluta desta copia: `C:\Users\fabriciosouza\metacognition-framework` (paths relativos abaixo ancoram AQUI)
 
 ## [P14] Acesso
-- Nao-protegido (recovery = conta GitHub): nada pendente (tudo pushado/commitado)
+- Nao-protegido (recovery = conta GitHub): 48 commit(s) NAO-pushado(s), 5 arquivo(s) nao-commitado(s)
 
 ## [P14] Prompt pronto-para-colar
 - **Papel:** developer · **Modelo:** `claude-opus-4-8`
-- **Objetivo (do 'Proximo passo'):** item 6 dos sete pedidos — ligar o fechamento automático a um evento real. Os
+- **Objetivo (do 'Proximo passo'):** implementar o ADR-092 (manifesto de comportamento com portão automático) e o
 - **Produz/decide:** execute o objetivo acima ate o criterio de aceite citado; rode `tools/run_canaries.py` antes de fechar.
 
 ## [P14] Pendencias e premissas herdadas
@@ -33,8 +33,8 @@
 
 ## Extensoes (ADR-016 — evita re-derivar)
 - **5 arquivos mais recentes:**
-  1. _meta/qa/release-1.80.1-fechamento-automatico-e-anti-passividade.json
-  2. _meta/qa/release-1.80.1-fechamento-automatico-e-anti-passividade.md
-  3. docs/_private/handoffs/handoff-latest.md
-  4. tools/decisoes_que_governam.py
-  5. tools/hooks/consistency_gate.py
+  1. CAPABILITIES.md
+  2. CHANGELOG.md
+  3. PROMPT-CHAT-WEB-v4.5.md
+  4. README.md
+  5. guia/web/index.html
