@@ -1,7 +1,7 @@
 <!-- GERADO por tools/build_capabilities.py a partir de capabilities.json — NAO editar a mao -->
 # CAPABILITIES — indice de capacidades (nivel 1: id + title)
 
-> **85 capacidades** — 74 ✅ PROVIDES · 11 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
+> **87 capacidades** — 76 ✅ PROVIDES · 11 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
 > **Como usar (file-first, boot):** leia esta lista p/ achar o `id`; o registro completo (mecanismo · canario · ADR · doc) vem por **`python tools/build_capabilities.py --show <id>`** ou `grep -A8 '"<id>"' capabilities.json`. Nao reexplore o repo antes disto.
 > **Manutencao:** feature nova -> +1 registro em `capabilities.json` + `python tools/build_capabilities.py`. Canario barra canario orfao (cobertura).
 
@@ -53,6 +53,7 @@
 - ✅ `handoff-generator` — Gerador deterministico do Pacote de handoff P14 do estado do repo + sugestao de modelo (papel+risco)
 - ✅ `history-rotation` — Rotacao deterministica do history.md — ultimos N checkpoints quentes + Em aberto/Aprendizado inteiros; antigos -> docs/history/history-archive.md (poda de contexto, zero perda, idempotente)
 - ✅ `input-contract-gate` — Contrato de entrada: spec sem contrato de input declarado falha
+- ✅ `install-verification` — Instalar em qualquer PC com veredito: o que bloqueia, o que avisa, e como resolver cada um
 - ✅ `junction-ledger` — Ledger de juncoes J0-J6 (rastro mecanico do gate PASS por juncao; forward-only + J3 exige validation.md ou justificativa)
 - ✅ `knowledge-catalog` — Retroalimentacao do corpus: catalogo + BM25 offline + insights no boot
 - ✅ `limits-catalog` — Catalogo LIMITS.md de capacidades provadas (PROVADO|PARCIAL|EM-DESENV), derivado
@@ -82,6 +83,7 @@
 - ✅ `reorchestration-gate` — PMO maestro: decisao de re-orquestracao na fronteira de bloco (J6)
 - ✅ `repo-mode-user-vs-dev` — Modo por identidade no boot: shadow=USER (aplica a dominio, nao desenvolve), master=DEV
 - ✅ `repo-sync-boot` — Sync do repo no boot: dim.1 vs proprio upstream (pull seguro) + dim.2 ORTOGONAL vs branch de integracao (origin/HEAD) com marker persistente repetido por-turno (ADR-084)
+- ✅ `research-evidence` — NAO SEI so vale depois de busca provada: >= K dominios distintos com prova, ou ratificacao humana
 - ✅ `risk-gate` — Gating deterministico por risco (prob x impacto -> gate + tier P0-P3); recast externo (ADR-086) sob P15, forma agnostica (categorias = blueprint)
 - 🟡 `route-gate` — Lembrete de rota deterministico 1x/sessao (UserPromptSubmit), fail-open
 - ✅ `rules-parity-guard` — Anti-drift das 4 regras inviolaveis entre arquivos de autoridade (sem violar SSoT §6.5)

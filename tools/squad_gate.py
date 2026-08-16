@@ -271,6 +271,28 @@ def _release_verdict_approving(artifacts, padrao) -> bool:
     return False
 
 
+def _research_atestada(paths) -> bool:
+    """Delega ao `research_evidence.py` — a ferramenta que o manifesto nomeia como `check`.
+
+    Roda como SUBPROCESSO de proposito: o contrato entre os dois e' o codigo de saida, o mesmo
+    que a CI e o gancho de pre-commit consomem. Importar a funcao acoplaria os dois modulos e
+    faria este gate testar um caminho diferente do que roda de verdade.
+
+    Ferramenta ausente ou quebrada => False (fail-closed). Aqui o silencio nao libera: o papel
+    so' e' exigido para numero regulado, e passar por omissao seria pior que barrar.
+    """
+    alvo = os.path.join(ROOT, "tools", "research_evidence.py")
+    if not os.path.isfile(alvo):
+        return False
+    try:
+        r = subprocess.run([sys.executable, alvo, "--paths", *[str(p) for p in paths]],
+                           capture_output=True, text=True, cwd=ROOT, timeout=60,
+                           stdin=subprocess.DEVNULL)
+        return r.returncode == 0
+    except (OSError, subprocess.SubprocessError):
+        return False
+
+
 def evaluate(paths, manifest, artifacts):
     """Retorna (faltam, detalhe). faltam=[] => gate PASSA."""
     required = classify(paths, manifest)
@@ -283,9 +305,11 @@ def evaluate(paths, manifest, artifacts):
         elif role == "juncao_release":
             ok = _release_junction_closed(artifacts)
         else:
-            # research_ou_ratificacao: delegado (research_evidence.py).
-            # Marca como EXIGIDO-nao-verificavel-localmente -> falta (fail-closed) ate o check proprio rodar.
-            ok = False
+            # research_ou_ratificacao / busca_exaustiva: delegado a `research_evidence.py`,
+            # conforme o campo `check` do proprio manifesto. Ate 2026-08-16 a ferramenta nao
+            # existia e este ramo devolvia False fixo — fail-closed correto, mas SEM caminho
+            # para passar: quem mexesse num numero regulado ficava barrado para sempre.
+            ok = _research_atestada(paths)
         detalhe[role] = ok
         if not ok:
             faltam.append(role)

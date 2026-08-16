@@ -13,6 +13,38 @@
 > **Poda de contexto (ADR-107):** este arquivo quente mantem os ultimos **10** checkpoints + `## Em aberto` + `## Aprendizado`. **56** checkpoints mais antigos estao em [`docs/history/history-archive.md`](docs/history/history-archive.md) (nada deletado — so realocado). Rotacao: `python tools/rotate_history.py`.
 <!-- history-archive-pointer -->
 
+## 2026-08-16 — Release v1.83.0 (MINOR): "NÃO SEI" só vale depois de busca provada, e a instalação passa a se verificar (ADR-092 fechado)
+
+Fecha a última peça do ADR-092 e responde ao pedido do dono de um runbook que permita instalar em
+qualquer máquina sem erros.
+
+**A peça que faltava era a que não tinha saída.** O manifesto declara dois comportamentos cujo
+campo `check` aponta para `tools/research_evidence.py` — e a ferramenta nunca existiu. O
+`squad_gate.py` devolvia "falta" fixo para esse papel: fail-closed correto, e **sem nenhum caminho
+para passar**. Quem tocasse num número regulado ficava barrado para sempre. Gate sem caminho de
+saída não é rigor, é bloqueio.
+
+Dois caminhos agora, e o segundo é tão legítimo quanto o primeiro: **pesquisa** com ao menos dois
+domínios distintos, cada fonte com endereço, hash do que foi lido e data de vigência conferida; ou
+**ratificação humana**, o campo `ratificado_por`. Há número que não está em fonte nenhuma e alguém
+assume. O que não se aceita é o silêncio. A fraude central que o canário barra: citar o mesmo
+domínio duas vezes e chamar de triangulação.
+
+**A instalação passa a dizer se funciona.** O `--check` do bootstrap respondia duas perguntas e
+chamava aquilo de diagnóstico; quem clonava em outra máquina descobria o que faltava errando, um
+erro por vez. Agora separa o que impede de operar do que só reduz garantia, cada pendência vem com
+o comando que a resolve, e no fim **roda um canário de verdade** — instalação que não executa o
+próprio portão não está instalada. Baixar o `.zip` virou bloqueio explícito: sem histórico do git,
+vários portões não falham, passam mentindo.
+
+**Nenhum documento novo foi criado.** Já existiam três guias de instalação; o runbook virou a
+primeira seção do `SETUP.md`, que era o mais próximo disso e não mencionava verificação nenhuma.
+Régua §0 respeitada por fusão, não por adição.
+
+**Próximo passo:** o ADR-097, único ainda em `Proposto`. Medido: `tools/conformance.py` não existe
+e o ledger não tem os campos `resource` e `status`. Critério de aceite escrito por ele mesmo —
+*"sem isso há intenção de rigor, não rigor"*.
+
 ## 2026-08-16 — Release v1.82.0 (MINOR): o gate do squad passa a rodar sozinho — a quarta peça do ADR-092, que nunca foi escrita (ADR-092 Aceito)
 
 O dono mandou implementar os ADRs 092 e 097. A primeira coisa foi medir, não codar: **o 092 já

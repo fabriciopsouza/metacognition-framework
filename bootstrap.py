@@ -14,7 +14,8 @@ NÃO faz: git config / gh (evita exigir rede/credencial); rode-os à parte se qu
 
 Uso:
     python bootstrap.py                 # instala + ativa non-admin
-    python bootstrap.py --check         # só diagnostica (PS disponível? hooks ativos?)
+    python bootstrap.py --check         # VERIFICA se a instalação funciona (runbook, guia/SETUP.md)
+                                        # exit 1 se houver pendência BLOQUEIA; 0 se só AVISA
     python bootstrap.py --no-mirror     # não espelha p/ ~/.claude (só ativa settings non-admin)
 """
 import json
@@ -118,6 +119,92 @@ def prompt_report_optin():
         print(f"[bootstrap.py] (opt-in pulado, nao-bloqueante: {e})")
 
 
+VERSAO_PYTHON_MINIMA = (3, 8)
+
+
+def verificar(raiz):
+    """Diz o que impede esta instalacao de funcionar. Lista de (nivel, item, como resolver).
+
+    POR QUE ISTO EXISTE. O `--check` antigo respondia duas perguntas — PowerShell roda? hooks
+    ligados? — e chamava aquilo de diagnostico. Nao dizia se a instalacao FUNCIONA. Quem clonava
+    em outra maquina descobria o que faltava errando, um erro por vez.
+
+    BLOQUEIA = o framework nao opera assim. AVISA = opera, com menos garantia.
+    Nao instala nada e nao escreve nada: e' so' leitura, para poder rodar antes e depois.
+    """
+    import glob
+    pend = []
+
+    def bloqueia(item, como):
+        pend.append(("BLOQUEIA", item, como))
+
+    def avisa(item, como):
+        pend.append(("AVISA   ", item, como))
+
+    if sys.version_info < VERSAO_PYTHON_MINIMA:
+        v = ".".join(map(str, VERSAO_PYTHON_MINIMA))
+        bloqueia(f"Python {sys.version.split()[0]} — o framework exige {v} ou mais novo",
+                 f"instale Python >= {v} e rode de novo")
+
+    if not os.path.isdir(os.path.join(raiz, ".git")):
+        bloqueia("nao e' um repositorio git",
+                 "clone o repositorio em vez de baixar o .zip — varios gates leem o historico")
+    else:
+        try:
+            r = subprocess.run(["git", "-C", raiz, "rev-parse", "HEAD"], capture_output=True,
+                               text=True, timeout=20)
+            if r.returncode != 0:
+                bloqueia("git presente mas o repositorio nao responde",
+                         "confira se o clone terminou: git status")
+        except (OSError, subprocess.SubprocessError):
+            bloqueia("git nao esta no PATH",
+                     "instale o git e reabra o terminal — o framework le historico para decidir")
+
+    for rel, porque in (("tools/run_canaries.py", "e' o portao real do repo"),
+                        ("capabilities.json", "e' o registro de tudo que existe"),
+                        ("behaviors/manifest.json", "diz quais papeis sao obrigatorios"),
+                        ("CLAUDE.md", "e' a entrada do framework")):
+        if not os.path.isfile(os.path.join(raiz, rel)):
+            bloqueia(f"{rel} ausente — {porque}", "clone incompleto; refaca o clone")
+
+    cur = os.path.join(raiz, ".claude", "settings.json")
+    if not os.path.isfile(cur):
+        avisa("nao ha .claude/settings.json no projeto",
+              "rode `python bootstrap.py` para ativar o perfil non-admin")
+    else:
+        try:
+            cfg = json.load(open(cur, encoding="utf-8-sig"))
+            modo = "admin (com hooks)" if cfg.get("hooks") else "non-admin (sem hooks)"
+            print(f"[bootstrap.py] perfil ativo: {modo}")
+        except Exception as e:
+            bloqueia(f".claude/settings.json invalido: {e}",
+                     "restaure de settings.json.bak ou rode `python bootstrap.py`")
+
+    espelhadas = glob.glob(os.path.join(HOME_CLAUDE, "skills", "*"))
+    if not espelhadas:
+        avisa("skills nao espelhadas em ~/.claude/skills",
+              "rode `python bootstrap.py` — sem isso o auto-trigger de skill nao acontece")
+
+    # A prova final: o portao do repo roda? Se ele nao roda, nada aqui e' verificavel.
+    alvo = os.path.join(raiz, "tools", "run_canaries.py")
+    if os.path.isfile(alvo):
+        try:
+            r = subprocess.run([sys.executable, alvo, "test_capabilities"], capture_output=True,
+                               text=True, cwd=raiz, timeout=180, stdin=subprocess.DEVNULL)
+            if r.returncode != 0:
+                avisa("a suite de canarios nao passou nesta maquina",
+                      "rode `python tools/run_canaries.py` e leia o que falhou")
+            else:
+                print("[bootstrap.py] canario de sanidade: PASSA")
+        except subprocess.TimeoutExpired:
+            avisa("a suite demorou demais para responder",
+                  "rode `python tools/run_canaries.py` a mao e veja onde trava")
+        except (OSError, subprocess.SubprocessError) as e:
+            avisa(f"nao consegui rodar a suite: {e}", "rode `python tools/run_canaries.py`")
+
+    return pend
+
+
 def main(argv):
     try:
         sys.stdout.reconfigure(encoding="utf-8")
@@ -129,15 +216,17 @@ def main(argv):
     ps = ps_available()
     print(f"[bootstrap.py] PowerShell executa scripts? {'SIM' if ps else 'NAO (politica restrita) -> modo non-admin recomendado'}")
     if check_only:
-        cur = os.path.join(ROOT, ".claude", "settings.json")
-        hooks = False
-        if os.path.isfile(cur):
-            try:
-                hooks = bool(json.load(open(cur, encoding="utf-8-sig")).get("hooks"))
-            except Exception:
-                pass
-        print(f"[bootstrap.py] settings.json atual tem hooks? {'SIM (modo admin)' if hooks else 'NAO (modo non-admin)'}")
-        return 0
+        pendencias = verificar(ROOT)
+        print("-" * 60)
+        if not pendencias:
+            print("[bootstrap.py] INSTALACAO OK — nenhuma pendencia.")
+            return 0
+        bloqueiam = [p for p in pendencias if p[0] == "BLOQUEIA"]
+        print(f"[bootstrap.py] {len(pendencias)} pendencia(s), {len(bloqueiam)} bloqueante(s):")
+        for nivel, item, comoresolver in pendencias:
+            print(f"  [{nivel}] {item}")
+            print(f"           -> {comoresolver}")
+        return 1 if bloqueiam else 0
 
     if not no_mirror:
         n = mirror_skills()
