@@ -16,7 +16,10 @@ grava recibo. A LEI do fechamento continua sendo o canário de release (`test_co
 `test_release_checkpoint`, `qa-evidence`), pela doutrina do ADR-088/097 — canário é a camada-mestra,
 hook é conveniência. Hook que bloqueia sessão vira hook que alguém desliga.
 
-SETE DIMENSÕES (idênticas ao .ps1 original, verificadas linha a linha):
+SETE DIMENSÕES. Equivalentes ao `.ps1` original — o qa-critic conferiu e achou UMA
+divergência, já corrigida (o filtro de `000-*` valia só para 'Proposto', não para
+duplicata de número). Onde eu escrevia 'idênticas, verificadas linha a linha', era
+afirmação minha sem verificação independente. As dimensões:
   1. version-sync      README x topo do CHANGELOG
   2. adr-status        ADRs ainda em 'Proposto'
   3. checkpoint        history.md menciona a versão corrente
@@ -88,11 +91,17 @@ def auditar(raiz):
     adr_dir = raiz / "docs" / "adr"
     if adr_dir.is_dir():
         for f in sorted(adr_dir.glob("*.md")):
-            if f.name.startswith("000"):
-                continue
+            # O `.ps1` original usa DOIS lacos com filtros diferentes, e a diferenca importa:
+            # `000-*` (template) sai da lista de "Proposto", mas CONTA para duplicata de numero.
+            # A 1a versao deste port fundiu os lacos e aplicou o filtro aos dois, perdendo a
+            # deteccao de dois arquivos `000-*`. Achado MEDIO do qa-critic (Sonnet, 2026-08-16),
+            # que tambem pegou o comentario deste arquivo afirmando "identicas ao original,
+            # verificadas linha a linha" — afirmacao falsa, corrigida junto.
             m = re.match(r"^(\d{3})-", f.name)
             if m:
                 numeros.append(int(m.group(1)))
+            if f.name.startswith("000"):
+                continue
             c = _ler(f) or ""
             if re.search(r"(?im)^\s*-?\s*\**Status:\**\s*\**Proposto", c):
                 propostos.append(f.name)

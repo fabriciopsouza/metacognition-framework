@@ -1,4 +1,4 @@
-# Handoff — v1.80.1 · 2026-08-16T05:37:58-03:00 · papel-alvo: developer
+# Handoff — v1.80.1 · 2026-08-16T08:53:30-03:00 · papel-alvo: developer
 
 > Pacote P14 (ADR-012) gerado DETERMINISTICAMENTE do estado do repo por `tools/handoff.py` (ADR-076).
 > Teste binario (P14): a proxima sessao comeca SEM perguntar nada de volta?
@@ -7,15 +7,15 @@
 - **Proxima sessao: `claude-opus-4-8`** (opus). Motivo: developer -> tier baseline (opus): papel AUTORAL roda no baseline (= modelo padrao/standard); custo do erro a montante > custo do token (ADR-082). Subagente developer spawnado < baseline = proibido; risco sobrepoe p/ tier max..
 
 ## [P14] Artefato consumivel — com versao
-- Repo na versao **v1.80.1** (topo do CHANGELOG). Branch `docs/relatorio-sessao-2026-08-13` @ `90e900e`.
+- Repo na versao **v1.80.1** (topo do CHANGELOG). Branch `docs/relatorio-sessao-2026-08-13` @ `b459ca9`.
 
 ## [P14] Localizacao
 - origin: https://github.com/fabriciopsouza/metacognition-framework
-- branch/commit: `docs/relatorio-sessao-2026-08-13` @ `90e900e` · PR #120 (OPEN) https://github.com/fabriciopsouza/metacognition-framework/pull/120
+- branch/commit: `docs/relatorio-sessao-2026-08-13` @ `b459ca9` · PR #120 (OPEN) https://github.com/fabriciopsouza/metacognition-framework/pull/120
 - raiz absoluta desta copia: `C:\Users\fabriciosouza\metacognition-framework` (paths relativos abaixo ancoram AQUI)
 
 ## [P14] Acesso
-- Nao-protegido (recovery = conta GitHub): 20 arquivo(s) nao-commitado(s)
+- Nao-protegido (recovery = conta GitHub): 5 arquivo(s) nao-commitado(s)
 
 ## [P14] Prompt pronto-para-colar
 - **Papel:** developer · **Modelo:** `claude-opus-4-8`
@@ -33,8 +33,8 @@
 
 ## Extensoes (ADR-016 — evita re-derivar)
 - **5 arquivos mais recentes:**
-  1. CHANGELOG.md
-  2. _meta/qa/release-1.80.1-isolamento-de-bytecode-na-suite.json
-  3. _meta/qa/release-1.80.1-isolamento-de-bytecode-na-suite.md
-  4. capabilities.json
-  5. docs/_private/handoffs/handoff-latest.md
+  1. .claude/closing-proof.json
+  2. .claude/settings.json
+  3. CAPABILITIES.md
+  4. CHANGELOG.md
+  5. PROMPT-CHAT-WEB-v4.5.md

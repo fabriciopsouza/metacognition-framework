@@ -89,6 +89,21 @@ def main():
              f"acusou indevidamente: {sorted(indevidas)}")
         caso("acusa unpushed em repo sem upstream", "unpushed" in acusou)
 
+    # Achado MEDIO do qa-critic: no `.ps1` original o filtro de `000-*` vale so para a lista de
+    # "Proposto"; para DUPLICATA de numero o template conta. O port tinha perdido isso.
+    with tempfile.TemporaryDirectory(prefix="cg-000-") as tmp:
+        r = _repo(tmp, versao_readme="2.0.0", versao_clog="2.0.0", adr_proposto=False,
+                  adr_duplicado=False, checkpoint=True, transiente=False, relatorio=True)
+        (r / "docs" / "adr" / "000-template.md").write_text("- Status: Aceito" + chr(10), encoding="utf-8")
+        (r / "docs" / "adr" / "000-copia-indevida.md").write_text("- Status: Aceito" + chr(10),
+                                                                  encoding="utf-8")
+        caso("duplicata entre arquivos 000-* e' acusada (o template conta para numero)",
+             "contagens" in dims_acusadas(r), f"acusadas: {sorted(dims_acusadas(r))}")
+        pend, dims = cg.auditar(r)
+        caso("mas 000-* NAO entra na lista de 'Proposto'",
+             dims["adr-status"]["propostos"] == [],
+             f"propostos: {dims['adr-status']['propostos']}")
+
     # O modo hook e' fail-soft por DESENHO: pendencia nao pode derrubar a sessao do dono.
     with tempfile.TemporaryDirectory(prefix="cg-hook-") as tmp:
         sujo = _repo(tmp, versao_readme="1.0.0", versao_clog="2.0.0", adr_proposto=True,

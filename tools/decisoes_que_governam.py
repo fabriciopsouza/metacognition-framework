@@ -71,10 +71,14 @@ def _dividas_abertas(raiz):
             if atual:
                 itens.append(" ".join(atual).strip())
             atual = [linha[2:]]
-        elif atual and (linha.startswith("  ") or linha.startswith("\t")):
-            atual.append(linha.strip())
         elif not linha.strip():
             continue
+        elif atual:
+            # Continuacao SEM recuo tambem conta. A 1a versao so aceitava linha indentada e
+            # descartava em silencio o paragrafo quebrado sem recuo, que e' markdown comum —
+            # suspeita levantada pelo qa-critic (Sonnet, 2026-08-16) e fechada aqui, em vez de
+            # ficar dependendo de o `history.md` manter para sempre o recuo de 2 espacos.
+            atual.append(linha.strip())
     if atual:
         itens.append(" ".join(atual).strip())
     return [i for i in itens if i]
