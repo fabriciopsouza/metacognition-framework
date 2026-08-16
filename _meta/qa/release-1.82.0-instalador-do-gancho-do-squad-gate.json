@@ -1,0 +1,63 @@
+{
+  "bloco": "release-1.82.0-instalador-do-gancho-do-squad-gate",
+  "release": "1.82.0",
+  "papel": "qa_critic",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "sha_revisado": "628f9c4",
+  "resumo": "Sonnet isolado contra autor Opus. R1 REPROVOU com achado ALTO real e preciso: o `squad_gate.py` sai com codigo 1 tanto quando bloqueia de proposito quanto quando QUEBRA — excecao nao tratada tambem termina o Python com 1 — e a 1a versao do gancho confiava so' no codigo. Consequencia: um `behaviors/manifest.json` corrompido barraria TODO commit do repo com a mensagem 'falta evidencia de QA', mentindo sobre o motivo e contradizendo a decisao de desenho declarada tres linhas acima no proprio arquivo. Corrigido pela mesma regra do campo `espera` do ADR-106: falhar pelo motivo certo, conferido na MENSAGEM e nao no codigo de saida. O critico tambem descartou por conta propria duas suspeitas suas, por falta de cenario reproduzivel — postura correta.",
+  "verificacoes_executadas": [
+    "R1 reproduziu o achado ALTO: `python -c \"import squad_gate; squad_gate.load_manifest('inexistente')\"` -> returncode 1 com traceback nao tratado, indistinguivel do bloqueio legitimo",
+    "R1 confirmou que `estado()` ja e' defensivo contra symlink e arquivo ilegivel (OSError -> 'alheio', impede sobrescrita)",
+    "R1 confirmou o tratamento de core.hooksPath absoluto, relativo e vazio",
+    "R1 provou a falsificabilidade do canario por conta propria: sabotando `estado()` para devolver sempre 'ausente', 6 das 15 verificacoes caem; restaurado, volta a 15/15 com `git diff --stat` sem diferenca contra o indice",
+    "correcao: o gancho passa a exigir a marca '[squad-gate] BLOQUEADO' na saida; codigo 1 sem a marca = gate quebrado -> commit LIBERADO com aviso",
+    "autor: prova de mutacao da guarda nova — sabotando o `case` que exige a mensagem, o caso novo vira [FALHA] e o canario sai com 1; restaurado, 16/16",
+    "dogfooding: o gancho foi instalado neste repo e BLOQUEOU o commit deste proprio trabalho por falta de veredito — o que obrigou a rodar o critico antes de commitar, invertendo a ordem para a correta",
+    "suite antes do veredito: 72 PASS / 1 SKIP / 0 FAIL de 73 canarios",
+    "CARIMBO: o critico revisou a arvore de trabalho em stage sobre o HEAD 628f9c4; os arquivos novos ainda nao tinham commit, entao o squad_gate local os barra por desenho (assimetria documentada: local mais estrito que a CI). O commit usou a escapatoria declarada `--no-verify`, com este veredito ja gravado — nao para pular o QA, mas porque o QA aconteceu ANTES e o gate nao tem como saber disso sobre arquivo sem historico."
+  ],
+  "problemas": [
+    {
+      "severidade": "alto",
+      "local": "tools/install_git_hooks.py (constante CORPO)",
+      "descricao": "CORRIGIDO. O gancho tratava qualquer codigo 1 como 'falta evidencia'. O squad_gate devolve 1 tambem quando quebra, entao ferramenta com defeito barraria todo commit com mensagem errada — o oposto da decisao de desenho declarada no proprio arquivo.",
+      "cenario_de_falha": "behaviors/manifest.json corrompido: todo commit do repo passa a ser bloqueado com 'falta evidencia de QA', sem que falte evidencia nenhuma."
+    },
+    {
+      "severidade": "baixo",
+      "local": "tools/install_git_hooks.py (deteccao por linha-marca)",
+      "descricao": "NAO corrigido, declarado. Um pre-commit alheio que por acaso contenha a linha-marca seria tratado como nosso. O critico levantou e descartou por nao construir cenario concreto; fica como limite conhecido.",
+      "cenario_de_falha": "Colisao improvavel de string em gancho de terceiro que cite este script."
+    }
+  ],
+  "escopo_paths": [
+    "tools/install_git_hooks.py",
+    "tools/test_install_git_hooks.py",
+    "docs/adr/092-camada-enforcement-comportamentos-manifesto-gate-githook.md",
+    "capabilities.json"
+  ],
+  "atestacao": {
+    "agentId": "a08d3d55e0100c91e",
+    "modelo": "claude-sonnet-4-6",
+    "modelo_autor": "claude-opus-5",
+    "isolamento": "subagente qa-critic isolado, revisao na arvore de trabalho em stage a pedido, com proibicao explicita de comando destrutivo; arvore devolvida identica",
+    "instrucao": "hipotese default de defeito; conferir o que o squad_gate de fato devolve em cada situacao, em vez de aceitar o que o gancho assume",
+    "cadeia": "R1 REPROVOU (1 ALTO) -> autor corrigiu com prova de mutacao -> veredito registrado"
+  },
+  "postura": {
+    "rrc": "PASSA — o critico foi ler o codigo do squad_gate para descobrir o que ele devolve, em vez de aceitar a premissa do gancho; foi exatamente isso que revelou o defeito. E descartou duas suspeitas proprias por falta de cenario reproduzivel.",
+    "metodo_senior": "N/A: fecha peca faltante de ADR ja desenhado.",
+    "discovery": "medicao do que ja existia do ADR-092 antes de escrever qualquer linha — 3 das 4 pecas ja estavam prontas desde junho",
+    "fonte_canonica": false,
+    "lacunas_declaradas": "o gancho nao foi executado via `git commit` real em shell POSIX puro; a colisao de linha-marca com gancho de terceiro nao foi testada"
+  },
+  "nao_verificado": [
+    "execucao do gancho .sh via `git commit` real em Git Bash e em shell POSIX puro — so' a logica foi exercitada",
+    "colisao da linha-marca com um pre-commit de terceiro que cite este script",
+    "comportamento do gancho em repositorio muito grande, onde o squad_gate pode demorar"
+  ],
+  "data": "2026-08-16T12:40:00Z"
+}
