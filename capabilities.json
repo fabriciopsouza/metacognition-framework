@@ -1347,7 +1347,7 @@
         "de": "\"PYTHONPYCACHEPREFIX\": str(prefixo_cache)}",
         "para": "\"PYTHONPYCACHEPREFIX\": os.environ.get(\"PYTHONPYCACHEPREFIX\", \"\")}",
         "canario": "tools/test_run_canaries.py",
-        "espera": "o ambiente do runner NAO e' enganado pela mesma corrida"
+        "espera": "[FALHA] o ambiente do runner NAO e' enganado"
       },
       "tags": [
         "qa",
