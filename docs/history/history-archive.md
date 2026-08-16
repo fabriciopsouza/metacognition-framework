@@ -1,4 +1,4 @@
-# history-archive.md — Arquivo FRIO de checkpoints rotacionados (ADR-092)
+# history-archive.md — Arquivo FRIO de checkpoints rotacionados (ADR-107)
 
 > Checkpoints antigos movidos do `history.md` quente por `tools/rotate_history.py`.
 > Mesma ordem (mais-novo-primeiro). NADA aqui foi deletado do registro — so realocado

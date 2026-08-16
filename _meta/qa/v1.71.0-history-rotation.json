@@ -15,7 +15,7 @@
     "idempotencia: 2a/3a rodada com mesmo keep = changed=False, 0 movidos; keep > nº blocos = nada a rotacionar",
     "consumidores verdes: compaction_gate (>=1 checkpoint, cwd Windows), handoff.py (latest_checkpoint_field + em_aberto), test_release_checkpoint PASS",
     "check_reorchestration.py FALHA IDENTICA antes (git show HEAD:history.md) e depois -> pre-existente/ortogonal (casa 'APROVADO_LIMPO' em prosa no Aprendizado); NAO e regressao desta branch",
-    "test_capabilities PASS (73 caps; history-rotation indexada; sem canario orfao); test_adr_changelog_sync PASS (ADR-092 no CHANGELOG); test_web_bundles PASS (6 coaches v1.71.0, sem drift); test_marketing_claims PASS (vitrine 1.71.0, zero overclaim)",
+    "test_capabilities PASS (73 caps; history-rotation indexada; sem canario orfao); test_adr_changelog_sync PASS (ADR-107 no CHANGELOG); test_web_bundles PASS (6 coaches v1.71.0, sem drift); test_marketing_claims PASS (vitrine 1.71.0, zero overclaim)",
     "suite completa pos-fechamento: 62 PASS / 1 SKIP / 0 FAIL"
   ],
   "recomendacao": "aprovar_com_ressalvas",
@@ -26,7 +26,7 @@
     "verificacao_dos_fixes": "DETERMINISTICA, nao 2a opiniao LLM (SendMessage indisponivel nesta sessao; spawnar fresh-R2 ~20min contraria a pausa pedida): os 3 fixes sao provados pelo gate mecanizado (prosa->mecanismo) — pointer guard verificado por output direto ('--keep 20' com 10 blocos imprime '10'); CRLF por `file`+byte-count (238 CRLF/0 LF); release inacabado por suite 62 PASS/0 FAIL incluindo o proprio test_rotate_history (canario ja provado nao-teatro por 3 mutacoes no R1). HONESTO: R2 adversarial-LLM NAO re-executado.",
     "canarios_estado_real": "62 PASS / 1 SKIP / 0 FAIL.",
     "discovery": "N/A: pedido direto do dono com decisao explicita (keep=10, mover-nao-deletar) via AskUserQuestion.",
-    "rrc": "PASSA: ADR-092 Aceito no CHANGELOG; capability history-rotation nova; README+vitrine+web-bundles 1.71.0; canario nao-teatro = guard; suite 0 FAIL.",
+    "rrc": "PASSA: ADR-107 Aceito no CHANGELOG; capability history-rotation nova; README+vitrine+web-bundles 1.71.0; canario nao-teatro = guard; suite 0 FAIL.",
     "metodo_senior": "N/A.",
     "ressalvas_residuais": "check_reorchestration (linter, fora do run_canaries) falha pre-existente por 'APROVADO_LIMPO' em prosa no Aprendizado — flag no ## Em aberto, fora do escopo (regua §0). Rotacao e sob demanda (sem hook PreCompact dedicado). #85/#86/54-57 travados por ausencia de gh/PAT."
   },

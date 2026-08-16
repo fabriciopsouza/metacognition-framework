@@ -82,8 +82,14 @@ def latest_checkpoint_field(field):
         return ""
     nxt = re.search(r"(?m)^##\s+\d{4}-\d{2}-\d{2}", hist[m.end():])
     block = hist[m.end(): m.end() + nxt.start()] if nxt else hist[m.end():]
-    fm = re.search(rf"(?im)^\s*{re.escape(field)}\s*:?\s*(.+)$", block)
-    return fm.group(1).strip() if fm else ""
+    # `\*{0,2}` porque os checkpoints escrevem o campo em NEGRITO (`**Proximo passo:**`),
+    # e o regex ancorado em `^\s*<campo>` nunca casava — o pacote P14 saia com
+    # "<definir: nao havia Proximo passo no checkpoint>" mesmo com o campo presente, o que
+    # esvaziava justamente o item que define o que a proxima sessao produz (bug observado
+    # em 2026-08-02 contra os checkpoints de v1.75.0 e v1.76.0).
+    fm = re.search(rf"(?im)^\s*\*{{0,2}}{re.escape(field)}\*{{0,2}}\s*:?\*{{0,2}}\s*(.+)$",
+                   block)
+    return fm.group(1).strip().lstrip("*").strip() if fm else ""
 
 
 def em_aberto():
@@ -201,6 +207,43 @@ def pr_info(branch):
     return "(sem PR aberto para esta branch)"
 
 
+# --- Regra 8 / ADR-098: referencia a arquivo resolve no cwd do DESTINATARIO ------------------
+# Conservador POR DESENHO: so acusa o que e deterministicamente quebrado no destino. Falso
+# positivo aqui custa a confianca no gate inteiro — e um gate em que ninguem acredita e pior
+# que nenhum gate.
+_TEMP_MARCAS = (
+    "appdata\\local\\temp", "appdata/local/temp", "/tmp/", "\\temp\\",
+    "%temp%", "$env:temp", "scratchpad",
+)
+# link markdown cujo alvo nao e URL, nao e ancora e nao e path absoluto -> so resolve
+# a partir do diretorio do arquivo que o contem
+_LINK_REL = re.compile(r"\]\((?!https?://|#|mailto:|/|[A-Za-z]:[\\/])([^)\s]+)\)")
+
+
+def audit_paths(texto):
+    """Avisos sobre referencias que NAO resolvem no cwd do destinatario (ADR-098, Regra 8).
+
+    Retorna lista de avisos. Nao levanta excecao e nao altera o texto: o handoff continua
+    sendo emitido — o aviso e VISIVEL, nao bloqueante (conformance advisory do ADR-097).
+    """
+    avisos = []
+    baixo = texto.lower()
+    achadas = sorted({m for m in _TEMP_MARCAS if m in baixo})
+    if achadas:
+        avisos.append(
+            "path em diretorio TEMPORARIO (" + ", ".join(achadas) + ") — some em limpeza de "
+            "disco. Copie o artefato para caminho PERMANENTE e informe esse."
+        )
+    rel = sorted({m.group(1) for m in _LINK_REL.finditer(texto)})
+    if rel:
+        amostra = ", ".join(rel[:3]) + (" ..." if len(rel) > 3 else "")
+        avisos.append(
+            f"link markdown RELATIVO ({amostra}) — morto para quem le fora deste diretorio. "
+            "Use path absoluto ou URL completa."
+        )
+    return avisos
+
+
 def build(next_role, risk, author, ts="<timestamp>"):
     st = repo_state()
     proximo = latest_checkpoint_field("Próximo passo") or latest_checkpoint_field("Proximo passo")
@@ -226,6 +269,10 @@ def build(next_role, risk, author, ts="<timestamp>"):
     L.append("## [P14] Localizacao")
     L.append(f"- origin: {st['origin']}")
     L.append(f"- branch/commit: `{st['branch']}` @ `{st['commit']}` · {pr}")
+    # ADR-098 (Regra 8): sem a raiz ABSOLUTA, todo path relativo citado abaixo (arquivos
+    # recentes, pendencias) so resolve no cwd de quem gerou — a proxima sessao pode estar
+    # em outra maquina, outro clone ou outro repo aberto.
+    L.append(f"- raiz absoluta desta copia: `{ROOT}` (paths relativos abaixo ancoram AQUI)")
     L.append("")
     L.append("## [P14] Acesso")
     naoprot = []
@@ -256,7 +303,179 @@ def build(next_role, risk, author, ts="<timestamp>"):
     L.append("- **5 arquivos mais recentes:**")
     for i, f in enumerate(st["recent"], 1):
         L.append(f"  {i}. {f}")
+    pacote = "\n".join(L) + "\n"
+    # ADR-098: audita o proprio pacote antes de entregar. Aviso VISIVEL no artefato — nao
+    # basta o agente "lembrar" da Regra 8, senao volta a ser prosa.
+    avisos = audit_paths(pacote)
+    if avisos:
+        pacote += "\n## [ADR-098] Avisos de referencia\n"
+        pacote += "".join(f"- ⚠️ {a}\n" for a in avisos)
+    return pacote
+
+
+def provenance(target, ts="<timestamp>"):
+    """Carimbo de PROCEDENCIA para trabalho executado FORA do repositorio (ADR-095).
+
+    AGNOSTICO POR DESENHO: o gatilho e a FORMA da situacao — diretorio de trabalho externo ao
+    repo (drive corporativo sincronizado, pasta de cliente, share de rede) — nunca o nome de um
+    produto/cliente/vendor (canario core-no-vendor). O que o REPO sabe (framework, versao, commit,
+    branch, origin, operador) e DETERMINISTICO e sai daqui; o que so o dominio sabe (chamado,
+    sistema, pasta de origem, modelos por papel) sai como SLOT explicito para quem executa
+    preencher. Slot vazio e lacuna VISIVEL, nao silencio.
+
+    Porque existe (regua §0 — mecaniza prosa que ja era regra): rastreabilidade decisao->fonte->versao
+    (traceability Regra 4) so vale se o artefato ENTREGUE souber dizer de onde veio. Trabalho que sai
+    do repo para uma pasta externa perdia esse elo — quem abre a pasta meses depois nao sabe qual
+    framework/versao/sessao produziu, nem o que e minuta e o que e registro.
+    """
+    st = repo_state()
+    op = _git("config", "user.name") or "(nao configurado)"
+    L = [
+        "# PROCEDENCIA — quem produziu o conteudo desta pasta",
+        "",
+        "> Leia antes de usar qualquer arquivo desta pasta como registro.",
+        "> Material produzido com assistencia de IA sob framework de processo.",
+        "> Nada aqui e registro validado enquanto nao passar pelas aprovacoes do processo do dono.",
+        "",
+        "## 1. Demanda            (SLOT — preencher)",
+        "",
+        "| Campo | Valor |",
+        "|---|---|",
+        "| Identificador da demanda | `<preencher>` |",
+        "| Identificador externo | `<preencher ou n/a>` |",
+        "| Titulo | `<preencher>` |",
+        "| Sistema / objeto | `<preencher>` |",
+        "| Solicitante | `<preencher>` |",
+        "",
+        "## 2. Pasta de trabalho  (SLOT — preencher)",
+        "",
+        "| Campo | Valor |",
+        "|---|---|",
+        f"| Pasta desta procedencia | `{target}` |",
+        "| Origem do material migrado | `<preencher ou n/a>` |",
+        "",
+        "## 3. Framework e sessao (DETERMINISTICO — lido do repo)",
+        "",
+        "| Campo | Valor |",
+        "|---|---|",
+        "| Framework | metacognition-framework |",
+        f"| Versao | v{st['version']} |",
+        f"| Commit | `{st['commit']}` (branch `{st['branch']}`) |",
+        f"| Repositorio | {st['origin']} |",
+        f"| Estado do repo no carimbo | {st['uncommitted']} arquivo(s) nao-commitado(s) · {st['unpushed']} commit(s) nao-pushado(s) |",
+        f"| Data (commit HEAD) | {ts} |",
+        f"| Operador humano | {op} |",
+        "| Sessao (ID) | `<preencher>` |",
+        "| Modo de execucao / rota | `<preencher>` |",
+        "",
+        "> **Isolamento de escrita (ADR-070):** o repositorio do framework NAO foi alterado por este",
+        "> trabalho, e este material NAO foi copiado para la. Esta pasta e o unico destino de escrita.",
+        "",
+        "## 4. Modelos e papeis   (SLOT — preencher)",
+        "",
+        "| Papel | Modelo | O que produziu |",
+        "|---|---|---|",
+        "| `<papel>` | `<modelo>` | `<entregavel>` |",
+        "",
+        "Politica de modelo por papel/risco: `tools/model-policy.json` (ADR-078/082).",
+        "Revisor sempre em modelo distinto do autor (anti-vies de auto-aprovacao, ADR-018).",
+        "",
+        "## 5. Origem e status de cada artefato (SLOT — preencher)",
+        "",
+        "| Arquivo | Origem | Status (MINUTA / PROPOSTA / MIGRADO / APROVADO) |",
+        "|---|---|---|",
+        "| `<arquivo>` | `<sessao ou origem>` | `<status>` |",
+        "",
+        "## 6. O que este material NAO e (SLOT — preencher/confirmar)",
+        "",
+        "- Nao e registro validado enquanto nao houver aprovacao formal no processo do dono.",
+        "- Nao e codigo liberado enquanto nao houver compilacao/teste no ambiente real.",
+        "",
+        "## 7. Estado no encerramento (SLOT — preencher)",
+        "",
+        "- Bloqueio atual: `<preencher>`",
+        "- Decisoes pendentes do dono: `<preencher>`",
+        "",
+        "---",
+        "",
+        f"*Carimbo gerado por `tools/handoff.py --provenance` em {ts}. Atualizar a cada sessao que alterar esta pasta.*",
+    ]
     return "\n".join(L) + "\n"
+
+
+PROV_HEADER = "# PROCEDENCIA"
+WRITE_DEFAULT_DIR = "docs/_private/handoffs"
+
+
+def _inside_repo(target):
+    """True se `target` cai DENTRO da arvore do repo. Endurecido por qa-critic (ADR-095):
+
+    - `realpath`: resolve symlink/junction/reparse-point. Sync clients criam junction e um alvo
+      textualmente 'fora' pode apontar fisicamente para dentro do repo — `abspath` NAO resolve isso.
+    - `normcase`: filesystem Windows e case-INSENSITIVE, mas `commonpath` compara string
+      case-SENSITIVE. Sem isto, 'C:\\Users\\Fulano\\repo' nao casa 'C:\\Users\\fulano\\repo' e a
+      guarda deixa escrever DENTRO do repo (bypass reproduzido na revisao).
+    - `ValueError`: `commonpath` levanta quando os paths estao em drives diferentes ou um e UNC
+      (`\\\\servidor\\share`) — que e JUSTAMENTE o caso de uso primario (drive corporativo/share).
+      Drive diferente => certamente fora; retorna False em vez de estourar stack trace.
+    """
+    try:
+        t = os.path.normcase(os.path.realpath(target))
+        r = os.path.normcase(os.path.realpath(ROOT))
+        return os.path.commonpath([t, r]) == r
+    except (ValueError, OSError):
+        return False
+
+
+def emit_provenance(target, ts, write):
+    """Imprime o carimbo; com --write grava <target>/PROCEDENCIA.md.
+
+    NAO sobrescreve carimbo existente (traceability Regra 3 — preservacao): se o arquivo ja
+    existe E E UM CARIMBO VALIDO, APENDA uma secao de sessao. Recusa alvo DENTRO do repo:
+    la a procedencia e o proprio git, e o carimbo seria ruido.
+    """
+    target = os.path.abspath(os.path.expanduser(target))
+    if _inside_repo(target):
+        print(f"[handoff] ERRO: '{target}' esta DENTRO do repo — procedencia aqui e o proprio git."
+              " Este carimbo e para diretorio de trabalho EXTERNO.", file=sys.stderr)
+        return 2
+    if not os.path.isdir(target):
+        print(f"[handoff] ERRO: diretorio inexistente: {target}", file=sys.stderr)
+        return 2
+    pkg = provenance(target, ts=ts)
+    if not write:
+        print(pkg)
+        return 0
+
+    out = os.path.join(target, "PROCEDENCIA.md")
+    if os.path.exists(out):
+        # Existir NAO basta: pasta reaproveitada de outra demanda, arquivo vazio ou truncado
+        # fariam o append colar um rabo de sessao num documento sem cabeca (achado da revisao).
+        try:
+            head = open(out, encoding="utf-8-sig").read(4096)
+        except OSError as e:
+            print(f"[handoff] ERRO: {out} existe mas nao pode ser lido ({e}).", file=sys.stderr)
+            return 2
+        if PROV_HEADER not in head:
+            print(f"[handoff] ERRO: '{out}' existe mas NAO e um carimbo de procedencia"
+                  f" (falta o cabecalho '{PROV_HEADER}'). Nao vou apendar em documento alheio nem"
+                  " sobrescrever. Renomeie/remova o arquivo, ou gere o carimbo em outra pasta.",
+                  file=sys.stderr)
+            return 2
+        st = repo_state()
+        with open(out, "a", encoding="utf-8") as f:
+            f.write(f"\n\n---\n\n## Sessao adicional — {ts}\n\n"
+                    f"- Framework v{st['version']} · commit `{st['commit']}` · branch `{st['branch']}`\n"
+                    f"- Operador: {_git('config', 'user.name') or '(nao configurado)'}\n"
+                    f"- Sessao (ID): `<preencher>`\n"
+                    f"- O que esta sessao alterou nesta pasta: `<preencher>`\n")
+        print(f"[handoff] carimbo JA EXISTIA — apendada secao de sessao em: {out}")
+        return 0
+
+    with open(out, "w", encoding="utf-8") as f:
+        f.write(pkg)
+    print(f"[handoff] carimbo de procedencia gravado: {out}")
+    return 0
 
 
 def main(argv):
@@ -264,12 +483,27 @@ def main(argv):
     ap.add_argument("--next-role", default="", help="papel da proxima sessao (default: inferido do checkpoint)")
     ap.add_argument("--risk", default="low", choices=["low", "high", "regulated", "irreversible"])
     ap.add_argument("--author", default="opus", choices=list(MODEL_ID), help="familia do modelo autor do bloco")
-    ap.add_argument("--write", nargs="?", const="docs/_private/handoffs", default=None,
-                    help="grava o pacote (default dir docs/_private/handoffs/) em vez de so imprimir")
+    ap.add_argument("--write", nargs="?", const=WRITE_DEFAULT_DIR, default=None,
+                    help=f"grava o pacote (default dir {WRITE_DEFAULT_DIR}/) em vez de so imprimir")
+    ap.add_argument("--provenance", metavar="DIR", default=None,
+                    help="emite CARIMBO DE PROCEDENCIA para um diretorio de trabalho EXTERNO ao repo "
+                         "(ADR-095); com --write (SEM valor) grava/atualiza <DIR>/PROCEDENCIA.md")
     a = ap.parse_args(argv[1:])
 
     # timestamp DETERMINISTICO do estado do repo: data do commit HEAD (nao Date.now).
     ts = _git("show", "-s", "--format=%cI", "HEAD") or "<sem-data>"
+
+    if a.provenance is not None:
+        # --write tem semantica DIFERENTE nos dois modos: no handoff aceita caminho; aqui o
+        # destino e sempre <DIR>/PROCEDENCIA.md. Aceitar um caminho e descarta-lo em silencio
+        # e armadilha de CLI (achado da revisao adversarial) — falhar alto e o correto.
+        # normpath nos dois lados: 'docs\\_private\\handoffs' e 'docs/_private/handoffs' sao a
+        # MESMA pasta; comparar string crua rejeitava a forma nativa do Windows (falso-positivo).
+        if a.write is not None and os.path.normpath(a.write) != os.path.normpath(WRITE_DEFAULT_DIR):
+            print(f"[handoff] ERRO: '--write {a.write}' nao se aplica a --provenance: o carimbo"
+                  " grava SEMPRE em <DIR>/PROCEDENCIA.md. Use '--write' sem valor.", file=sys.stderr)
+            return 2
+        return emit_provenance(a.provenance, ts, write=a.write is not None)
     pkg = build(a.next_role, a.risk, a.author, ts=ts)
     try:
         if a.write is not None:

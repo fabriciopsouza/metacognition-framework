@@ -1,0 +1,10 @@
+{
+  "_doc": "ADR-093 — manifesto de premissas de ambiente. COPIE para .agent/environment.json (per-projeto) e preencha 'value' com os paths REAIS do seu projeto. Este .example.json usa placeholders genéricos e NÃO deve conter path concreto (canário barra). 'expect_present' é a POLARIDADE: true=afirmo presença, false=afirmo ausência. O boot cruza com a realidade viva e marca APLICA/ESTALE/AUSENTE.",
+  "schema_version": 1,
+  "assumptions": [
+    { "id": "corpus-root", "kind": "path", "expect_present": true, "value": "<PATH-DO-PROJETO>", "note": "raiz do corpus/dados (esperado PRESENTE nesta máquina)" },
+    { "id": "scratch-legacy", "kind": "path", "expect_present": false, "value": "<PATH-LEGADO>", "note": "diretório que NÃO deve existir aqui — se aparecer, prosa estale (caso-raiz da falha)" },
+    { "id": "edr-veta-hooks", "kind": "hook", "expect_present": true, "note": "hooks deixam rastro de liveness nesta máquina" },
+    { "id": "edr-kaspersky", "kind": "process", "expect_present": false, "value": "avp|kaspersky|klnagent", "note": "EDR que VETARIA hooks (ADR-094) — se AUSENTE, hooks funcionam; NÃO assumir o veto, VERIFICAR. expect_present:false × found:true = ESTALE (assumiu veto que não existe)" }
+  ]
+}

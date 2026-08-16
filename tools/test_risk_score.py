@@ -9,6 +9,7 @@ Sem isto, "o gate de risco é determinístico" seria prosa. Fail-closed (exit 1 
 
 Uso: python tools/test_risk_score.py   (exit 0 PASS; 1 se falha)
 """
+import json
 import os
 import subprocess
 import sys
@@ -23,13 +24,16 @@ except Exception:
     pass
 
 # (a) tabela-verdade canônica (recast TEA, desambiguada). score = prob*impact.
+# 4ª coluna = hitl (ADR-096): score >= 6. Note (1,3) e (3,1) = 3 -> hitl False:
+# raro × catastrófico NÃO trava o hand-off. Lacuna ACEITA pelo dono, travada aqui
+# para que só mude com ADR — não por deriva silenciosa.
 EXPECT = {
-    (1, 1): (1, "NONE", "P3"),
-    (1, 2): (2, "NONE", "P2"), (2, 1): (2, "NONE", "P2"),
-    (1, 3): (3, "NONE", "P2"), (3, 1): (3, "NONE", "P2"),
-    (2, 2): (4, "ADVISORY", "P1"),
-    (2, 3): (6, "CONCERNS", "P0"), (3, 2): (6, "CONCERNS", "P0"),
-    (3, 3): (9, "FAIL", "P0"),
+    (1, 1): (1, "NONE", "P3", False),
+    (1, 2): (2, "NONE", "P2", False), (2, 1): (2, "NONE", "P2", False),
+    (1, 3): (3, "NONE", "P2", False), (3, 1): (3, "NONE", "P2", False),
+    (2, 2): (4, "ADVISORY", "P1", False),
+    (2, 3): (6, "CONCERNS", "P0", True), (3, 2): (6, "CONCERNS", "P0", True),
+    (3, 3): (9, "FAIL", "P0", True),
 }
 
 
@@ -37,11 +41,11 @@ def main():
     fails = []
 
     # (a) os 9 combos exatos
-    for (p, i), (sc, gate, tier) in EXPECT.items():
+    for (p, i), (sc, gate, tier, hitl) in EXPECT.items():
         r = rs.score_item(p, i)
-        if (r["score"], r["gate"], r["tier"]) != (sc, gate, tier):
-            fails.append(f"({p},{i}): esperado score={sc}/{gate}/{tier}, veio "
-                         f"{r['score']}/{r['gate']}/{r['tier']}")
+        if (r["score"], r["gate"], r["tier"], r["hitl"]) != (sc, gate, tier, hitl):
+            fails.append(f"({p},{i}): esperado score={sc}/{gate}/{tier}/hitl={hitl}, veio "
+                         f"{r['score']}/{r['gate']}/{r['tier']}/hitl={r['hitl']}")
 
     # (b) conjunto de scores possíveis == {1,2,3,4,6,9}
     achieved = sorted({rs.score_item(p, i)["score"] for p in (1, 2, 3) for i in (1, 2, 3)})
@@ -77,6 +81,18 @@ def main():
     if agg3 != "CONCERNS":
         fails.append(f"agregado esperado CONCERNS (max=6, sem 9), veio {agg3}")
 
+    # (d2) agregação do HITL (ADR-096): worst-case — UM item >= 6 basta.
+    res_h, _ = rs.evaluate([{"prob": 1, "impact": 1}, {"prob": 3, "impact": 2}])
+    if not rs.hitl_required(res_h):
+        fails.append("hitl_required esperado True (tem um 6), veio False")
+    res_n, _ = rs.evaluate([{"prob": 2, "impact": 2}, {"prob": 1, "impact": 3}])
+    if rs.hitl_required(res_n):
+        fails.append("hitl_required esperado False (max=4; 1x3=3 NÃO gateia), veio True")
+    if rs.hitl_required([]):
+        fails.append("hitl_required de conjunto VAZIO esperado False, veio True")
+    if rs.HITL_MIN_SCORE != 6:
+        fails.append(f"HITL_MIN_SCORE mudou para {rs.HITL_MIN_SCORE} sem ADR (corte do dono = 6)")
+
     # (e) determinismo
     if rs.evaluate([{"prob": 2, "impact": 3}])[0] != rs.evaluate([{"prob": 2, "impact": 3}])[0]:
         fails.append("evaluate não-determinístico")
@@ -89,8 +105,74 @@ def main():
         if proc.returncode == 0:
             fails.append(f"CLI NÃO falhou-closed para args {argv} (exit 0)")
 
-    print(f"risk_score: tabela-verdade 9 combos + scores {{1,2,3,4,6,9}} + fail-closed + "
-          f"agregação + determinismo — {'OK' if not fails else 'FAIL'}")
+    # (f) exit codes do --gate-exit (ADR-096). O contrato é o que um hook consegue ler:
+    #     0 = liberado · 1 = entrada inválida · 2 = HITL requerido.
+    #     O último caso é o crítico: entrada inválida COM --gate-exit deve dar 1, não 2 —
+    #     fail-closed precede o gate, senão JSON torto viraria "risco aceito com humano".
+    for argv, esperado, porque in (
+        (["--prob", "3", "--impact", "2", "--gate-exit"], 2, "score 6 com flag -> bloqueia"),
+        (["--prob", "3", "--impact", "3", "--gate-exit"], 2, "score 9 com flag -> bloqueia"),
+        (["--prob", "3", "--impact", "2"], 0, "score 6 SEM flag -> compat. ADR-086 (exit 0)"),
+        (["--prob", "2", "--impact", "2", "--gate-exit"], 0, "score 4 -> abaixo do corte"),
+        (["--prob", "1", "--impact", "3", "--gate-exit"], 0, "score 3 (raro x catastrofico) -> lacuna aceita"),
+        (["--prob", "5", "--impact", "1", "--gate-exit"], 1, "invalido + flag -> fail-closed PRECEDE o gate"),
+    ):
+        proc = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "risk_score.py"), *argv],
+                              capture_output=True, text=True, cwd=ROOT, stdin=subprocess.DEVNULL)
+        if proc.returncode != esperado:
+            fails.append(f"exit {proc.returncode} != {esperado} para {argv} ({porque})")
+
+    # (c3) guarda de TIPO no item (A5 do qa-critic). Sem ela, `["prob impact"]`
+    #      atravessava porque `in` casa substring em str, e `[1,2]` estourava
+    #      TypeError cru — exit 1 vinha do interpretador, por acidente.
+    for ruim in ([1, 2], ["prob impact"], [None], [[1, 2]], [{"prob": 1, "impact": 1}, 7]):
+        try:
+            rs.evaluate(ruim)
+            fails.append(f"evaluate NÃO falhou-closed para item não-dict: {ruim!r}")
+        except ValueError:
+            pass
+        except Exception as e:
+            fails.append(f"evaluate levantou {type(e).__name__} (esperado ValueError) "
+                         f"para {ruim!r} — fail-closed por acidente, não por desenho")
+
+    # (g) ERRO DE USO DO ARGPARSE => 1, nunca 2 (achado CRÍTICO do qa-critic).
+    #     argparse sai 2 por padrão, que é o código do HITL. Um hook leria
+    #     "aguardando humano" para item que nunca foi avaliado.
+    for argv, porque in (
+        (["--prob", "abc", "--impact", "3", "--gate-exit"], "tipo inválido no valor"),
+        (["--prob", "3", "--impact", "--gate-exit"], "valor faltando"),
+        (["--flag-que-nao-existe"], "flag inexistente"),
+    ):
+        proc = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "risk_score.py"), *argv],
+                              capture_output=True, text=True, cwd=ROOT, stdin=subprocess.DEVNULL)
+        if proc.returncode != 1:
+            fails.append(f"erro de uso saiu {proc.returncode} != 1 para {argv} ({porque}) "
+                         "— exit 2 colide com HITL requerido")
+
+    # (h) FORMA DO STDOUT. O canário aferia só o returncode: uma mutação que
+    #     apagasse 'hitl_requerido' do JSON passava, e o SKILL manda o consumidor
+    #     ler exatamente esse campo. Prova por mutação do qa-critic adversarial.
+    proc = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "risk_score.py"),
+                           "--prob", "3", "--impact", "3"],
+                          capture_output=True, text=True, cwd=ROOT, stdin=subprocess.DEVNULL)
+    try:
+        saida = json.loads(proc.stdout)
+    except Exception as e:
+        saida = None
+        fails.append(f"stdout não é JSON válido: {e}")
+    if saida is not None:
+        for campo in ("itens", "gate_agregado", "hitl_requerido", "hitl_min_score"):
+            if campo not in saida:
+                fails.append(f"campo '{campo}' ausente do JSON — consumidor documentado quebra")
+        if saida.get("hitl_min_score") != rs.HITL_MIN_SCORE:
+            fails.append("hitl_min_score do JSON diverge da constante")
+        if saida.get("hitl_requerido") is not True:
+            fails.append("hitl_requerido deveria ser True para score 9")
+        if saida.get("itens") and "hitl" not in saida["itens"][0]:
+            fails.append("campo 'hitl' ausente do item — agregação não é auditável")
+
+    print(f"risk_score: tabela-verdade 9 combos (+hitl) + scores {{1,2,3,4,6,9}} + fail-closed + "
+          f"agregação + HITL>=6 + exit-codes + determinismo — {'OK' if not fails else 'FAIL'}")
     for f in fails:
         print("  -", f)
     print("-" * 50)

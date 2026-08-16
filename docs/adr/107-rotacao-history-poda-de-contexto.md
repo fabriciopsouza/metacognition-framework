@@ -1,4 +1,4 @@
-# ADR 092 — Rotação do history.md: poda de contexto via arquivo-arquivo (últimos N quentes + Em aberto/Aprendizado inteiros)
+# ADR 107 — Rotação do history.md: poda de contexto via arquivo-arquivo (últimos N quentes + Em aberto/Aprendizado inteiros)
 
 - Status: **Aceito** · Data: 2026-06-20 · Decisores: dono ("manter últimos 10 + o não-resolvido; nada perdido em outro arquivo") + squad (architect).
 - Tipo: higiene de SSoT (history.md, ADR-007) · Política: NOVO (mecaniza prosa existente). Relaciona: ADR-007 (history append-only, newest-first, boot lê o topo), ADR-016/021 (digest/compaction-gate), ADR-029 (context-budget/doc-intake), "Higiene v1.58.1" (poda do `## Em aberto`, que era prosa).

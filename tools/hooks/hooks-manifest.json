@@ -1,5 +1,5 @@
 {
-  "_doc": "ADR-061: manifesto de hooks AUDITADOS por liveness. Cada hook listado CARIMBA .claude/.hooklive/<key>=<session_id> quando roda; o route-gate (nao-bloqueavel, so le arquivo) compara com a sessao atual e DECLARA os ausentes (nao ha falha silenciosa). Listar SO hooks que de fato carimbam (senao falso-alarme). Hooks de boot global (sync-global, framework-boot) NAO sao auditados aqui (editar boot e arriscado/untestavel) -> cobertos pela EXCLUSAO do Kaspersky.",
+  "_doc": "ADR-061: manifesto de hooks AUDITADOS por liveness. Cada hook listado CARIMBA .claude/.hooklive/<key>=<session_id> quando roda; o route-gate (nao-bloqueavel, so le arquivo) compara com a sessao atual e DECLARA os ausentes (nao ha falha silenciosa). Listar SO hooks que de fato carimbam (senao falso-alarme). Hooks de boot global (sync-global, framework-boot) NAO sao auditados aqui (editar boot e arriscado/untestavel). NAO re-adicionar `boot-check`: nao e hook SessionStart (nada o carimba automaticamente) -> auditar gera falso-alarme TODA sessao, em qualquer maquina. boot_check.py continua como ferramenta manual de fallback.",
   "audited_hooks": [
     {
       "key": "check-repo-sync",
@@ -12,12 +12,6 @@
       "event": "SessionStart",
       "gate": "agnosticismo do nucleo (ADR-020)",
       "manual": "rode `python tools/check_core_agnostic.py` para checar vazamento de dominio no nucleo"
-    },
-    {
-      "key": "boot-check",
-      "event": "SessionStart (manual, agente roda)",
-      "gate": "self-check de boot consolidado (emenda ADR-061 / plano anti-bypass) — funde sync+agnosticismo+boot-scan+versao num comando, grava prova checavel, carimba os gates que executou",
-      "manual": "rode `python tools/boot_check.py` (UM comando, auto-detecta $env:CLAUDE_CODE_SESSION_ID p/ carimbar o liveness): faz sync+agnosticismo+boot-scan+versao, grava .claude/boot-proof.json e carimba boot-check/check-repo-sync/check-core-agnostic — calando este banner. Sem a env, passe `--session <id>`."
     }
   ]
 }

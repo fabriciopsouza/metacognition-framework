@@ -115,16 +115,56 @@ def validate_postura(postura, for_release=False):
     return probs
 
 
+def validate_problemas(problemas):
+    """Valida CADA item de `problemas`. Retorna lista de erros (vazia = OK).
+
+    ADR-104 (4a rodada de revisao, 13/08/2026): `write_artifact` so validava as chaves de TOPO.
+    Um veredito com itens fora do schema (`titulo`/`situacao` em vez de `local`/`descricao`)
+    passava, e `render_md` emitia a tabela com TODAS as celulas VAZIAS — sem erro, sem aviso.
+    O .md, que e' o que humano le, ficava sem os achados. Falha silenciosa: fail-closed agora.
+    """
+    erros = []
+    for i, p in enumerate(problemas or []):
+        if not isinstance(p, dict):
+            erros.append(f"problemas[{i}] nao e' objeto")
+            continue
+        faltam = [k for k in ("severidade", "local", "descricao") if not str(p.get(k, "")).strip()]
+        if faltam:
+            erros.append(f"problemas[{i}] sem {faltam} (schema: severidade, local, descricao)")
+    return erros
+
+
+def _head_sha():
+    """SHA do HEAD deste repo, ou None se git nao responder."""
+    import subprocess
+    try:
+        r = subprocess.run(["git", "-C", ROOT, "rev-parse", "HEAD"], capture_output=True,
+                           text=True, encoding="utf-8", errors="replace",
+                           stdin=subprocess.DEVNULL)
+    except (OSError, ValueError):
+        return None
+    return r.stdout.strip() if r.returncode == 0 else None
+
+
 def write_artifact(verdict, when=None):
     missing = [k for k in REQUIRED if k not in verdict]
     if missing:
         raise ValueError(f"veredito invalido — campos ausentes: {missing}")
+    pe = validate_problemas(verdict.get("problemas"))
+    if pe:
+        raise ValueError("veredito invalido — itens de 'problemas' fora do schema: " + "; ".join(pe))
     # ADR-074 emenda 3 (posture-gate): veredito que FECHA release exige bloco de postura valido.
     if verdict.get("release"):
         pp = validate_postura(verdict.get("postura"), for_release=True)
         if pp:
             raise ValueError(f"veredito de release sem postura valida: {pp}")
     verdict.setdefault("data", when or _now_iso())
+    # ADR-103 emenda 3 (7a rodada): carimba SOBRE QUAL ESTADO do codigo o veredito foi
+    # emitido. Sem isto o squad_gate nao tem como saber se a evidencia e' anterior as
+    # edicoes que ela diz cobrir — e "revisado uma vez" virava "liberado para sempre".
+    # O campo ja existia no schema e nao era escrito por ninguem: decoracao.
+    if not str(verdict.get("sha_revisado", "") or "").strip():
+        verdict["sha_revisado"] = _head_sha() or ""
     os.makedirs(QA_DIR, exist_ok=True)
     slug = _slug(verdict["bloco"])
     jpath = os.path.join(QA_DIR, slug + ".json")

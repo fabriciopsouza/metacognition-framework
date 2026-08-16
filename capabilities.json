@@ -35,6 +35,24 @@
       ]
     },
     {
+      "id": "environment-applicability-gate",
+      "title": "Deteccao de ambiente no boot + aplicabilidade das premissas (APLICA/ESTALE/AUSENTE) cross-session/cross-IA",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/boot_check.py",
+      "test": "tools/test_environment_applicability.py",
+      "adr": "docs/adr/093-boot-deteccao-ambiente-aplicabilidade-premissas-cross-session.md",
+      "cross_ai": true,
+      "enforcement": "fail-soft",
+      "tags": [
+        "boot",
+        "environment",
+        "file-first",
+        "cross-session",
+        "anti-stale"
+      ]
+    },
+    {
       "id": "cross-ai-antiloop-gate",
       "title": "Trava fisica anti-loop da troca cross-IA (terminacao garantida)",
       "status": "PROVIDES",
@@ -260,7 +278,14 @@
         "anti-drift",
         "authority",
         "gate"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": "tools/check_rules_parity.py",
+        "de": "N_CANON = len(CANON)",
+        "para": "N_CANON = 3",
+        "canario": "tools/test_rules_parity.py",
+        "espera": "repo real deveria PASSAR mas reportou drift"
+      }
     },
     {
       "id": "handoff-generator",
@@ -477,17 +502,19 @@
     },
     {
       "id": "consistency-gate",
-      "title": "Auditoria de fechamento (version-sync, adr-status, checkpoint, unpushed), fail-soft",
+      "title": "Espelho de consistencia no FECHAMENTO, cabeado no evento Stop (7 dimensoes)",
       "status": "PARTIAL",
       "ai_owner": "claude",
-      "mechanism": "tools/hooks/consistency-gate.ps1",
+      "mechanism": "tools/hooks/consistency_gate.py",
       "adr": "docs/adr/030-consistency-gate-auditoria-de-fechamento.md",
       "cross_ai": false,
       "tags": [
         "doc-sync",
         "gate",
         "closure"
-      ]
+      ],
+      "test": "tools/test_consistency_gate.py",
+      "enforcement": "fail-soft"
     },
     {
       "id": "adr-changelog-sync",
@@ -913,25 +940,8 @@
         "doc-intake",
         "canary"
       ]
-    }
-    ,{
-      "id": "history-rotation",
-      "title": "Rotacao deterministica do history.md — ultimos N checkpoints quentes + Em aberto/Aprendizado inteiros; antigos -> docs/history/history-archive.md (poda de contexto, zero perda, idempotente)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/rotate_history.py",
-      "test": "tools/test_rotate_history.py",
-      "adr": "docs/adr/092-rotacao-history-poda-de-contexto.md",
-      "cross_ai": false,
-      "enforcement": "fail-soft",
-      "tags": [
-        "context",
-        "tokens",
-        "history",
-        "canary"
-      ]
-    }
-    ,{
+    },
+    {
       "id": "web-bundles-coaches",
       "title": "Coaches cross-IA (planejamento em Gemini/ChatGPT) gerados do dado com canario de drift fail-closed",
       "status": "PROVIDES",
@@ -947,8 +957,8 @@
         "planning",
         "external-integration"
       ]
-    }
-    ,{
+    },
+    {
       "id": "author-tier-gate",
       "title": "Gate de tier-autor da sessao: detecta modelo ativo (transcript) + alerta LOUD se autor < baseline (ADR-082)",
       "status": "PROVIDES",
@@ -964,8 +974,8 @@
         "boot",
         "heterogeneity"
       ]
-    }
-    ,{
+    },
+    {
       "id": "advanced-elicitation",
       "title": "Elicitacao avancada: catalogo de 77 metodos (convergente #1-69 + divergente CIS #70-76 + tuning-loop #77) com canario de integridade fail-closed; execucao pela skill",
       "status": "PARTIAL",
@@ -983,8 +993,8 @@
         "divergente",
         "canary"
       ]
-    }
-    ,{
+    },
+    {
       "id": "risk-gate",
       "title": "Gating deterministico por risco (prob x impacto -> gate + tier P0-P3); recast externo (ADR-086) sob P15, forma agnostica (categorias = blueprint)",
       "status": "PROVIDES",
@@ -1000,9 +1010,16 @@
         "deterministic",
         "external-integration",
         "canary"
-      ]
-    }
-    ,{
+      ],
+      "mutacao": {
+        "arquivo": "tools/risk_score.py",
+        "de": "HITL_MIN_SCORE = 6",
+        "para": "HITL_MIN_SCORE = 99",
+        "canario": "tools/test_risk_score.py",
+        "espera": "hitl_required esperado True (tem um 6), veio False"
+      }
+    },
+    {
       "id": "byo-ci-gate",
       "title": "Gate de merge dirigido pelos canarios LOCAIS (BYO-CI) — a seguranca do GHA sem GHA: posta commit-status verde so com 0 FAIL; branch protection exige o context",
       "status": "PROVIDES",
@@ -1019,8 +1036,8 @@
         "deterministic",
         "canary"
       ]
-    }
-    ,{
+    },
+    {
       "id": "autonomy-retry-policy",
       "title": "Dial retry/escalate por MODO (ADR-087): HITL escala na 1a falha; autosuficiente auto-retenta subindo a escada de modelo ate budget, escala por ultimo",
       "status": "PROVIDES",
@@ -1037,9 +1054,16 @@
         "hitl",
         "external-integration",
         "canary"
-      ]
-    }
-    ,{
+      ],
+      "mutacao": {
+        "arquivo": "tools/autonomy_policy.py",
+        "de": "CAP_ORDER = [\"haiku\", \"sonnet\", \"opus\", \"fable\"]",
+        "para": "CAP_ORDER = [\"fable\", \"opus\", \"sonnet\", \"haiku\"]",
+        "canario": "tools/test_autonomy_policy.py",
+        "espera": "esperado retry/sonnet, veio escalate/None"
+      }
+    },
+    {
       "id": "core-no-vendor",
       "title": "Pureza do nucleo: nenhum nome de PRODUTO/VENDOR externo no conteudo operativo (_shared/.agent/skills/roteador); proveniencia so nos ADRs. Regression-guard do 'repo nao tem produtos' (P12)",
       "status": "PROVIDES",
@@ -1055,8 +1079,8 @@
         "guard",
         "canary"
       ]
-    }
-    ,{
+    },
+    {
       "id": "elicitation-gate",
       "title": "Elicitation-first VINCULANTE antes de implementar sobre indicador/metrica/regra de dominio de risco alto: ficha de insumo (6 campos) nao-skippavel mesmo em autosuficiente (enforcement, nao skill nova)",
       "status": "PROVIDES",
@@ -1074,8 +1098,8 @@
         "enforcement",
         "canary"
       ]
-    }
-    ,{
+    },
+    {
       "id": "web-prompt-currency",
       "title": "Guard de currency do prompt chat-web: carimbo 'Alinhado ao vX.Y.Z' nao pode ficar >5 minors atras de main (anti-drift-silencioso do prompt mantido a mao)",
       "status": "PROVIDES",
@@ -1092,8 +1116,8 @@
         "guard",
         "canary"
       ]
-    }
-    ,{
+    },
+    {
       "id": "project-onboarding",
       "title": "Onboarding/wayfinding de projeto por COMPOSICAO (ADR-090): fork greenfield/brownfield no discovery + workflows generate-project-context/document-project (compoem handoff/explorer/docops) + guia user-facing POR-ONDE-COMECAR",
       "status": "PROVIDES",
@@ -1111,8 +1135,8 @@
         "external-integration",
         "canary"
       ]
-    }
-    ,{
+    },
+    {
       "id": "edge-case-hunter",
       "title": "Percurso mecanico exaustivo de paths nao tratados — output JSON verificavel",
       "status": "PARTIAL",
@@ -1128,8 +1152,8 @@
         "code-review",
         "external-integration"
       ]
-    }
-    ,{
+    },
+    {
       "id": "party-mode",
       "title": "Exploracao multi-perspectiva com personas em conflito deliberado",
       "status": "PARTIAL",
@@ -1145,8 +1169,8 @@
         "brainstorming",
         "external-integration"
       ]
-    }
-    ,{
+    },
+    {
       "id": "readiness-gate",
       "title": "Gate pre-developer: valida alinhamento requirements+ADR antes de J3",
       "status": "PARTIAL",
@@ -1161,6 +1185,211 @@
         "gate",
         "pre-dev",
         "external-integration"
+      ]
+    },
+    {
+      "id": "squad-enforcement-gate",
+      "title": "Enforcement deterministico do squad: manifesto de papeis + gate com atestacao de isolamento — ADVISORY no CI (ativacao desacoplada, ADR-104)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/squad_gate.py",
+      "test": "tools/test_squad_gate.py",
+      "adr": "docs/adr/104-desacoplamento-padrao-documental-e-ativacao-do-gate.md",
+      "cross_ai": false,
+      "tags": [
+        "squad",
+        "enforcement",
+        "anti-drift",
+        "advisory"
+      ],
+      "enforcement": "advisory"
+    },
+    {
+      "id": "external-work-provenance",
+      "title": "Carimbo de PROCEDENCIA em trabalho executado FORA do repo: PROCEDENCIA.md com framework/versao/commit/sessao deterministicos + status por artefato (MINUTA/PROPOSTA/MIGRADO/APROVADO)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/handoff.py",
+      "test": "tools/test_handoff.py",
+      "enforcement": "manual",
+      "adr": "docs/adr/095-procedencia-de-trabalho-executado-fora-do-repo.md",
+      "cross_ai": false,
+      "tags": [
+        "traceability",
+        "provenance",
+        "external-work",
+        "regulated",
+        "anti-drift"
+      ]
+    },
+    {
+      "id": "path-resolves-at-destination",
+      "title": "Referencia a arquivo resolve no cwd do DESTINATARIO: raiz absoluta no Pacote P14 + auditoria de diretorio temporario e link markdown relativo",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/handoff.py",
+      "test": "tools/test_path_absoluto.py",
+      "enforcement": "advisory",
+      "adr": "docs/adr/098-referencia-a-arquivo-absoluta-e-resolvivel-fora-do-cwd.md",
+      "cross_ai": false,
+      "tags": [
+        "traceability",
+        "handoff",
+        "cross-session",
+        "anti-drift",
+        "path"
+      ]
+    },
+    {
+      "id": "validation-reporting",
+      "title": "Metodo de validacao ponto a ponto com reporte legivel por humano que decide",
+      "status": "PARTIAL",
+      "ai_owner": "claude",
+      "mechanism": "_shared/validation-reporting/SKILL.md",
+      "adr": "docs/adr/099-metodo-de-validacao-ponto-a-ponto-com-reporte-para-humano.md",
+      "cross_ai": false,
+      "enforcement": "prose",
+      "tags": [
+        "validacao",
+        "reporte",
+        "humano",
+        "metodo"
+      ],
+      "note": "PARTIAL / prose por honestidade: skill de METODO sem mecanismo — nao ha avisador, logo 'advisory' afirmaria um mecanismo inexistente (achado A2 do qa-critic; precedentes edge-case-hunter/party-mode/readiness-gate usam 'prose'). Contraria a §10 da propria skill; debito declarado no ADR-099 §Regua §0, que assume o override do dono (ADR-051) em vez de alegar a porta (c). Vira PROVIDES quando houver canario sobre artefato-exemplo com veredito derivado."
+    },
+    {
+      "id": "trabalhos-registro",
+      "title": "Registro persistente de trabalhos: handoff sobrevive a sessao e e oferecido ate ser tratado",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/trabalhos.py",
+      "adr": "docs/adr/100-registro-de-trabalhos-handoff-persistente.md",
+      "cross_ai": false,
+      "enforcement": "advisory",
+      "tags": [
+        "handoff",
+        "boot",
+        "continuidade",
+        "p14"
+      ],
+      "note": "advisory por desenho: trabalho pendente e INFORMACAO, nao erro — o gate check_trabalhos_abertos do boot_check nunca falha o boot, mas nunca fica silencioso ('nenhum aberto' e resultado declarado). Ciclo aberto->tratado; so o dono encerra. Persistencia em ~/.claude/trabalhos/ (fora do repo, porque um trabalho pode envolver varios repositorios).",
+      "test": "tools/test_trabalhos.py"
+    },
+    {
+      "id": "project-docs-standard",
+      "title": "Padrao do conjunto documental de projeto (7 propriedades + conjunto graduado + 4 gates) — PROSA, sem canario proprio",
+      "status": "PARTIAL",
+      "ai_owner": "claude",
+      "mechanism": "_shared/project-docs/SKILL.md",
+      "test": null,
+      "adr": "docs/adr/102-padrao-do-conjunto-documental-de-projeto.md",
+      "cross_ai": false,
+      "enforcement": "prose",
+      "tags": [
+        "docs",
+        "projeto",
+        "handoff",
+        "anti-drift",
+        "adversarial"
+      ]
+    },
+    {
+      "id": "qa-evidence-integrity",
+      "title": "Canario de integridade da evidencia de QA: .json e .md do mesmo bloco nao podem contar historias opostas",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/test_qa_evidence_integrity.py",
+      "test": "tools/test_qa_evidence_integrity.py",
+      "adr": "docs/adr/103-ativacao-do-squad-gate-como-bloqueio.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "tags": [
+        "qa",
+        "integridade",
+        "anti-teatro",
+        "auditoria"
+      ]
+    },
+    {
+      "id": "enforcement-mutation-audit",
+      "title": "Prova de mutacao obrigatoria: capacidade fail-closed declara a sabotagem que deixa seu canario VERMELHO",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/audit_enforcement.py",
+      "test": "tools/test_audit_enforcement.py",
+      "adr": "docs/adr/106-prova-de-mutacao-para-capacidade-fail-closed.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "mutacao": {
+        "arquivo": "tools/audit_enforcement.py",
+        "de": "problema = \"declara `fail-closed` sem `mutacao` declarada\"",
+        "para": "problema = None",
+        "canario": "tools/test_audit_enforcement.py",
+        "espera": "[FALHA] nova `fail-closed` sem `mutacao` declarada"
+      },
+      "tags": [
+        "qa",
+        "anti-teatro",
+        "auditoria",
+        "enforcement"
+      ]
+    },
+    {
+      "id": "canary-runner-bytecode-isolation",
+      "title": "O executor da suite nao pode ser enganado por bytecode velho",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/run_canaries.py",
+      "test": "tools/test_run_canaries.py",
+      "adr": "docs/adr/106-prova-de-mutacao-para-capacidade-fail-closed.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "mutacao": {
+        "arquivo": "tools/run_canaries.py",
+        "de": "env = {**os.environ, \"PYTHONPYCACHEPREFIX\": str(prefixo_cache)}",
+        "para": "env = {k: v for k, v in os.environ.items() if k != \"PYTHONPYCACHEPREFIX\"}",
+        "canario": "tools/test_run_canaries.py",
+        "espera": "[FALHA] o ambiente do runner NAO e' enganado"
+      },
+      "tags": [
+        "qa",
+        "anti-teatro",
+        "canario",
+        "determinismo"
+      ]
+    },
+    {
+      "id": "decisoes-que-governam",
+      "title": "Colisao entre o pedido e decisao ja registrada vira consulta deterministica",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/decisoes_que_governam.py",
+      "test": "tools/test_decisoes_que_governam.py",
+      "adr": "docs/adr/051-reparo-discovery-contexto-inferido-pesquisa-ancora-mecanizada.md",
+      "cross_ai": false,
+      "enforcement": "advisory",
+      "tags": [
+        "postura",
+        "anti-passividade",
+        "decisoes",
+        "determinismo"
+      ]
+    },
+    {
+      "id": "history-rotation",
+      "title": "Rotacao deterministica do history.md — ultimos N checkpoints quentes + Em aberto/Aprendizado inteiros; antigos -> docs/history/history-archive.md (poda de contexto, zero perda, idempotente)",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/rotate_history.py",
+      "test": "tools/test_rotate_history.py",
+      "adr": "docs/adr/107-rotacao-history-poda-de-contexto.md",
+      "cross_ai": false,
+      "enforcement": "fail-soft",
+      "tags": [
+        "context",
+        "tokens",
+        "history",
+        "canary"
       ]
     }
   ],

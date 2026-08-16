@@ -14,14 +14,28 @@ confidence_required: false
 shared_refs:
   - _shared/metacognition-core
   - _shared/traceability
+  - _shared/project-docs
 ---
 
 # DocOps — Documentação como Código (flexível)
 
 ## Carregar de `_shared/`
-`metacognition-core` (compaction + structured note-taking) · `traceability`.
+`metacognition-core` (compaction + structured note-taking) · `traceability` ·
+**`project-docs`** (padrão do CONJUNTO documental de projeto — carregar quando o bloco cria,
+reorganiza ou audita documentação de PROJETO, não só de bloco).
+
+## Escopo — bloco × projeto (não confundir)
+Esta skill fecha o **bloco**. O **conjunto documental do projeto** (ponto de retomada, provas com
+consulta reproduzível, mapa de fontes, crenças refutadas, gates executáveis) é `_shared/project-docs`
+— fonte única, não recopiar aqui. Todo projeto adota o conjunto **graduado por porte**; adotar o
+conjunto completo num projeto pequeno viola a régua §0 tanto quanto não documentar.
 
 ## Sequência
+0. Se o bloco tocou documentação de projeto: aplicar `_shared/project-docs` (§1 teste binário,
+   §4 gates). **ADVISORY, não bloqueia release** — a skill é prosa e não tem canário próprio
+   (registro `project-docs-standard`: PARTIAL/prose). Chamá-la de gate sem mecanismo por trás
+   seria o teatro que o ADR-085/P15 proíbe. Vira bloqueante quando o canário existir; débito de
+   quitação declarado no §8 da própria skill.
 1. CHANGELOG.md (Keep a Changelog + SemVer).
 2. dicionario-de-dados.md (se campo/cálculo novo).
 3. 00-glossario.md (se nome novo via ADR).

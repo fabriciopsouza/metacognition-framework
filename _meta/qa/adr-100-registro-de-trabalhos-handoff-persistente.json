@@ -1,0 +1,74 @@
+{
+  "bloco": "v1.77.0-registro-de-trabalhos-handoff-persistente",
+  "release": "1.77.0",
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "autor": "claude-opus-5",
+  "critico": "claude-sonnet-5 (subagente isolado, modelo != autor — ADR-074/078)",
+  "veredito_1a_rodada": "NAO LIBERADO",
+  "problemas": [
+    {
+      "severidade": "BLOQUEANTE",
+      "local": "tools/trabalhos.py:_ler / _escrever",
+      "descricao": "CORRIGIDO. PERDA SILENCIOSA DE DADOS que contradizia o proposito central do ADR. `_ler` particionava o corpo por QUALQUER linha `^## `, mas `_escrever` so reserializava as tres secoes canonicas: qualquer conteudo sob um titulo nao-canonico era APAGADO na proxima escrita. Como `registrar`, `tratar` e `reabrir` chamam os dois em sequencia, e o Pacote P14 — que este registro existe para guardar — e cheio de `## `, o mecanismo cujo proposito e 'o handoff nao se perde' PERDIA o handoff. Fix: ancorar a abertura de secao no conjunto de titulos conhecidos; qualquer outra linha `## ` e texto do corpo. Canario novo cobre round-trip com `## ` e `---` no texto, em registrar, re-registrar e tratar."
+    },
+    {
+      "severidade": "GRAVE",
+      "local": "docs/adr/100 §Consequencias",
+      "descricao": "CORRIGIDO. Nao-portabilidade entre MAQUINAS nao declarada. `~/.claude/trabalhos/` e local e nao versionado: trabalho registrado num PC nao aparece no boot de outro. O ADR justificava ficar fora do repo por ser cross-repositorio, mas nunca mencionava cross-maquina — apesar de o framework tratar multi-PC como problema real (gates de sync, bootstrap.ps1). Fix: consequencia negativa 1 declarada explicitamente."
+    },
+    {
+      "severidade": "GRAVE",
+      "local": "tools/test_trabalhos.py — passo de integracao",
+      "descricao": "CORRIGIDO. O canario rodava boot_check contra o registro REAL (sem TRABALHOS_DIR) e so verificava que o nome do gate aparecia e que nao havia falha — nunca que o NOME de um trabalho aberto atravessa `check_trabalhos_abertos`. Mudar o glifo '▸' ou a string 'nenhum trabalho em aberto' quebraria o 'oferecer' em silencio, com canario verde. Fix: passo 10 registra um trabalho de nome unico em diretorio isolado e exige que o nome apareca na saida do boot_check."
+    },
+    {
+      "severidade": "GRAVE",
+      "local": "docs/adr/100 §Positivas",
+      "descricao": "CORRIGIDO. Superafirmacao: 'a abertura de sessao passa a ter continuidade explicita' prometia garantia que o mecanismo nao entrega. O passo 3.5 do start-session ('o agente DEVE mencionar') e PROSA, sem verificador. Fix: §Positivas agora declara que a garantia mecanica para na EXIBICAO; comentar depende do agente — coerente com o registro ja marcado 'advisory' em capabilities.json."
+    },
+    {
+      "severidade": "GRAVE",
+      "local": "tools/trabalhos.py:cmd_registrar",
+      "descricao": "CORRIGIDO. Colisao de slug permitia contaminacao cruzada: registrar com o mesmo --slug e nome diferente mantinha os campos nao repassados do trabalho antigo, misturando dois trabalhos num registro. `_slug` trunca em 60 chars, o que torna a colisao mais provavel. Fix: recusa com exit 1 quando o nome diverge do registrado, exigindo --force explicito. Canario cobre os dois caminhos."
+    },
+    {
+      "severidade": "MEDIO",
+      "local": "docs/adr/100 §Consequencias",
+      "descricao": "CORRIGIDO. Texto de dominio persistido FORA de qualquer gate de agnosticismo: check_core_agnostic.py nao alcanca ~/.claude/. Dado o historico (o repositorio virou privado apos vazamento de dado de cliente), a omissao era relevante. Fix: consequencia negativa 5 com a regra operacional 'descrever, nao colar' — o registro guarda estado do trabalho, nao amostra de dado."
+    },
+    {
+      "severidade": "MEDIO",
+      "local": "tools/trabalhos.py — argparse",
+      "descricao": "CORRIGIDO. --objetivo nao era obrigatorio, contradizendo a ordem declarada no proprio ADR (o registro deve responder 'para que serve'). Sem ele o boot exibiria '(nao declarado)'. Fix: exigido na CRIACAO (nao na atualizacao, que preserva o valor existente)."
+    },
+    {
+      "severidade": "MEDIO",
+      "local": "tools/trabalhos.py:_ler",
+      "descricao": "ACEITO, backlog declarado. E o terceiro parser zero-dep de frontmatter do repositorio (cross_ai_hub.py e handoff.py tem os seus). Nao e duplicata funcional literal, mas um utilitario compartilhado satisfaria a porta (a) da regua §0 melhor que a (c). Registrado em §Pendencias do ADR como divida consciente."
+    },
+    {
+      "severidade": "PEQUENO",
+      "local": "README.md:11 / guia/web/index.html / PROMPT-CHAT-WEB-v4.5.md",
+      "descricao": "CORRIGIDO. CHANGELOG ja tinha [1.77.0] enquanto README, vitrine e prompt web declaravam 1.76.0, violando a politica 'tag, numero no README e nome do .zip sobem juntos'. test_marketing_claims pegou a vitrine; README e prompt web nao tem canario que os cruze (divida pre-existente, ja registrada no backlog do repo)."
+    },
+    {
+      "severidade": "PEQUENO",
+      "local": "docs/adr/099 -> 100 (numeracao)",
+      "descricao": "CORRIGIDO durante a propria revisao. O ADR nasceu como 099 e COLIDIU com o ADR-099 ja Aceito (metodo de validacao ponto a ponto, PR #113). Renumerado para 100 e propagado em trabalhos.py, test_trabalhos.py, boot_check.py, start-session.md e CHANGELOG; grep confirma zero referencia residual. Mesma classe de erro do rename 095->097 em v1.75.0 — reincidente, e o canario de capacidades tambem pegou dois erros de schema (campo 'canary' em vez de 'test', status 'OK' em vez de 'PROVIDES')."
+    }
+  ],
+  "canarios": "66 canarios; test_trabalhos.py novo com 22 verificacoes (ciclo aberto->tratado->reaberto, preservacao de campo nao informado, round-trip com '## ' e '---', colisao de slug, objetivo obrigatorio, e o NOME do trabalho atravessando o boot_check)",
+  "observacao": "Veredito da 1a rodada foi NAO LIBERADO com 1 BLOQUEANTE e 4 GRAVES. O merito da decisao nao foi contestado — o gap e real e foi observado na propria sessao de origem. O bloqueante era a antitese do proposito: um registro cuja funcao e nao perder o handoff, que apagava o handoff em silencio. Registra-se que os canarios do proprio repositorio pegaram dois erros do autor antes do critico (colisao de ADR e schema de capacidade), o que e o melhor argumento a favor deles.",
+  "verificacoes_executadas": "run_canaries.py (66) - test_trabalhos.py 22/22 - test_boot_check.py PASS apos estender EXPECTED_CHECKS para 7 - test_capabilities.py PASS (78 capacidades) - test_adr_changelog_sync.py PASS - test_release_checkpoint.py PASS - test_marketing_claims.py PASS - check_core_agnostic.py PASS (norma)",
+  "postura": {
+    "discovery": "pedido explicito do dono ao fim de um bloco de validacao real: 'o handoff nao deve ser perdido se eu iniciar os trabalhos, mas deve ser oferecido ate que eu trate o assunto'. CAPABILITIES.md consultado ANTES de projetar (ADR-072): existiam handoff-generator (P14, efemero) e boot-scan cross-IA (entre agentes, hub externo) — nenhum guarda os trabalhos do dono.",
+    "decisao_do_dono": "organizar POR TRABALHO, com objetivo, resumo do feito e pendencias; oferecer ate ser tratado; valer para qualquer trabalho, nao so o de origem.",
+    "limite_declarado": "cobertura PARCIAL e registrada como 'advisory': o boot GARANTE a exibicao; que o agente COMENTE na abertura e norma sem verificador. Persistencia local, nao versionada e nao portavel entre maquinas. Conteudo fora dos gates de agnosticismo do nucleo.",
+    "achado_sobre_o_proprio_autor": "o defeito BLOQUEANTE e do proprio autor e e da mesma familia do que ele acabara de criticar em outro repositorio horas antes: criar duas copias do mesmo conteudo sem mecanismo que impeca divergencia. Aqui foi pior — nao divergencia, mas apagamento. E a numeracao do ADR colidiu pela segunda vez na mesma serie (095->097 em v1.75.0, 099->100 agora).",
+    "rrc": "PASSA: CHANGELOG [1.77.0] com as consequencias negativas declaradas, README/vitrine/prompt web bumpados para 1.77.0, capabilities.json + CAPABILITIES.md regerados (78), checkpoint datado no history.md, canario novo, test_boot_check estendido para 7 checks, web-bundles regenerados.",
+    "metodo_senior": "aplicado: o ADR declara a porta (c) da regua §0 com o que NAO satisfaz (a) e (b), reconhece os mecanismos preexistentes em vez de alegar novidade total, e lista cinco consequencias negativas — incluindo a nao-portabilidade e a ausencia de gate de agnosticismo, ambas trazidas pelo critico.",
+    "fonte_canonica": true
+  },
+  "data": "2026-08-03"
+}

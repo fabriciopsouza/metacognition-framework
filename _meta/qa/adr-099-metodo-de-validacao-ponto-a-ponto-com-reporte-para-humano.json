@@ -1,0 +1,100 @@
+{
+  "release": "1.76.0",
+  "bloco": "ADR-099 — metodo de validacao ponto a ponto com reporte para humano",
+  "autor_modelo": "claude-opus-5",
+  "critico_modelo": "claude-fable-5",
+  "heterogeneo": true,
+  "rodadas": 1,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito_1a_rodada": "NAO LIBERADO (1 bloqueante, 5 graves, 4 menores)",
+  "achado_principal": "A1 — o ADR alegava a regua §0 pela porta (c) ('destrava eval editando existente'). O critico derrubou os TRES predicados: entrega 100% aditiva, nenhum eval criado, nenhuma fusao executada. Era racionalizacao — e o mesmo defeito que o ADR-098 sofreu e que este ADR citava como licao enquanto o cometia. Corrigido: a §Regua §0 declara que a entrega NAO passa pelas tres portas e entra por OVERRIDE EXPLICITO do dono (ADR-051), com debito e condicao de quitacao.",
+  "problemas": [
+    {
+      "severidade": "critico",
+      "descricao": "A1 — ADR alegava regua §0 pela porta (c); os 3 predicados eram falsos (100% aditivo, zero eval, zero fusao). Corrigido: override explicito do dono (ADR-051) com debito e condicao de quitacao.",
+      "local": "docs/adr/099-metodo-de-validacao-ponto-a-ponto-com-reporte-para-humano.md §Regua §0",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "alto",
+      "descricao": "A2 — enforcement 'advisory' afirmava avisador inexistente; precedentes edge-case-hunter/party-mode/readiness-gate usam 'prose'. Corrigido para 'prose'.",
+      "local": "capabilities.json",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "alto",
+      "descricao": "A3 — sem ponte para confidence-classification ('unica definicao do ecossistema') nem para high-stakes-gate/risk_score: dual-SSoT latente. Corrigido com §0 nova declarando os eixos (status do DADO x origem da AFIRMACAO).",
+      "local": "_shared/validation-reporting/SKILL.md §0",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "alto",
+      "descricao": "A4 — materialidade sem escopo de nivel contradizia a tolerancia zero do nivel A e tensionava o fail-closed da §5; permitiria aprovar divergencia de dinheiro sub-limiar. Corrigido: §6 restrita a niveis B/C, residual vira item da lista §5.",
+      "local": "_shared/validation-reporting/SKILL.md §6",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "alto",
+      "descricao": "A5 — 'ressalva' indefinida e NAO CONFERIDO ausente da tabela de veredito: ressalva podia mascarar nao-conferido, o pecado que a §2 proibe. Corrigido: definicao fechada de ressalva + nivel A nao conferido => INCONCLUSIVO + veredito declara cobertura por nivel.",
+      "local": "_shared/validation-reporting/SKILL.md §8",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "alto",
+      "descricao": "A6 — a decisao 'formato recomendado, conteudo obrigatorio' vivia so no ADR, que sessao futura nao carrega; a SSoT prescrevia planilha e .xlsx como norma. Corrigido no texto normativo da §9; nome ESTAVEL em vez de extensao hardcoded.",
+      "local": "_shared/validation-reporting/SKILL.md §9",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "medio",
+      "descricao": "A7 — frontmatter sem version/source/last_review, fora do padrao das skills _shared. Corrigido.",
+      "local": "_shared/validation-reporting/SKILL.md",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "medio",
+      "descricao": "A8 — CHANGELOG marcava [CONSOLIDADO] contradizendo o proprio ADR ('metodo provado uma vez; generalizacao INFERIDO'). Corrigido para [EMERGENTE].",
+      "local": "CHANGELOG.md",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "baixo",
+      "descricao": "A9 — overclaims aritmeticos: 'correcoes nomeadas em cada secao' (falso para §4/§5/§8/§10) e 'dez secoes' seguido de lista com nove. Corrigido.",
+      "local": "_shared/validation-reporting/SKILL.md + ADR-099",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "baixo",
+      "descricao": "A10 — §2 'derivado de campo validado = nao se aplica' podia engolir o B-DEC que a §3 manda medir. Corrigido com clausula distinguindo derivado-sem-ressalva de derivado-com-diferenca-tolerada.",
+      "local": "_shared/validation-reporting/SKILL.md §2",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "baixo",
+      "descricao": "DEBITO ACEITO, nao corrigido: a skill nao tem canario proprio — conformidade avaliada por leitura, o que viola a §10 dela mesma. Declarado em tres lugares (ADR §Regua §0 e §Verificacao, CHANGELOG, note do registro) e refletido no status PARTIAL / enforcement prose.",
+      "local": "_shared/validation-reporting/",
+      "estado": "aceito_como_debito"
+    }
+  ],
+  "verificacoes_executadas": [
+    "check_core_agnostic.py -> PASS (norma): a skill nao cita cliente, produto, vendor nem norma de dominio",
+    "test_capabilities.py -> PASS: 77 capacidades, registry honesto, indice em sync, PROVIDES tem canario",
+    "test_consistency_closing.py -> PASS: 95 ADRs, 0 duplicatas, 0 entregue-mas-Proposto, todo version-claim com heading",
+    "build_capabilities.py -> CAPABILITIES.md regerado (77 capacidades)",
+    "README bumpado 1.75.0 -> 1.76.0 (version-sync)",
+    "qa-critic heterogeneo (fable, subagente isolado, modelo != autor): 1a rodada NAO LIBERADO; 10 achados corrigidos, 1 aceito como debito declarado"
+  ],
+  "refutado_pelo_critico": "Sobreposicao com qa-critic foi REFUTADA (objeto distinto: dado x codigo) — a alternativa rejeitada do ADR esta correta nesse ponto. Agnosticismo CONFIRMADO na letra pelo linter.",
+  "ressalvas_aceitas": [
+    "Skill sem canario proprio: viola a §10 dela mesma; debito declarado e refletido no status PARTIAL / enforcement prose.",
+    "Metodo provado UMA vez, num dominio. Generalizacao marcada [INFERIDO]; o gatilho da §1 e conjuntivo para limitar o dano de generalizacao errada."
+  ],
+  "postura": {
+    "discovery": "inline: escopo declarado pelo dono ao fim do bloco de validacao ('incorpore como um dos metodos... este e o metodo que deve valer para o framework agora'). Nao houve elicitacao separada: o requisito nasceu de OITO correcoes concretas do dono sobre um artefato real, cada uma nomeada nas secoes §2/§3/§6/§7/§9 da skill. Regulado/alto-risco: NAO (skill de metodo, nucleo agnostico). Handoff cross-sessao: SIM — a skill E o artefato de handoff.",
+    "rrc": "PASSA — ADR-099 Aceito com entrada no CHANGELOG [1.76.0]; README bumpado 1.75.0 -> 1.76.0; capabilities.json + CAPABILITIES.md regerados (77); qa-evidence este arquivo; checkpoint no history.md.",
+    "metodo_senior": "aplicado: docs/adr/099-metodo-de-validacao-ponto-a-ponto-com-reporte-para-humano.md — ADR nova com contexto, decisao, regua §0 honesta (override declarado apos o gate derrubar a alegacao de porta (c)), alternativas rejeitadas com razao, consequencias e verificacao com pendencia declarada.",
+    "fonte_canonica": true
+  },
+  "data": "2026-08-02T23:04:47Z"
+}

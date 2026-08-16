@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""rotate_history.py — rotacao DETERMINISTICA do history.md (ADR-092): mantem os ultimos N
+"""rotate_history.py — rotacao DETERMINISTICA do history.md (ADR-107): mantem os ultimos N
 checkpoints cronologicos no arquivo QUENTE + `## Em aberto` + `## Aprendizado` INTEIROS; move os
 mais antigos para `docs/history/history-archive.md`. NUNCA deleta (mover != apagar; o git tambem
 guarda). Mecaniza a poda do hot-file que era prosa ("Higiene v1.58.1") -> regra §0: reduz tokens do
@@ -36,7 +36,7 @@ TAIL_RE = re.compile(r"(?m)^## Em aberto\b")             # inicio das secoes viv
 SENTINEL = "<!-- history-archive-pointer -->"
 
 ARCHIVE_PREAMBLE = (
-    "# history-archive.md — Arquivo FRIO de checkpoints rotacionados (ADR-092)\n\n"
+    "# history-archive.md — Arquivo FRIO de checkpoints rotacionados (ADR-107)\n\n"
     "> Checkpoints antigos movidos do `history.md` quente por `tools/rotate_history.py`.\n"
     "> Mesma ordem (mais-novo-primeiro). NADA aqui foi deletado do registro — so realocado\n"
     "> para nao onerar o boot. O `history.md` mantem os ultimos N + `## Em aberto` + `## Aprendizado`.\n\n"
@@ -74,7 +74,7 @@ def pointer_note(archived_total, kept_count, eol="\n"):
     # kept_count = blocos REAIS no quente (nao o --keep pedido): se keep > nº de blocos, o quente tem
     # menos; o pointer deve refletir a realidade, nao o alvo (achado MEDIO qa-critic 2026-06-20).
     return (f"{SENTINEL}{eol}"
-            f"> **Poda de contexto (ADR-092):** este arquivo quente mantem os ultimos **{kept_count}** "
+            f"> **Poda de contexto (ADR-107):** este arquivo quente mantem os ultimos **{kept_count}** "
             f"checkpoints + `## Em aberto` + `## Aprendizado`. **{archived_total}** checkpoints mais "
             f"antigos estao em [`docs/history/history-archive.md`](docs/history/history-archive.md) "
             f"(nada deletado — so realocado). Rotacao: `python tools/rotate_history.py`.{eol}"
@@ -134,7 +134,7 @@ def rotate(hist_path, arch_path, keep, dry_run=False):
 
 
 def main(argv):
-    ap = argparse.ArgumentParser(description="Rotacao deterministica do history.md (ADR-092).")
+    ap = argparse.ArgumentParser(description="Rotacao deterministica do history.md (ADR-107).")
     ap.add_argument("--keep", type=int, default=DEFAULT_KEEP, help=f"checkpoints no hot file (default {DEFAULT_KEEP})")
     ap.add_argument("--file", default=os.path.join(ROOT, "history.md"))
     ap.add_argument("--archive", default=os.path.join(ROOT, "docs", "history", "history-archive.md"))

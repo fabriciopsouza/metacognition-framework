@@ -1,0 +1,67 @@
+{
+  "bloco": "release-1.80.1-fechamento-automatico-e-anti-passividade",
+  "release": "1.80.1",
+  "papel": "qa_critic",
+  "rodada": 5,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "sha_revisado": "b459ca9",
+  "resumo": "5a rodada, Sonnet isolado contra autor Opus, sobre os itens 6 (fechamento cabeado no evento Stop) e 7 (colisao com decisao registrada vira consulta deterministica). Um achado MEDIO REAL: o `.ps1` original usa DOIS lacos sobre docs/adr com filtros diferentes — `000-*` sai da lista de 'Proposto' mas CONTA para duplicata de numero — e o port fundiu os lacos, perdendo a deteccao de duplicata entre arquivos `000-*`. O critico tambem pegou que o docstring do proprio arquivo afirmava 'sete dimensoes identicas ao original, verificadas linha a linha', afirmacao do autor sem verificacao independente. Os dois corrigidos, com caso de regressao nomeado. Uma suspeita de parser (continuacao de item sem recuo descartada em silencio) foi fechada defensivamente em vez de ficar dependendo do recuo do history.md.",
+  "verificacoes_executadas": [
+    "critico em worktree isolado em b459ca9; comparacao linha a linha do port Python contra `git show b459ca9^:tools/hooks/consistency-gate.ps1`",
+    "achado MEDIO reproduzido por leitura: dois arquivos `000-*` fariam o original acusar duplicata e o port nao",
+    "correcao aplicada: numero conta ANTES do filtro de `000-*`; caso de regressao nomeado no canario",
+    "correcao do docstring: a alegacao de equivalencia linha a linha era do autor, sem verificacao independente — reescrita para dizer o que de fato houve",
+    "suspeita 3 do critico (parser de item multilinha sem recuo) fechada: qualquer linha nao-vazia que nao inicie item novo passa a ser continuacao",
+    "AUTOR, porque o critico nao conseguiu (usou pytest, que por decisao do ADR-040 nao coleta estes canarios): prova de mutacao das 3 guardas — 'nunca acusar version-sync' -> FAIL(1); '000-* fora da contagem' -> FAIL(1) exatamente no caso de regressao novo; 'nunca ligar divida aberta' -> FAIL(2). Restaurados, os dois canarios voltam a 0",
+    "canarios: consistency_gate 13/13, decisoes_que_governam 9/9"
+  ],
+  "problemas": [
+    {
+      "severidade": "medio",
+      "local": "tools/hooks/consistency_gate.py (laco sobre docs/adr)",
+      "descricao": "CORRIGIDO nesta rodada. O filtro de `000-*` era aplicado tambem a contagem de numero, perdendo a deteccao de duplicata entre templates. Divergencia real contra o `.ps1` original.",
+      "cenario_de_falha": "Dois arquivos `000-*.md` no diretorio: o original acusaria 'ADR com numero DUPLICADO: 0'; o port nao acusava nada."
+    },
+    {
+      "severidade": "baixo",
+      "local": "tools/hooks/consistency_gate.py (docstring)",
+      "descricao": "CORRIGIDO. O texto afirmava equivalencia 'verificada linha a linha' que o autor nao havia verificado de forma independente — overclaim em documentacao, a classe que o proprio framework persegue.",
+      "cenario_de_falha": "Leitor confia na equivalencia e nao reconfere ao mexer no port."
+    },
+    {
+      "severidade": "baixo",
+      "local": "tools/decisoes_que_governam.py (_dividas_abertas)",
+      "descricao": "CORRIGIDO defensivamente. Continuacao de item sem recuo era descartada em silencio; nao dispara no history.md atual, que usa recuo consistente, mas dependia disso.",
+      "cenario_de_falha": "Divida escrita em paragrafo quebrado sem recuo teria a segunda linha perdida no casamento."
+    }
+  ],
+  "escopo_paths": [
+    "tools/hooks/consistency_gate.py",
+    "tools/test_consistency_gate.py",
+    "tools/decisoes_que_governam.py",
+    "tools/test_decisoes_que_governam.py"
+  ],
+  "atestacao": {
+    "agentId": "a86e87d90cd6411d8",
+    "modelo": "claude-sonnet-4-6",
+    "modelo_autor": "claude-opus-5",
+    "isolamento": "subagente qa-critic isolado, contexto proprio, worktree separado",
+    "instrucao": "hipotese default de defeito; comparar o port contra o original e construir o caso concreto de perda de comportamento",
+    "cadeia": "5a rodada da serie; R1 Sonnet reprovou, R2 Fable e R3 Sonnet com ressalvas, R4 Fable aprovou, R5 Sonnet com ressalvas"
+  },
+  "postura": {
+    "rrc": "PASSA — o critico foi buscar o arquivo original no git e comparou dimensao a dimensao, em vez de aceitar a alegacao de equivalencia do commit; foi exatamente isso que derrubou a alegacao.",
+    "metodo_senior": "N/A: port e ferramenta nova sob ADR ja aceito.",
+    "discovery": "leitura do original em PowerShell antes de julgar o port",
+    "fonte_canonica": false,
+    "lacunas_declaradas": "o critico nao conseguiu provar falsificabilidade dos canarios (usou pytest, que nao os coleta por decisao do ADR-040) — a prova foi feita pelo autor e esta declarada como tal; o comportamento do hook Stop em maquina sem python no PATH nao foi testado"
+  },
+  "nao_verificado": [
+    "comportamento do hook Stop com python ausente do PATH, git lento ou stdin fechado — o `|| true` cobre exit code, nao travamento",
+    "falso-positivo do casamento por sufixo de caminho em decisoes_que_governam contra o capabilities.json real",
+    "equivalencia dos regex de version-sync e checkpoint contra fixtures com mojibake — o original forcava UTF8, o port usa errors='replace'"
+  ],
+  "data": "2026-08-16T09:20:00Z"
+}

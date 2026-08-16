@@ -1,0 +1,72 @@
+{
+  "bloco": "release-1.80.1-emendas-2-e-3-do-adr-106",
+  "papel": "qa_critic",
+  "rodada": 3,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "sha_revisado": "bf9578b",
+  "resumo": "Tres rodadas adversariais sobre as emendas 2 e 3 do ADR-106, autor Opus 5. R1 (Sonnet isolado) REPROVOU com dois achados ALTOS, ambos reproduzidos: a recusa de 'vermelho por crash' exigia o nome do arquivo no traceback e por isso nao valia para mecanismo .json/.md (JSONDecodeError cita json/decoder.py, nunca o arquivo de dados) — atingia model-policy, que declara tools/model-policy.json como mecanismo; e nada validava mutacao.espera, entao 'Error' casava com quase toda excecao e devolvia [PROVADO] para a fraude que a emenda 1 curou. R2 (Fable isolado) aprovou com ressalvas e fixou a regra de migracao: capacidade so ganha mutacao no registro depois de --provar verde, e quem nao passa vira debito nomeado. R3 (Sonnet isolado, sobre a emenda 3) aprovou com ressalvas, rodou as tres provas por conta propria e confirmou que as sabotagens atacam logica real, nao detalhe periferico. A emenda 3 nasceu de defeito achado na propria migracao: a prova era anulavel por cache de bytecode quando a sabotagem preservava o tamanho do arquivo e caia no mesmo segundo — intermitente, portanto pior que ausente.",
+  "verificacoes_executadas": [
+    "R1 Sonnet em worktree isolado no commit 4fbd5d1: leitura integral de modo_provar; construcao do cenario JSONDecodeError confirmando que o traceback cita json/decoder.py e nunca o arquivo de dados",
+    "R2 Fable em worktree isolado no commit 40b7775: refez uma sabotagem por conta propria (if len(esp) < ESPERA_MIN -> if False) e confirmou que o caso vira [FALHA] — a prova do autor nao e' encenacao",
+    "R2 Fable: experimento em model-policy — id de modelo invalido deixou o canario VERDE (rc 0); rename estrutural matou o canario por crash antes da verificacao. Capacidade improvavel pelos dois lados, defeito PRE-EXISTENTE do canario dela",
+    "R3 Sonnet em worktree isolado no commit bf9578b: rodou --provar --id para risk-gate, rules-parity-guard e autonomy-retry-policy; as tres [PROVADO] com o motivo declarado, exit 0",
+    "R3 Sonnet: confirmou que worktree recem-criado nao traz __pycache__ (git ls-files | grep pycache vazio) e que as DUAS execucoes do canario receberam env=ENV_SEM_BYTECODE",
+    "R3 Sonnet: confirmou que ENV_SEM_BYTECODE e' superset de os.environ (nunca remove chave) e que o snapshot no import nao gera regressao, por o auditor rodar como processo novo a cada invocacao",
+    "Autor: prova de mutacao das 5 guardas novas, cada uma sabotada e vista VERMELHA antes de valer — piso de 12 caracteres em espera, proibicao de sinal de crash em espera, deteccao de crash por DELTA, env anti-bytecode, purga de __pycache__",
+    "Autor: prova deterministica do defeito de cache congelando o mtime com os.utime para simular o mesmo segundo — cache ligado deixou o canario VERDE (prova perdida), cache desligado VERMELHO (correto)",
+    "Autor: achado contra o proprio trabalho — o caso novo do mecanismo .json passava pelo motivo errado (o literal 'dados.json' estava na linha que falhava e vazava para o traceback); so apareceu porque a guarda foi sabotada e nao mudou de cor. Fixture corrigida em 40b7775",
+    "Canario do auditor 22 -> 28 verificacoes; suite completa 67 PASS / 1 SKIP / 0 FAIL no commit bf9578b",
+    "Migracao sob a regra do R2: byo-ci-gate e qa-evidence-gate ficaram DE FORA porque os canarios deles nao ficaram vermelhos com a sabotagem candidata — debito nomeado, nao prova forcada"
+  ],
+  "problemas": [
+    {
+      "severidade": "medio",
+      "local": "tools/audit_enforcement.py (ENV_SEM_BYTECODE / _purgar_bytecode)",
+      "descricao": "PYTHONPYCACHEPREFIX aponta o cache de bytecode para fora do worktree. A escrita continua barrada por PYTHONDONTWRITEBYTECODE=1, mas _purgar_bytecode varre apenas o worktree — um .pyc pre-existente nesse prefixo externo, deixado por outro processo, nao e' purgado e poderia ser lido.",
+      "cenario_de_falha": "Maquina com PYTHONPYCACHEPREFIX definido globalmente onde outro comando ja compilou o mecanismo com tamanho e horario coincidentes. Declarado pelo critico como SUSPEITA FUNDADA: ele nao montou o repro fim-a-fim."
+    },
+    {
+      "severidade": "baixo",
+      "local": "tools/test_audit_enforcement.py (caso 'travas anti-cache de bytecode presentes')",
+      "descricao": "A metade 'env' do caso confere a presenca da chave no dicionario, nao que o subprocesso de fato nao grave .pyc. A metade 'purga' e' comportamental de verdade. Assimetria real, registrada e nao mascarada.",
+      "cenario_de_falha": "Alguem troca a forma de passar o env (por exemplo para um argumento de subprocess.run) mantendo a constante intacta: o caso continua verde sem que a trava esteja em vigor."
+    },
+    {
+      "severidade": "baixo",
+      "local": "capabilities.json (mutacao de rules-parity-guard)",
+      "descricao": "A sabotagem troca N_CANON = len(CANON) por N_CANON = 3. E' honesta hoje (ataca o calculo dinamico virando constante), mas se um dia len(CANON) for exatamente 3 a mutacao vira no-op e a prova passa a falhar com 'continuou VERDE'. Dependencia implicita do estado atual do repo que a declaracao nao expoe.",
+      "cenario_de_falha": "CANON passa a ter 3 itens; --provar --id rules-parity-guard reprova sem que nada esteja errado no gate."
+    }
+  ],
+  "escopo_paths": [
+    "tools/audit_enforcement.py",
+    "tools/test_audit_enforcement.py",
+    "capabilities.json"
+  ],
+  "atestacao": {
+    "agentId": "a79c4b37d7ea2d821",
+    "modelo": "claude-sonnet-4-6",
+    "modelo_autor": "claude-opus-5",
+    "isolamento": "tres subagentes qa-critic isolados, contexto proprio, cada um revisando em git worktree separado do trabalho em curso; dois modelos distintos entre si e ambos distintos do autor",
+    "instrucao": "hipotese default de que existe defeito; instruidos a tentar reprovar e a construir a escapatoria concreta em vez de opinar",
+    "cadeia": "R1 Sonnet REPROVOU (2 ALTOS) -> autor corrigiu -> R2 Fable aprovou com ressalvas e fixou a regra de migracao -> emenda 3 nasceu da migracao -> R3 Sonnet aprovou com ressalvas sobre o estado final"
+  },
+  "postura": {
+    "rrc": "PASSA — os tres criticos reproduziram ao vivo o que afirmaram, em worktree isolado, rodando as provas por conta propria em vez de aceitar a mensagem do commit. O autor sabotou cada guarda nova para conferir que sabia ficar vermelha, e foi isso que denunciou um caso de teste proprio que passava pelo motivo errado.",
+    "metodo_senior": "N/A: correcao de mecanismo existente sob ADR ja aceito; nenhuma norma ou spec nova foi autorada.",
+    "discovery": "critica dos sete pedidos do dono contra o registro de capacidades e o historico de fracassos ANTES de qualquer plano — quatro dos sete repetiam tentativas ja catalogadas como falhas",
+    "fonte_canonica": false,
+    "lacunas_declaradas": "O cenario PYTHONPYCACHEPREFIX nao foi reproduzido fim-a-fim. A metade 'env' do caso novo testa simbolo, nao comportamento. 19 das 22 capacidades do passivo seguem sem prova."
+  },
+  "data": "2026-08-16T00:40:00Z",
+  "release": "1.80.1",
+  "nao_verificado": [
+    "o cenario PYTHONPYCACHEPREFIX de ponta a ponta — hipotese fundada do critico, nao confirmada por execucao",
+    "as outras 19 capacidades fail-closed do passivo, uma a uma",
+    "se o defeito de cache de bytecode afeta canarios especificos da suite alem do observado ao vivo em test_autonomy_policy — o achado colateral esta declarado e NAO corrigido",
+    "os canarios de byo-ci-gate e qa-evidence-gate por dentro: sabe-se que nao ficaram vermelhos com a sabotagem candidata, nao se sabe ainda o que eles de fato cobrem"
+  ],
+  "suite_apos_rebase": "67 PASS / 1 SKIP / 0 FAIL no commit bf9578b; canario do auditor 28/28"
+}

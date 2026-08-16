@@ -1,0 +1,49 @@
+{
+  "bloco": "release-1.80.1-isolamento-de-bytecode-na-suite",
+  "release": "1.80.1",
+  "papel": "qa_critic",
+  "rodada": 4,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "veredito": "aprovar",
+  "sha_revisado": "1da9b74",
+  "resumo": "4a rodada, Fable isolado contra autor Opus, sobre a emenda 4: o cache de bytecode afetava a suite INTEIRA e o executor dos 69 canarios nao tinha canario proprio. Aprovado SEM ressalvas de codigo. O critico derrubou o ataque mais promissor por evidencia, nao por opiniao: para bytecode obsoleto vazar entre canarios seria preciso dois canarios importarem o MESMO caminho absoluto apos modificacao que preserve mtime e tamanho — e a varredura dos writes em tools/test_*.py mostra que NENHUM canario escreve .py sob a raiz do repo (todo fixture vai para diretorio temporario unico). O unico processo que muda fonte no meio da corrida, o --provar do auditor, usa prefixo proprio com escrita proibida, entao nao polui o prefixo do runner.",
+  "verificacoes_executadas": [
+    "worktree isolado em 1da9b74; baseline python tools/test_run_canaries.py -> PASS (5 verificacoes)",
+    "sabotagem por conta propria em run_canaries.py (env sem PYTHONPYCACHEPREFIX) -> o caso comportamental virou [FALHA] com a evidencia 'verificador devolveu 0 com o .pyc envenenado ainda presente no disco', e o canario saiu com codigo 1. A prova do autor NAO e' encenacao",
+    "varredura de write_text e open(...,'w') em todos os tools/test_*.py: nenhum escreve .py sob ROOT; fixtures vao para mkdtemp/TemporaryDirectory unicos por canario",
+    "conferencia de que audit_enforcement.py usa prefixo PROPRIO + PYTHONDONTWRITEBYTECODE, isolado do prefixo do runner",
+    "autor: 3 tentativas de correcao, as duas primeiras REPROVADAS pelo canario novo — proibir escrita nao impede leitura; proibir escrita + prefixo vazio custou 72s -> mais de 2 minutos",
+    "autor: benchmark antes/depois em worktree — 72s (sem isolamento) contra 76s (com prefixo novo por execucao), 5% de custo",
+    "autor: a sabotagem declarada da capacidade nova era NEUTRALIZADA pelo proprio auditor (lia a variavel de ambiente que o auditor define); trocada por uma que remove a chave de forma incondicional",
+    "suite completa 68 PASS / 1 SKIP / 0 FAIL de 69 canarios; capacidades com gate provado 24 -> 28"
+  ],
+  "problemas": [],
+  "escopo_paths": [
+    "tools/run_canaries.py",
+    "tools/test_run_canaries.py",
+    "tools/audit_enforcement.py",
+    "capabilities.json"
+  ],
+  "atestacao": {
+    "agentId": "ad8d88e03d4eca11e",
+    "modelo": "claude-fable-5",
+    "modelo_autor": "claude-opus-5",
+    "isolamento": "subagente qa-critic isolado, contexto proprio, revisao em git worktree separado",
+    "instrucao": "hipotese default de defeito; instruido a construir o cenario concreto do vazamento entre canarios e a refazer a prova de mutacao por conta propria",
+    "cadeia": "4a rodada da serie; R1 Sonnet reprovou, R2 Fable e R3 Sonnet aprovaram com ressalvas, R4 Fable aprova sem ressalvas de codigo"
+  },
+  "postura": {
+    "rrc": "PASSA — o critico refez a sabotagem no worktree e leu o resultado, em vez de aceitar a mensagem do commit; e derrubou o proprio ataque principal por varredura de codigo, declarando o metodo.",
+    "metodo_senior": "N/A: correcao de mecanismo sob ADR ja aceito.",
+    "discovery": "leitura das funcoes alteradas e varredura dos writes de todos os canarios antes de afirmar sobre vazamento entre eles",
+    "fonte_canonica": false,
+    "lacunas_declaradas": "nao rodou a suite completa; o furo residual de um canario FUTURO que edite .py sob a raiz do repo continua teoricamente aberto"
+  },
+  "nao_verificado": [
+    "a suite completa de 69 canarios nao foi executada pelo critico (orcamento de ferramentas)",
+    "a hipotese 'fixtures usam sempre paths temporarios unicos' foi confirmada por varredura dos writes, nao executando cada canario",
+    "furo residual declarado: um canario FUTURO que edite .py sob a raiz do repo reabriria a janela do bytecode compartilhado dentro de uma execucao"
+  ],
+  "data": "2026-08-16T04:30:00Z"
+}

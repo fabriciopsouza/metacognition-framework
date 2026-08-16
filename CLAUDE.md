@@ -54,7 +54,8 @@ Por projeto preencha só `docs/briefing.md` + `.agent/rules/00-glossario.md`.
   `python tools/qa_evidence.py --junction J_n ...` (ledger, ADR-077).
 - **Runtime gates (ADR-021/022/027/029/030/077):** compaction-gate · mission-gate · route-gate ·
   doc-intake (`tools/doc_intake.py`) · consistency (version-claim/override/raiz-limpa em
-  `tools/test_consistency_closing.py`) · qa-evidence/posture fail-closed por release (ADR-074).
+  `tools/test_consistency_closing.py`) · qa-evidence/posture fail-closed por release (ADR-074) ·
+  env-applicability (ADR-093 — boot cruza `.agent/environment.json` × realidade viva: APLICA/ESTALE/AUSENTE).
 
 ## Índice de capacidades — anti-reinvenção (ADR-072/073)
 **Antes de afirmar que algo falta ou (re)projetar, LEIA [`CAPABILITIES.md`](CAPABILITIES.md)**

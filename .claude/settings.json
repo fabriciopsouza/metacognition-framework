@@ -187,6 +187,16 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python tools/hooks/consistency_gate.py --hook || true"
+          }
+        ]
+      }
     ]
   }
 }

@@ -15,19 +15,371 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
-## [1.71.0] — 2026-06-20 — Poda de contexto: rotação do history.md (últimos N quentes + arquivo-arquivo, zero perda) (ADR-092)
+## [1.80.1] — 2026-08-16 — A prova de mutação não provava: crash em mecanismo não-Python e cache de bytecode (ADR-106, emendas 2 e 3)
+
+[CONSOLIDADO] · [CONFIRMADO — os três defeitos foram reproduzidos, dois por crítico independente e um por experimento determinístico]
+
+Correção do mecanismo criado no v1.80.0. Ao usá-lo para migrar o passivo, ele falhou de
+três formas distintas — e cada uma era a mesma classe que ele existe para impedir.
+
+- **Crash em mecanismo não-Python passava como prova.** A recusa de "vermelho por crash"
+  exigia o nome do arquivo sabotado no traceback. Um `.json` quebrado levanta
+  `JSONDecodeError`, cujo traceback cita o módulo `json` e nunca o arquivo de dados — a
+  recusa não disparava. Atingia `model-policy`, que declara `tools/model-policy.json` como
+  mecanismo. Agora a detecção é por delta: marca de crash que aparece depois e não aparecia
+  antes, sem depender de nome de arquivo.
+- **O sinal esperado podia ser um curinga.** Nada validava `mutacao.espera`; declarar
+  `"Error"` casava com o texto de quase toda exceção. Agora há piso de 12 caracteres e o
+  campo é proibido de conter sinal de crash — ele declara o que o gate imprime ao detectar,
+  não a exceção que ele levanta ao engasgar.
+- **A prova era anulável por cache de bytecode, de forma intermitente.** O Python reusa um
+  `.pyc` comparando tamanho e horário do fonte, com resolução de um segundo. Sabotagem que
+  preserva o tamanho e cai no mesmo segundo faz o interpretador rodar o código não sabotado:
+  o canário fica verde e o auditor conclui "não prova nada" sobre código que nunca executou.
+  Duas travas agora: `PYTHONDONTWRITEBYTECODE=1` e purga de `__pycache__` no worktree.
+
+Cobertura do canário: 22 → 28 verificações, cada guarda nova vista reprovando antes de valer.
+
+Passivo do ADR-106: 57 → 54. Migradas com prova verde `risk-gate`, `rules-parity-guard` e
+`autonomy-retry-policy`; capacidades em conformidade 24 → 27. Nenhuma entrou sem passar no
+`--provar`, conforme regra do qa-critic da rodada anterior.
+
+**A pendência acima foi fechada na mesma release.** O cache de bytecode afetava a suíte
+inteira, não só o auditor — e o executor que decide PASS/FAIL dos 67 canários **não tinha
+canário próprio**. Quem governa a suíte não era governado por ninguém.
+
+Duas correções minhas foram reprovadas pelo canário novo, nesta ordem:
+
+1. Proibir a escrita de bytecode. Reprovado: isso impede **escrever**, não impede **ler** um
+   arquivo compilado que já exista. Era a ressalva que o crítico tinha levantado como
+   suspeita — confirmada por execução, não por leitura.
+2. Proibir a escrita **e** apontar o cache para um diretório vazio. Funcionou e custou caro:
+   cada subprocesso passou a recompilar a biblioteca padrão inteira, e a suíte foi de 72s
+   para mais de dois minutos. Medido, não estimado.
+3. A que ficou: diretório de cache **novo a cada execução da suíte**, com escrita liberada.
+   Nada de antes pode ser lido e o custo é pago uma vez. Suíte: **72s → 76s**.
+
+O canário também precisou se corrigir: ele passava sozinho e reprovava **dentro** da suíte,
+porque herdava o ambiente já corrigido do executor e media o chamador em vez do código.
+
+Capacidades registradas: 81 → 82; com gate provado: 24 → **28**.
+
+### O fechamento passa a acontecer sem alguém pedir
+
+O espelho de consistência do fechamento existia desde o ADR-030 e **nunca foi ligado a evento
+nenhum** — nem hook, nem canário, nem chamada no fluxo. Havia hooks no início da sessão, no
+prompt, antes e depois de ferramenta e na compactação; **nada no encerramento**. É a falha
+catalogada duas vezes: *"gate existe mas não disparou em 7 fechamentos"*.
+
+Portado de PowerShell para Python (a classe de hook comprovadamente viva nesta máquina) e cabeado
+no evento de fim de sessão. Sete dimensões: versão do README × CHANGELOG, ADR parado em Proposto,
+checkpoint ausente, ADR com número duplicado, commits não enviados, rascunho esquecido e relatório
+do bloco. **Fail-soft por desenho** — hook que bloqueia sessão é hook que alguém desliga; a lei
+continua sendo o canário de release. O `.ps1` virou encaminhador para o Python: uma lógica só,
+dois pontos de entrada, sem risco de divergirem.
+
+Na primeira execução ele achou uma inconsistência real que estava no backlog como "canário
+inexistente": README em 1.79.0 contra CHANGELOG em 1.80.1.
+
+### O framework deixa de ser passivo diante de um pedido
+
+A norma *"o pedido do dono não é imune a questionamento"* era prosa: dependia de alguém lembrar de
+consultar o registro de decisões. Caso real desta sessão — um pedido colidia com uma dívida aberta
+pelo próprio dono três dias antes, e a colisão só apareceu porque um crítico independente foi
+varrer os registros. Uma rodada inteira de agente para o que é consulta determinística.
+
+`decisoes_que_governam.py` cruza registro de capacidades × ADRs × dívidas abertas e responde:
+**quais decisões governam isto, e quais têm dívida em aberto.** Código de saída 2 quando há —
+o sinal de trazer o conflito à mesa antes de executar. Não julga, não bloqueia, não obriga
+ninguém a discordar: "gate de discordância obrigatória" produziria discordância-formulário, o
+teatro que o próprio framework existe para pegar.
+
+Capacidades: 82 → **83**; com gate provado: **29**. Suíte: **70 PASS · 1 SKIP · 0 FAIL** de 71
+canários.
+
+## [1.80.0] — 2026-08-14 — Prova de mutação para capacidade `fail-closed`: verde só conta depois de saber ficar vermelho (ADR-106)
+
+[EMERGENTE] · [CONFIRMADO — nasce de falha medida três vezes, uma delas fora do framework]
+
+**Origem.** Auditoria, a pedido do dono, de um gate num projeto que usa o framework. O teste que
+anunciava *"9/9 — o gate BLOQUEIA mesmo"* continuou **9/9 com toda a lógica do gate apagada**:
+conferia só `rc != 0`, e outra checagem já derrubava o processo. Reproduzido por crítico
+independente em modelo diferente do autor.
+
+**O que a auditoria expôs dentro de casa.** A mesma classe já tinha acontecido duas vezes — ADR-096
+achado A2 (canário aferia só o `returncode`; a mutação passava) e v1.79.0 (canário fazia monkeypatch
+da própria função que deveria testar). O ADR-096 registra *"provado por mutação"*: **a técnica já
+existia, funcionava, e nunca virou exigência.** Passivo medido: 80 capacidades, 35 sem campo
+`enforcement`, 22 `fail-closed` nunca sabotadas para conferir, zero auditores.
+
+**Entregue (ADR-106, emenda ao ADR-015):** `tools/audit_enforcement.py` — capacidade que declara
+`fail-closed` declara também a mutação que faz seu canário falhar, em campos executáveis; o modo
+`--provar` aplica a mutação num worktree isolado e **exige vermelho**. Recusa mutação que não sabota
+(`de` == `para`), mutação obsoleta e canário que já estava vermelho antes. Decisão do dono sobre
+escopo: **(a) fail-closed para capacidade nova · (b) advisory para o passivo**, congelado e **pinado
+por sha256** em `_meta/enforcement-baseline.json`. Mais a rule **#12** do `qa-critic` e o canário
+`tools/test_audit_enforcement.py` (**19 verificações**), que roda o auditor contra o
+`capabilities.json` real — é isso que faz do modo (a) um gate de CI e não um script manual —,
+**prova a mutação de si mesmo** e exercita o modo `--provar` contra um repo-fixture.
+
+**A rodada 1 foi REPROVADA pelo crítico adversarial, e o achado bloqueante foi contra este próprio
+texto:** o ADR afirmava que as três fraudes tinham *"cada uma seu caso de teste"* e uma não tinha —
+o crítico sabotou essa checagem e o canário seguiu verde. Afirmação antes da verificação, no
+documento que institui a norma contra isso. Corrigido na rodada 2, junto com: cross-check entre a
+mutação e o `mechanism`/`test` reais da capacidade, pino do passivo (fechando o escape de
+simplesmente acrescentar o próprio id à lista), `git worktree prune` contra órfão, e — na rodada 3 — o fechamento do buraco residual em que omitir `mechanism`/`test` desligava o cross-check em silêncio. Mais um defeito que
+a cobertura nova revelou — `--gerar-baseline` gravava o arquivo e **depois** quebrava ao formatar
+caminho fora do repo.
+
+**Régua §0:** adição pura, sem porta (a)/(b)/(c). Segue por **override explícito do dono**, com
+condição de quitação escrita no ADR: migrar o passivo.
+
+**Não mecanizado, declarado:** coerência entre o adjetivo do índice e o campo `enforcement`; e a
+migração das 57 capacidades do passivo.
+
+## [1.79.0] — 2026-08-13 — Padrão documental de projeto (ADR-102), matriz de revisão ampliada e desacoplamento da ativação do gate e da extração do P14 (ADR-103, ADR-104, ADR-105)
+
+[EMERGENTE] · [CONFIRMADO — os dois ADRs nascem de falha observada na própria sessão]
+
+### Adicionado
+- **`_shared/project-docs/SKILL.md` (ADR-102)** — núcleo SSoT do **conjunto documental de
+  projeto**, que o `docops` não cobria: ele fecha *bloco*, não *projeto*. Codifica o teste
+  binário ("a próxima pessoa retoma sem perguntar nada"), 7 propriedades, conjunto **graduado
+  por porte** e 6 modos de falha **observados** numa revisão adversarial real de 5 rodadas com
+  3 reprovações. Registro honesto: **PARTIAL / prose / sem canário** — é orientação cobrável em
+  revisão, não gate. Base da régua §0: **override explícito do dono**, com condição de quitação
+  escrita (nenhuma das portas (a)/(b)/(c) foi alegada — alegá-las seria a racionalização que o
+  ADR-099 cometeu).
+
+### Alterado — enforcement
+- **`squad_gate` segue ADVISORY. A ativação como bloqueio foi construída e DESACOPLADA (ADR-104).**
+  O ADR-094 a deixara pronta-mas-desligada, com a condição escrita: *"se o dono concluir que
+  advisory + reforço ainda não bastam"*. Não bastaram — nesta sessão um bloco alterou o núcleo e
+  foi commitado sem revisão adversarial —, então ela **foi ativada** no meio do bloco. Três
+  reprovações seguidas depois, todas com achados na ativação e **nenhum** no padrão documental, o
+  dono aplicou a regra de escalonamento e mandou separar: o step de CI voltou a
+  `continue-on-error: true`, ou seja, **avalia e avisa, não barra**. O trabalho está preservado na
+  branch `feat/adr-103-squad-gate-endurecimento`, e a condição para reativar está escrita no
+  ADR-104. **O que PERMANECE entregue**, porque não depende da ativação: matriz ampliada,
+  `escopo_paths` obrigatório na evidência, match ancorado de versão na junção de release, 20 casos
+  de teste (eram 8) e o canário de integridade.
+- **Matriz de papéis ampliada** (`behaviors/manifest.json`): passou a cobrir `_shared/`,
+  `.agent/skills/`, `.agent/rules/`, a **própria matriz**, e os roteadores da raiz. Antes exigia
+  revisão para uma linha de `.py` e **nada** para reescrever a skill que governa toda sessão
+  futura — medido: `papeis exigidos: nenhum`. Usa `prefix`, já suportado; o código do gate não
+  foi tocado.
+
+### Corrigido
+- `docops` passo 0 rebaixado de "não fecha bloco" para **advisory** — linguagem de bloqueio sem
+  mecanismo é o teatro que o ADR-085/P15 proíbe.
+- Registro `project-docs-standard` corrigido de `PROVIDES/manual` para `PARTIAL/prose`, seguindo
+  o precedente de `validation-reporting`. `squad-enforcement-gate` declara **`advisory`**, que é o
+  que o CI de fato faz — chegou a ser marcado `fail-closed` enquanto a ativação esteve de pé, e
+  voltou junto com ela. **`status` e `enforcement` descrevem o que está aplicado, nunca o que está
+  disponível.**
+
+### Adicionado — núcleo
+- **`_shared/output-format/SKILL.md`, Parte A.0** — regra de núcleo: *o texto se sustenta sozinho*,
+  e isso vale para a **conversa**, não só para o artefato entregue. Estava fora deste registro
+  desde a 3ª rodada de revisão, que já a apontou como ausente; entra agora.
+
+### Adicionado — integridade
+- **`tools/test_qa_evidence_integrity.py`**: canário que reprova quando `.json` e `.md` do mesmo
+  veredito contam histórias opostas. Nasceu de defeito real desta sessão (evidência editada à mão,
+  `.md` dizendo "aprovar" e `.json` dizendo "reprovar") e foi provado não-teatro reproduzindo o
+  defeito numa cópia.
+
+### Não entregue — desacoplado (ADR-105)
+- **`tools/handoff.py` volta ao estado do `main`.** A correção da extração de campo do P14 sofreu
+  **6 defeitos consecutivos** na mesma função (placeholder → truncagem → engolir em 3 variantes →
+  vazar sufixo). A 9ª rodada aplicou a regra de escalonamento: o problema é o **desenho** — uma
+  regex de alternação não enumera fronteira de campo em prosa livre, é problema ilimitado. Vira
+  bloco próprio com decisão de design pendente. **A limitação antiga (campo em parágrafo sai
+  truncado) volta**, e a mitigação imediata é escrever o campo em **uma linha** — que é o formato
+  que a versão do `main` sempre leu corretamente.
+
+### Lição
+Capacidade construída e não aplicada é indistinguível de capacidade ausente — e o índice a
+exibia como `PROVIDES`. `status` deve descrever o que está **aplicado**, não o que está
+**disponível**. E: **maturidade diferente pede bloco diferente** — amarrar uma norma pronta a uma
+mudança de enforcement imatura fez a norma reprovar três vezes por defeitos que não eram dela.
+
+## [1.77.0] — 2026-08-03 — Registro de trabalhos: o handoff sobrevive à sessão (ADR-100)
+
+[EMERGENTE] · [CONFIRMADO — gap observado na própria sessão que originou o ADR]
+
+### Adicionado (1 executável + 1 canário + 1 gate de boot; régua §0 pela porta (c))
+
+- **ADR-100 Aceito** — pedido do dono: *"o handoff não deve ser perdido se eu iniciar os
+  trabalhos, mas deve ser oferecido até que eu trate o assunto"*, organizado **por trabalho**,
+  com objetivo, resumo do que foi feito e o que está pendente.
+- **`tools/trabalhos.py`** — registro persistente em `~/.claude/trabalhos/<slug>.md`, **fora do
+  repositório** de propósito: um trabalho pode envolver vários repositórios e não pode depender
+  de qual pasta foi aberta. Ciclo `aberto` → `tratado`; **só o dono encerra**.
+- **Gate `trabalhos-abertos` no `boot_check`** — **nunca falha o boot** (trabalho pendente é
+  informação, não erro) e **nunca fica silencioso**: "nenhum aberto" é resultado declarado.
+- **Passo 3.5 no `start-session`** — o agente **deve mencionar na abertura**. Registro que existe
+  e não é oferecido é igual a não existir, que é exatamente a falha corrigida.
+- **`tools/test_trabalhos.py`** — 16 verificações: ciclo aberto→tratado→reaberto, preservação de
+  campo não informado ao re-registrar, "nenhum" declarado em vez de silêncio, e que o boot **não
+  falha** por haver trabalho aberto.
+
+### Por quê
+
+O Pacote P14 (ADR-012/076) resolve **o que o handoff contém**; não resolvia **o que acontece com
+ele depois**. Era gerado, exibido no chat e **perdido** — a próxima sessão não era lembrada de que
+havia trabalho aguardando decisão. Régua §0 porta (c): destrava o uso de mecanismo que já existe,
+sem reimplementá-lo — o conteúdo técnico continua vindo de `handoff.py`.
+
+### Consequência declarada
+
+O registro vive fora do git: **não é versionado nem tem backup**. É o preço de ser
+cross-repositório. E registro desatualizado é pior que ausente — por isso `listar` sempre mostra o
+comando de encerramento.
+
+---
+
+## [1.76.0] — 2026-08-02 — Método de validação ponto a ponto com reporte para humano (ADR-099)
+
+[EMERGENTE] · [CONFIRMADO no bloco de origem; generalização para outros domínios INFERIDA]
+
+### Adicionado (1 skill de núcleo; régua §0 pela porta (c) — destrava eval)
+- **ADR-099 Aceito** — pedido explícito do dono ao fim de um bloco de validação real:
+  *"incorpore como um dos métodos quando pedir validação ponto a ponto e com clareza. Este
+  é o método que deve valer para o framework agora."* **Texto normativo em
+  `_shared/validation-reporting/SKILL.md`** — fonte única, não recopiado aqui.
+- O framework tinha regras para **fazer** validação (file-first, confidence-classification,
+  traceability) e **nenhuma** para **reportá-la a quem decide**. O resultado observado foi um
+  executor tecnicamente rigoroso e praticamente inútil: apresentou "não conferido" com
+  aparência de "ok", reprovou por 0,01% em campo descritivo, declarou impedimento
+  inexistente, e gerou artefato dizendo "PASSOU" com um portão reprovando três linhas acima.
+- Dez seções, **cada uma derivada de um erro concreto** do bloco de origem (o dono corrigiu
+  o executor oito vezes). Destaques: **quatro categorias** — validado · não conferido ·
+  **não obtenível** · não se aplica; **níveis por consequência do campo** (A dinheiro/
+  documento tolerância zero · B operacional aceito se caracterizado **e testado** que não
+  altera decisão · C descritivo · **B-DEC** flag derivada = métrica de impacto, não erro
+  independente); **total agregado nunca sozinho** (é cego a erro compensatório, que é o que
+  fraude produz); **diferença nomeada com resíduo zero** em vez de faixa de tolerância;
+  **materialidade por unidade de veredito**; **antes de declarar impedimento, procurar a
+  segunda via**; e **VALIDADO COM RESSALVA é validado** — negá-lo por perfeccionismo
+  desserve quem decide.
+- Formato de entrega recomendado (planilha por abas, abrindo pelo que **NÃO** está validado,
+  código de saída por conferência, **número derivado nunca digitado**, veredito condicionado
+  aos códigos medidos, nome de arquivo **fixo**, glossário). Obrigatório é o **conteúdo**, não
+  o formato.
+
+### Débito declarado
+- A skill **não tem canário próprio**: sua conformidade é avaliada por leitura, não por
+  mecanismo — o que contraria a §10 dela mesma (*"declarar a regra não a implementa"*).
+  Registrado na §Verificação do ADR-099 como pendência, não como completo.
+- `check_core_agnostic.py --sensitive` acusa LEAK **pré-existente** em
+  `docs/specs/v1.13.0-aivi-method-fixes/` (token no NOME do caminho), anterior a esta
+  release e fora do seu escopo.
+
+## [1.75.0] — 2026-08-01 — Referência a arquivo é absoluta e resolvível fora do cwd (ADR-098)
+
+[CONSOLIDADO] · [CONFIRMADO]
+
+### Adicionado (EMENDA — 1 regra no SSoT existente; sem arquivo de regra novo)
+- **ADR-098 Aceito** — pedido explícito do dono: *"paths devem ser completos e links totalmente funcionais, visto que pode estar trabalhando em outro repo folder"*. **Texto normativo em `_shared/traceability/SKILL.md`, Regra 8** — fonte única, não recopiado aqui.
+- **Invariante:** a referência resolve do ponto de vista do **destinatário**, não de quem escreveu. Generaliza o que o P14 (ADR-012) já exigia do handoff (*"Localização: repositório (URL) e/ou path absoluto"*) para todo output do agente.
+- **Mecanização entregue junto, não prometida:** `tools/handoff.py` passa a declarar a **raiz absoluta** da cópia no Pacote P14 — sem ela, os paths relativos que o pacote já listava só resolviam no `cwd` de quem gerou — e `audit_paths()` audita o próprio pacote, emitindo `⚠️` para diretório temporário e link markdown relativo. Canário novo: `tools/test_path_absoluto.py`, 10 casos (5 que devem acusar, 5 que **não** devem — URL, âncora, absoluto Win/POSIX, path sem link).
+
+### Causa raiz — quatro falhas na MESMA sessão (2026-08-01, validação de migração de dados)
+1. Prompt de contextualização para outra IA entregue apontando para `%TEMP%\claude\...\scratchpad\`.
+2. O mesmo prompt com link markdown **relativo**, destinado a ser lido em outro repositório.
+3. Agente declarou "pasta inexistente" um diretório que **existia no repo pai** — diagnóstico correto era "repo errado", não "path fantasma".
+4. Path com espaço (`Projeto Cliente`) passado ao dono **sem aspas** → erro imediato no PowerShell.
+
+Mesmo defeito nos quatro: **referência que só resolve no `cwd` de quem escreveu**.
+
+### Limites declarados
+- **Cobertura parcial:** auditado no handoff; **advisory** no restante do output (resposta ao dono, relatório, mensagem de PR não têm canário). Registrado em `capabilities.json` com `enforcement: advisory` — não como se fosse completo.
+- **A mitigação de vazamento de layout NÃO existe hoje:** paths absolutos expõem `C:\Users\<user>\...`, e verificou-se que `tools/anonymize-map.txt` só traz um token de path de username **legado**, enquanto `tools/sensitive-denylist.txt` declara que o username do mantenedor não entra (*"AUTOR ≠ CLIENTE"*). O `export-clean` **não** anonimiza esse caso. Pendência registrada no ADR.
+- **Régua §0:** enquadra-se em **(c)** — chega com canário novo e com ferramenta existente passando a emitir e auditar. **Não** satisfaz (a) nem (b): não funde, não remove, e acrescenta linhas ao SSoT carregado em contexto. Declarado, não maquiado.
+
+### Corrigido
+- **Colisão de numeração de ADR:** o ADR de conformance de topologia desta branch usava o número **095**, que o PR #110 já havia consumido em main com o ADR de procedência. Renumerado para **097**; as 4 referências stale foram atualizadas (`docs/research/conformance-frameworks-benchmark.md` linhas 8, 9 e 148, e o ponteiro de branch no próprio ADR, que apontava para uma branch inexistente).
+- **`README.md`** subiu de 1.73.0 para 1.75.0 — o bump de 1.74.0 não havia sido feito (dívida herdada).
+- **Blockquote órfão** no `_shared/traceability/SKILL.md`: a causa-raiz do ADR-094 estava posicionada após a Regra 7 e passou a ser lida como parte dela. Movida para o fim da Regra 6, a que pertence.
+
+### Sincronia PROMPT-CHAT-WEB (política desta seção)
+`PROMPT-CHAT-WEB-v4.5.md` estava carimbado em **v1.68.0** — 7 minors atrás, acima da janela de 5 do `test_web_prompt_currency`. A defasagem já existia em 1.74.0 e o bump a expôs. Doutrina incorporada antes de mover o carimbo (bumpar sem sincronizar seria o overclaim que o framework pune): **§3.5** processo adversarial default + canônico-prevalece + autonomia≠bypass (ADR-094) · **§3.6** referência resolve para o destinatário, com a regra de aspas em path com espaço (ADR-098) · **§3.7** HITL `prob × impacto ≥ 6`, com o limite `1×3` declarado (ADR-096). Carimbo → v1.75.0; versão do prompt permanece v4.5 (adição de seções, sem quebra de contrato). Vitrine (`guia/web/index.html`, 9 ocorrências) e os 6 `web-bundles/` regenerados para 1.75.0.
+
+## [1.74.0] — 2026-07-28 — HITL mecanizado: corte `score ≥ 6` com exit code próprio (ADR-096)
+
+[CONSOLIDADO] · [CONFIRMADO]
+
+### Adicionado (EXTENSÃO — estende `risk_score.py`, sem tool nova, sem capability nova)
+- **ADR-096 Aceito** — fecha o item **B4 do ADR-086**, que entregou o cálculo de risco (`prob × impacto` → `gate` + `tier`) mas deixou o consumo como possibilidade: *"`qa-evidence`/`readiness-gate` **podem** consumir o `gate_agregado`"*. Verificado por grep: **nenhum consumidor existia**. Consequência prática — o item 4 do `high-stakes-gate` (*"hand-off bloqueado até revisão humana"*) seguia sendo **prosa**: um agente podia ler `gate_agregado: CONCERNS` e seguir adiante, e mesmo querendo respeitar não havia o que ler, porque o tool sai com `exit 0` em todos os vereditos por desenho do ADR-086.
+- **Corte do HITL = `score ≥ 6`** (`HITL_MIN_SCORE = 6`), alcançando 2×3, 3×2 e 3×3. Escolha do dono entre três opções apresentadas.
+- **HITL é eixo ORTOGONAL ao gate, não rebatismo.** O `gate` (FAIL/CONCERNS/ADVISORY/NONE) classifica **severidade** e permanece intacto — é a taxonomia do recast TEA. Os campos novos `hitl` (por item) e `hitl_requerido` (agregado worst-case) respondem outra pergunta: *"posso passar adiante sem humano?"*. Colapsar `6 → FAIL` teria destruído a faixa CONCERNS e feito o canário exaustivo mentir sobre a matriz.
+- **Enforcement por exit code próprio:** `--gate-exit` → **exit 2** quando `hitl_requerido`. Contrato legível por hook: **0 = liberado · 1 = entrada inválida (fail-closed) · 2 = HITL requerido**. Sem a flag, comportamento do ADR-086 preservado — compatibilidade **aditiva**: vereditos e chaves antigas idênticos, mais três campos novos no stdout. Não é bit-a-bit, e sem consumidor nada quebra.
+- **Precedência fail-closed > gate:** entrada inválida **com** `--gate-exit` sai **1**, não 2. Travado por canário. Usar `exit 1` também para o bloqueio tornaria JSON malformado indistinguível de "gate barrou", e o chamador não saberia se conserta a entrada ou busca aprovação.
+- **`tools/test_risk_score.py` estendido** — coluna `hitl` na tabela-verdade exaustiva dos 9 combos, agregação worst-case, guarda `HITL_MIN_SCORE == 6` (o corte só muda por ADR, não por deriva) e a matriz dos 6 casos de exit code.
+- **`_shared/high-stakes-gate/SKILL.md` v1.1.0** — o item 4 passa a citar o comando e o código de saída, e declara a lacuna abaixo.
+
+### Limite declarado — a lacuna do corte multiplicativo
+`1 × 3 = 3` **não trava**: **raro × catastrófico passa livre**. É exatamente a forma dos incidentes históricos registrados na memória do projeto — segredo de produção em log, teste gravando em estado global do Windows que vazou para outro projeto: probabilidade percebida baixa, dano alto e irreversível. **O corte foi escolhido com essa consequência posta na mesa**, e fica registrado para ser auditável, não para relitigar.
+
+**Mitigação de segunda linha** (reduz pouco, não elimina): o `action-safety` gateia por **efeito**, não por score — mas a cobertura mecânica é estreita, e o qa-critic a dimensionou: só inspeciona `Bash` e `PowerShell`, é **fail-open** em erro interno e com regras ausentes, e o julgamento T3 pleno segue sendo prosa do agente. Para um item `1×3` cujo dano não vira comando de shell casando com padrão, **nenhum dos dois mecanismos pega**.
+
+**Risco residual explícito:** item **raro × catastrófico e reversível** não é pego por nenhum dos dois — score 3 < 6 e o efeito não é T3. Se um incidente dessa forma ocorrer, o ADR deve ser revisitado, e a regra de impacto absoluto (impacto = 3 gateia sempre) é o candidato natural.
+
+### Corrigido após pré-gate qa-critic adversarial (Fable, subagente isolado)
+A primeira submissão foi **rejeitada**. Três defeitos corrigidos, dois aceitos com o texto ajustado.
+
+- **CRÍTICO — erro de uso do `argparse` saía exit 2**, o código reservado a "HITL requerido". `--prob abc`, valor faltando ou typo de flag eram indistinguíveis de bloqueio legítimo, e um hook registraria "aguardando humano" para item que **nunca foi avaliado** — exatamente a confusão que a Alternativa 2 declara ter rejeitado, cometida pela porta dos fundos. Corrigido com subclasse `_ParserFailClosed` que remapeia `error()` para exit 1, travado por três casos no canário e provado por mutação.
+- **MÉDIO — o canário aferia só o `returncode`, nunca o `stdout`.** Mutação removendo `hitl_requerido` do JSON **passava**, enquanto o `high-stakes-gate/SKILL.md` manda o consumidor ler exatamente esse campo. O canário agora valida a forma do JSON e a coerência de `hitl_min_score` com a constante.
+- **BAIXO — lista de não-dicts em `--items`** atravessava o guard (o operador `in` casa substring em `str`) e estourava `TypeError` cru; o exit 1 vinha do interpretador **por acidente**, não por desenho. Corrigido com guarda de tipo.
+- **Aceito com o texto ajustado:** a mitigação por `action-safety` existe mecanicamente, mas é **fail-open**, só inspeciona `Bash`/`PowerShell` e o julgamento T3 pleno segue sendo prosa do agente — a frase original descrevia a política, não a cobertura. E "compatibilidade retroativa total" é **aditiva**: o stdout ganhou três campos mesmo sem a flag. Sem consumidor, nada quebra.
+
+### Rejeitado
+- **Colapsar `6 → FAIL`** — destrói a faixa CONCERNS e contradiz a desambiguação do TEA (ADR-086 B2). Perde-se a distinção "bloqueia release" × "exige plano de mitigação".
+- **Corte em `≥ 4`** — mais conservador, mais atrito. Rejeitado pelo dono.
+- **Regra de impacto absoluto** — recomendada pelo autor, **rejeitada pelo dono** em favor do corte multiplicativo.
+- **Classificador de risco por LLM** — não-determinístico, mesmo motivo dos ADR-086 e ADR-039.
+
+## [1.73.0] — 2026-07-22 — Carimbo de PROCEDÊNCIA em trabalho executado fora do repositório (ADR-095)
+
+[CONSOLIDADO] · [CONFIRMADO]
+
+### Adicionado (ADITIVO — estende `handoff.py`, sem tool nova, sem hook novo)
+- **ADR-095 Aceito** — quando o diretório de trabalho é **EXTERNO ao repositório** (drive corporativo sincronizado, pasta de cliente, share de rede, pasta de demanda/chamado), essa pasta recebe um **`PROCEDENCIA.md`** antes de o bloco fechar. Fecha o elo em que a cadeia decisão→fonte→versão (`_shared/traceability` Regra 4) **quebrava ao artefato sair do repo**: quem abre a pasta meses depois não sabia qual framework/versão/sessão produziu, nem **o que ali é minuta e o que é registro**.
+- **`tools/handoff.py --provenance DIR [--write]`** — reusa `repo_state()` e o timestamp determinístico do commit HEAD já existentes para o Pacote P14 (régua §0: estende o gerador, não cria ferramenta). Campos do repo **determinísticos**; campos de domínio como **SLOT explícito** (slot vazio é lacuna VISÍVEL, não silêncio).
+- **Guarda `_inside_repo()` endurecida** (achados CRÍTICOS do qa-critic adversarial, reproduzidos): `realpath` (não `abspath`) resolve **symlink/junction** — sync clients criam junction e um alvo textualmente "fora" pode apontar fisicamente para dentro do repo (confirmado criando junction real); `normcase` fecha o **bypass por case** (filesystem Windows é case-INsensitive, `commonpath` compara case-SENSITIVE — `C:\Users\Fulano\repo` não casava `C:\Users\fulano\repo` e a guarda deixava escrever DENTRO do repo); `try/except ValueError` para **drive diferente e UNC** (`\\servidor\share`) — que é JUSTAMENTE o caso de uso primário do ADR e crashava com stack trace cru.
+- **Falha alto onde antes falhava em silêncio:** `--write <caminho>` no modo procedência era aceito e o caminho **descartado** (armadilha de CLI — `--write` tem semântica diferente nos dois modos); agora exit 2, com `normpath` nos dois lados para não rejeitar a forma nativa do Windows do mesmo diretório. O append **valida o cabeçalho `# PROCEDENCIA`** antes de tocar o arquivo: pasta reaproveitada ou arquivo vazio recebia um rabo de sessão sem cabeça; agora recusa e deixa o documento alheio intacto. Carimbo existente e válido segue preservado (apenda seção de sessão — Regra 3).
+- **`_shared/traceability` Regra 7** + **`.agent/rules/05-procedencia-trabalho-externo.md`** (ponteiro fino, padrão das demais rules). Gatilho é a **FORMA da situação** (destino de escrita fora do repo), **nunca** o nome de cliente/produto/ferramenta — núcleo agnóstico (canário `core-no-vendor`, ADR-091); a instância concreta vive na aplicação de domínio.
+- **`tools/test_handoff.py`** — **11 checks** do modo procedência: campos determinísticos, slots visíveis, taxonomia MINUTA/PROPOSTA/MIGRADO/APROVADO, determinismo, recusa dentro-do-repo, recusa dir inexistente, preservação de carimbo próprio, recusa de documento alheio (vazio e com outro conteúdo), `--write` com caminho, drive diferente/UNC (`except Exception` genérico pega regressão para crash), bypass por case (gated `os.name == "nt"`). +1 capability `external-work-provenance` com **`enforcement: manual`** — sem o campo, a capability escapava silenciosamente da auditoria anti-teatro do próprio framework (P15/ADR-085).
+
+### Decisões
+- **Rejeitado:** ferramenta dedicada nova (duplicaria `repo_state()`), estender `check_context_brief` (conflataria procedência de entrega com verificação de âncora de pesquisa), e template em prosa preenchido à mão (é o "Gap 8 — handoff improviso" que o ADR-076 já diagnosticou).
+- **Limite honesto declarado no ADR:** o carimbo **não é forçado por mecanismo** — nenhum hook observa escrita fora do repo. Mesmo teto do ADR-094; hook fail-closed fica como escalada disponível se a regra não pegar na prática.
+- **QA adversarial heterogêneo (Sonnet, isolado) — 2 rodadas:** 1ª = **REJEITAR** (3 bugs reproduzidos: crash cross-drive/UNC, bypass de case, append cego; + cobertura fraca do canário, `enforcement` ausente, README stale). Corrigidos e reverificados empiricamente → 2ª = **APROVAR_COM_RESSALVAS**, sem regressão nos 60 canários restantes.
+- **Dívida registrada (pré-existente, exposta por este bloco):** nenhum canário compara **README × topo do CHANGELOG**; `test_marketing_claims` só cobre vitrine × README (e lê a versão do próprio README). O sintoma foi corrigido à mão aqui; o mecanismo não existe. Item em aberto no `history.md`.
+- **Trade-off aceito (INFERIDO, BAIXO):** a guarda passou a fazer I/O (`realpath` resolve reparse point) onde antes era só string — em share de rede inacessível pode custar latência. Correção > velocidade num CLI manual, e o `isdir()` preexistente já tinha o mesmo risco.
+
+## [1.72.0] — 2026-06-23 — Processo adversarial mandatório (default) + canônico-prevalece + autonomia-limitada + EDR verificável (ADR-094)
+
+[CONSOLIDADO] · [CONFIRMADO]
+
+### Adicionado / Mudado (ADITIVO — sem hard-block, sem reescrever desenho aprovado)
+- **ADR-094 Aceito** — restaura o **processo adversarial como mandatório-default** (o coração do framework), reafirmando ADR-011/027/007 (as regras já existiam e funcionavam SEM bloqueio; o defeito foi não segui-las) via **`_shared/traceability` Regra 6** (desafiar o pedido · qa-critic isolado por-default até-PASS com rewind · elicitação/pesquisa exaustivas · **canônico-prevalece** · **autonomia≠bypass**).
+- **EDR verificável (estende ADR-093):** `boot_check` ganha `kind=process` (`_process_running`, cross-platform/determinístico) — a premissa "Kaspersky veta hooks" passa a ser **verificada** (`.agent/environment.json` → APLICA/ESTALE), não assumida. Canário `test_environment_applicability` cobre o caso process.
+- **Decisão de NÃO fazer:** hard-block de merge (squad_gate) — o dono confirmou que antes funcionava sem bloquear; `squad_gate` permanece pronto-mas-não-ativado (escalada futura, decisão do dono). Sem hook novo (régua §0 — reusa route-gate/ADR-011).
+
+## [1.71.0] — 2026-06-23 — Detecção de ambiente no boot + aplicabilidade das premissas cross-session (ADR-093)
 
 [CONSOLIDADO] · [CONFIRMADO]
 
 ### Adicionado
-- **Rotação determinística do `history.md` (ADR-092):** `tools/rotate_history.py` (`--keep N`, default 10; `--dry-run`; `--file`/`--archive` testáveis) mantém os últimos **N checkpoints** + `## Em aberto` + `## Aprendizado` **inteiros** no arquivo quente e move os mais antigos — **na mesma ordem, sem deletar** — para `docs/history/history-archive.md`. Mecaniza a "Higiene v1.58.1" (prosa→mecanismo); o contrato ADR-007 (boot lê só o topo + Em aberto + Aprendizado) fica explícito.
-- **Canário `tools/test_rotate_history.py`** (auto-descoberto pelo `run_canaries`): prova 6 invariantes — `quente + arquivo = original` (zero perda/duplicata), `## Em aberto`/`## Aprendizado` byte-a-byte, trap do sub-header `## Aprendizado (append…)` dentro de checkpoint, idempotência, topo preservado, `--dry-run` não escreve. + capability `history-rotation`.
+- **Detecção de ambiente + aplicabilidade das premissas (ADR-093):** novo check `check_environment_applicability` em `tools/boot_check.py` (na lista `CHECKS`) que detecta host/SO e existência de path/drive (`os.path.exists`, nunca probe de rede) e cruza com o manifesto declarativo **`.agent/environment.json`** pela **matriz de polaridade** `expect_present × found` → **APLICA · ESTALE · AUSENTE**. Registra cross-session no bloco `environment` de `.claude/boot-proof.json` (snapshot por-boot, nunca premissa congelada) e cross-IA via envelope no outbox (`cross_ai_hub.deposit`, ADR-069, fail-soft).
+- **`.agent/environment.example.json`** — template genérico (placeholders; canário barra path concreto no núcleo).
+- **`_shared/traceability` Regra 5** — premissa de ambiente é INFERÊNCIA com validade; file-first suplanta prosa sobre o filesystem (caso-raiz: prosa dizia "F:\ não existe" mas existia).
+- **`tools/test_environment_applicability.py`** — canário dos 4 quadrantes da matriz (incl. o caso-raiz `expect_present:false × found:true = ESTALE`) + envelope satisfaz `cross_ai_hub.REQUIRED` + `.example.json` sem path concreto + contrato do dict. +1 capability `environment-applicability-gate`.
 
-### Resultado
-- 1ª rotação real: **55 checkpoints → 10 quentes / 45 arquivados** (`history.md` ~901→238 linhas, ~37k→~8k tokens). Consumidores verificados verdes: `compaction_gate` (≥1 checkpoint), `handoff.py` (topo + Em aberto), suíte 62 PASS/0 FAIL.
-
-### Limite declarado
-- `check_reorchestration.py` (linter, fora do `run_canaries`) já falhava ANTES por casar "APROVADO_LIMPO" em prosa no `## Aprendizado` — pré-existente/ortogonal (flag em `## Em aberto`). Rotação é sob demanda (sem hook dedicado).
+### Decisões
+- **ADR-093 Aceito** — ratificado pelo dono ("ambos: mecanismo + regra; manifesto `.agent/environment.json`"). qa-critic heterogêneo (Sonnet) sobre o ADR pegou 3 ALTO (API `cross_ai_hub` sem "publish" → usar `deposit`; matriz de polaridade incompleta; `.json` fora do tier-norma do linter) + 3 MÉDIO + 1 BAIXO — todos incorporados antes do código.
 
 ## [1.70.0] — 2026-06-19 — Project-onboarding/wayfinding BMAD por composição: greenfield/brownfield + generate/document-project + guia user-facing (ADR-090)
 
