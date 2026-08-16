@@ -1,0 +1,44 @@
+{
+  "_doc": "Modelo FORMAL do fluxo de junções J0–J6 (ADR-097 mecanismo 2). É o 'desenhado' contra o qual tools/conformance.py compara o 'executado' registrado no ledger. Versionado de propósito: quando o fluxo mudar, muda AQUI e o verificador acompanha — sem editar código. Um modelo que diverge da realidade viva produz falso-bloqueio, então ele aponta ONDE desviou, não só reprova.",
+  "versao": "1.0.0",
+  "adr": "docs/adr/097-conformance-topologia-hard-event-log-canario-process-mining.md",
+  "atividades": [
+    {"id": "J0", "ordem": 0, "nome": "abertura do bloco (PMO: rota declarada, escopo)"},
+    {"id": "J1", "ordem": 1, "nome": "discovery -> requirements"},
+    {"id": "J2", "ordem": 2, "nome": "architect -> decisão registrada"},
+    {"id": "J3", "ordem": 3, "nome": "developer -> entrega com validação"},
+    {"id": "J4", "ordem": 4, "nome": "qa-critic adversarial"},
+    {"id": "J5", "ordem": 5, "nome": "docops -> documentação proporcional"},
+    {"id": "PC", "ordem": 6, "nome": "process-critic fecha o bloco"},
+    {"id": "J6", "ordem": 7, "nome": "encerramento / handoff"}
+  ],
+  "regras": [
+    {
+      "id": "forward-only",
+      "enunciado": "Uma junção só pode ser registrada se sua ordem for maior ou igual à da última registrada no mesmo bloco.",
+      "excecao": "rewind explícito — registro com status REPROVADO_REWIND, que é o mecanismo legítimo do process-critic.",
+      "porque": "regressão silenciosa apaga o fato de que algo foi refeito; rewind declarado preserva."
+    },
+    {
+      "id": "sem-salto",
+      "enunciado": "Registrar J_n exige que todas as junções de ordem menor já tenham registro com status PASS no mesmo bloco.",
+      "porque": "é a topologia em si: junção posterior sem a anterior significa etapa pulada."
+    },
+    {
+      "id": "prova-verificavel",
+      "enunciado": "Todo registro deveria trazer `prova` — ponteiro que resolve (arquivo existente, objeto git, ou sha256:<hex>).",
+      "nivel": "ratchet",
+      "porque": "o ledger é escrito pelo próprio agente. Sem ponteiro conferível por terceiro, o registro afirma sem provar."
+    },
+    {
+      "id": "resource-declarado",
+      "enunciado": "Todo registro deveria declarar `resource` — quem produziu o PASS.",
+      "nivel": "ratchet",
+      "porque": "sem isso o event log não responde 'quem fez', e a exigência de modelo diferente do autor não é conferível no fluxo."
+    }
+  ],
+  "ratchet": {
+    "janela_warn": 5,
+    "_doc": "ADR-097 §Consequências (a): traces de agente são ruidosos e o limiar precisa de calibração empírica. Os primeiros 5 blocos medidos apenas AVISAM — coletam dados sem bloquear. A partir do 6º, as regras de nível `ratchet` passam a reprovar como as demais. O estado vive em _meta/conformance/ratchet.json."
+  }
+}
