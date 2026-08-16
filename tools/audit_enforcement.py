@@ -57,11 +57,23 @@ BASELINE = RAIZ / "_meta" / "enforcement-baseline.json"
 # Medido: uma mutacao que apenas quebrava a SINTAXE do mecanismo era carimbada [PROVADO].
 CAMPOS_MUTACAO = ("arquivo", "de", "para", "canario", "espera")
 
-# Sinais de que o canario MORREU ao carregar o arquivo sabotado em vez de DETECTAR a sabotagem.
-# Quebrar o arquivo nao prova que o gate detecta coisa alguma — prova que Python nao le codigo
+# Sinais de que o canario MORREU processando o arquivo sabotado em vez de DETECTAR a sabotagem.
+# Quebrar o arquivo nao prova que o gate detecta coisa alguma — prova que Python nao le arquivo
 # invalido, o que ja se sabia.
-MARCAS_DE_CRASH = ("SyntaxError", "IndentationError", "ModuleNotFoundError",
-                   "ImportError", "Traceback (most recent call last)")
+#
+# A 1a versao desta lista so cobria erro de INTERPRETADOR e ainda exigia o nome do arquivo no
+# traceback. O qa-critic (Sonnet, 2026-08-15) derrubou as duas coisas: mecanismo `.json`/`.md`
+# quebra com `JSONDecodeError`, cujo traceback cita `json/decoder.py` e NUNCA o arquivo de dados
+# — a recusa nao disparava. E `model-policy` e' exatamente isso: mecanismo `tools/model-policy.json`.
+# Agora a deteccao e' por DELTA: marca que aparece DEPOIS e nao aparecia ANTES.
+MARCAS_DE_CRASH = ("Traceback (most recent call last)", "SyntaxError", "IndentationError",
+                   "ModuleNotFoundError", "ImportError", "JSONDecodeError",
+                   "UnicodeDecodeError", "ParserError")
+
+# Tamanho minimo de `mutacao.espera`. Achado ALTO do mesmo qa-critic: sem piso, `espera: "Error"`
+# casa com o texto de praticamente qualquer excecao — o sinal declarado vira curinga e a prova
+# volta a ser "saiu diferente de zero" com outro nome.
+ESPERA_MIN = 12
 
 
 def carregar_caps(p: Path):
@@ -83,6 +95,16 @@ def valida_mutacao(m, cap=None):
         return False, f"`mutacao` sem os campos: {', '.join(faltando)}"
     if m["de"] == m["para"]:
         return False, "`mutacao` com `de` == `para` nao sabota nada"
+    esp = str(m["espera"]).strip()
+    if len(esp) < ESPERA_MIN:
+        return False, (f"`mutacao.espera` ({esp!r}) tem {len(esp)} caractere(s) — minimo "
+                       f"{ESPERA_MIN}. Sinal curto casa por acidente: 'Error' aparece no texto "
+                       f"de quase toda excecao, e a prova volta a nao provar nada")
+    colide = [mk for mk in MARCAS_DE_CRASH if mk.lower() in esp.lower()]
+    if colide:
+        return False, (f"`mutacao.espera` contem sinal de CRASH ({colide[0]!r}) — prova por crash "
+                       f"nao vale. Declare a mensagem que o gate imprime ao DETECTAR a sabotagem, "
+                       f"nao a excecao que ele levanta ao engasgar com ela")
     if cap is not None:
         mec, tst = cap.get("mechanism"), cap.get("test")
         # Ausencia de `mechanism`/`test` NAO pode desligar o cross-check em silencio:
@@ -211,15 +233,18 @@ def modo_provar(caps, alvo, raiz=RAIZ):
                                      capture_output=True, text=True, cwd=str(wt))
                 alvo_f.write_text(original, encoding="utf-8")
                 saida_dep = (dep.stdout or "") + (dep.stderr or "")
-                nome_alvo = Path(m["arquivo"]).name
-                morreu = any(mk in saida_dep for mk in MARCAS_DE_CRASH) and nome_alvo in saida_dep
+                # Deteccao por DELTA, nao por nome de arquivo: marca de crash que NAO existia
+                # antes da mutacao e passou a existir depois. Nao depende de o traceback citar
+                # o arquivo — que era a escapatoria dos mecanismos `.json`/`.md`.
+                novas = [mk for mk in MARCAS_DE_CRASH if mk in saida_dep and mk not in saida_antes]
                 if dep.returncode == 0:
                     falhas.append((cid, f"canario `{m['canario']}` continuou VERDE com "
                                         f"`{m['arquivo']}` sabotado — nao prova nada"))
-                elif morreu:
-                    falhas.append((cid, f"canario MORREU carregando `{m['arquivo']}` sabotado "
-                                        f"(crash, nao deteccao) — quebrar o arquivo nao prova "
-                                        f"que o gate detecta; sabote a LOGICA, nao a sintaxe"))
+                elif novas:
+                    falhas.append((cid, f"canario MORREU processando `{m['arquivo']}` sabotado "
+                                        f"({novas[0]} apareceu so depois da mutacao): crash, nao "
+                                        f"deteccao — quebrar o arquivo nao prova que o gate "
+                                        f"detecta; sabote a LOGICA, nao a sintaxe"))
                 elif m["espera"] not in saida_dep:
                     falhas.append((cid, f"canario ficou vermelho, mas NAO pelo motivo declarado: "
                                         f"`espera` ({m['espera']!r}) ausente da saida"))

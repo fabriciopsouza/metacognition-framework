@@ -33,7 +33,7 @@ BASELINE_N = 80
 BASELINE_SHA = "242303796e01f06be26c5a9f4e2694f4121641d7876924e65f945e024828dc74"
 
 MUTACAO_OK = {"arquivo": "tools/x.py", "de": "return 1", "para": "return 0",
-              "canario": "tools/test_x.py", "espera": "DETECTOU"}
+              "canario": "tools/test_x.py", "espera": "DETECTOU: VALOR alterado"}
 
 
 def rodar(auditor, caps, baseline, *extra):
@@ -166,6 +166,16 @@ def main():
             "import y\n"
             "print('conferindo y.py')\n"
             "sys.exit(0 if y.VALOR == 42 else 1)\n", encoding="utf-8")
+        # Par dados.json/test_dados: mecanismo que NAO e' Python. Quebrar o JSON mata o canario
+        # com `JSONDecodeError`, cujo traceback cita `json/decoder.py` e NUNCA `dados.json` —
+        # a escapatoria que o qa-critic achou em 2026-08-15. `model-policy` e' um caso real disto.
+        (fix / "tools" / "dados.json").write_text('{"limite": 7}\n', encoding="utf-8")
+        (fix / "tools" / "test_dados.py").write_text(
+            "import json, pathlib, sys\n"
+            "print('conferindo dados.json')\n"
+            "d = json.loads((pathlib.Path(__file__).parent / 'dados.json')"
+            ".read_text(encoding='utf-8'))\n"
+            "sys.exit(0 if d.get('limite') == 7 else 1)\n", encoding="utf-8")
         git = ["git", "-c", "user.email=c@x", "-c", "user.name=canario"]
         pronto = all(subprocess.run(c, capture_output=True, cwd=str(fix)).returncode == 0
                      for c in (["git", "init", "-q"], ["git", "add", "-A"],
@@ -224,7 +234,31 @@ def main():
                 "arquivo": "tools/y.py", "de": "VALOR = 42", "para": "VALOR = (42",
                 "canario": "tools/test_y.py", "espera": "y.VALOR divergiu"}}])
             c, s = rodar(AUDITOR, caps, base, "--provar", "--raiz", str(fix))
-            caso("vermelho por CRASH (sintaxe quebrada) e' barrado", 2, "morreu carregando",
+            caso("vermelho por CRASH (sintaxe quebrada) e' barrado", 2, "morreu processando",
+                 c, s, resultados)
+
+            # (i-f) crash em mecanismo NAO-Python: o traceback do JSONDecodeError nao cita
+            # `dados.json`. A 1a versao da recusa exigia o nome do arquivo e deixava passar.
+            # Achado ALTO 1 do qa-critic (Sonnet, 2026-08-15).
+            caps, base = escrever(tmp, [{"id": "fj", "enforcement": "fail-closed",
+                "mechanism": "tools/dados.json", "test": "tools/test_dados.py", "mutacao": {
+                "arquivo": "tools/dados.json", "de": '{"limite": 7}', "para": '{"limite": 7,}',
+                "canario": "tools/test_dados.py", "espera": "limite fora do declarado"}}])
+            c, s = rodar(AUDITOR, caps, base, "--provar", "--raiz", str(fix))
+            caso("crash em mecanismo .json (traceback sem o nome) e' barrado", 2,
+                 "morreu processando", c, s, resultados)
+
+            # (i-g) `espera` curta demais vira curinga: "Error" casa com qualquer excecao.
+            # Achado ALTO 2 do mesmo crítico.
+            caps, base = escrever(tmp, cap_fx(espera="Error"))
+            c, s = rodar(AUDITOR, caps, base, "--provar", "--raiz", str(fix))
+            caso("`espera` curta demais e' barrada", 2, "minimo 12", c, s, resultados)
+
+            # (i-h) `espera` que declara o proprio crash como sinal esperado -> BARRA.
+            # Sem isto, bastaria declarar `espera: "Traceback"` para reabrir o buraco.
+            caps, base = escrever(tmp, cap_fx(espera="Traceback (most recent call last)"))
+            c, s = rodar(AUDITOR, caps, base, "--provar", "--raiz", str(fix))
+            caso("`espera` que e' sinal de crash e' barrada", 2, "sinal de crash",
                  c, s, resultados)
 
             # (iii) mutacao obsoleta (trecho `de` nao existe mais) -> acusa, nao passa calado
