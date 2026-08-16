@@ -502,17 +502,19 @@
     },
     {
       "id": "consistency-gate",
-      "title": "Auditoria de fechamento (version-sync, adr-status, checkpoint, unpushed), fail-soft",
+      "title": "Espelho de consistencia no FECHAMENTO, cabeado no evento Stop (7 dimensoes)",
       "status": "PARTIAL",
       "ai_owner": "claude",
-      "mechanism": "tools/hooks/consistency-gate.ps1",
+      "mechanism": "tools/hooks/consistency_gate.py",
       "adr": "docs/adr/030-consistency-gate-auditoria-de-fechamento.md",
       "cross_ai": false,
       "tags": [
         "doc-sync",
         "gate",
         "closure"
-      ]
+      ],
+      "test": "tools/test_consistency_gate.py",
+      "enforcement": "fail-soft"
     },
     {
       "id": "adr-changelog-sync",
@@ -1353,6 +1355,23 @@
         "qa",
         "anti-teatro",
         "canario",
+        "determinismo"
+      ]
+    },
+    {
+      "id": "decisoes-que-governam",
+      "title": "Colisao entre o pedido e decisao ja registrada vira consulta deterministica",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/decisoes_que_governam.py",
+      "test": "tools/test_decisoes_que_governam.py",
+      "adr": "docs/adr/051-reparo-discovery-contexto-inferido-pesquisa-ancora-mecanizada.md",
+      "cross_ai": false,
+      "enforcement": "advisory",
+      "tags": [
+        "postura",
+        "anti-passividade",
+        "decisoes",
         "determinismo"
       ]
     }

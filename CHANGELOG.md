@@ -62,8 +62,40 @@ Duas correções minhas foram reprovadas pelo canário novo, nesta ordem:
 O canário também precisou se corrigir: ele passava sozinho e reprovava **dentro** da suíte,
 porque herdava o ambiente já corrigido do executor e media o chamador em vez do código.
 
-Capacidades registradas: 81 → 82; com gate provado: 24 → **28**. Suíte: **68 PASS · 1 SKIP ·
-0 FAIL** de 69 canários.
+Capacidades registradas: 81 → 82; com gate provado: 24 → **28**.
+
+### O fechamento passa a acontecer sem alguém pedir
+
+O espelho de consistência do fechamento existia desde o ADR-030 e **nunca foi ligado a evento
+nenhum** — nem hook, nem canário, nem chamada no fluxo. Havia hooks no início da sessão, no
+prompt, antes e depois de ferramenta e na compactação; **nada no encerramento**. É a falha
+catalogada duas vezes: *"gate existe mas não disparou em 7 fechamentos"*.
+
+Portado de PowerShell para Python (a classe de hook comprovadamente viva nesta máquina) e cabeado
+no evento de fim de sessão. Sete dimensões: versão do README × CHANGELOG, ADR parado em Proposto,
+checkpoint ausente, ADR com número duplicado, commits não enviados, rascunho esquecido e relatório
+do bloco. **Fail-soft por desenho** — hook que bloqueia sessão é hook que alguém desliga; a lei
+continua sendo o canário de release. O `.ps1` virou encaminhador para o Python: uma lógica só,
+dois pontos de entrada, sem risco de divergirem.
+
+Na primeira execução ele achou uma inconsistência real que estava no backlog como "canário
+inexistente": README em 1.79.0 contra CHANGELOG em 1.80.1.
+
+### O framework deixa de ser passivo diante de um pedido
+
+A norma *"o pedido do dono não é imune a questionamento"* era prosa: dependia de alguém lembrar de
+consultar o registro de decisões. Caso real desta sessão — um pedido colidia com uma dívida aberta
+pelo próprio dono três dias antes, e a colisão só apareceu porque um crítico independente foi
+varrer os registros. Uma rodada inteira de agente para o que é consulta determinística.
+
+`decisoes_que_governam.py` cruza registro de capacidades × ADRs × dívidas abertas e responde:
+**quais decisões governam isto, e quais têm dívida em aberto.** Código de saída 2 quando há —
+o sinal de trazer o conflito à mesa antes de executar. Não julga, não bloqueia, não obriga
+ninguém a discordar: "gate de discordância obrigatória" produziria discordância-formulário, o
+teatro que o próprio framework existe para pegar.
+
+Capacidades: 82 → **83**; com gate provado: **29**. Suíte: **70 PASS · 1 SKIP · 0 FAIL** de 71
+canários.
 
 ## [1.80.0] — 2026-08-14 — Prova de mutação para capacidade `fail-closed`: verde só conta depois de saber ficar vermelho (ADR-106)
 

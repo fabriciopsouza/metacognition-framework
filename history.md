@@ -1166,6 +1166,14 @@ Riscos ativos: nenhum bloqueante. Risco residual ADR-010 §Riscos (detector de v
   quebrado, fronteira) para utilitário do framework **se e quando repetirem em três projetos** —
   aí o registro sobe de `PARTIAL/prose` para `PROVIDES` com canário. Gatilho: toda vez que um
   segundo projeto adotar o padrão, reavaliar (a).
+  **[2026-08-16 — DECISÃO DO DONO que desfaz um impasse do desenho original]** A condição (a)
+  era circular e ninguém tinha notado: o padrão só seria promovido depois de um segundo projeto
+  usá-lo, mas nenhum segundo projeto consegue usá-lo enquanto ele não estiver na `main`. O dono
+  apontou a circularidade e decidiu: **o padrão sobe para a `main` marcado como pendente de
+  validação em segundo projeto, e a marca só sai depois desse uso.** Disponibilidade e prova
+  deixam de ser a mesma coisa. O override continua aberto — o que mudou é que agora ele *pode*
+  ser quitado. Marca sugerida: campo `status: PARTIAL` + `validado_em_projetos: 1` no registro da
+  capacidade, conferido pelo canário do registro.
 
 > WIP atual (ex-G11). Reconciliar com branches do git e ADRs em status `Proposto` no `/start-session` (modo squad).
 

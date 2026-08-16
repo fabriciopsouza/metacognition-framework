@@ -1,7 +1,7 @@
 <!-- GERADO por tools/build_capabilities.py a partir de capabilities.json — NAO editar a mao -->
 # CAPABILITIES — indice de capacidades (nivel 1: id + title)
 
-> **82 capacidades** — 71 ✅ PROVIDES · 11 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
+> **83 capacidades** — 72 ✅ PROVIDES · 11 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
 > **Como usar (file-first, boot):** leia esta lista p/ achar o `id`; o registro completo (mecanismo · canario · ADR · doc) vem por **`python tools/build_capabilities.py --show <id>`** ou `grep -A8 '"<id>"' capabilities.json`. Nao reexplore o repo antes disto.
 > **Manutencao:** feature nova -> +1 registro em `capabilities.json` + `python tools/build_capabilities.py`. Canario barra canario orfao (cobertura).
 
@@ -34,11 +34,12 @@
 - ✅ `compaction-gate` — Bloqueia compaction sem digest persistido (history.md sem checkpoint), fail-open
 - ✅ `completeness-gate` — Cobertura escopo-pedido x entrega: quantificador sem criterio em validation falha
 - ✅ `consistency-closing-ci` — Consistencia de fechamento FAIL-CLOSED no CI (dim do consistency-gate que o hook PS vetado nao enforcava)
-- 🟡 `consistency-gate` — Auditoria de fechamento (version-sync, adr-status, checkpoint, unpushed), fail-soft
+- 🟡 `consistency-gate` — Espelho de consistencia no FECHAMENTO, cabeado no evento Stop (7 dimensoes)
 - ✅ `context-brief-gate` — Contexto inferido vira ancora de pesquisa mecanizada (reparo do discovery)
 - ✅ `context-budget-gate` — context-budget: hook PreToolUse(Read) anuncia FRACIONAR (doc-intake) em fonte grande + tool chamavel
 - ✅ `context-budget-hook` — Hook PreToolUse(Read) que anuncia context-budget (mecaniza doc-intake p/ contexto maior; nao-bloqueante, fail-open)
 - ✅ `core-no-vendor` — Pureza do nucleo: nenhum nome de PRODUTO/VENDOR externo no conteudo operativo (_shared/.agent/skills/roteador); proveniencia so nos ADRs. Regression-guard do 'repo nao tem produtos' (P12)
+- ✅ `decisoes-que-governam` — Colisao entre o pedido e decisao ja registrada vira consulta deterministica
 - ✅ `delivery-floor-gate` — Piso de entregabilidade ao humano (teste binario de entrega minima)
 - ✅ `dev-dogfood-gate` — Dev-dogfood DETERMINISTA: master fechando bloco DEVE ter execution-report + handoff cross-IA (nao opt-in, shadow-aware)
 - ✅ `discovery-eval` — Discovery com eval executado (nao so prosa de plano)
