@@ -1344,8 +1344,8 @@
       "enforcement": "fail-closed",
       "mutacao": {
         "arquivo": "tools/run_canaries.py",
-        "de": "\"PYTHONPYCACHEPREFIX\": str(prefixo_cache)}",
-        "para": "\"PYTHONPYCACHEPREFIX\": os.environ.get(\"PYTHONPYCACHEPREFIX\", \"\")}",
+        "de": "env = {**os.environ, \"PYTHONPYCACHEPREFIX\": str(prefixo_cache)}",
+        "para": "env = {k: v for k, v in os.environ.items() if k != \"PYTHONPYCACHEPREFIX\"}",
         "canario": "tools/test_run_canaries.py",
         "espera": "[FALHA] o ambiente do runner NAO e' enganado"
       },

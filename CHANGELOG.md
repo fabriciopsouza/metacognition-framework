@@ -44,9 +44,26 @@ Passivo do ADR-106: 57 → 54. Migradas com prova verde `risk-gate`, `rules-pari
 `autonomy-retry-policy`; capacidades em conformidade 24 → 27. Nenhuma entrou sem passar no
 `--provar`, conforme regra do qa-critic da rodada anterior.
 
-Pendência aberta e nomeada: o cache de bytecode afeta **toda** a suíte, não só este auditor —
-um canário pode reportar verde ou vermelho por bytecode velho. Observado ao vivo nesta sessão.
-Não corrigido aqui por ser escopo próprio.
+**A pendência acima foi fechada na mesma release.** O cache de bytecode afetava a suíte
+inteira, não só o auditor — e o executor que decide PASS/FAIL dos 67 canários **não tinha
+canário próprio**. Quem governa a suíte não era governado por ninguém.
+
+Duas correções minhas foram reprovadas pelo canário novo, nesta ordem:
+
+1. Proibir a escrita de bytecode. Reprovado: isso impede **escrever**, não impede **ler** um
+   arquivo compilado que já exista. Era a ressalva que o crítico tinha levantado como
+   suspeita — confirmada por execução, não por leitura.
+2. Proibir a escrita **e** apontar o cache para um diretório vazio. Funcionou e custou caro:
+   cada subprocesso passou a recompilar a biblioteca padrão inteira, e a suíte foi de 72s
+   para mais de dois minutos. Medido, não estimado.
+3. A que ficou: diretório de cache **novo a cada execução da suíte**, com escrita liberada.
+   Nada de antes pode ser lido e o custo é pago uma vez. Suíte: **72s → 76s**.
+
+O canário também precisou se corrigir: ele passava sozinho e reprovava **dentro** da suíte,
+porque herdava o ambiente já corrigido do executor e media o chamador em vez do código.
+
+Capacidades registradas: 81 → 82; com gate provado: 24 → **28**. Suíte: **68 PASS · 1 SKIP ·
+0 FAIL** de 69 canários.
 
 ## [1.80.0] — 2026-08-14 — Prova de mutação para capacidade `fail-closed`: verde só conta depois de saber ficar vermelho (ADR-106)
 

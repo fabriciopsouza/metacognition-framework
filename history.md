@@ -47,11 +47,27 @@ segundo crítico (só entra no registro depois de `--provar` verde). `byo-ci-gat
 `qa-evidence-gate` ficaram de fora: seus canários **não cobrem** os caminhos sabotados — dívida
 nomeada, não prova forçada.
 
-**Próximo passo:** decidir o achado colateral — o cache de bytecode afeta a suíte inteira, não só
-este auditor; um canário pode reportar verde ou vermelho por bytecode velho, e isso foi observado
-ao vivo na árvore principal com o fonte idêntico ao commit. Critério de aceite: `run_canaries.py`
-passa a purgar bytecode antes de rodar, com um caso que veja a purga reprovar antes de valer. Sem
-isso, os 67 canários herdam a mesma intermitência que acabamos de corrigir num só.
+**O achado colateral foi fechado na mesma sessão (emenda 4).** O cache afetava a suíte inteira, e
+o executor que decide PASS/FAIL dos 67 canários **não tinha canário próprio** — quem governa a
+suíte não era governado por ninguém. **Duas correções minhas foram reprovadas pelo canário novo
+antes de a terceira valer:** proibir a escrita de bytecode não impede a *leitura* de um arquivo
+compilado que já exista (era a suspeita do crítico, confirmada por execução); proibir escrita e
+apontar o cache para um diretório vazio funcionou e levou a suíte de 72s para mais de dois
+minutos, porque cada subprocesso recompilava a biblioteca padrão inteira. A que ficou: diretório
+novo por execução, com escrita liberada — 72s → 76s. O canário também se corrigiu: passava
+sozinho e reprovava dentro da suíte, porque herdava o ambiente já corrigido e media o chamador em
+vez do código. E a sabotagem declarada da capacidade nova era **neutralizada pelo próprio
+auditor**, que define a variável de ambiente que ela lia.
+
+**4ª rodada (Fable) aprovou sem ressalvas de código**, depois de refazer a sabotagem por conta
+própria e derrubar o ataque mais promissor por varredura: nenhum canário escreve `.py` sob a raiz
+do repositório, então o prefixo compartilhado não reabre o defeito entre canários.
+
+**Próximo passo:** item 6 dos sete pedidos — ligar o fechamento automático a um evento real. Os
+hooks Python **funcionam** nesta máquina (medido ao vivo), mas o gate de consistência não está
+ligado a evento nenhum e não existe hook de fim de sessão. Critério de aceite: fechar uma sessão
+sem pedir nada e o `history.md`, o registro de trabalhos e o status report saírem atualizados,
+com canário de release como lei para quando o hook não disparar.
 
 ## 2026-08-14 — Release v1.80.0 (MINOR): prova de mutação para capacidade `fail-closed` — verde só conta depois de saber ficar vermelho (ADR-106)
 

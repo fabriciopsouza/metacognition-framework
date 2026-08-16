@@ -1,4 +1,4 @@
-# Handoff — v1.80.1 · 2026-08-16T00:18:21-03:00 · papel-alvo: developer
+# Handoff — v1.80.1 · 2026-08-16T01:15:32-03:00 · papel-alvo: developer
 
 > Pacote P14 (ADR-012) gerado DETERMINISTICAMENTE do estado do repo por `tools/handoff.py` (ADR-076).
 > Teste binario (P14): a proxima sessao comeca SEM perguntar nada de volta?
@@ -7,19 +7,19 @@
 - **Proxima sessao: `claude-opus-4-8`** (opus). Motivo: developer -> tier baseline (opus): papel AUTORAL roda no baseline (= modelo padrao/standard); custo do erro a montante > custo do token (ADR-082). Subagente developer spawnado < baseline = proibido; risco sobrepoe p/ tier max..
 
 ## [P14] Artefato consumivel — com versao
-- Repo na versao **v1.80.1** (topo do CHANGELOG). Branch `docs/relatorio-sessao-2026-08-13` @ `bf9578b`.
+- Repo na versao **v1.80.1** (topo do CHANGELOG). Branch `docs/relatorio-sessao-2026-08-13` @ `1da9b74`.
 
 ## [P14] Localizacao
 - origin: https://github.com/fabriciopsouza/metacognition-framework
-- branch/commit: `docs/relatorio-sessao-2026-08-13` @ `bf9578b` · (sem PR aberto para esta branch)
+- branch/commit: `docs/relatorio-sessao-2026-08-13` @ `1da9b74` · PR #120 (OPEN) https://github.com/fabriciopsouza/metacognition-framework/pull/120
 - raiz absoluta desta copia: `C:\Users\fabriciosouza\metacognition-framework` (paths relativos abaixo ancoram AQUI)
 
 ## [P14] Acesso
-- Nao-protegido (recovery = conta GitHub): 13 commit(s) NAO-pushado(s), 6 arquivo(s) nao-commitado(s)
+- Nao-protegido (recovery = conta GitHub): 2 commit(s) NAO-pushado(s), 6 arquivo(s) nao-commitado(s)
 
 ## [P14] Prompt pronto-para-colar
 - **Papel:** developer · **Modelo:** `claude-opus-4-8`
-- **Objetivo (do 'Proximo passo'):** decidir o achado colateral — o cache de bytecode afeta a suíte inteira, não só
+- **Objetivo (do 'Proximo passo'):** item 6 dos sete pedidos — ligar o fechamento automático a um evento real. Os
 - **Produz/decide:** execute o objetivo acima ate o criterio de aceite citado; rode `tools/run_canaries.py` antes de fechar.
 
 ## [P14] Pendencias e premissas herdadas
@@ -34,7 +34,7 @@
 ## Extensoes (ADR-016 — evita re-derivar)
 - **5 arquivos mais recentes:**
   1. capabilities.json
-  2. tools/audit_enforcement.py
-  3. tools/test_audit_enforcement.py
-  4. docs/adr/106-prova-de-mutacao-para-capacidade-fail-closed.md
-  5. _meta/qa/pr-118-recencia-do-veredito-no-squad-gate.json
+  2. CAPABILITIES.md
+  3. tools/audit_enforcement.py
+  4. tools/run_canaries.py
+  5. tools/test_run_canaries.py

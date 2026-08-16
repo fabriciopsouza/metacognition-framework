@@ -145,6 +145,38 @@ principal com o fonte **idêntico ao commit** — o `.pyc` guardava o bytecode d
 Qualquer canário da suíte pode reportar verde ou vermelho por cache velho, não só os deste
 auditor. Fica como pendência nomeada, para decisão do dono.
 
+## Emenda 4 (2026-08-16 — o mesmo defeito valia para a suíte inteira, e o executor não tinha canário)
+
+A emenda 3 fechou o cache de bytecode **dentro** do auditor. O achado colateral que ela deixou
+registrado — *"qualquer canário da suíte pode reportar verde ou vermelho por bytecode velho"* —
+foi fechado aqui, junto com uma lacuna maior: **`run_canaries.py`, que decide PASS/FAIL dos 67
+canários, não tinha canário próprio**.
+
+**Duas correções foram reprovadas pelo canário novo antes de a terceira valer:**
+
+1. `PYTHONDONTWRITEBYTECODE=1`. Reprovada: impede **escrever**, não impede **ler** um `.pyc`
+   pré-existente. Era a ressalva MÉDIA da emenda 2, levantada como suspeita pelo crítico e aqui
+   confirmada por execução.
+2. Proibir escrita **e** apontar `PYTHONPYCACHEPREFIX` para um diretório vazio. Correta e cara:
+   cada subprocesso recompilava a biblioteca padrão inteira, e a suíte saltou de **72s para mais
+   de dois minutos**.
+3. A que ficou: prefixo **novo por execução da suíte**, com escrita liberada. Nada de antes pode
+   ser lido; o custo é pago uma vez. Suíte **72s → 76s**, 5%.
+
+A mesma correção completa voltou para o `audit_enforcement.py`, fechando a ressalva MÉDIA da
+emenda 2.
+
+**O canário se corrigiu duas vezes.** Passava sozinho e reprovava dentro da suíte, porque
+herdava o ambiente já corrigido do executor — media o chamador, não o código. E a sabotagem
+declarada da capacidade nova era **neutralizada pelo próprio auditor**: ela lia a variável de
+ambiente que o auditor define, então o isolamento continuava em pé. Sabotagem que depende do
+ambiente de quem a aplica não é sabotagem.
+
+**Cobertura:** capacidade `canary-runner-bytecode-isolation`, 5 verificações, com o caso central
+**comportamental e determinístico** — monta a corrida de propósito (mesmo tamanho, `mtime`
+congelado) e exige que o ambiente do executor detecte o que o ambiente padrão deixa passar.
+Registro de capacidades 81 → 82; com gate provado 24 → 28.
+
 ## Alternativas consideradas
 
 - **Fail-closed para tudo, já.** Rejeitada: 57 reprovações imediatas, incluindo o
