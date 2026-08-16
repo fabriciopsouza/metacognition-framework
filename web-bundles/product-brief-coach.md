@@ -1,4 +1,4 @@
-# Product Brief Coach — Coach cross-IA do Framework Metacognitivo · v1.82.0
+# Product Brief Coach — Coach cross-IA do Framework Metacognitivo · v1.83.0
 
 > GERADO de `web-bundles/coaches.json` por `tools/build_web_bundles.py` — **nao editar a mao**.
 > Cole isto como instrucao de um **Gem** (Gemini), **Custom GPT** (ChatGPT) ou **Projeto** (Claude.ai).

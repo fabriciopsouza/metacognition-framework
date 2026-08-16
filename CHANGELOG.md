@@ -15,6 +15,53 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.83.0] — 2026-08-16 — "NÃO SEI" só vale depois de busca provada, e a instalação passa a se verificar (ADR-092 fechado)
+
+[CONSOLIDADO] · [CONFIRMADO — 22 verificações novas, cada guarda vista reprovando antes de valer]
+
+Fecha a última peça do ADR-092 e responde ao pedido de um runbook que permita instalar em
+qualquer máquina sem erros.
+
+### `tools/research_evidence.py` — a peça que faltava
+
+O `behaviors/manifest.json` declara dois comportamentos cujo campo `check` aponta para esta
+ferramenta: **`research_ou_ratificacao`** (mexer em número regulado) e **`busca_exaustiva`** (todo
+`[DESCONHECIDO]` que vai a decisão). Ela nunca existiu — o `squad_gate.py` devolvia "falta" fixo
+para esse papel: fail-closed correto, mas **sem nenhum caminho para passar**. Quem tocasse num
+número regulado ficava barrado para sempre.
+
+A regra que o manifesto já justificava: *"NÃO SEI só é legítimo APÓS busca provada — elimina o
+punt preguiçoso"*. Dois caminhos, e o segundo é tão legítimo quanto o primeiro:
+
+- **Pesquisa:** registro em `_meta/research/*.json` com ao menos **2 domínios distintos**, cada
+  fonte com endereço, hash do que foi lido e a data em que a vigência foi conferida. Duas páginas
+  do mesmo site contam como uma — citar o mesmo domínio duas vezes não é triangular.
+- **Ratificação humana:** o campo `ratificado_por`. Há número que não está em fonte nenhuma e
+  alguém decide. O que não se aceita é o silêncio.
+
+O que ela **não** faz, declarado: não visita a rede, não julga se a fonte é boa, não confere se o
+hash ainda bate. Mecaniza o **piso da busca**, não a onisciência.
+
+### A instalação passa a dizer se funciona
+
+O `bootstrap.py --check` respondia duas perguntas — PowerShell roda? hooks ligados? — e chamava
+aquilo de diagnóstico. Quem clonava em outra máquina descobria o que faltava **errando, um erro
+por vez**.
+
+Agora ele dá veredito: separa o que impede de operar (`BLOQUEIA`) do que só reduz garantia
+(`AVISA`), e **cada pendência vem com o comando que a resolve**. Confere versão do Python, `git`
+presente e respondendo, os quatro arquivos sem os quais o framework não opera, o arquivo de
+configuração como JSON válido, as skills espelhadas — e, por fim, **roda um canário de verdade**,
+porque instalação que não consegue executar o próprio portão não está instalada.
+
+Baixar o `.zip` em vez de clonar virou **bloqueio explícito**: sem histórico do git, vários portões
+não falham — passam mentindo.
+
+O topo de `guia/SETUP.md` virou o runbook de quatro passos, onde o quarto confere os três
+anteriores. Nenhum documento novo foi criado: o guia que já existia foi estendido.
+
+Capacidades: 85 → **87**. Suíte: **74 PASS · 1 SKIP · 0 FAIL** de 75 canários.
+
 ## [1.82.0] — 2026-08-16 — O gate do squad passa a rodar sozinho: instalador do gancho de pre-commit (ADR-092)
 
 [CONSOLIDADO] · [CONFIRMADO — 15 verificações, instalado e exercitado neste próprio repositório]

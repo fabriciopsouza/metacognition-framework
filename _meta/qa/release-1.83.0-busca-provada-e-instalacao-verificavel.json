@@ -1,0 +1,87 @@
+{
+  "bloco": "release-1.83.0-busca-provada-e-instalacao-verificavel",
+  "release": "1.83.0",
+  "papel": "qa_critic",
+  "rodada": 1,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "sha_revisado": "b4cee1e",
+  "resumo": "Fable isolado contra autor Opus, sobre a ultima peca do ADR-092 (tools/research_evidence.py), a delegacao no squad_gate, a verificacao de instalacao no bootstrap e o runbook no SETUP.md. Aprovado com 4 achados, todos corrigidos nesta rodada. Os dois de severidade media eram BURLAS DE UM CARACTERE na contagem de dominios distintos, que e' o coracao da exigencia: ponto final no host (`a.exemplo.` contava como diferente de `a.exemplo`, quando no DNS e' o mesmo site) e esquema nao-web (`file://qualquer/x` tinha netloc e virava a segunda perna da triangulacao). O critico tambem pegou que `ratificado_por: true` virava ratificado por 'True' — ninguem assumia o numero e passava — e que o runbook prometia gate duro onde o mecanismo so' avisa.",
+  "verificacoes_executadas": [
+    "critico rodou os dois canarios novos: research_evidence 13/13 e bootstrap_check 9/9",
+    "probe adversarial da funcao dominio(): conferiu que http x https, porta explicita, userinfo@, www. e maiusculas ja caiam no mesmo dominio; e reproduziu as duas burlas nao declaradas",
+    "critico provou a falsificabilidade do canario de instalacao por conta propria: trocou bloqueia() por avisa() no ramo do .git ausente e o caso certo ficou vermelho; restaurou por reversao textual, sem git, e reconfirmou verde",
+    "critico avaliou _research_atestada e concluiu que a direcao esta correta: so' o codigo 0 aprova, entao crash ou timeout viram bloqueio, nunca aprovacao indevida — o inverso do defeito que ele achou hoje no install_git_hooks",
+    "correcoes do autor com prova de mutacao, cada guarda vista vermelha antes de valer: ponto final -> [FALHA]; file:// -> [FALHA]; booleano -> [FALHA]; restauradas, 16/16",
+    "runbook corrigido: passa a dizer que roda `test_capabilities` e nao a suite inteira, e que o resultado e' AVISO e nao bloqueio"
+  ],
+  "problemas": [
+    {
+      "severidade": "medio",
+      "local": "tools/research_evidence.py (funcao dominio)",
+      "descricao": "CORRIGIDO. Ponto final no host inflava a contagem de dominios distintos. Nao estava declarado como limite — era burla de um caractere.",
+      "cenario_de_falha": "fontes em https://a.exemplo/p1 e https://a.exemplo./p2 passavam por dois dominios independentes."
+    },
+    {
+      "severidade": "medio",
+      "local": "tools/research_evidence.py (funcao dominio)",
+      "descricao": "CORRIGIDO. Esquema nao-web era aceito. Agora so' http e https contam.",
+      "cenario_de_falha": "uma fonte real mais um file://qualquer/x com sha256 fabricado satisfaziam K=2."
+    },
+    {
+      "severidade": "baixo",
+      "local": "tools/research_evidence.py (avaliar)",
+      "descricao": "CORRIGIDO. `ratificado_por: true` virava a string 'True'. Ratificacao e' uma pessoa, com nome.",
+      "cenario_de_falha": "registro com booleano no campo passava sem ninguem assumir o numero."
+    },
+    {
+      "severidade": "baixo",
+      "local": "guia/SETUP.md (passo 4 do runbook)",
+      "descricao": "CORRIGIDO. O texto sugeria gate duro ('instalacao que nao executa o proprio portao nao esta instalada') mas o mecanismo emite AVISO e roda um subconjunto, nao a suite inteira. Overclaim em documentacao.",
+      "cenario_de_falha": "leitor confia que a verificacao barra instalacao com canario vermelho; ela nao barra."
+    },
+    {
+      "severidade": "baixo",
+      "local": "tools/squad_gate.py (_research_atestada)",
+      "descricao": "NAO corrigido, declarado. O gate descarta a saida da ferramenta, entao 'reprovou' e 'quebrou' chegam iguais ao operador. Nao afeta a decisao (ambos bloqueiam) mas atrapalha o diagnostico.",
+      "cenario_de_falha": "ferramenta quebra por defeito de ambiente e o operador ve so' 'FALTA research_ou_ratificacao', sem o motivo."
+    },
+    {
+      "severidade": "baixo",
+      "local": "tools/research_evidence.py (funcao dominio)",
+      "descricao": "LIMITE DECLARADO, nao corrigido por decisao: subdominios do mesmo site contam como dois. Fechar exigiria lista de sufixos publicos, que e' dependencia externa, e a fraude exige ma-fe ativa.",
+      "cenario_de_falha": "docs.x.com e api.x.com satisfazem K=2 sendo o mesmo site."
+    }
+  ],
+  "escopo_paths": [
+    "tools/research_evidence.py",
+    "tools/test_research_evidence.py",
+    "tools/squad_gate.py",
+    "bootstrap.py",
+    "tools/test_bootstrap_check.py",
+    "guia/SETUP.md",
+    "capabilities.json"
+  ],
+  "atestacao": {
+    "agentId": "ac1a25fa751b6e0ea",
+    "modelo": "claude-fable-5",
+    "modelo_autor": "claude-opus-5",
+    "isolamento": "subagente qa-critic isolado, revisao na arvore de trabalho com proibicao explicita de comando destrutivo; devolveu a arvore como encontrou e declarou a unica escrita que fez",
+    "instrucao": "hipotese default de defeito; construir a burla concreta da contagem de dominios em vez de opinar sobre ela",
+    "cadeia": "1a rodada sobre este bloco; 8a da sessao"
+  },
+  "postura": {
+    "rrc": "PASSA — o critico construiu as burlas com comando reproduzivel e refez a prova de mutacao do canario de instalacao por conta propria, sem aceitar a do autor.",
+    "metodo_senior": "N/A: fecha peca faltante de ADR ja aceito e estende ferramenta existente.",
+    "discovery": "leitura do manifesto para saber o que a ferramenta deveria conferir, antes de escrever; e inventario dos guias existentes antes de propor runbook novo",
+    "fonte_canonica": false,
+    "lacunas_declaradas": "punycode/IDN nao testado; comportamento numa maquina realmente limpa nao testado; a matriz do manifesto nao foi lida pelo critico"
+  },
+  "nao_verificado": [
+    "punycode e nomes internacionalizados na contagem de dominios — mesma classe das duas burlas corrigidas",
+    "bootstrap --check numa maquina realmente limpa, sem git no PATH e com Python 3.8",
+    "o comportamento de classify() do squad_gate para os paths regulados — o critico assumiu, nao leu a matriz"
+  ],
+  "data": "2026-08-16T14:30:00Z"
+}

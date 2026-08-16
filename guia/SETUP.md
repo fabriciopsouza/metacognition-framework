@@ -3,6 +3,61 @@
 > Ponto de entrada. Não duplica os outros guias — aponta para eles.
 > Ferramenta-alvo: **Claude Code no VS Code**.
 
+## Instalar numa máquina nova — quatro passos, o último confere os outros três
+
+Este é o runbook. Ele é curto de propósito: **o que garante que a instalação funcionou não é o
+texto, é o passo 4.** Um roteiro em prosa promete; a verificação prova. Se o passo 4 reprovar, ele
+diz exatamente o que falta e como resolver — você não descobre errando, um erro por vez.
+
+**1. Clonar — não baixar o `.zip`.**
+
+```
+git clone https://github.com/fabriciopsouza/metacognition-framework
+cd metacognition-framework
+```
+
+O `.zip` não traz o histórico do git, e vários portões do framework leem histórico para decidir.
+Sem ele, eles não falham: **passam mentindo**. Por isso a verificação trata `.zip` como bloqueio.
+
+**2. Conferir o pré-requisito.** Python 3.8 ou mais novo, e `git` no `PATH`. Nada além disso — o
+núcleo não instala biblioteca nenhuma, de propósito, para rodar em máquina corporativa travada.
+
+**3. Instalar.**
+
+```
+python bootstrap.py
+```
+
+Funciona sem privilégio de administrador e sem PowerShell — é para isso que ele existe (ADR-047).
+Espelha as skills para `~/.claude/`, ativa o perfil sem hooks e cria seu cofre local. Rodar duas
+vezes não quebra nada. Em máquina onde o PowerShell roda liberado, `bootstrap.ps1` ativa também os
+hooks automáticos.
+
+**4. Verificar — este passo é o runbook de verdade.**
+
+```
+python bootstrap.py --check
+```
+
+Ele responde uma coisa só: **esta instalação funciona?** Distingue o que impede de operar
+(`BLOQUEIA`) do que apenas reduz garantia (`AVISA`), e cada pendência vem com o comando que a
+resolve. Termina em `INSTALACAO OK` ou lista o que falta. Roda de novo quantas vezes quiser: não
+escreve nada, só lê.
+
+O que ele confere: versão do Python · `git` presente e repositório respondendo · os quatro
+arquivos sem os quais o framework não opera · o arquivo de configuração é JSON válido · as skills
+foram espelhadas · e, por fim, **executa um canário de sanidade de verdade** (`test_capabilities`,
+não a suíte inteira — a verificação precisa ser rápida o bastante para ser rodada).
+
+Esse último passo é **aviso, não bloqueio**: se o canário não passar, ele diz e manda você rodar
+`python tools/run_canaries.py` para ler o motivo, mas não impede a instalação de ser considerada
+utilizável. A distinção é proposital — canário vermelho pode ser defeito do repositório, e o
+runbook não é o lugar de julgar isso.
+
+> Se o passo 4 aprovar e mesmo assim algo falhar depois, isso é um furo na verificação, não azar.
+> Vale abrir como achado: o canário `tools/test_bootstrap_check.py` existe justamente para impedir
+> que ela aprove instalação quebrada.
+
 ## Os 3 modos de uso
 
 ### Modo 1 — Projeto novo (greenfield)

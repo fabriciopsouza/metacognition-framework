@@ -1408,6 +1408,54 @@
         "git",
         "determinismo"
       ]
+    },
+    {
+      "id": "research-evidence",
+      "title": "NAO SEI so vale depois de busca provada: >= K dominios distintos com prova, ou ratificacao humana",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/research_evidence.py",
+      "test": "tools/test_research_evidence.py",
+      "adr": "docs/adr/092-camada-enforcement-comportamentos-manifesto-gate-githook.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "mutacao": {
+        "arquivo": "tools/research_evidence.py",
+        "de": "    if len(doms) < k:",
+        "para": "    if False:",
+        "canario": "tools/test_research_evidence.py",
+        "espera": "mesmo dominio duas vezes NAO conta como triangulacao"
+      },
+      "tags": [
+        "anti-alucinacao",
+        "pesquisa",
+        "enforcement",
+        "squad"
+      ]
+    },
+    {
+      "id": "install-verification",
+      "title": "Instalar em qualquer PC com veredito: o que bloqueia, o que avisa, e como resolver cada um",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "bootstrap.py",
+      "test": "tools/test_bootstrap_check.py",
+      "adr": "docs/adr/047-modo-non-admin-single-source-multi-distribuicao.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "mutacao": {
+        "arquivo": "bootstrap.py",
+        "de": "    if not os.path.isdir(os.path.join(raiz, \".git\")):",
+        "para": "    if False:",
+        "canario": "tools/test_bootstrap_check.py",
+        "espera": "baixar o .zip em vez de clonar e' BLOQUEIO"
+      },
+      "tags": [
+        "instalacao",
+        "onboarding",
+        "runbook",
+        "non-admin"
+      ]
     }
   ],
   "registry_waivers": [
