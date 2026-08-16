@@ -20,6 +20,7 @@ output/
 .claude/.hooklive/
 .claude/.repo-sync-marker
 .claude/boot-proof.json
+.claude/closing-proof.json
 
 # ADR-084: marker de defasagem vs branch de integracao + ack (por branch/maquina — nunca versionar)
 .claude/.stale-vs-main
