@@ -15,6 +15,128 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.80.1] — 2026-08-16 — A prova de mutação não provava: crash em mecanismo não-Python e cache de bytecode (ADR-106, emendas 2 e 3)
+
+[CONSOLIDADO] · [CONFIRMADO — os três defeitos foram reproduzidos, dois por crítico independente e um por experimento determinístico]
+
+Correção do mecanismo criado no v1.80.0. Ao usá-lo para migrar o passivo, ele falhou de
+três formas distintas — e cada uma era a mesma classe que ele existe para impedir.
+
+- **Crash em mecanismo não-Python passava como prova.** A recusa de "vermelho por crash"
+  exigia o nome do arquivo sabotado no traceback. Um `.json` quebrado levanta
+  `JSONDecodeError`, cujo traceback cita o módulo `json` e nunca o arquivo de dados — a
+  recusa não disparava. Atingia `model-policy`, que declara `tools/model-policy.json` como
+  mecanismo. Agora a detecção é por delta: marca de crash que aparece depois e não aparecia
+  antes, sem depender de nome de arquivo.
+- **O sinal esperado podia ser um curinga.** Nada validava `mutacao.espera`; declarar
+  `"Error"` casava com o texto de quase toda exceção. Agora há piso de 12 caracteres e o
+  campo é proibido de conter sinal de crash — ele declara o que o gate imprime ao detectar,
+  não a exceção que ele levanta ao engasgar.
+- **A prova era anulável por cache de bytecode, de forma intermitente.** O Python reusa um
+  `.pyc` comparando tamanho e horário do fonte, com resolução de um segundo. Sabotagem que
+  preserva o tamanho e cai no mesmo segundo faz o interpretador rodar o código não sabotado:
+  o canário fica verde e o auditor conclui "não prova nada" sobre código que nunca executou.
+  Duas travas agora: `PYTHONDONTWRITEBYTECODE=1` e purga de `__pycache__` no worktree.
+
+Cobertura do canário: 22 → 28 verificações, cada guarda nova vista reprovando antes de valer.
+
+Passivo do ADR-106: 57 → 54. Migradas com prova verde `risk-gate`, `rules-parity-guard` e
+`autonomy-retry-policy`; capacidades em conformidade 24 → 27. Nenhuma entrou sem passar no
+`--provar`, conforme regra do qa-critic da rodada anterior.
+
+**A pendência acima foi fechada na mesma release.** O cache de bytecode afetava a suíte
+inteira, não só o auditor — e o executor que decide PASS/FAIL dos 67 canários **não tinha
+canário próprio**. Quem governa a suíte não era governado por ninguém.
+
+Duas correções minhas foram reprovadas pelo canário novo, nesta ordem:
+
+1. Proibir a escrita de bytecode. Reprovado: isso impede **escrever**, não impede **ler** um
+   arquivo compilado que já exista. Era a ressalva que o crítico tinha levantado como
+   suspeita — confirmada por execução, não por leitura.
+2. Proibir a escrita **e** apontar o cache para um diretório vazio. Funcionou e custou caro:
+   cada subprocesso passou a recompilar a biblioteca padrão inteira, e a suíte foi de 72s
+   para mais de dois minutos. Medido, não estimado.
+3. A que ficou: diretório de cache **novo a cada execução da suíte**, com escrita liberada.
+   Nada de antes pode ser lido e o custo é pago uma vez. Suíte: **72s → 76s**.
+
+O canário também precisou se corrigir: ele passava sozinho e reprovava **dentro** da suíte,
+porque herdava o ambiente já corrigido do executor e media o chamador em vez do código.
+
+Capacidades registradas: 81 → 82; com gate provado: 24 → **28**.
+
+### O fechamento passa a acontecer sem alguém pedir
+
+O espelho de consistência do fechamento existia desde o ADR-030 e **nunca foi ligado a evento
+nenhum** — nem hook, nem canário, nem chamada no fluxo. Havia hooks no início da sessão, no
+prompt, antes e depois de ferramenta e na compactação; **nada no encerramento**. É a falha
+catalogada duas vezes: *"gate existe mas não disparou em 7 fechamentos"*.
+
+Portado de PowerShell para Python (a classe de hook comprovadamente viva nesta máquina) e cabeado
+no evento de fim de sessão. Sete dimensões: versão do README × CHANGELOG, ADR parado em Proposto,
+checkpoint ausente, ADR com número duplicado, commits não enviados, rascunho esquecido e relatório
+do bloco. **Fail-soft por desenho** — hook que bloqueia sessão é hook que alguém desliga; a lei
+continua sendo o canário de release. O `.ps1` virou encaminhador para o Python: uma lógica só,
+dois pontos de entrada, sem risco de divergirem.
+
+Na primeira execução ele achou uma inconsistência real que estava no backlog como "canário
+inexistente": README em 1.79.0 contra CHANGELOG em 1.80.1.
+
+### O framework deixa de ser passivo diante de um pedido
+
+A norma *"o pedido do dono não é imune a questionamento"* era prosa: dependia de alguém lembrar de
+consultar o registro de decisões. Caso real desta sessão — um pedido colidia com uma dívida aberta
+pelo próprio dono três dias antes, e a colisão só apareceu porque um crítico independente foi
+varrer os registros. Uma rodada inteira de agente para o que é consulta determinística.
+
+`decisoes_que_governam.py` cruza registro de capacidades × ADRs × dívidas abertas e responde:
+**quais decisões governam isto, e quais têm dívida em aberto.** Código de saída 2 quando há —
+o sinal de trazer o conflito à mesa antes de executar. Não julga, não bloqueia, não obriga
+ninguém a discordar: "gate de discordância obrigatória" produziria discordância-formulário, o
+teatro que o próprio framework existe para pegar.
+
+Capacidades: 82 → **83**; com gate provado: **29**. Suíte: **70 PASS · 1 SKIP · 0 FAIL** de 71
+canários.
+
+## [1.80.0] — 2026-08-14 — Prova de mutação para capacidade `fail-closed`: verde só conta depois de saber ficar vermelho (ADR-106)
+
+[EMERGENTE] · [CONFIRMADO — nasce de falha medida três vezes, uma delas fora do framework]
+
+**Origem.** Auditoria, a pedido do dono, de um gate num projeto que usa o framework. O teste que
+anunciava *"9/9 — o gate BLOQUEIA mesmo"* continuou **9/9 com toda a lógica do gate apagada**:
+conferia só `rc != 0`, e outra checagem já derrubava o processo. Reproduzido por crítico
+independente em modelo diferente do autor.
+
+**O que a auditoria expôs dentro de casa.** A mesma classe já tinha acontecido duas vezes — ADR-096
+achado A2 (canário aferia só o `returncode`; a mutação passava) e v1.79.0 (canário fazia monkeypatch
+da própria função que deveria testar). O ADR-096 registra *"provado por mutação"*: **a técnica já
+existia, funcionava, e nunca virou exigência.** Passivo medido: 80 capacidades, 35 sem campo
+`enforcement`, 22 `fail-closed` nunca sabotadas para conferir, zero auditores.
+
+**Entregue (ADR-106, emenda ao ADR-015):** `tools/audit_enforcement.py` — capacidade que declara
+`fail-closed` declara também a mutação que faz seu canário falhar, em campos executáveis; o modo
+`--provar` aplica a mutação num worktree isolado e **exige vermelho**. Recusa mutação que não sabota
+(`de` == `para`), mutação obsoleta e canário que já estava vermelho antes. Decisão do dono sobre
+escopo: **(a) fail-closed para capacidade nova · (b) advisory para o passivo**, congelado e **pinado
+por sha256** em `_meta/enforcement-baseline.json`. Mais a rule **#12** do `qa-critic` e o canário
+`tools/test_audit_enforcement.py` (**19 verificações**), que roda o auditor contra o
+`capabilities.json` real — é isso que faz do modo (a) um gate de CI e não um script manual —,
+**prova a mutação de si mesmo** e exercita o modo `--provar` contra um repo-fixture.
+
+**A rodada 1 foi REPROVADA pelo crítico adversarial, e o achado bloqueante foi contra este próprio
+texto:** o ADR afirmava que as três fraudes tinham *"cada uma seu caso de teste"* e uma não tinha —
+o crítico sabotou essa checagem e o canário seguiu verde. Afirmação antes da verificação, no
+documento que institui a norma contra isso. Corrigido na rodada 2, junto com: cross-check entre a
+mutação e o `mechanism`/`test` reais da capacidade, pino do passivo (fechando o escape de
+simplesmente acrescentar o próprio id à lista), `git worktree prune` contra órfão, e — na rodada 3 — o fechamento do buraco residual em que omitir `mechanism`/`test` desligava o cross-check em silêncio. Mais um defeito que
+a cobertura nova revelou — `--gerar-baseline` gravava o arquivo e **depois** quebrava ao formatar
+caminho fora do repo.
+
+**Régua §0:** adição pura, sem porta (a)/(b)/(c). Segue por **override explícito do dono**, com
+condição de quitação escrita no ADR: migrar o passivo.
+
+**Não mecanizado, declarado:** coerência entre o adjetivo do índice e o campo `enforcement`; e a
+migração das 57 capacidades do passivo.
+
 ## [1.79.0] — 2026-08-13 — Padrão documental de projeto (ADR-102), matriz de revisão ampliada e desacoplamento da ativação do gate e da extração do P14 (ADR-103, ADR-104, ADR-105)
 
 [EMERGENTE] · [CONFIRMADO — os dois ADRs nascem de falha observada na própria sessão]

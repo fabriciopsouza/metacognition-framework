@@ -1,7 +1,7 @@
 <!-- GERADO por tools/build_capabilities.py a partir de capabilities.json — NAO editar a mao -->
 # CAPABILITIES — indice de capacidades (nivel 1: id + title)
 
-> **80 capacidades** — 69 ✅ PROVIDES · 11 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
+> **83 capacidades** — 72 ✅ PROVIDES · 11 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
 > **Como usar (file-first, boot):** leia esta lista p/ achar o `id`; o registro completo (mecanismo · canario · ADR · doc) vem por **`python tools/build_capabilities.py --show <id>`** ou `grep -A8 '"<id>"' capabilities.json`. Nao reexplore o repo antes disto.
 > **Manutencao:** feature nova -> +1 registro em `capabilities.json` + `python tools/build_capabilities.py`. Canario barra canario orfao (cobertura).
 
@@ -28,16 +28,18 @@
 - ✅ `autonomy-retry-policy` — Dial retry/escalate por MODO (ADR-087): HITL escala na 1a falha; autosuficiente auto-retenta subindo a escada de modelo ate budget, escala por ultimo
 - ✅ `boot-self-check` — Self-check de boot consolidado (sync+agnosticismo+boot-scan+versao) com prova checavel
 - ✅ `byo-ci-gate` — Gate de merge dirigido pelos canarios LOCAIS (BYO-CI) — a seguranca do GHA sem GHA: posta commit-status verde so com 0 FAIL; branch protection exige o context
+- ✅ `canary-runner-bytecode-isolation` — O executor da suite nao pode ser enganado por bytecode velho
 - ✅ `capability-index` — Indice de capacidades derivado + canario anti-drift
 - ✅ `clean-env-gate` — Teste porta-do-usuario + ambiente limpo (sem residuo de dev na entrega)
 - ✅ `compaction-gate` — Bloqueia compaction sem digest persistido (history.md sem checkpoint), fail-open
 - ✅ `completeness-gate` — Cobertura escopo-pedido x entrega: quantificador sem criterio em validation falha
 - ✅ `consistency-closing-ci` — Consistencia de fechamento FAIL-CLOSED no CI (dim do consistency-gate que o hook PS vetado nao enforcava)
-- 🟡 `consistency-gate` — Auditoria de fechamento (version-sync, adr-status, checkpoint, unpushed), fail-soft
+- 🟡 `consistency-gate` — Espelho de consistencia no FECHAMENTO, cabeado no evento Stop (7 dimensoes)
 - ✅ `context-brief-gate` — Contexto inferido vira ancora de pesquisa mecanizada (reparo do discovery)
 - ✅ `context-budget-gate` — context-budget: hook PreToolUse(Read) anuncia FRACIONAR (doc-intake) em fonte grande + tool chamavel
 - ✅ `context-budget-hook` — Hook PreToolUse(Read) que anuncia context-budget (mecaniza doc-intake p/ contexto maior; nao-bloqueante, fail-open)
 - ✅ `core-no-vendor` — Pureza do nucleo: nenhum nome de PRODUTO/VENDOR externo no conteudo operativo (_shared/.agent/skills/roteador); proveniencia so nos ADRs. Regression-guard do 'repo nao tem produtos' (P12)
+- ✅ `decisoes-que-governam` — Colisao entre o pedido e decisao ja registrada vira consulta deterministica
 - ✅ `delivery-floor-gate` — Piso de entregabilidade ao humano (teste binario de entrega minima)
 - ✅ `dev-dogfood-gate` — Dev-dogfood DETERMINISTA: master fechando bloco DEVE ter execution-report + handoff cross-IA (nao opt-in, shadow-aware)
 - ✅ `discovery-eval` — Discovery com eval executado (nao so prosa de plano)
@@ -45,6 +47,7 @@
 - 🟡 `edge-case-hunter` — Percurso mecanico exaustivo de paths nao tratados — output JSON verificavel
 - ✅ `effect-gate` — Action-safety por EFEITO: classifica acao destrutiva e pede confirmacao (T3)
 - ✅ `elicitation-gate` — Elicitation-first VINCULANTE antes de implementar sobre indicador/metrica/regra de dominio de risco alto: ficha de insumo (6 campos) nao-skippavel mesmo em autosuficiente (enforcement, nao skill nova)
+- ✅ `enforcement-mutation-audit` — Prova de mutacao obrigatoria: capacidade fail-closed declara a sabotagem que deixa seu canario VERMELHO
 - ✅ `entrypoint-tty-gate` — Entrypoint nao depende de TTY (roda em CI/headless)
 - ✅ `external-work-provenance` — Carimbo de PROCEDENCIA em trabalho executado FORA do repo: PROCEDENCIA.md com framework/versao/commit/sessao deterministicos + status por artefato (MINUTA/PROPOSTA/MIGRADO/APROVADO)
 - ✅ `handoff-generator` — Gerador deterministico do Pacote de handoff P14 do estado do repo + sugestao de modelo (papel+risco)

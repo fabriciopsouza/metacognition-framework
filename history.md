@@ -9,6 +9,108 @@
 
 ---
 
+## 2026-08-16 — Release v1.80.1 (PATCH): a prova de mutação não provava — três defeitos no auditor recém-nascido (ADR-106, emendas 2 e 3)
+
+O dono abriu a sessão pedindo sete coisas do framework: gates e canários que sejam reais e não
+vazios; determinismo onde hoje só há prosa; comunicação direta e sem jargão interno; documentação
+ágil de projeto com status report; que tudo se atualize sem cobrança humana; e que o framework
+critique tudo o que ele pedir, **inclusive ele mesmo** — *"não deve e NÃO PODE ser passivo"*.
+
+**A crítica veio antes do plano.** Um crítico independente (Fable) cruzou os sete pedidos com o
+que o framework já decidiu em meses. Resultado que mudou a ordem de ataque: os pedidos 1 e 2 são
+**a mesma ação** e o mecanismo foi aceito dois dias antes (ADR-106) — falta quitar, não inventar.
+O pedido 5 **colide** com a dívida do ADR-102, cuja condição de quitação é aplicar o padrão num
+segundo projeto antes de promovê-lo. E quatro dos sete repetem tentativas já registradas no
+`## Aprendizado` como fracassos. Decisões do dono: começar por 1+2, CSV antes de xlsx, adiar o 5.
+
+**Correção de premissa, medida ao vivo:** hooks **Python funcionam** nesta máquina — um deles
+disparou durante a auditoria. O que quebra é menor e consertável: o gate de consistência não está
+ligado a evento nenhum e não existe hook de fim de sessão. O pedido 6 não depende do antivírus.
+
+**Três defeitos no auditor, cada um a classe que ele existe para impedir.** Os dois primeiros
+vieram do qa-critic Sonnet, que **reprovou**: crash em mecanismo `.json` escapava da recusa
+(o traceback do `JSONDecodeError` nunca cita o arquivo de dados, e `model-policy` é exatamente
+isso), e `mutacao.espera` aceitava curinga tipo `"Error"`. O terceiro apareceu na própria
+migração: a prova era **anulável por cache de bytecode**. Sabotagem que preserva o tamanho do
+arquivo e cai no mesmo segundo faz o Python rodar o bytecode velho — o canário fica verde e o
+auditor conclui "não prova nada" sobre código que nunca executou. Intermitente, portanto pior que
+ausente. Provado congelando o `mtime`: cache ligado → verde; desligado → vermelho.
+
+**Um quarto defeito foi contra o próprio trabalho.** O caso de teste novo do mecanismo `.json`
+passava **pelo motivo errado**: o traceback imprime a linha de código, e a fixture tinha o literal
+`dados.json` escrito nela. Só apareceu porque cada guarda foi sabotada para conferir se sabia
+ficar vermelha — a guarda que não mudou de cor denunciou o teste, não o código.
+
+**Entregue:** 22 → 28 verificações, cada guarda nova vista reprovando antes de valer; passivo
+57 → 54, com `risk-gate`, `rules-parity-guard` e `autonomy-retry-policy` migradas sob a regra do
+segundo crítico (só entra no registro depois de `--provar` verde). `byo-ci-gate` e
+`qa-evidence-gate` ficaram de fora: seus canários **não cobrem** os caminhos sabotados — dívida
+nomeada, não prova forçada.
+
+**O achado colateral foi fechado na mesma sessão (emenda 4).** O cache afetava a suíte inteira, e
+o executor que decide PASS/FAIL dos 67 canários **não tinha canário próprio** — quem governa a
+suíte não era governado por ninguém. **Duas correções minhas foram reprovadas pelo canário novo
+antes de a terceira valer:** proibir a escrita de bytecode não impede a *leitura* de um arquivo
+compilado que já exista (era a suspeita do crítico, confirmada por execução); proibir escrita e
+apontar o cache para um diretório vazio funcionou e levou a suíte de 72s para mais de dois
+minutos, porque cada subprocesso recompilava a biblioteca padrão inteira. A que ficou: diretório
+novo por execução, com escrita liberada — 72s → 76s. O canário também se corrigiu: passava
+sozinho e reprovava dentro da suíte, porque herdava o ambiente já corrigido e media o chamador em
+vez do código. E a sabotagem declarada da capacidade nova era **neutralizada pelo próprio
+auditor**, que define a variável de ambiente que ela lia.
+
+**4ª rodada (Fable) aprovou sem ressalvas de código**, depois de refazer a sabotagem por conta
+própria e derrubar o ataque mais promissor por varredura: nenhum canário escreve `.py` sob a raiz
+do repositório, então o prefixo compartilhado não reabre o defeito entre canários.
+
+**Próximo passo:** item 6 dos sete pedidos — ligar o fechamento automático a um evento real. Os
+hooks Python **funcionam** nesta máquina (medido ao vivo), mas o gate de consistência não está
+ligado a evento nenhum e não existe hook de fim de sessão. Critério de aceite: fechar uma sessão
+sem pedir nada e o `history.md`, o registro de trabalhos e o status report saírem atualizados,
+com canário de release como lei para quando o hook não disparar.
+
+## 2026-08-14 — Release v1.80.0 (MINOR): prova de mutação para capacidade `fail-closed` — verde só conta depois de saber ficar vermelho (ADR-106)
+
+Bloco nascido **fora** do framework. O dono mandou auditar um gate de status de projeto no
+repositório `agente-copilot-studio` com uma pergunta seca: *"é real ou hardcodado? funciona
+de verdade ou engana?"*. O teste que sustentava aquele gate anunciava **9/9 verificações
+passaram**. Apagada **toda** a lógica de detecção do gate, o teste continuou **9/9** — porque
+conferia só `código de saída ≠ 0` e outra checagem já derrubava o processo. Crítico
+independente reproduziu.
+
+**O que isso expôs aqui dentro.** A mesma classe já tinha acontecido duas vezes: ADR-096
+achado A2 (canário aferia só o `returncode`; a mutação que removia o campo **passava**) e
+v1.79.0 (canário fazia *monkeypatch da própria função* que deveria testar). E o ADR-096
+registra, com todas as letras, *"provado por mutação"* — **a técnica já existia, funcionou,
+achou defeito real, e nunca virou exigência.** Dívida de institucionalização, não de invenção.
+
+Passivo medido antes da emenda: **80 capacidades · 35 sem nenhum campo `enforcement` · 22
+`fail-closed` que ninguém jamais sabotou para conferir · zero auditores**. O ADR-015 se chama
+"enforcement executável" e era, ele próprio, prosa não verificada.
+
+**Entregue:** `tools/audit_enforcement.py` — capacidade `fail-closed` declara a mutação que
+faz o canário dela falhar, em campos executáveis; `--provar` aplica num worktree isolado e
+**exige vermelho**. Recusa seis formas de fraude, cada uma com caso de teste nomeado. Decisão
+do dono sobre escopo: **(a) fail-closed para capacidade nova · (b) advisory para o passivo**,
+congelado e **pinado por sha256**. Mais a rule **#12** do `qa-critic` e
+`tools/test_audit_enforcement.py` (**19 verificações**), que roda o auditor contra o
+`capabilities.json` **real** — é essa chamada que faz do modo (a) um gate de CI e não um
+script que alguém precisa lembrar de rodar.
+
+**Três rodadas adversariais: `reprovar` → `corrigir` → `aprovar`.** Os dois bloqueantes da
+rodada 1 foram contra o **texto**, não contra o código: (i) o ADR afirmava que as três fraudes
+tinham *"cada uma seu caso de teste"* e **uma não tinha** — o crítico sabotou justamente essa
+checagem e o canário seguiu verde; (ii) nada chamava o auditor contra o estado real. A rodada 2
+achou o cross-check `mutacao` × `mechanism`/`test` sendo **opt-in**: bastava omitir os campos
+para a proteção sumir em silêncio. Afirmação antes da verificação, no documento que institui a
+norma contra isso — registrado no ADR porque é a melhor evidência de que a norma é necessária.
+
+**Régua §0:** adição pura, sem porta (a)/(b)/(c). Segue por **override explícito do dono**, com
+condição de quitação escrita: migrar o passivo. **Não mecanizado, declarado:** coerência entre
+o adjetivo do índice e o campo `enforcement`.
+
+**Próximo passo:** migrar o passivo das 57 capacidades, começando por `handoff-generator` — cada uma ganha `mutacao` provada ou é rebaixada ao `enforcement` que de fato tem; é a condição que quita o override da régua §0. (Campo em UMA linha de propósito: o extrator do P14 trunca na quebra, medido em 14/08 — pendência #1, decisão do dono.)
+
 ## 2026-08-13 — Release v1.79.0 (MINOR): padrão documental de projeto; matriz de revisão ampliada; ativação do gate desacoplada (ADR-102, ADR-103, ADR-104)
 
 Bloco nascido de uma **falha do próprio agente**, não de um pedido. Ao fechar a entrega
@@ -1064,6 +1166,14 @@ Riscos ativos: nenhum bloqueante. Risco residual ADR-010 §Riscos (detector de v
   quebrado, fronteira) para utilitário do framework **se e quando repetirem em três projetos** —
   aí o registro sobe de `PARTIAL/prose` para `PROVIDES` com canário. Gatilho: toda vez que um
   segundo projeto adotar o padrão, reavaliar (a).
+  **[2026-08-16 — DECISÃO DO DONO que desfaz um impasse do desenho original]** A condição (a)
+  era circular e ninguém tinha notado: o padrão só seria promovido depois de um segundo projeto
+  usá-lo, mas nenhum segundo projeto consegue usá-lo enquanto ele não estiver na `main`. O dono
+  apontou a circularidade e decidiu: **o padrão sobe para a `main` marcado como pendente de
+  validação em segundo projeto, e a marca só sai depois desse uso.** Disponibilidade e prova
+  deixam de ser a mesma coisa. O override continua aberto — o que mudou é que agora ele *pode*
+  ser quitado. Marca sugerida: campo `status: PARTIAL` + `validado_em_projetos: 1` no registro da
+  capacidade, conferido pelo canário do registro.
 
 > WIP atual (ex-G11). Reconciliar com branches do git e ADRs em status `Proposto` no `/start-session` (modo squad).
 

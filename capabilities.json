@@ -278,7 +278,14 @@
         "anti-drift",
         "authority",
         "gate"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": "tools/check_rules_parity.py",
+        "de": "N_CANON = len(CANON)",
+        "para": "N_CANON = 3",
+        "canario": "tools/test_rules_parity.py",
+        "espera": "repo real deveria PASSAR mas reportou drift"
+      }
     },
     {
       "id": "handoff-generator",
@@ -495,17 +502,19 @@
     },
     {
       "id": "consistency-gate",
-      "title": "Auditoria de fechamento (version-sync, adr-status, checkpoint, unpushed), fail-soft",
+      "title": "Espelho de consistencia no FECHAMENTO, cabeado no evento Stop (7 dimensoes)",
       "status": "PARTIAL",
       "ai_owner": "claude",
-      "mechanism": "tools/hooks/consistency-gate.ps1",
+      "mechanism": "tools/hooks/consistency_gate.py",
       "adr": "docs/adr/030-consistency-gate-auditoria-de-fechamento.md",
       "cross_ai": false,
       "tags": [
         "doc-sync",
         "gate",
         "closure"
-      ]
+      ],
+      "test": "tools/test_consistency_gate.py",
+      "enforcement": "fail-soft"
     },
     {
       "id": "adr-changelog-sync",
@@ -1001,7 +1010,14 @@
         "deterministic",
         "external-integration",
         "canary"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": "tools/risk_score.py",
+        "de": "HITL_MIN_SCORE = 6",
+        "para": "HITL_MIN_SCORE = 99",
+        "canario": "tools/test_risk_score.py",
+        "espera": "hitl_required esperado True (tem um 6), veio False"
+      }
     },
     {
       "id": "byo-ci-gate",
@@ -1038,7 +1054,14 @@
         "hitl",
         "external-integration",
         "canary"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": "tools/autonomy_policy.py",
+        "de": "CAP_ORDER = [\"haiku\", \"sonnet\", \"opus\", \"fable\"]",
+        "para": "CAP_ORDER = [\"fable\", \"opus\", \"sonnet\", \"haiku\"]",
+        "canario": "tools/test_autonomy_policy.py",
+        "espera": "esperado retry/sonnet, veio escalate/None"
+      }
     },
     {
       "id": "core-no-vendor",
@@ -1285,6 +1308,71 @@
         "integridade",
         "anti-teatro",
         "auditoria"
+      ]
+    },
+    {
+      "id": "enforcement-mutation-audit",
+      "title": "Prova de mutacao obrigatoria: capacidade fail-closed declara a sabotagem que deixa seu canario VERMELHO",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/audit_enforcement.py",
+      "test": "tools/test_audit_enforcement.py",
+      "adr": "docs/adr/106-prova-de-mutacao-para-capacidade-fail-closed.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "mutacao": {
+        "arquivo": "tools/audit_enforcement.py",
+        "de": "problema = \"declara `fail-closed` sem `mutacao` declarada\"",
+        "para": "problema = None",
+        "canario": "tools/test_audit_enforcement.py",
+        "espera": "[FALHA] nova `fail-closed` sem `mutacao` declarada"
+      },
+      "tags": [
+        "qa",
+        "anti-teatro",
+        "auditoria",
+        "enforcement"
+      ]
+    },
+    {
+      "id": "canary-runner-bytecode-isolation",
+      "title": "O executor da suite nao pode ser enganado por bytecode velho",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/run_canaries.py",
+      "test": "tools/test_run_canaries.py",
+      "adr": "docs/adr/106-prova-de-mutacao-para-capacidade-fail-closed.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "mutacao": {
+        "arquivo": "tools/run_canaries.py",
+        "de": "env = {**os.environ, \"PYTHONPYCACHEPREFIX\": str(prefixo_cache)}",
+        "para": "env = {k: v for k, v in os.environ.items() if k != \"PYTHONPYCACHEPREFIX\"}",
+        "canario": "tools/test_run_canaries.py",
+        "espera": "[FALHA] o ambiente do runner NAO e' enganado"
+      },
+      "tags": [
+        "qa",
+        "anti-teatro",
+        "canario",
+        "determinismo"
+      ]
+    },
+    {
+      "id": "decisoes-que-governam",
+      "title": "Colisao entre o pedido e decisao ja registrada vira consulta deterministica",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/decisoes_que_governam.py",
+      "test": "tools/test_decisoes_que_governam.py",
+      "adr": "docs/adr/051-reparo-discovery-contexto-inferido-pesquisa-ancora-mecanizada.md",
+      "cross_ai": false,
+      "enforcement": "advisory",
+      "tags": [
+        "postura",
+        "anti-passividade",
+        "decisoes",
+        "determinismo"
       ]
     }
   ],
