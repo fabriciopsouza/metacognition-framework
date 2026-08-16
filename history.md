@@ -9,6 +9,50 @@
 
 ---
 
+## 2026-08-16 — Release v1.80.1 (PATCH): a prova de mutação não provava — três defeitos no auditor recém-nascido (ADR-106, emendas 2 e 3)
+
+O dono abriu a sessão pedindo sete coisas do framework: gates e canários que sejam reais e não
+vazios; determinismo onde hoje só há prosa; comunicação direta e sem jargão interno; documentação
+ágil de projeto com status report; que tudo se atualize sem cobrança humana; e que o framework
+critique tudo o que ele pedir, **inclusive ele mesmo** — *"não deve e NÃO PODE ser passivo"*.
+
+**A crítica veio antes do plano.** Um crítico independente (Fable) cruzou os sete pedidos com o
+que o framework já decidiu em meses. Resultado que mudou a ordem de ataque: os pedidos 1 e 2 são
+**a mesma ação** e o mecanismo foi aceito dois dias antes (ADR-106) — falta quitar, não inventar.
+O pedido 5 **colide** com a dívida do ADR-102, cuja condição de quitação é aplicar o padrão num
+segundo projeto antes de promovê-lo. E quatro dos sete repetem tentativas já registradas no
+`## Aprendizado` como fracassos. Decisões do dono: começar por 1+2, CSV antes de xlsx, adiar o 5.
+
+**Correção de premissa, medida ao vivo:** hooks **Python funcionam** nesta máquina — um deles
+disparou durante a auditoria. O que quebra é menor e consertável: o gate de consistência não está
+ligado a evento nenhum e não existe hook de fim de sessão. O pedido 6 não depende do antivírus.
+
+**Três defeitos no auditor, cada um a classe que ele existe para impedir.** Os dois primeiros
+vieram do qa-critic Sonnet, que **reprovou**: crash em mecanismo `.json` escapava da recusa
+(o traceback do `JSONDecodeError` nunca cita o arquivo de dados, e `model-policy` é exatamente
+isso), e `mutacao.espera` aceitava curinga tipo `"Error"`. O terceiro apareceu na própria
+migração: a prova era **anulável por cache de bytecode**. Sabotagem que preserva o tamanho do
+arquivo e cai no mesmo segundo faz o Python rodar o bytecode velho — o canário fica verde e o
+auditor conclui "não prova nada" sobre código que nunca executou. Intermitente, portanto pior que
+ausente. Provado congelando o `mtime`: cache ligado → verde; desligado → vermelho.
+
+**Um quarto defeito foi contra o próprio trabalho.** O caso de teste novo do mecanismo `.json`
+passava **pelo motivo errado**: o traceback imprime a linha de código, e a fixture tinha o literal
+`dados.json` escrito nela. Só apareceu porque cada guarda foi sabotada para conferir se sabia
+ficar vermelha — a guarda que não mudou de cor denunciou o teste, não o código.
+
+**Entregue:** 22 → 28 verificações, cada guarda nova vista reprovando antes de valer; passivo
+57 → 54, com `risk-gate`, `rules-parity-guard` e `autonomy-retry-policy` migradas sob a regra do
+segundo crítico (só entra no registro depois de `--provar` verde). `byo-ci-gate` e
+`qa-evidence-gate` ficaram de fora: seus canários **não cobrem** os caminhos sabotados — dívida
+nomeada, não prova forçada.
+
+**Próximo passo:** decidir o achado colateral — o cache de bytecode afeta a suíte inteira, não só
+este auditor; um canário pode reportar verde ou vermelho por bytecode velho, e isso foi observado
+ao vivo na árvore principal com o fonte idêntico ao commit. Critério de aceite: `run_canaries.py`
+passa a purgar bytecode antes de rodar, com um caso que veja a purga reprovar antes de valer. Sem
+isso, os 67 canários herdam a mesma intermitência que acabamos de corrigir num só.
+
 ## 2026-08-14 — Release v1.80.0 (MINOR): prova de mutação para capacidade `fail-closed` — verde só conta depois de saber ficar vermelho (ADR-106)
 
 Bloco nascido **fora** do framework. O dono mandou auditar um gate de status de projeto no

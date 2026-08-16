@@ -15,6 +15,39 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.80.1] — 2026-08-16 — A prova de mutação não provava: crash em mecanismo não-Python e cache de bytecode (ADR-106, emendas 2 e 3)
+
+[CONSOLIDADO] · [CONFIRMADO — os três defeitos foram reproduzidos, dois por crítico independente e um por experimento determinístico]
+
+Correção do mecanismo criado no v1.80.0. Ao usá-lo para migrar o passivo, ele falhou de
+três formas distintas — e cada uma era a mesma classe que ele existe para impedir.
+
+- **Crash em mecanismo não-Python passava como prova.** A recusa de "vermelho por crash"
+  exigia o nome do arquivo sabotado no traceback. Um `.json` quebrado levanta
+  `JSONDecodeError`, cujo traceback cita o módulo `json` e nunca o arquivo de dados — a
+  recusa não disparava. Atingia `model-policy`, que declara `tools/model-policy.json` como
+  mecanismo. Agora a detecção é por delta: marca de crash que aparece depois e não aparecia
+  antes, sem depender de nome de arquivo.
+- **O sinal esperado podia ser um curinga.** Nada validava `mutacao.espera`; declarar
+  `"Error"` casava com o texto de quase toda exceção. Agora há piso de 12 caracteres e o
+  campo é proibido de conter sinal de crash — ele declara o que o gate imprime ao detectar,
+  não a exceção que ele levanta ao engasgar.
+- **A prova era anulável por cache de bytecode, de forma intermitente.** O Python reusa um
+  `.pyc` comparando tamanho e horário do fonte, com resolução de um segundo. Sabotagem que
+  preserva o tamanho e cai no mesmo segundo faz o interpretador rodar o código não sabotado:
+  o canário fica verde e o auditor conclui "não prova nada" sobre código que nunca executou.
+  Duas travas agora: `PYTHONDONTWRITEBYTECODE=1` e purga de `__pycache__` no worktree.
+
+Cobertura do canário: 22 → 28 verificações, cada guarda nova vista reprovando antes de valer.
+
+Passivo do ADR-106: 57 → 54. Migradas com prova verde `risk-gate`, `rules-parity-guard` e
+`autonomy-retry-policy`; capacidades em conformidade 24 → 27. Nenhuma entrou sem passar no
+`--provar`, conforme regra do qa-critic da rodada anterior.
+
+Pendência aberta e nomeada: o cache de bytecode afeta **toda** a suíte, não só este auditor —
+um canário pode reportar verde ou vermelho por bytecode velho. Observado ao vivo nesta sessão.
+Não corrigido aqui por ser escopo próprio.
+
 ## [1.80.0] — 2026-08-14 — Prova de mutação para capacidade `fail-closed`: verde só conta depois de saber ficar vermelho (ADR-106)
 
 [EMERGENTE] · [CONFIRMADO — nasce de falha medida três vezes, uma delas fora do framework]

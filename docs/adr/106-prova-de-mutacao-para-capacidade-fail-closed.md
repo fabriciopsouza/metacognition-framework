@@ -90,6 +90,61 @@ errado, e vermelho por crash. O caso do crash exige uma fixture em que o canári
 mecanismo; com a fixture antiga, que só lia o arquivo como texto, a sabotagem de sintaxe não
 matava ninguém e o caso não seria falsificável.
 
+## Emenda 2 (2026-08-15 — a recusa de crash não valia para mecanismo que não é Python)
+
+Reprovada pelo qa-critic (Sonnet isolado, autor Opus), dois achados ALTOS, ambos reproduzidos:
+
+1. **A recusa de "vermelho por crash" exigia o nome do arquivo no traceback.** Mecanismo `.json`
+   ou `.md` quebra com `JSONDecodeError`, cujo traceback cita `json/decoder.py` e **nunca** o
+   arquivo de dados. A recusa não disparava e o crash passava como prova. Não era hipotético:
+   `model-policy` tem mecanismo `tools/model-policy.json`.
+2. **Nada validava o conteúdo de `espera`.** Declarar `espera: "Error"` casa com o texto de quase
+   toda exceção. Somado ao achado 1, devolvia `[PROVADO]` para exatamente a fraude da Emenda 1.
+
+**O que muda.** Crash passa a ser detectado por **delta** — marca que aparece depois e não
+aparecia antes —, sem depender do nome do arquivo. E `espera` ganha piso de 12 caracteres e é
+proibida de conter sinal de crash: o campo declara a mensagem que o gate imprime ao **detectar**,
+não a exceção que ele levanta ao engasgar.
+
+**Limitação aceita** (achado MÉDIO do mesmo crítico): capacidade cujo gate sinaliza legitimamente
+por `ImportError` fica improvável por este auditor. É falso-negativo, lado seguro, registrado e
+não mascarado.
+
+## Emenda 3 (2026-08-15 — a prova era anulável por cache de bytecode, de forma intermitente)
+
+Achado durante a migração, medido e não suposto. `autonomy-retry-policy` foi recusado com
+*"o canário continuou VERDE"* — mas a mesma sabotagem, aplicada à mão no mesmo worktree, deixava
+o canário **vermelho**.
+
+**Causa.** O Python decide reusar um `.pyc` comparando **tamanho** e **horário** do fonte, e o
+horário tem resolução de **um segundo**. A execução "antes" compila o mecanismo; se a sabotagem
+for gravada dentro do mesmo segundo **e** mantiver o mesmo número de bytes, o interpretador roda o
+bytecode velho — o código sabotado nunca executa. A mutação testada trocava a ordem de quatro
+nomes numa lista: 48 bytes antes, 48 bytes depois.
+
+Prova determinística, congelando o `mtime` com `os.utime` para simular o mesmo segundo:
+
+    cache ligado    → canário VERDE   (prova perdida)
+    cache desligado → canário VERMELHO (correto)
+
+**Gravidade.** A prova era **intermitente**: dependia de a máquina ganhar ou perder a corrida do
+relógio. Prova que funciona às vezes é pior que prova ausente, porque parece funcionar. O
+mecanismo criado para impedir que "verde" signifique nada estava sendo enganado por um verde falso.
+
+**O que muda.** Duas travas, porque uma só seria confiança: `PYTHONDONTWRITEBYTECODE=1` nas duas
+execuções do canário, e purga de todo `__pycache__` do worktree antes da execução sabotada.
+
+**Cobertura:** 26 → 28 verificações. Uma exercita mutação do mesmo tamanho em mecanismo
+**importado** — a fixture `x.py` nunca pegou esta classe porque **lê** o arquivo como texto, e
+cache de bytecode só afeta importação. A outra confere as duas travas de forma determinística,
+porque a primeira só reprova quando a corrida é perdida, e canário que depende de sorte não é
+canário.
+
+**Achado colateral, não corrigido aqui.** O mesmo cache derrubou `test_autonomy_policy` na árvore
+principal com o fonte **idêntico ao commit** — o `.pyc` guardava o bytecode de uma sondagem.
+Qualquer canário da suíte pode reportar verde ou vermelho por cache velho, não só os deste
+auditor. Fica como pendência nomeada, para decisão do dono.
+
 ## Alternativas consideradas
 
 - **Fail-closed para tudo, já.** Rejeitada: 57 reprovações imediatas, incluindo o

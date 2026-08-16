@@ -1,25 +1,25 @@
-# Handoff — v1.80.0 · 2026-08-14T22:14:03-03:00 · papel-alvo: cross-ai
+# Handoff — v1.80.1 · 2026-08-16T00:18:21-03:00 · papel-alvo: developer
 
 > Pacote P14 (ADR-012) gerado DETERMINISTICAMENTE do estado do repo por `tools/handoff.py` (ADR-076).
 > Teste binario (P14): a proxima sessao comeca SEM perguntar nada de volta?
 
 ## [modelo sugerido] (regra papel+risco — ADR-076)
-- **Proxima sessao: `claude-fable-5`** (fable). Motivo: cross-ai -> tier max (fable): coordenacao cross-IA -> mais capaz.
+- **Proxima sessao: `claude-opus-4-8`** (opus). Motivo: developer -> tier baseline (opus): papel AUTORAL roda no baseline (= modelo padrao/standard); custo do erro a montante > custo do token (ADR-082). Subagente developer spawnado < baseline = proibido; risco sobrepoe p/ tier max..
 
 ## [P14] Artefato consumivel — com versao
-- Repo na versao **v1.80.0** (topo do CHANGELOG). Branch `docs/relatorio-sessao-2026-08-13` @ `8ddcfc8`.
+- Repo na versao **v1.80.1** (topo do CHANGELOG). Branch `docs/relatorio-sessao-2026-08-13` @ `bf9578b`.
 
 ## [P14] Localizacao
 - origin: https://github.com/fabriciopsouza/metacognition-framework
-- branch/commit: `docs/relatorio-sessao-2026-08-13` @ `8ddcfc8` · (sem PR aberto para esta branch)
+- branch/commit: `docs/relatorio-sessao-2026-08-13` @ `bf9578b` · (sem PR aberto para esta branch)
 - raiz absoluta desta copia: `C:\Users\fabriciosouza\metacognition-framework` (paths relativos abaixo ancoram AQUI)
 
 ## [P14] Acesso
-- Nao-protegido (recovery = conta GitHub): 7 commit(s) NAO-pushado(s), 4 arquivo(s) nao-commitado(s)
+- Nao-protegido (recovery = conta GitHub): 13 commit(s) NAO-pushado(s), 6 arquivo(s) nao-commitado(s)
 
 ## [P14] Prompt pronto-para-colar
-- **Papel:** cross-ai · **Modelo:** `claude-fable-5`
-- **Objetivo (do 'Proximo passo'):** migrar o passivo das 57 capacidades, começando por `handoff-generator` — cada uma ganha `mutacao` provada ou é rebaixada ao `enforcement` que de fato tem; é a condição que quita o override da régua §0. (Campo em UMA linha de propósito: o extrator do P14 trunca na quebra, medido em 14/08 — pendência #1, decisão do dono.)
+- **Papel:** developer · **Modelo:** `claude-opus-4-8`
+- **Objetivo (do 'Proximo passo'):** decidir o achado colateral — o cache de bytecode afeta a suíte inteira, não só
 - **Produz/decide:** execute o objetivo acima ate o criterio de aceite citado; rode `tools/run_canaries.py` antes de fechar.
 
 ## [P14] Pendencias e premissas herdadas
@@ -33,8 +33,8 @@
 
 ## Extensoes (ADR-016 — evita re-derivar)
 - **5 arquivos mais recentes:**
-  1. _meta/qa/release-1.80.0-prova-de-mutacao-adr-106.json
-  2. _meta/qa/release-1.80.0-prova-de-mutacao-adr-106.md
-  3. .agent/skills/qa-critic/rules.md
-  4. CAPABILITIES.md
-  5. CHANGELOG.md
+  1. capabilities.json
+  2. tools/audit_enforcement.py
+  3. tools/test_audit_enforcement.py
+  4. docs/adr/106-prova-de-mutacao-para-capacidade-fail-closed.md
+  5. _meta/qa/pr-118-recencia-do-veredito-no-squad-gate.json
