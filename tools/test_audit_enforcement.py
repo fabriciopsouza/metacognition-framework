@@ -170,11 +170,16 @@ def main():
         # com `JSONDecodeError`, cujo traceback cita `json/decoder.py` e NUNCA `dados.json` —
         # a escapatoria que o qa-critic achou em 2026-08-15. `model-policy` e' um caso real disto.
         (fix / "tools" / "dados.json").write_text('{"limite": 7}\n', encoding="utf-8")
+        # O nome do arquivo NAO pode aparecer na linha que falha: o traceback do Python imprime a
+        # linha de codigo, e um literal 'dados.json' ali dentro faz o nome surgir no traceback por
+        # acidente — foi assim que a 1a versao deste caso passou pelo motivo errado (medido por
+        # mutacao em 2026-08-15). Aqui o caminho e' montado antes e a falha ocorre em outra linha.
         (fix / "tools" / "test_dados.py").write_text(
             "import json, pathlib, sys\n"
-            "print('conferindo dados.json')\n"
-            "d = json.loads((pathlib.Path(__file__).parent / 'dados.json')"
-            ".read_text(encoding='utf-8'))\n"
+            "print('conferindo o arquivo de dados')\n"
+            "P = pathlib.Path(__file__).parent / ('dad' + 'os.js' + 'on')\n"
+            "bruto = P.read_text(encoding='utf-8')\n"
+            "d = json.loads(bruto)\n"
             "sys.exit(0 if d.get('limite') == 7 else 1)\n", encoding="utf-8")
         git = ["git", "-c", "user.email=c@x", "-c", "user.name=canario"]
         pronto = all(subprocess.run(c, capture_output=True, cwd=str(fix)).returncode == 0
