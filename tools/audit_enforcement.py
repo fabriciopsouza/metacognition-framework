@@ -42,6 +42,8 @@ NAO usa IA.
 """
 import argparse
 import json
+import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -69,6 +71,28 @@ CAMPOS_MUTACAO = ("arquivo", "de", "para", "canario", "espera")
 MARCAS_DE_CRASH = ("Traceback (most recent call last)", "SyntaxError", "IndentationError",
                    "ModuleNotFoundError", "ImportError", "JSONDecodeError",
                    "UnicodeDecodeError", "ParserError")
+
+# A prova NAO pode depender de cache de bytecode. O Python decide reusar um `.pyc` comparando
+# TAMANHO e HORARIO do fonte, e o horario tem resolucao de 1 SEGUNDO. A execucao "antes" compila
+# o mecanismo; se a sabotagem for gravada dentro do mesmo segundo E mantiver o mesmo numero de
+# bytes, o interpretador reusa o bytecode velho e roda o codigo NAO sabotado — o canario fica
+# verde e o auditor conclui "nao prova nada" sobre codigo que nunca executou.
+#
+# Medido em 2026-08-15 com `autonomy-retry-policy`: a mutacao trocava a ordem de 4 nomes numa
+# lista, 48 bytes antes e 48 depois. O resultado alternava entre correto e errado conforme a
+# maquina ganhasse ou perdesse a corrida do relogio — uma prova INTERMITENTE, que e' pior que
+# uma prova ausente, porque parece funcionar.
+#
+# Duas travas, porque uma so seria confianca: nao escrever bytecode nenhum, e apagar o que
+# porventura exista antes de rodar o canario sabotado.
+ENV_SEM_BYTECODE = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
+
+
+def _purgar_bytecode(raiz_wt):
+    """Remove todo `__pycache__` sob o worktree — cinto e suspensorio do ENV acima."""
+    for cache in Path(raiz_wt).rglob("__pycache__"):
+        shutil.rmtree(cache, ignore_errors=True)
+
 
 # Tamanho minimo de `mutacao.espera`. Achado ALTO do mesmo qa-critic: sem piso, `espera: "Error"`
 # casa com o texto de praticamente qualquer excecao — o sinal declarado vira curinga e a prova
@@ -215,7 +239,8 @@ def modo_provar(caps, alvo, raiz=RAIZ):
                     continue
                 # 1) o canario passa ANTES da mutacao?
                 antes = subprocess.run([sys.executable, "-X", "utf8", str(canario)],
-                                       capture_output=True, text=True, cwd=str(wt))
+                                       capture_output=True, text=True, cwd=str(wt),
+                                       env=ENV_SEM_BYTECODE)
                 saida_antes = (antes.stdout or "") + (antes.stderr or "")
                 if antes.returncode != 0:
                     falhas.append((cid, "canario ja estava VERMELHO antes da mutacao "
@@ -229,8 +254,10 @@ def modo_provar(caps, alvo, raiz=RAIZ):
                     continue
                 # 2) sabota e exige vermelho PELO MOTIVO DECLARADO
                 alvo_f.write_text(original.replace(m["de"], m["para"], 1), encoding="utf-8")
+                _purgar_bytecode(wt)
                 dep = subprocess.run([sys.executable, "-X", "utf8", str(canario)],
-                                     capture_output=True, text=True, cwd=str(wt))
+                                     capture_output=True, text=True, cwd=str(wt),
+                                     env=ENV_SEM_BYTECODE)
                 alvo_f.write_text(original, encoding="utf-8")
                 saida_dep = (dep.stdout or "") + (dep.stderr or "")
                 # Deteccao por DELTA, nao por nome de arquivo: marca de crash que NAO existia

@@ -165,7 +165,10 @@ def main():
             "sys.path.insert(0, str(pathlib.Path(__file__).parent))\n"
             "import y\n"
             "print('conferindo y.py')\n"
-            "sys.exit(0 if y.VALOR == 42 else 1)\n", encoding="utf-8")
+            "if y.VALOR != 42:\n"
+            "    print('DETECTOU: y.VALOR fora do declarado')\n"
+            "    sys.exit(1)\n"
+            "sys.exit(0)\n", encoding="utf-8")
         # Par dados.json/test_dados: mecanismo que NAO e' Python. Quebrar o JSON mata o canario
         # com `JSONDecodeError`, cujo traceback cita `json/decoder.py` e NUNCA `dados.json` —
         # a escapatoria que o qa-critic achou em 2026-08-15. `model-policy` e' um caso real disto.
@@ -252,6 +255,36 @@ def main():
             c, s = rodar(AUDITOR, caps, base, "--provar", "--raiz", str(fix))
             caso("crash em mecanismo .json (traceback sem o nome) e' barrado", 2,
                  "morreu processando", c, s, resultados)
+
+            # (i-i) mutacao que preserva o TAMANHO do arquivo, em mecanismo IMPORTADO. Se a prova
+            # aceitar cache de bytecode, o interpretador reusa o `.pyc` velho quando o horario cai
+            # no mesmo segundo, roda o codigo NAO sabotado e o canario fica verde — prova perdida,
+            # de forma intermitente. Medido em `autonomy-retry-policy` (48 bytes antes e depois),
+            # 2026-08-15. A fixture x.py nunca pegou isto porque LE o arquivo como texto; so
+            # mecanismo importado sofre.
+            caps, base = escrever(tmp, [{"id": "fi", "enforcement": "fail-closed",
+                "mechanism": "tools/y.py", "test": "tools/test_y.py", "mutacao": {
+                "arquivo": "tools/y.py", "de": "VALOR = 42", "para": "VALOR = 41",
+                "canario": "tools/test_y.py",
+                "espera": "DETECTOU: y.VALOR fora do declarado"}}])
+            c, s = rodar(AUDITOR, caps, base, "--provar", "--raiz", str(fix))
+            caso("mutacao do MESMO tamanho em modulo importado se prova", 0, "[provado]",
+                 c, s, resultados)
+
+            # (i-j) as duas travas contra cache de bytecode existem de fato. Deterministico:
+            # o caso (i-i) so reprova quando a corrida do relogio e' perdida, e canario que
+            # depende de sorte nao e' canario.
+            import importlib.util as _ilu
+            _spec = _ilu.spec_from_file_location("_audenf", AUDITOR)
+            _mod = _ilu.module_from_spec(_spec)
+            _spec.loader.exec_module(_mod)
+            ok_env = _mod.ENV_SEM_BYTECODE.get("PYTHONDONTWRITEBYTECODE") == "1"
+            _lixo = Path(tmp) / "pycache-probe" / "__pycache__"
+            _lixo.mkdir(parents=True, exist_ok=True)
+            (_lixo / "x.pyc").write_bytes(b"\x00")
+            _mod._purgar_bytecode(_lixo.parent)
+            caso("travas anti-cache de bytecode presentes (env + purga)", 0, "",
+                 0 if (ok_env and not _lixo.exists()) else 1, "", resultados)
 
             # (i-g) `espera` curta demais vira curinga: "Error" casa com qualquer excecao.
             # Achado ALTO 2 do mesmo crítico.

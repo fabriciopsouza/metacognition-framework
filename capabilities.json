@@ -278,7 +278,14 @@
         "anti-drift",
         "authority",
         "gate"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": "tools/check_rules_parity.py",
+        "de": "N_CANON = len(CANON)",
+        "para": "N_CANON = 3",
+        "canario": "tools/test_rules_parity.py",
+        "espera": "repo real deveria PASSAR mas reportou drift"
+      }
     },
     {
       "id": "handoff-generator",
@@ -1001,7 +1008,14 @@
         "deterministic",
         "external-integration",
         "canary"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": "tools/risk_score.py",
+        "de": "HITL_MIN_SCORE = 6",
+        "para": "HITL_MIN_SCORE = 99",
+        "canario": "tools/test_risk_score.py",
+        "espera": "hitl_required esperado True (tem um 6), veio False"
+      }
     },
     {
       "id": "byo-ci-gate",
@@ -1038,7 +1052,14 @@
         "hitl",
         "external-integration",
         "canary"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": "tools/autonomy_policy.py",
+        "de": "CAP_ORDER = [\"haiku\", \"sonnet\", \"opus\", \"fable\"]",
+        "para": "CAP_ORDER = [\"fable\", \"opus\", \"sonnet\", \"haiku\"]",
+        "canario": "tools/test_autonomy_policy.py",
+        "espera": "esperado retry/sonnet, veio escalate/None"
+      }
     },
     {
       "id": "core-no-vendor",
