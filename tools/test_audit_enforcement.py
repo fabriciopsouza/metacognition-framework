@@ -33,7 +33,7 @@ BASELINE_N = 80
 BASELINE_SHA = "242303796e01f06be26c5a9f4e2694f4121641d7876924e65f945e024828dc74"
 
 MUTACAO_OK = {"arquivo": "tools/x.py", "de": "return 1", "para": "return 0",
-              "canario": "tools/test_x.py"}
+              "canario": "tools/test_x.py", "espera": "DETECTOU"}
 
 
 def rodar(auditor, caps, baseline, *extra):
@@ -146,10 +146,26 @@ def main():
         (fix / "tools").mkdir(parents=True)
         (fix / "tools" / "x.py").write_text("# comentario inofensivo\nVALOR = 42\n",
                                             encoding="utf-8")
+        # O canario da fixture FALA: sem mensagem na saida nao da para testar a exigencia
+        # "vermelho pelo motivo declarado" (emenda 1). A linha 'conferindo x.py' sai SEMPRE
+        # e serve de isca para o caso que rejeita `espera` que ja aparece antes da mutacao.
         (fix / "tools" / "test_x.py").write_text(
             "import sys, pathlib\n"
+            "print('conferindo x.py')\n"
             "t = (pathlib.Path(__file__).parent / 'x.py').read_text(encoding='utf-8')\n"
-            "sys.exit(0 if 'VALOR = 42' in t else 1)\n", encoding="utf-8")
+            "if 'VALOR = 42' in t:\n"
+            "    sys.exit(0)\n"
+            "print('DETECTOU: VALOR alterado')\n"
+            "sys.exit(1)\n", encoding="utf-8")
+        # Par y/test_y: aqui o canario IMPORTA o mecanismo, entao sabotar a sintaxe o MATA.
+        # E' o unico jeito de exercitar a recusa de "vermelho por crash".
+        (fix / "tools" / "y.py").write_text("VALOR = 42\n", encoding="utf-8")
+        (fix / "tools" / "test_y.py").write_text(
+            "import sys, pathlib\n"
+            "sys.path.insert(0, str(pathlib.Path(__file__).parent))\n"
+            "import y\n"
+            "print('conferindo y.py')\n"
+            "sys.exit(0 if y.VALOR == 42 else 1)\n", encoding="utf-8")
         git = ["git", "-c", "user.email=c@x", "-c", "user.name=canario"]
         pronto = all(subprocess.run(c, capture_output=True, cwd=str(fix)).returncode == 0
                      for c in (["git", "init", "-q"], ["git", "add", "-A"],
@@ -158,27 +174,64 @@ def main():
             print("  [SKIP declarado] git indisponivel para montar o fixture — "
                   "modo --provar NAO exercitado nesta execucao.")
         else:
+            def cap_fx(**mut):
+                """Capacidade-fixture do par x/test_x, com a mutacao passada por campo."""
+                base_mut = {"arquivo": "tools/x.py", "de": "VALOR = 42", "para": "VALOR = 99",
+                            "canario": "tools/test_x.py",
+                            "espera": "DETECTOU: VALOR alterado"}
+                base_mut.update(mut)
+                return [{"id": "fx", "enforcement": "fail-closed", "mechanism": "tools/x.py",
+                         "test": "tools/test_x.py", "mutacao": base_mut}]
+
             # (i) mutacao que REALMENTE quebra -> o canario fica vermelho -> PROVADO
-            caps, base = escrever(tmp, [{"id": "fx", "enforcement": "fail-closed",
-                "mechanism": "tools/x.py", "test": "tools/test_x.py", "mutacao": {
-                "arquivo": "tools/x.py", "de": "VALOR = 42", "para": "VALOR = 99",
-                "canario": "tools/test_x.py"}}])
+            caps, base = escrever(tmp, cap_fx())
             c, s = rodar(AUDITOR, caps, base, "--provar", "--raiz", str(fix))
             caso("mutacao real derruba o canario", 0, "[provado]", c, s, resultados)
 
             # (ii) mutacao que o canario NAO enxerga -> auditor acusa, codigo 2
-            caps, base = escrever(tmp, [{"id": "fx", "enforcement": "fail-closed",
-                "mechanism": "tools/x.py", "test": "tools/test_x.py", "mutacao": {
-                "arquivo": "tools/x.py", "de": "# comentario inofensivo",
-                "para": "# nada muda", "canario": "tools/test_x.py"}}])
+            caps, base = escrever(tmp, cap_fx(de="# comentario inofensivo", para="# nada muda"))
             c, s = rodar(AUDITOR, caps, base, "--provar", "--raiz", str(fix))
             caso("canario cego a mutacao e' acusado", 2, "continuou verde", c, s, resultados)
+
+            # --- emenda 1: vermelho NAO basta; tem de ser vermelho pelo motivo declarado ---
+
+            # (i-b) mutacao sem o campo `espera` -> BARRA. Sem isto, a prova volta a conferir
+            # so o codigo de saida, que e' o achado 1 do proprio ADR-106.
+            sem_espera = cap_fx()
+            del sem_espera[0]["mutacao"]["espera"]
+            caps, base = escrever(tmp, sem_espera)
+            c, s = rodar(AUDITOR, caps, base, "--provar", "--raiz", str(fix))
+            caso("mutacao sem `espera` e' barrada", 2, "sem os campos: espera",
+                 c, s, resultados)
+
+            # (i-c) `espera` que o canario ja imprime SEMPRE -> nao distingue nada -> BARRA
+            caps, base = escrever(tmp, cap_fx(espera="conferindo x.py"))
+            c, s = rodar(AUDITOR, caps, base, "--provar", "--raiz", str(fix))
+            caso("`espera` que ja aparece antes da mutacao e' barrada", 2,
+                 "ja aparece na saida antes", c, s, resultados)
+
+            # (i-d) canario fica vermelho, mas a mensagem declarada nao aparece -> BARRA.
+            # E' o caso "reprovou por outro motivo" — vermelho por acidente nao e' prova.
+            caps, base = escrever(tmp, cap_fx(espera="MENSAGEM QUE NUNCA SAI"))
+            c, s = rodar(AUDITOR, caps, base, "--provar", "--raiz", str(fix))
+            caso("vermelho pelo motivo ERRADO e' barrado", 2, "nao pelo motivo declarado",
+                 c, s, resultados)
+
+            # (i-e) sabotagem que so quebra a SINTAXE mata o canario no import -> BARRA.
+            # Foi assim que a fraude foi medida em 2026-08-15: `imprt argparse` levava [PROVADO].
+            caps, base = escrever(tmp, [{"id": "fy", "enforcement": "fail-closed",
+                "mechanism": "tools/y.py", "test": "tools/test_y.py", "mutacao": {
+                "arquivo": "tools/y.py", "de": "VALOR = 42", "para": "VALOR = (42",
+                "canario": "tools/test_y.py", "espera": "y.VALOR divergiu"}}])
+            c, s = rodar(AUDITOR, caps, base, "--provar", "--raiz", str(fix))
+            caso("vermelho por CRASH (sintaxe quebrada) e' barrado", 2, "morreu carregando",
+                 c, s, resultados)
 
             # (iii) mutacao obsoleta (trecho `de` nao existe mais) -> acusa, nao passa calado
             caps, base = escrever(tmp, [{"id": "fx", "enforcement": "fail-closed",
                 "mechanism": "tools/x.py", "test": "tools/test_x.py", "mutacao": {
                 "arquivo": "tools/x.py", "de": "TRECHO QUE NAO EXISTE", "para": "z",
-                "canario": "tools/test_x.py"}}])
+                "canario": "tools/test_x.py", "espera": "DETECTOU: VALOR alterado"}}])
             c, s = rodar(AUDITOR, caps, base, "--provar", "--raiz", str(fix))
             caso("mutacao obsoleta e' acusada", 2, "obsoleta", c, s, resultados)
 
@@ -193,7 +246,7 @@ def main():
             caps, base = escrever(tmp, [{"id": "fx", "enforcement": "fail-closed",
                 "mechanism": "tools/x.py", "test": "tools/test_sempre_vermelho.py", "mutacao": {
                 "arquivo": "tools/x.py", "de": "VALOR = 42", "para": "VALOR = 99",
-                "canario": "tools/test_sempre_vermelho.py"}}])
+                "canario": "tools/test_sempre_vermelho.py", "espera": "irrelevante aqui"}}])
             c, s = rodar(AUDITOR, caps, base, "--provar", "--raiz", str(fix))
             caso("canario ja vermelho ANTES da mutacao e' acusado", 2,
                  "ja estava vermelho antes", c, s, resultados)

@@ -12,6 +12,20 @@ A REGRA (rule #12 do qa-critic)
 Capacidade que declara `fail-closed` declara TAMBEM a mutacao que faz o canario dela
 falhar. O modo `--provar` aplica essa mutacao num worktree isolado e EXIGE falha.
 
+EMENDA 1 (2026-08-15) — falha PELO MOTIVO CERTO, nao qualquer falha.
+O ADR-106 secao "Exigencias", item 2, manda conferir "a mensagem ou o codigo especifico,
+nunca so [o returncode]" — e esta implementacao conferia so o returncode. Medido: uma
+mutacao que trocava `import argparse` por `imprt argparse` (quebra de sintaxe, nada a ver
+com a logica do gate) era carimbada [PROVADO]. Era o achado 1 do proprio ADR reencarnado
+no auditor que o combate. A prova agora exige as tres coisas:
+  1. o canario esta VERDE antes da mutacao;
+  2. fica VERMELHO depois;
+  3. com a mensagem declarada em `mutacao.espera` na saida — mensagem que NAO podia
+     ja aparecer antes (senao qualquer palavra do cabecalho serviria).
+E recusa "vermelho por crash": se o canario morre carregando o arquivo sabotado
+(SyntaxError e afins citando o proprio arquivo), a prova e' invalida — quebrar o arquivo
+nao prova que o gate detecta.
+
 DECISAO DO DONO (2026-08-14), que este script mecaniza:
   (a) capacidade NOVA  -> fail-closed. Sem `mutacao` declarada, sai 1 e barra.
   (b) passivo herdado  -> advisory. Reporta, nao barra. O passivo esta congelado em
@@ -38,7 +52,16 @@ CAPS = RAIZ / "capabilities.json"
 BASELINE = RAIZ / "_meta" / "enforcement-baseline.json"
 
 # Campos que uma `mutacao` precisa ter para ser executavel — nao aceita prosa.
-CAMPOS_MUTACAO = ("arquivo", "de", "para", "canario")
+# `espera` entrou na emenda 1 (2026-08-15): sem ela, a prova conferia so `returncode != 0`,
+# que e' a fraude do achado 1 do proprio ADR-106 ("o canario aferia so o returncode").
+# Medido: uma mutacao que apenas quebrava a SINTAXE do mecanismo era carimbada [PROVADO].
+CAMPOS_MUTACAO = ("arquivo", "de", "para", "canario", "espera")
+
+# Sinais de que o canario MORREU ao carregar o arquivo sabotado em vez de DETECTAR a sabotagem.
+# Quebrar o arquivo nao prova que o gate detecta coisa alguma — prova que Python nao le codigo
+# invalido, o que ja se sabia.
+MARCAS_DE_CRASH = ("SyntaxError", "IndentationError", "ModuleNotFoundError",
+                   "ImportError", "Traceback (most recent call last)")
 
 
 def carregar_caps(p: Path):
@@ -171,21 +194,39 @@ def modo_provar(caps, alvo, raiz=RAIZ):
                 # 1) o canario passa ANTES da mutacao?
                 antes = subprocess.run([sys.executable, "-X", "utf8", str(canario)],
                                        capture_output=True, text=True, cwd=str(wt))
+                saida_antes = (antes.stdout or "") + (antes.stderr or "")
                 if antes.returncode != 0:
                     falhas.append((cid, "canario ja estava VERMELHO antes da mutacao "
                                         "— a prova nao diz nada"))
                     continue
-                # 2) sabota e exige vermelho
+                # A mensagem esperada nao pode ser algo que o canario ja imprime sempre:
+                # senao bastaria declarar uma palavra do cabecalho e a checagem seria vazia.
+                if m["espera"] in saida_antes:
+                    falhas.append((cid, f"`espera` ({m['espera']!r}) ja aparece na saida ANTES "
+                                        f"da mutacao — nao distingue detectado de rotina"))
+                    continue
+                # 2) sabota e exige vermelho PELO MOTIVO DECLARADO
                 alvo_f.write_text(original.replace(m["de"], m["para"], 1), encoding="utf-8")
                 dep = subprocess.run([sys.executable, "-X", "utf8", str(canario)],
                                      capture_output=True, text=True, cwd=str(wt))
                 alvo_f.write_text(original, encoding="utf-8")
+                saida_dep = (dep.stdout or "") + (dep.stderr or "")
+                nome_alvo = Path(m["arquivo"]).name
+                morreu = any(mk in saida_dep for mk in MARCAS_DE_CRASH) and nome_alvo in saida_dep
                 if dep.returncode == 0:
                     falhas.append((cid, f"canario `{m['canario']}` continuou VERDE com "
                                         f"`{m['arquivo']}` sabotado — nao prova nada"))
+                elif morreu:
+                    falhas.append((cid, f"canario MORREU carregando `{m['arquivo']}` sabotado "
+                                        f"(crash, nao deteccao) — quebrar o arquivo nao prova "
+                                        f"que o gate detecta; sabote a LOGICA, nao a sintaxe"))
+                elif m["espera"] not in saida_dep:
+                    falhas.append((cid, f"canario ficou vermelho, mas NAO pelo motivo declarado: "
+                                        f"`espera` ({m['espera']!r}) ausente da saida"))
                 else:
                     print(f"  [PROVADO] {cid}: mutacao em {m['arquivo']} deixou "
-                          f"{m['canario']} vermelho (codigo {dep.returncode})")
+                          f"{m['canario']} vermelho (codigo {dep.returncode}) "
+                          f"pelo motivo declarado ({m['espera']!r})")
             if falhas:
                 print(f"\n[FALHA] {len(falhas)} prova(s) de mutacao invalida(s):")
                 for cid, motivo in falhas:

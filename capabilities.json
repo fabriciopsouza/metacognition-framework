@@ -1301,7 +1301,8 @@
         "arquivo": "tools/audit_enforcement.py",
         "de": "problema = \"declara `fail-closed` sem `mutacao` declarada\"",
         "para": "problema = None",
-        "canario": "tools/test_audit_enforcement.py"
+        "canario": "tools/test_audit_enforcement.py",
+        "espera": "[FALHA] nova `fail-closed` sem `mutacao` declarada"
       },
       "tags": [
         "qa",

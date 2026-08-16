@@ -55,6 +55,41 @@ Três exigências:
 A divisão existe porque a alternativa — fail-closed retroativo — reprovaria 57 capacidades de uma
 vez e o time desligaria o auditor no primeiro dia. Passivo migra por decisão, não por susto.
 
+## Emenda 1 (2026-08-15 — a exigência 2 estava no texto e não no código)
+
+Ao começar a migrar o passivo, a primeira coisa medida foi o próprio auditor. Resultado:
+
+    # mutação que só quebra a sintaxe do mecanismo, sem tocar na lógica do gate
+    de:   "import argparse"    para: "imprt argparse"
+    → [PROVADO] mutacao em tools/risk_score.py deixou tools/test_risk_score.py vermelho
+
+O auditor conferia **apenas o código de saída**. É a ocorrência #1 da tabela de contexto deste
+mesmo ADR — *"o canário aferia só o `returncode`"* — reencarnada dentro do mecanismo criado para
+combatê-la. A exigência 2 ("falha pelo motivo certo") estava escrita na decisão e **não existia
+em código**: prosa dentro do ADR que institui o fim da prosa.
+
+**O que muda.** `mutacao` ganha um quinto campo obrigatório, `espera`: a mensagem que a saída do
+canário tem de conter **depois** da sabotagem. A prova passa a exigir três coisas, não uma:
+
+1. o canário está **verde antes** da mutação;
+2. fica **vermelho depois**;
+3. com a mensagem de `espera` na saída — e essa mensagem **não podia já aparecer antes**, senão
+   bastaria declarar uma palavra do cabeçalho e a checagem seria vazia.
+
+Mais uma recusa explícita: **vermelho por crash não é prova**. Se o canário morre ao carregar o
+arquivo sabotado (`SyntaxError` e afins citando o próprio arquivo), a prova é inválida. Quebrar um
+arquivo não demonstra que o gate detecta coisa alguma — demonstra que Python não lê código inválido.
+
+**Custo da migração:** uma linha. Só uma capacidade tinha `mutacao` quando a emenda foi escrita —
+o próprio `enforcement-mutation-audit`. As outras 22 `fail-closed` do passivo entram já sob a
+regra nova, o que é a razão de a emenda vir antes da migração e não depois.
+
+**Cobertura:** `tools/test_audit_enforcement.py` passa de 19 para 23 verificações, com um caso
+nomeado para cada nova recusa — sem `espera`, `espera` que já aparecia antes, vermelho pelo motivo
+errado, e vermelho por crash. O caso do crash exige uma fixture em que o canário **importa** o
+mecanismo; com a fixture antiga, que só lia o arquivo como texto, a sabotagem de sintaxe não
+matava ninguém e o caso não seria falsificável.
+
 ## Alternativas consideradas
 
 - **Fail-closed para tudo, já.** Rejeitada: 57 reprovações imediatas, incluindo o
