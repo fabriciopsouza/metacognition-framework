@@ -1,0 +1,72 @@
+{
+  "bloco": "release-1.86.0-vitrine-com-numeros-verificados",
+  "release": "1.86.0",
+  "papel": "qa_critic",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "sha_revisado": "ef63737",
+  "resumo": "Sonnet isolado contra autor Opus. R1 REPROVOU com achado ALTO que e o pior tipo possivel neste repositorio: OVERCLAIM MECANIZADO NA PAGINA INICIAL. A vitrine afirmava '38 de 89 capacidades tiveram o mecanismo SABOTADO de proposito'. O numero batia com o auditor, mas a FRASE era falsa para 27 delas — 'em conformidade' conta tambem quem declara protecao nao-bloqueante, sem sabotagem nenhuma; so 11 tem mutacao declarada. O critico mediu: 11 de 38 conformes tem campo mutacao. Ou seja, 71% do numero exibido nao sustentava a frase que o explicava, no site do repositorio cuja tese e que verde sem prova nao vale. Mais dois achados medios, ambos reais: a checagem COPIAVA a formula do auditor em vez de importa-la (mesma classe corrigida no test_qa_evidence na v1.85.0), e comparava substring no arquivo inteiro, cega a contexto — string dentro de comentario HTML satisfazia o gate com o numero visivel errado. Os tres corrigidos.",
+  "verificacoes_executadas": [
+    "R1 derivou os numeros por conta propria das fontes e confirmou que 89/38/51/77 batem com a vitrine — a aritmetica estava certa, a semantica nao",
+    "R1 mediu a decomposicao: 11 conformes com campo mutacao, 27 contadas so por declararem enforcement nao-bloqueante",
+    "R1 comparou a formula copiada no canario contra valida_mutacao do auditor real: 0 divergencias HOJE, mas por acaso e nao por garantia estrutural",
+    "R1 conferiu numeracao das secoes (00-11 sequencial) e ancoras do menu: todas resolvem, sem regressao",
+    "correcao do ALTO: a vitrine passa a separar os numeros e dizer o que cada um mede — 11 com sabotagem provada, 17 que declaram bloquear e nunca foram provadas, 27 com protecao mais fraca, 34 sem declaracao; e afirma explicitamente que 'conformidade' no registro nao significa 'foi sabotada'",
+    "correcao dos MEDIOS: a checagem passa a IMPORTAR valida_mutacao do auditor, e a busca acontece so dentro da secao #provas com os comentarios HTML removidos",
+    "os 3 ataques de evasao descritos pelo critico foram encenados e agora falham: numero visivel trocado -> codigo 1; numero certo escondido em comentario HTML -> codigo 1; numero certo fora da secao -> codigo 1; restaurado -> codigo 0",
+    "a propria secao da vitrine passou a registrar o episodio: diz que a 1a versao afirmava 38 sabotadas e que o critico mostrou ser falso para 27"
+  ],
+  "problemas": [
+    {
+      "severidade": "alto",
+      "local": "guia/web/index.html (secao #provas)",
+      "descricao": "CORRIGIDO. Overclaim mecanizado na pagina inicial: a frase afirmava sabotagem provada para 38 capacidades quando so 11 a tinham. O numero era verdadeiro; a explicacao dele nao.",
+      "cenario_de_falha": "leitor conclui que 38 mecanismos foram testados contra falha; o repositorio sustenta 11."
+    },
+    {
+      "severidade": "medio",
+      "local": "tools/test_marketing_claims.py (checagem g)",
+      "descricao": "CORRIGIDO. A regra de 'conforme' era copiada do auditor em vez de importada. Se valida_mutacao mudar, o canario continua validando pela formula velha.",
+      "cenario_de_falha": "auditor endurece a regra; a vitrine segue 'provada' pelo canario errado, sem o auditor concordar."
+    },
+    {
+      "severidade": "medio",
+      "local": "tools/test_marketing_claims.py (comparacao por substring)",
+      "descricao": "CORRIGIDO. Buscava a string no arquivo inteiro, cega a contexto e visibilidade.",
+      "cenario_de_falha": "inserir o numero certo num comentario HTML e trocar o visivel: o gate passava com a pagina exibindo numero incorreto."
+    },
+    {
+      "severidade": "baixo",
+      "local": "guia/web/index.html (afirmacao sobre o runner)",
+      "descricao": "NAO alterado, mas verificado apos a duvida do critico: a frase 'recusa arquivo que passaria sem executar assercao alguma' corresponde ao guard de canario cego em run_canaries.py, que existe e tem caso de teste. O critico nao o localizou por grep simples e declarou a duvida em vez de afirmar.",
+      "cenario_de_falha": "n/a — afirmacao confirmada."
+    }
+  ],
+  "escopo_paths": [
+    "guia/web/index.html",
+    "tools/test_marketing_claims.py"
+  ],
+  "atestacao": {
+    "agentId": "a73e377954c9dc393",
+    "modelo": "claude-sonnet-4-6",
+    "modelo_autor": "claude-opus-5",
+    "isolamento": "subagente qa-critic isolado, revisao na arvore de trabalho com proibicao de comando destrutivo; declarou explicitamente que nao encenou um dos ataques para nao sujar a arvore",
+    "instrucao": "hipotese default de defeito; conferir se a pagina afirma algo que o repositorio nao sustenta, e se a checagem que a guarda e forte ou teatro",
+    "cadeia": "R1 REPROVOU (1 ALTO, 2 MEDIOS) -> autor corrigiu os tres -> veredito registrado. 11a rodada da sessao."
+  },
+  "postura": {
+    "rrc": "PASSA — o critico nao se contentou em conferir a aritmetica: foi olhar o que o numero SIGNIFICA, decompos as 38 em 11 mais 27, e foi isso que revelou o overclaim. Conferir se a conta fecha teria aprovado a pagina.",
+    "metodo_senior": "N/A: revisao de vitrine e de canario, sem autoria de norma nova.",
+    "discovery": "derivou os numeros das fontes primarias antes de julgar o texto, em vez de comparar a pagina com o que o autor disse dela",
+    "fonte_canonica": false,
+    "lacunas_declaradas": "um dos tres ataques nao foi encenado pelo critico, so descrito — o autor encenou os tres depois; a integra das secoes a partir de #problema nao foi revisada"
+  },
+  "nao_verificado": [
+    "as secoes da vitrine a partir de #problema — o escopo foi a abertura, a secao #provas e a checagem nova",
+    "os web-bundles regenerados",
+    "se a proporcao entre o lado verificado e o nao-verificado continua justa apos a reescrita — o critico avaliou a versao anterior e a considerou proporcional; a nova nao passou por ele"
+  ],
+  "data": "2026-08-17T02:10:00Z"
+}

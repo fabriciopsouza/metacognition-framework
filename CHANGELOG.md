@@ -15,6 +15,41 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.86.0] — 2026-08-17 — A vitrine promete menos e prova mais, e não pode mais envelhecer mentindo
+
+[CONSOLIDADO] · [CONFIRMADO — os três números da página são derivados das mesmas fontes que o auditor usa]
+
+### A abertura prometia quatro coisas; agora afirma uma e a sustenta
+
+Era *"agentes que classificam o que sabem, lembram entre sessões, recusam-se a inflar e culminam
+em produto"* — quatro promessas empilhadas, nenhuma verificável por quem lê. Agora é uma ideia só:
+**onde verde significa alguma coisa.** Num repositório qualquer, um teste verde pode significar
+"está correto", "não testa nada" ou "testa o que já era verdade antes", e a diferença é invisível.
+Aqui ela é medida.
+
+### Seção nova, com os dois lados no mesmo destaque
+
+Do lado verificado: **38 de 89** capacidades tiveram o mecanismo sabotado de propósito com o teste
+apitando, **77 canários**, zero decisões pendentes de ratificação, zero ponteiros mortos nos guias.
+
+Do lado não verificado, com o mesmo peso visual: **51 capacidades** que estão verdes e ninguém
+checou se sabem ficar vermelhas — não são "provavelmente boas", são desconhecidas; o teto de
+auto-atestação (o agente escreve os registros que os verificadores leem); e o que não se mecaniza
+(ordem de etapa sim, ceticismo do crítico não).
+
+Fecha com o dado que mais convence e que não é retórica: numa única sessão, **seis de dez rodadas
+adversariais reprovaram**, e em cinco o defeito estava dentro do mecanismo criado para impedir
+aquele mesmo tipo de defeito.
+
+### O que impede a página de virar propaganda
+
+Número em página de divulgação envelhece calado: seis meses depois é propaganda, e propaganda
+desmentida pelo próprio repositório é pior que número nenhum. O canário de vitrine passa a
+**derivar os três números** de `capabilities.json` e da contagem de canários, e a exigir que a
+página os afirme. Divergiu, a suíte cai. Testado plantando um número falso.
+
+Suíte: **76 PASS · 1 SKIP · 0 FAIL** de 77.
+
 ## [1.85.0] — 2026-08-16 — Documentação de gestão que não envelhece: backlog, cronograma e status report derivados do estado real (ADR-102)
 
 [CONSOLIDADO] · [CONFIRMADO — 21 verificações; o gerador achou uma inconsistência real na primeira execução]

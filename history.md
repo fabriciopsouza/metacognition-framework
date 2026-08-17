@@ -13,6 +13,36 @@
 > **Poda de contexto (ADR-107):** este arquivo quente mantem os ultimos **10** checkpoints + `## Em aberto` + `## Aprendizado`. **56** checkpoints mais antigos estao em [`docs/history/history-archive.md`](docs/history/history-archive.md) (nada deletado — so realocado). Rotacao: `python tools/rotate_history.py`.
 <!-- history-archive-pointer -->
 
+## 2026-08-17 — Release v1.86.0 (MINOR): a vitrine promete menos, prova mais, e não pode mais envelhecer mentindo
+
+**Correção de premissa antes do trabalho.** O dono pediu para atualizar todas as distribuições
+relacionadas, dizendo que deveria ser automático. Eu tinha registrado que as cinco sombras estavam
+congeladas porque o GitHub Actions morreu por billing — **fui medir e não é mais verdade**. O
+workflow rodou três vezes no dia, todas com sucesso; as cinco estão no commit da v1.85.0, com as
+ferramentas novas presentes e o cofre `docs/_private/` ausente (404). Já era automático e já tinha
+funcionado. A memória foi corrigida, porque teria feito a próxima sessão refazer trabalho
+desnecessário. **O ponto único de falha continua real:** se o Actions cair de novo, as sombras
+envelhecem sem alarme — não existe canário comparando a versão delas com a do canônico. Candidato
+a próximo bloco.
+
+**A vitrine.** Ela já era boa, e a parte difícil ela acertava: tinha uma seção sobre o que os gates
+**não** resolvem, coisa que quase ninguém escreve. O defeito era outro — prometia em adjetivos onde
+podia provar em número. A abertura empilhava quatro promessas não-verificáveis; virou uma ideia só,
+*onde verde significa alguma coisa*, que é a tese real do repositório.
+
+Seção nova com os dois lados no mesmo destaque visual: o verificado (38 de 89 provadas, 77
+canários, zero pendências) e o não-verificado (51 desconhecidas, o teto de auto-atestação, o que
+não se mecaniza). Sem exagero e sem o inverso — modéstia performática é sicofância ao contrário.
+
+**O mecanismo que impede a página de virar propaganda.** Número em site de divulgação envelhece
+calado, e propaganda desmentida pelo próprio repositório é pior que número nenhum. O canário de
+vitrine passa a derivar os três números das mesmas fontes que o auditor usa e a exigir que a página
+os afirme. Provado plantando um número falso: fica vermelho.
+
+**Próximo passo:** o passivo de 51 capacidades — volume, não descoberta. E, como candidato de menor
+esforço e bom retorno, o canário de deriva das sombras: comparar a versão publicada em cada uma
+com a do canônico, para que o ponto único de falha deixe de ser silencioso.
+
 ## 2026-08-16 — Release v1.85.0 (MINOR): quadro de gestão que não envelhece, e dois canários que mentiam passam a cobrir o que prometem (ADR-102)
 
 **Documentação de gestão derivada, não digitada.** `tools/projeto_docs.py` monta backlog,

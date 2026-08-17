@@ -158,6 +158,7 @@
   <div class="wrap">
     <span class="brand">◇ Framework Metacognitivo</span>
     <span class="spacer"></span>
+    <a href="#provas">Provas</a>
     <a href="#problema">Por quê</a>
     <a href="#metodo">Método</a>
     <a href="#arquitetura">Arquitetura</a>
@@ -173,13 +174,14 @@
 <div class="wrap">
 
   <header>
-    <a class="ver" href="https://github.com/fabriciopsouza/metacognition-framework/releases/tag/v1.85.0">v<b>1.85.0</b> · release ↗</a>
+    <a class="ver" href="https://github.com/fabriciopsouza/metacognition-framework/releases/tag/v1.86.0">v<b>1.86.0</b> · release ↗</a>
     <div class="tag">Orquestração de agentes · Claude Code · open source</div>
-    <h1>Um núcleo <em>adaptável</em><br>para orquestrar agentes.</h1>
-    <p class="lede">Agentes de IA que <b>classificam o que sabem</b> e admitem o que não sabem,
-      <b>lembram entre sessões</b>, recusam-se a inflar, e <b>culminam em produto</b> — software ou
-      dados entregáveis, não mais uma parede de texto. Um método, não um framework rígido: adapta-se
-      ao seu contexto e ao seu código existente, sem forçar refatoração.</p>
+    <h1>Onde <em>verde</em><br>significa alguma coisa.</h1>
+    <p class="lede">Num repositório qualquer, um teste verde pode significar "está correto", "não
+      testa nada" ou "testa o que já era verdade antes" — e a diferença é invisível. Aqui ela é
+      medida: uma proteção só conta depois que alguém <b>sabotou o mecanismo de propósito e viu o
+      teste apitar</b>. O que não passou por isso fica declarado como desconhecido, não como
+      seguro.</p>
     <div class="btns">
       <a class="btn" href="https://github.com/fabriciopsouza/metacognition-framework">Ver no GitHub ↗</a>
       <a class="btn ghost" href="#comece">Como instalar</a>
@@ -187,8 +189,51 @@
     </div>
   </header>
 
+  <section id="provas">
+    <h2><span class="n">00</span>O que está provado, em número</h2>
+    <p class="sub">Estes valores são conferidos por um canário a cada execução da suíte. Se
+      divergirem do repositório, a suíte falha — esta página não pode envelhecer mentindo.</p>
+    <div class="story">
+      <div class="col good">
+        <h3>✓ Sabotagem provada</h3>
+        <ul>
+          <li><b>11 de 89</b> capacidades tiveram o mecanismo sabotado de propósito, e o teste
+            apitou. Só estas cabem na frase "está protegido" — é o padrão mais alto do repositório,
+            e ainda é o menor número da página.</li>
+          <li><b>77 canários</b> na suíte, cada um em processo próprio. O runner recusa arquivo que
+            passaria sem executar asserção alguma — defeito real que já ocorreu aqui.</li>
+          <li><b>Zero</b> decisões arquiteturais pendentes, zero ponteiros mortos nos guias, zero
+            divergência entre a versão do README e a do changelog.</li>
+        </ul>
+      </div>
+      <div class="col bad">
+        <h3>✗ Declarado, não provado</h3>
+        <ul>
+          <li><b>17 capacidades</b> dizem que bloqueiam falha e nunca foram sabotadas para
+            confirmar. Não são "provavelmente boas" — são <b>desconhecidas</b>, e estão nomeadas
+            uma a uma.</li>
+          <li><b>34</b> não declaram sequer como se protegem: são invisíveis para a auditoria.
+            Outras <b>27</b> declaram proteção não-bloqueante (aviso, registro, prosa) — contam
+            como em dia no registro, mas ninguém as sabotou.</li>
+          <li>O <b>agente escreve os registros</b> que os verificadores leem, e <b>qualidade de
+            raciocínio não se mecaniza</b>: ordem de etapa sim, ceticismo do crítico não.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="sub">A conta fecha em <b>89</b>: onze provadas, dezessete declaradas sem prova,
+      vinte e sete com proteção mais fraca, trinta e quatro sem declaração. O registro chama
+      <b>38 de 89</b> de "em conformidade" — mas conformidade ali significa "declarou algo
+      coerente", não "foi sabotada". Os dois números são verdadeiros e medem coisas diferentes;
+      quem confunde os dois está fazendo propaganda.</p>
+    <p class="sub">Numa única sessão de revisão adversarial, <b>seis de dez rodadas reprovaram</b> —
+      e em cinco o defeito estava dentro do mecanismo criado para impedir aquele mesmo tipo de
+      defeito. Inclusive esta seção: a primeira versão dela dizia "38 sabotadas", e o crítico
+      mostrou que era falso para vinte e sete. É o argumento mais forte a favor do crítico
+      independente, e ele não é teórico.</p>
+  </section>
+
   <section id="problema">
-    <h2><span class="n">00</span>O problema que ele resolve</h2>
+    <h2><span class="n">01</span>O problema que ele resolve</h2>
     <p class="sub">Por que orquestrar um agente é diferente de só "pedir para a IA fazer".</p>
     <div class="story">
       <div class="col bad">
@@ -215,7 +260,7 @@
   </section>
 
   <section id="metodo">
-    <h2><span class="n">01</span>Como funciona — o método</h2>
+    <h2><span class="n">02</span>Como funciona — o método</h2>
     <p class="sub">Seis comportamentos sênior, aplicados antes de cada entrega. Sem jargão: o que o
       agente realmente faz.</p>
     <div class="steps">
@@ -229,7 +274,7 @@
   </section>
 
   <section id="arquitetura">
-    <h2><span class="n">02</span>Arquitetura em camadas</h2>
+    <h2><span class="n">03</span>Arquitetura em camadas</h2>
     <p class="sub">Cada regra mora em um lugar só. O domínio (o seu negócio) nunca entra no núcleo —
       por isso o mesmo núcleo serve dev, dados, BI ou contexto regulado.</p>
     <div class="layers">
@@ -244,7 +289,7 @@
   </section>
 
   <section id="fluxo">
-    <h2><span class="n">03</span>Fluxo de trabalho</h2>
+    <h2><span class="n">04</span>Fluxo de trabalho</h2>
     <p class="sub">Da abertura ao fechamento — incremental, validado e rastreável. Cada seta é uma
       junção com um critério binário de passagem.</p>
     <div class="pipe">
@@ -264,7 +309,7 @@
   </section>
 
   <section id="principios">
-    <h2><span class="n">04</span>Princípios não-negociáveis</h2>
+    <h2><span class="n">05</span>Princípios não-negociáveis</h2>
     <p class="sub">O que o framework recusa abrir mão — mesmo sob pressão de "só dessa vez".</p>
     <div class="cards">
       <div class="card"><h3>Anti-alucinação</h3><p>Classifica tudo; diz <b>NÃO SEI</b> quando for; em vez de inventar nome, número ou sintaxe, sinaliza onde falta fonte.</p></div>
@@ -281,7 +326,7 @@
   </section>
 
   <section id="evidencia">
-    <h2><span class="n">05</span>Em que isso se baseia</h2>
+    <h2><span class="n">06</span>Em que isso se baseia</h2>
     <p class="sub">Não é opinião. Cada decisão é ancorada nas publicações de engenharia da Anthropic
       e em padrões abertos, destiladas em quatro estudos internos (A0–A3).</p>
     <div class="evidence">
@@ -297,7 +342,7 @@
   </section>
 
   <section id="seguranca">
-    <h2><span class="n">06</span>Segurança</h2>
+    <h2><span class="n">07</span>Segurança</h2>
     <p class="sub">Postura honesta de defesa-em-profundidade. A tese: <b>não confiar no raciocínio do agente</b> — gatear por <b>efeito</b>, não por intenção.</p>
     <div class="cards">
       <div class="card"><h3>Gate por efeito (não por intenção)</h3><p>Mesmo um agente enganado por <b>prompt injection</b> não causa dano irreversível: o efeito (E1–E6) é barrado antes de executar <b>(gate ativo por default; camada não-bypassável via managed-settings)</b>. Cobertura forte de "Excessive Agency" (OWASP LLM06).</p></div>
@@ -307,7 +352,7 @@
   </section>
 
   <section id="riscos">
-    <h2><span class="n">07</span>Operar código por IA — riscos e revisão humana</h2>
+    <h2><span class="n">08</span>Operar código por IA — riscos e revisão humana</h2>
     <p class="sub">Os gates <b>reduzem</b> o risco — não o eliminam. Operar código ou dados por IA exige julgamento humano. Sem maquiar:</p>
     <div class="cards">
       <div class="card"><h3>O que os gates NÃO resolvem</h3><p>Alucinação residual; ações <b>dentro do allowlist</b> (não-destrutivas, mas erradas); injeção via conteúdo externo; não-determinismo. O gate barra o catastrófico — não o "sutilmente errado". Garantia ≠ default (a dura exige managed-settings).</p></div>
@@ -317,7 +362,7 @@
   </section>
 
   <section id="construcao">
-    <h2><span class="n">08</span>Como o método foi construído</h2>
+    <h2><span class="n">09</span>Como o método foi construído</h2>
     <p class="sub">Sem exagero, sem megalomania. Destilado de pesquisa, construído por dogfooding, endurecido por falhas reais — inclusive as que o QA <b>não</b> pegou (e o humano pegou).</p>
     <div class="cards">
       <div class="card"><h3>Validação medida</h3><p>Roteamento dos papéis operacionais <b>33/33</b> (A–F; discovery em design-time); hooks com testes-canário que tentam furá-los; QA por modelo heterogêneo. Um caso real regulado validado com <b>delta 0.000000</b> contra o baseline.</p></div>
@@ -327,7 +372,7 @@
   </section>
 
   <section id="docs">
-    <h2><span class="n">09</span>Documentação completa</h2>
+    <h2><span class="n">10</span>Documentação completa</h2>
     <p class="sub">Tudo que acompanha o repositório, organizado por intenção — renderizado no GitHub (sempre na <code>main</code>).</p>
     <div class="docgrid">
       <div class="docgroup">
@@ -361,7 +406,7 @@
   </section>
 
   <section id="comece">
-    <h2><span class="n">10</span>Instalar e começar</h2>
+    <h2><span class="n">11</span>Instalar e começar</h2>
     <div class="stacknote"><b>✓ Testado e desenhado para o Claude Code</b> — é o runtime onde o framework foi validado.
       <b>Gemini e Copilot: em desenvolvimento</b> (ainda não validados). Em chat sem filesystem (Claude.ai, Gemini),
       apenas o <b>método</b> (não os hooks nem o enforcement — <b>exclusivos do Claude Code</b>) pode rodar via o
@@ -369,14 +414,14 @@
     <p class="sub">Quatro passos, sem quebra. <b>Por projeto você preenche só 2 arquivos</b> (<code>docs/briefing.md</code> — objetivo/escopo/aceite — e <code>.agent/rules/00-glossario.md</code> — nomes/termos); o resto a IA usa, e <b>não é rígido</b>: ela elicita por perguntas/inspeção se faltar.</p>
     <div class="steps">
       <div class="step"><div class="num">1</div><div><div class="t">Instale o Claude Code</div><div class="d">O runtime onde o framework foi testado e desenhado (CLI + extensão de VS Code). Instalação na doc oficial: <a href="https://code.claude.com/docs">code.claude.com/docs</a>.</div></div></div>
-      <div class="step"><div class="num">2</div><div><div class="t">Clone o repositório</div><div class="d">Ou <a href="https://github.com/fabriciopsouza/metacognition-framework/archive/refs/tags/v1.85.0.zip">baixe a release v1.85.0 (.zip)</a>:<span class="cmd">git clone https://github.com/fabriciopsouza/metacognition-framework</span></div></div></div>
+      <div class="step"><div class="num">2</div><div><div class="t">Clone o repositório</div><div class="d">Ou <a href="https://github.com/fabriciopsouza/metacognition-framework/archive/refs/tags/v1.86.0.zip">baixe a release v1.86.0 (.zip)</a>:<span class="cmd">git clone https://github.com/fabriciopsouza/metacognition-framework</span></div></div></div>
       <div class="step"><div class="num">3</div><div><div class="t">Rode o bootstrap — o "instalador"</div><div class="d">Idempotente (roda 2× sem quebrar): configura git, garante o <code>gh</code> CLI, espelha o framework. <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/bootstrap.ps1">bootstrap.ps1</a> · <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/bootstrap.sh">bootstrap.sh</a>:<span class="cmd">pwsh ./bootstrap.ps1        # Windows
 ./bootstrap.sh             # macOS / Linux</span></div></div></div>
       <div class="step"><div class="num">4</div><div><div class="t">Abra a pasta no VS Code e diga <b>"iniciar"</b></div><div class="d">O Claude Code lê o <code>CLAUDE.md</code> nativamente e o squad <b>acorda sozinho</b> (hooks de SessionStart: sincroniza o repo, confere o modo, lê o histórico). Diga <b>"iniciar"</b> para abrir a sessão pelo PMO — e traga seu pedido. O discovery conduz até a entrega validada.</div></div></div>
     </div>
     <div class="btns">
       <a class="btn" href="https://github.com/fabriciopsouza/metacognition-framework">Ver no GitHub ↗</a>
-      <a class="btn ghost" href="https://github.com/fabriciopsouza/metacognition-framework/archive/refs/tags/v1.85.0.zip">Baixar v1.85.0 (.zip)</a>
+      <a class="btn ghost" href="https://github.com/fabriciopsouza/metacognition-framework/archive/refs/tags/v1.86.0.zip">Baixar v1.86.0 (.zip)</a>
       <a class="btn ghost" href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/guia/INSTALAR-NO-VSCODE.md">Guia de instalação</a>
     </div>
   </section>
@@ -389,9 +434,9 @@
       <button class="sbtn" type="button" title="Instagram não compartilha link pela web — copie e cole no story/bio" onclick="navigator.clipboard&&navigator.clipboard.writeText('https://fabriciopsouza.github.io/metacognition-framework/');this.textContent='link copiado ✓'">Instagram (copiar link)</button>
     </div>
     <p><a href="https://github.com/fabriciopsouza/metacognition-framework">Repositório no GitHub ↗</a> ·
-       <a href="https://github.com/fabriciopsouza/metacognition-framework/releases/tag/v1.85.0">Release v1.85.0 ↗</a> ·
+       <a href="https://github.com/fabriciopsouza/metacognition-framework/releases/tag/v1.86.0">Release v1.86.0 ↗</a> ·
        <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/CHANGELOG.md">CHANGELOG</a></p>
-    <p>Framework Metacognitivo Agêntico · <b>v1.85.0</b> · PT-BR · CC BY 4.0 (livre para usar, adaptar e distribuir, com atribuição).</p>
+    <p>Framework Metacognitivo Agêntico · <b>v1.86.0</b> · PT-BR · CC BY 4.0 (livre para usar, adaptar e distribuir, com atribuição).</p>
     <p>Adaptável no método, especializado por clonagem. A bibliografia (A0–A3) e todo o histórico de decisões acompanham o repositório.</p>
   </footer>
 
