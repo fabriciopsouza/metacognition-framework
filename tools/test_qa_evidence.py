@@ -24,7 +24,14 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 QA_DIR = os.path.join(ROOT, "_meta", "qa")
-APPROVING = {"aprovar", "aprovar_com_ressalvas"}
+
+# APPROVING vem do MECANISMO, nao de uma copia local. A 1a versao redefinia o conjunto aqui — o
+# canario tinha a propria copia da regra e, por isso, NAO dependia do codigo que devia guardar:
+# alterar `APPROVING` em `qa_evidence.py` para aceitar "reprovar" nao deixava este canario
+# vermelho. Teste que duplica a regra em vez de importa-la nao testa nada; confirma a si mesmo.
+# Medido em 2026-08-16 ao sabotar a capacidade `qa-evidence-gate` e ver o verde persistir.
+sys.path.insert(0, os.path.join(ROOT, "tools"))
+from qa_evidence import APPROVING  # noqa: E402
 
 try:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")

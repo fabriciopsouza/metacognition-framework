@@ -1,0 +1,139 @@
+# Status report
+
+> Gerado por `python tools/projeto_docs.py` a partir do estado real do repositório.
+> Não é digitado: se o dado mudar, este arquivo muda na próxima execução.
+
+## Onde chegamos
+
+| release | data | o quê |
+|---|---|---|
+| 1.85.0 | 2026-08-16 | Documentação de gestão que não envelhece: |
+| 1.84.0 | 2026-08-16 | "O processo foi seguido?" deixa de ser opinião e vira número (ADR-097 Aceito) |
+| 1.83.0 | 2026-08-16 | "NÃO SEI" só vale depois de busca provada, e a instalação passa a se verificar (ADR-092 fechado… |
+| 1.82.0 | 2026-08-16 | O gate do squad passa a rodar sozinho: |
+| 1.81.0 | 2026-08-16 | Rotação determinística do history.md: |
+
+## Estado agora
+
+- Branch **feat/documentacao-de-gestao**, commit `a7d3606 fix: mutacao do conformance reapontada para alvo unicamente coberto`
+- Última tag: **v1.84.0**
+- Commits não enviados: **?**
+- Árvore de trabalho: **com alterações não commitadas**
+- Canários: **76 PASS · 1 SKIP · 0 FAIL (de 77 canários)**
+
+## O que falta
+
+| id | item | tipo | quem |
+|---|---|---|---|
+| B001 | Quitação do override da régua §0 do ADR-102 (aberto em 13/08/2026): | dívida | squad |
+| B002 | [2026-08-07] Débitos de fechamento do bloco v1.77.0 — 3 achados, NADA aplicado. | dívida | squad |
+| B003 | ADR-097 itens 4 e 5 do §Mecanismo (aberto em 16/08/2026, ao aceitar o ADR): | dívida | squad |
+| B004 | Pendência permanente (não-código, dono/TI): | dívida | squad |
+| B005 | Backlog ativo (trigger-gated, NÃO WIP): | dívida | squad |
+| B006 | Backlog ativo (trigger-gated, NÃO WIP): · Canário README × topo do CHANGELOG inexistente (dívida PRÉ-EXISTENTE exposta pelo qa-critic em v1. | dívida | squad |
+| B007 | Backlog ativo (trigger-gated, NÃO WIP): · 36 capabilities sem campo enforcement são invisíveis à auditoria anti-teatro (observado 2026-07-22 | dívida | squad |
+| B008 | Backlog ativo (trigger-gated, NÃO WIP): · Proveniência de raciocínio POR-TURNO (gap empírico 2026-06-22, sessão ee8a9a49): | dívida | squad |
+| B009 | Backlog ativo (trigger-gated, NÃO WIP): · Corrida do 1º prompt do liveness (route-gate dispara antes do carimbo dos SessionStart; | dívida | squad |
+| B010 | Backlog ativo (trigger-gated, NÃO WIP): · Cascata v1.55.0–v1.60.0 para os shadows via export-clean — trigger: | dívida | squad |
+| B011 | Backlog ativo (trigger-gated, NÃO WIP): · ADR-011 §Pendências: | dívida | squad |
+| B012 | Backlog ativo (trigger-gated, NÃO WIP): · ADR-011 §Pendências: | dívida | squad |
+| B013 | Backlog ativo (trigger-gated, NÃO WIP): · Item D4 (cross-platform hooks Linux/macOS port) — trigger: | dívida | squad |
+| B014 | Backlog ativo (trigger-gated, NÃO WIP): · Integração protocolo cross-IA no fluxo J0-J5 — trigger: | dívida | squad |
+| B015 | Passivo de prova: 51 capacidades sem gate provado | dívida | squad |
+
+## Ação
+
+Nenhum item bloqueado por decisão do dono. O squad segue pelo backlog acima.
+
+## Detalhe dos itens
+
+### B001 — Quitação do override da régua §0 do ADR-102 (aberto em 13/08/2026):
+
+_history.md · Em aberto_
+
+**Quitação do override da régua §0 do ADR-102** (aberto em 13/08/2026): o padrão documental entrou como **adição pura** sob override explícito do dono. Duas condições fecham o débito, e enquanto não fecharem o override permanece visível aqui: **(a)** aplicar o padrão em **dois projetos de portes diferentes** e registrar o que sobrou e o que faltou — os portes *mínimo* e *médio* do §3 são hoje **INFERIDOS** de um caso só; **(b)** extrair os gates 1 e 2 do §4 (link quebrado, fronteira) para utilitário do framework **se e quando repetirem em três projetos** — aí o registro sobe de `PARTIAL/prose` para `PROVIDES` com canário. Gatilho: toda vez que um segundo projeto adotar o padrão, reavaliar (a). **[2026-08-16 — DECISÃO DO DONO que desfaz um impasse do desenho original]** A condição (a) era circular e ninguém tinha notado: o padrão só seria promovido depois de um segundo projeto usá-lo, mas nenhum segundo projeto consegue usá-lo enquanto ele não estiver na `main`. O dono apontou a circularidade e decidiu: **o padrão sobe para a `main` marcado como pendente de validação em segundo projeto, e a marca só sai depois desse uso.** Disponibilidade e prova deixam de ser a mesma coisa. O override continua aberto — o que mudou é que agora ele *pode* ser quitado. Marca sugerida: campo `status: PARTIAL` + `validado_em_projetos: 1` no registro da capacidade, conferido pelo canário do registro.
+
+### B002 — [2026-08-07] Débitos de fechamento do bloco v1.77.0 — 3 achados, NADA aplicado.
+
+_history.md · Em aberto_
+
+**[2026-08-07] Débitos de fechamento do bloco v1.77.0 — 3 achados, NADA aplicado.** Handoff completo (com comando de re-validação e predicado "aplicar SÓ SE" por item) em `docs/_private/handoffs/2026-08-07-debitos-de-fechamento-v1.77.0.md`. Resumo: **F1** ordem do `history.md` invertida (v1.77.0 abaixo de v1.76.0) — quebra a invariante mais-novo-primeiro e faz `handoff.py` emitir o "Próximo passo" errado, em silêncio · **F2** tags `v1.76.0`/`v1.77.0` ausentes (local e `origin`) — **2ª ocorrência** da falha catalogada em 2026-06-02, gatilho atingido · **F3** registro do ADR-100 nunca alimentado (`~/.claude/trabalhos/` inexistente) — critério de aceite do próprio checkpoint não atendido; **não verificável de outra máquina**. Candidato §0: 2 asserções em `test_consistency_closing.py`, fundindo com o item de backlog "Canário README × topo do CHANGELOG". **Aplicar só após revisão e re-validação contra a versão vigente** — o handoff congela o estado em `main` @ `8820608`. Fechar = remover esta linha + checkpoint datado.
+
+### B003 — ADR-097 itens 4 e 5 do §Mecanismo (aberto em 16/08/2026, ao aceitar o ADR):
+
+_history.md · Em aberto_
+
+**ADR-097 itens 4 e 5 do §Mecanismo** (aberto em 16/08/2026, ao aceitar o ADR): a camada-mestra (canário fail-closed sobre o event log) está entregue; faltam o **hook PreToolUse** que nega ação de papel downstream sem PASS upstream — camada rápida, best-effort por desenho — e cabear o **HITL criptográfico** como pré-condição de ação T3 em bloco high-stakes (`verify_hitl_proofs.py` já existe; falta a ligação). Nenhum dos dois é pré-requisito da conformance: o ADR declara o canário como a lei e o hook como conveniência. Gatilho: dono declarar, ou primeira vez que uma ação downstream sem upstream passar despercebida até a release.
+
+### B004 — Pendência permanente (não-código, dono/TI):
+
+_history.md · Em aberto_
+
+**Pendência permanente (não-código, dono/TI):** exclusão do Kaspersky `.claude\hooks\*` (afeta só os hooks .ps1 remanescentes; ADR-060/079).
+
+### B005 — Backlog ativo (trigger-gated, NÃO WIP):
+
+_history.md · Em aberto_
+
+**Backlog ativo (trigger-gated, NÃO WIP):**
+
+### B006 — Backlog ativo (trigger-gated, NÃO WIP): · Canário README × topo do CHANGELOG inexistente (dívida PRÉ-EXISTENTE exposta pelo qa-critic em v1.
+
+_history.md · Em aberto › Backlog ativo (trigger-gated, NÃO WIP):_
+
+**Canário README × topo do CHANGELOG inexistente** (dívida PRÉ-EXISTENTE exposta pelo qa-critic em v1.73.0, 2026-07-22): a política do repo exige que README, tag e .zip subam junto com o CHANGELOG, mas **nenhum canário compara esse par**. `test_marketing_claims` cobre vitrine × README e **lê a versão do próprio README** — então README(1.72.0) × CHANGELOG(1.73.0) passou verde. Em v1.73.0 o sintoma foi corrigido à mão; o mecanismo não existe. **Candidato §0:** +1 asserção em `test_consistency_closing.py` (que já é o gate de version-claim), não canário novo. Trigger: 2ª ocorrência OU dono declarar.
+
+### B007 — Backlog ativo (trigger-gated, NÃO WIP): · 36 capabilities sem campo enforcement são invisíveis à auditoria anti-teatro (observado 2026-07-22
+
+_history.md · Em aberto › Backlog ativo (trigger-gated, NÃO WIP):_
+
+**36 capabilities sem campo `enforcement` são invisíveis à auditoria anti-teatro** (observado 2026-07-22 ao corrigir achado do qa-critic): entradas que **omitem** o campo não contam nem como OK nem como débito na lista `[debito-mecanizacao]` (P15/ADR-085) — o registro de v1.73.0 foi declarado `manual` e passou a aparecer, os outros 36 seguem fora do radar. Um mecanismo anti-teatro com ponto cego de 48% mede menos do que parece. **Candidato §0:** tornar o campo obrigatório em `test_capabilities.py` (fail-closed) e classificar os 36 num único passe. Trigger: dono declarar OU próxima revisão de P15.
+
+### B008 — Backlog ativo (trigger-gated, NÃO WIP): · Proveniência de raciocínio POR-TURNO (gap empírico 2026-06-22, sessão ee8a9a49):
+
+_history.md · Em aberto › Backlog ativo (trigger-gated, NÃO WIP):_
+
+**Proveniência de raciocínio POR-TURNO** (gap empírico 2026-06-22, sessão `ee8a9a49`): gates elicit/pesquisa/crítica são de **MARCO** (release/junção), não de TURNO — entre marcos, raciocínio sem gatilho nem recibo (o "tudo na mão" cobrado pelo dono). **Extratos:** 4 interações, único recibo = `.claude/boot-proof.json` (manual, pós-nag); `elicitation-gate`/`context-brief-gate`/`qa_evidence` não dispararam — sem ficha, sem brief, sem ledger novo. **Causa NÃO-EDR** (hooks cabeados + UserPromptSubmit dispara; atribuir a Kaspersky foi hint-virou-causa). **Candidato §0:** emissor por-turno (`PostToolUse`/fim-de-turno) que declara ao vivo + grava recibo, reusando `qa_evidence.py` como sink, com fallback inline — **NÃO reinventar** ledger, estender. Análogo: o "evento" do OpenMetadata vs. nossa proveniência por-marco. Trigger: dono declarar OU 2ª recorrência. Detalhe: `docs/research/OpenMetadata-analise-contribuicoes-processo-com-fontes.md` §Addendum 2026-06-22. Pré-gate: architect (ADR) + qa-critic heterogêneo.
+
+### B009 — Backlog ativo (trigger-gated, NÃO WIP): · Corrida do 1º prompt do liveness (route-gate dispara antes do carimbo dos SessionStart;
+
+_history.md · Em aberto › Backlog ativo (trigger-gated, NÃO WIP):_
+
+Corrida do 1º prompt do liveness (route-gate dispara antes do carimbo dos SessionStart; banner se auto-cura no 2º prompt — observado 2026-06-11 sessão `9f01bd9e`) — trigger: incomodar o dono OU 3ª ocorrência reportada. Candidato: tolerar carimbo < N min de outra sessão.
+
+### B010 — Backlog ativo (trigger-gated, NÃO WIP): · Cascata v1.55.0–v1.60.0 para os shadows via export-clean — trigger:
+
+_history.md · Em aberto › Backlog ativo (trigger-gated, NÃO WIP):_
+
+Cascata v1.55.0–v1.60.0 para os shadows via `export-clean` — trigger: decisão de publicação do dono.
+
+### B011 — Backlog ativo (trigger-gated, NÃO WIP): · ADR-011 §Pendências:
+
+_history.md · Em aberto › Backlog ativo (trigger-gated, NÃO WIP):_
+
+ADR-011 §Pendências: Alternativa 2 (rewind cirúrgico) — trigger: caso real onde cascata é custosa.
+
+### B012 — Backlog ativo (trigger-gated, NÃO WIP): · ADR-011 §Pendências:
+
+_history.md · Em aberto › Backlog ativo (trigger-gated, NÃO WIP):_
+
+ADR-011 §Pendências: validation.md projeto × release convergir templates — trigger: ficar pesado manter separado.
+
+### B013 — Backlog ativo (trigger-gated, NÃO WIP): · Item D4 (cross-platform hooks Linux/macOS port) — trigger:
+
+_history.md · Em aberto › Backlog ativo (trigger-gated, NÃO WIP):_
+
+Item D4 (cross-platform hooks Linux/macOS port) — trigger: user em PC não-Windows pedir.
+
+### B014 — Backlog ativo (trigger-gated, NÃO WIP): · Integração protocolo cross-IA no fluxo J0-J5 — trigger:
+
+_history.md · Em aberto › Backlog ativo (trigger-gated, NÃO WIP):_
+
+**Integração protocolo cross-IA no fluxo J0-J5** — trigger: 2ª sessão cross-IA real OU dono declarar. Problema: o protocolo hoje é bolt-on (ad-hoc, sem wiring em nenhuma junção, sem qa-critic gate, sem entrada automática em `history.md`). Candidatos: `docops §Encerramento` dispara `outbox→hub` no J5; `qa-critic` revisa conteúdo cross-IA antes do dispatch; threads abertas geram entrada em `## Em aberto` no boot seguinte; `consistency-gate` checa threads cross-IA no encerramento. Evidência empírica: sessão 2026-06-08 (thread atd36246-fefo-fifo, 3 rounds); gap registrado no round 3 (sealed-partial). ADR-espelho do lado claude-master = candidato arquitecto pós-gate.
+
+### B015 — Passivo de prova: 51 capacidades sem gate provado
+
+_capabilities.json_
+
+17 declaram bloquear falha e nunca foram sabotadas para conferir que o teste apita; 34 não declaram como se protegem e são invisíveis à auditoria. Migram uma a uma, cada uma só entra no registro depois da prova passar. Comando: python tools/audit_enforcement.py --passivo
+

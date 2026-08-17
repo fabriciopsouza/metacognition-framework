@@ -1,0 +1,92 @@
+{
+  "bloco": "release-1.85.0-quadro-de-gestao-e-canarios-que-mentiam",
+  "release": "1.85.0",
+  "papel": "qa_critic",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "sha_revisado": "a7d3606",
+  "resumo": "Fable isolado contra autor Opus. R1 REPROVOU com 4 achados, 2 ALTOS. O primeiro foi contra o canario do autor: o caso 'nota de higiene nao vira item' passava POR VACUO — a fixture punha a nota antes do primeiro item, onde o parser a descarta por outro motivo, entao sabotar a protecao nao deixava o teste vermelho. O segundo: os 9 sub-itens indentados colapsavam num card so, e como o verificador comparava apenas titulos, acrescentar trabalho novo nao mudava nada e o CSV velho seguia dado como em dia — item novo nunca virava card e nada apitava. Mais dois: o verificador rodava a suite inteira (98,6s medidos pelo critico) sob timeout de 120s com except-pass, fail-open por relogio; e o tracinho de fim de secao entrava no detalhe. Os quatro corrigidos. No mesmo bloco, por pedido explicito do dono, os DOIS canarios que nao cobriam o que prometiam foram consertados em vez de virarem divida.",
+  "verificacoes_executadas": [
+    "R1 conferiu o quadro gerado contra as fontes item a item: nenhum item de 1o nivel sumiu ou duplicou; CSV com aspas e virgulas escapadas corretamente, BOM correto para Excel e inocuo para Trello/Planner",
+    "R1 mediu o tempo real do --verificar: 98,6s contra timeout de 120s no gate — margem de ~20%",
+    "R1 provou 2 sabotagens por conta propria e restaurou por copia de backup, sem git, confirmando identidade byte a byte",
+    "R1 reportou que a 3a sabotagem (a do achado 1) ficou VERDE — e o defeito, nao falha da prova",
+    "correcao do achado 1: fixture passa a por a nota DEPOIS do primeiro item, como no history.md real; caso novo confere que a nota tambem nao gruda no detalhe. Sabotando o skip agora: [FALHA], codigo 1",
+    "correcao do achado 2: sub-item indentado vira card proprio (6 -> 15 cards no quadro real) e o --verificar compara os CSV byte a byte contra o que seria gerado agora",
+    "correcao do achado 3: --verificar deixa de montar a secao 'Estado agora', que rodava a suite e era descartada na comparacao",
+    "correcao do achado 4: o tracinho de fim de secao encerra a leitura",
+    "CONSERTO DOS DOIS CANARIOS FRACOS (pedido do dono, nao adiado): test_qa_evidence REDEFINIA a constante APPROVING em vez de importa-la do mecanismo — tinha a propria copia da regra e nao dependia do codigo que devia guardar; passa a importar. test_post_canary_status nao cobria o NOME do status publicado, unico elo com a protecao da branch; sabotando CONTEXT agora: 2 falhas nomeadas, codigo 1",
+    "canario do quadro: 21 -> 22 verificacoes"
+  ],
+  "problemas": [
+    {
+      "severidade": "alto",
+      "local": "tools/test_projeto_docs.py (fixture da nota de higiene)",
+      "descricao": "CORRIGIDO. O caso passava por vacuo: a nota vinha antes do primeiro item, onde o parser a descarta por outro motivo. Sabotar a protecao mantinha o verde.",
+      "cenario_de_falha": "trocar o skip da nota por 'if False:' e a suite inteira continuava PASS; no history.md real as notas vem depois do primeiro item e seriam coladas nele."
+    },
+    {
+      "severidade": "alto",
+      "local": "tools/projeto_docs.py (parser e --verificar)",
+      "descricao": "CORRIGIDO. Sub-itens colapsavam num card; o verificador comparava so titulos, entao mudanca em sub-item passava despercebida e CSV editado a mao passava verde.",
+      "cenario_de_falha": "acrescentar sub-bullet ao 'Backlog ativo': titulo do card inalterado, --verificar em dia, CSV stale."
+    },
+    {
+      "severidade": "medio",
+      "local": "tools/hooks/consistency_gate.py x tools/projeto_docs.py",
+      "descricao": "CORRIGIDO. O --verificar rodava a suite (98,6s) sob timeout de 120s com except-pass — dia lento deixava quadro desatualizado passar em silencio.",
+      "cenario_de_falha": "maquina com antivirus ativo ou cache frio: timeout estoura, gate registra em_dia=None e nao anota pendencia."
+    },
+    {
+      "severidade": "baixo",
+      "local": "tools/projeto_docs.py (fim de secao)",
+      "descricao": "CORRIGIDO. O tracinho apos a secao entrava no detalhe do ultimo item.",
+      "cenario_de_falha": "ultimo card terminava com o tracinho colado no texto."
+    },
+    {
+      "severidade": "alto",
+      "local": "tools/test_qa_evidence.py (constante duplicada)",
+      "descricao": "CORRIGIDO no mesmo bloco, a pedido do dono. O canario REDEFINIA APPROVING em vez de importar do mecanismo: nao dependia do codigo que devia guardar. Teste que duplica a regra confirma a si mesmo.",
+      "cenario_de_falha": "aceitar 'reprovar' como aprovativo em qa_evidence.py nao deixava o canario vermelho."
+    },
+    {
+      "severidade": "alto",
+      "local": "tools/test_post_canary_status.py (nome do check)",
+      "descricao": "CORRIGIDO no mesmo bloco. Nao cobria o nome do status publicado, unico elo entre o script e a protecao da branch.",
+      "cenario_de_falha": "trocar CONTEXT travaria TODO PR para sempre, sem canario nenhum apitar."
+    }
+  ],
+  "escopo_paths": [
+    "tools/projeto_docs.py",
+    "tools/test_projeto_docs.py",
+    "tools/hooks/consistency_gate.py",
+    "tools/test_consistency_closing.py",
+    "tools/test_qa_evidence.py",
+    "tools/test_post_canary_status.py",
+    "capabilities.json"
+  ],
+  "atestacao": {
+    "agentId": "ac5851bfca0eb3a2d",
+    "modelo": "claude-fable-5",
+    "modelo_autor": "claude-opus-5",
+    "isolamento": "subagente qa-critic isolado, revisao na arvore de trabalho com proibicao de comando destrutivo; devolveu identica e declarou cada escrita",
+    "instrucao": "hipotese default de defeito; comparar o quadro gerado contra as fontes nos DOIS sentidos e sabotar checagens diferentes das ja cobertas",
+    "cadeia": "R1 REPROVOU (2 ALTOS, 1 MEDIO, 1 BAIXO) -> autor corrigiu os 4 e mais 2 canarios fracos por pedido do dono -> veredito registrado. 10a rodada da sessao."
+  },
+  "postura": {
+    "rrc": "PASSA — o critico mediu o tempo real do verificador em vez de estimar, comparou o quadro contra as fontes item a item, e reportou explicitamente que uma das suas tres sabotagens ficou VERDE, identificando isso como o defeito e nao como falha do metodo dele.",
+    "metodo_senior": "N/A: ferramenta de gestao sob ADR ja aceito.",
+    "discovery": "inventario dos guias existentes antes de propor documento novo (nenhum foi criado: o runbook virou secao do SETUP.md); leitura das fontes reais antes de julgar o quadro",
+    "fonte_canonica": false,
+    "lacunas_declaradas": "importacao real no Trello/Planner nao testada, so conformidade de formato; o timeout nao foi induzido, foi inferido do tempo medido; veracidade factual do CONTEXTO.md nao conferida"
+  },
+  "nao_verificado": [
+    "importacao real dos CSV no Trello e no Planner — so conformidade de formato e nomes de coluna",
+    "o timeout de 120s induzido de verdade; foi inferido da medicao de 98,6s",
+    "a prova de mutacao da capacidade qa-evidence-gate so fica conclusiva depois deste veredito existir, porque ate agora o canario estava vermelho pela ausencia dele",
+    "veracidade factual dos numeros citados no CONTEXTO.md"
+  ],
+  "data": "2026-08-16T17:40:00Z"
+}

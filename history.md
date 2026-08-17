@@ -13,6 +13,47 @@
 > **Poda de contexto (ADR-107):** este arquivo quente mantem os ultimos **10** checkpoints + `## Em aberto` + `## Aprendizado`. **56** checkpoints mais antigos estao em [`docs/history/history-archive.md`](docs/history/history-archive.md) (nada deletado — so realocado). Rotacao: `python tools/rotate_history.py`.
 <!-- history-archive-pointer -->
 
+## 2026-08-16 — Release v1.85.0 (MINOR): quadro de gestão que não envelhece, e dois canários que mentiam passam a cobrir o que prometem (ADR-102)
+
+**Documentação de gestão derivada, não digitada.** `tools/projeto_docs.py` monta backlog,
+cronograma e status report a partir do que está aberto de fato — `## Em aberto`, ADRs em
+`Proposto`, o passivo medido, o CHANGELOG e o git. Na primeira execução cobrou uma dívida minha:
+um item listado como pendente que eu havia **entregue na release anterior** e esquecido de riscar.
+É exatamente o que quadro manual faz, e por isso ele não é manual. Sai em CSV que importa direto
+no Trello e no Planner; o `CONTEXTO.md` (objetivo, visão, quem é afetado, o que está em jogo) é o
+único escrito à mão, porque nenhum dado revela propósito.
+
+**O crítico reprovou com dois achados altos, e o primeiro foi contra o meu canário.** O caso "nota
+de higiene não vira item" passava **por vácuo**: a fixture punha a nota antes do primeiro item,
+onde o parser a descarta por outro motivo — sabotar a proteção não deixava o teste vermelho. O
+segundo: os nove sub-itens de "Backlog ativo" colapsavam num card só, e como o verificador
+comparava apenas títulos, acrescentar trabalho novo não mudava nada e o CSV velho seguia dado como
+em dia. Corrigidos: sub-item virou card próprio (6 → 15), e a verificação passou a comparar os CSV
+byte a byte. Mais dois: o verificador rodava a suíte inteira sob timeout menor que a própria
+duração — **fail-open por relógio** —, e o `---` de fim de seção entrava no detalhe.
+
+**Os dois canários que não cobriam o que prometiam, consertados aqui e não empurrados.** O
+`test_qa_evidence` **redefinia** a constante que deveria guardar, em vez de importá-la do
+mecanismo: tinha a própria cópia da regra e por isso não dependia do código — sabotar
+`qa_evidence.py` não o afetava. Teste que duplica a regra confirma a si mesmo. E o
+`test_post_canary_status` não cobria o **nome do status publicado**, que é o único elo entre o
+script e a proteção da branch: trocar a constante travaria todo PR para sempre, em silêncio. Os
+dois agora falham quando devem, provado por sabotagem.
+
+**Documentação alinhada virou mecanismo:** o canário de consistência passa a exigir que todo
+`tools/*.py` citado nos guias exista. Guia que manda rodar ferramenta inexistente é pior que guia
+ausente — quem segue descobre errando e passa a desconfiar do resto. Varredura atual: zero
+ponteiros mortos.
+
+**Lição cross-IA publicada** em `docs/_private/cross-ai/outbox/`: nove defeitos em mecanismos de
+garantia, todos reproduzidos nesta sessão, com o cenário que expõe cada um. Oito dos nove estavam
+dentro de mecanismos construídos para garantir alguma coisa.
+
+**Próximo passo:** o passivo de 54 capacidades sem prova. É volume, não descoberta — o método está
+validado em onze migrações e o instrumento foi consertado três vezes até parar de mentir. Critério
+de aceite por lote: cada capacidade só entra no registro depois de `--provar` verde, e quem não
+passar vira dívida nomeada com o canário a consertar, nunca prova forçada.
+
 ## 2026-08-16 — Release v1.84.0 (MINOR): "o processo foi seguido?" deixa de ser opinião e vira número (ADR-097 Aceito)
 
 Fecha o **último ADR em `Proposto`**. Ele nasceu de uma frase sua em 23/06 — *"onde sou advisory
@@ -470,12 +511,6 @@ Riscos ativos: corte do release feito de `9TRP7H4` (não-kerberus); se kerberus 
 > entra/permanece se está ABERTO; fechar = remover daqui + checkpoint registra.
 
 - **[2026-08-07] Débitos de fechamento do bloco v1.77.0 — 3 achados, NADA aplicado.** Handoff completo (com comando de re-validação e predicado "aplicar SÓ SE" por item) em `docs/_private/handoffs/2026-08-07-debitos-de-fechamento-v1.77.0.md`. Resumo: **F1** ordem do `history.md` invertida (v1.77.0 abaixo de v1.76.0) — quebra a invariante mais-novo-primeiro e faz `handoff.py` emitir o "Próximo passo" errado, em silêncio · **F2** tags `v1.76.0`/`v1.77.0` ausentes (local e `origin`) — **2ª ocorrência** da falha catalogada em 2026-06-02, gatilho atingido · **F3** registro do ADR-100 nunca alimentado (`~/.claude/trabalhos/` inexistente) — critério de aceite do próprio checkpoint não atendido; **não verificável de outra máquina**. Candidato §0: 2 asserções em `test_consistency_closing.py`, fundindo com o item de backlog "Canário README × topo do CHANGELOG". **Aplicar só após revisão e re-validação contra a versão vigente** — o handoff congela o estado em `main` @ `8820608`. Fechar = remover esta linha + checkpoint datado.
-- **`tools/research_evidence.py` — última peça do ADR-092** (aberto em 16/08/2026, ao aceitar o
-  ADR): o manifesto declara o comportamento *busca exaustiva antes de declarar DESCONHECIDO*, mas
-  a ferramenta que colhe e confere a evidência dessa busca nunca foi escrita. Sem ela, esse
-  comportamento específico continua sendo prosa, mesmo com o gate e o gancho já rodando. Fechar =
-  escrever a ferramenta + canário, ou rebaixar o comportamento no manifesto para o que ele de fato
-  exige hoje. Gatilho: próxima vez que um DESCONHECIDO for declarado sem busca registrada.
 - **ADR-097 itens 4 e 5 do §Mecanismo** (aberto em 16/08/2026, ao aceitar o ADR): a camada-mestra
   (canário fail-closed sobre o event log) está entregue; faltam o **hook PreToolUse** que nega ação
   de papel downstream sem PASS upstream — camada rápida, best-effort por desenho — e cabear o

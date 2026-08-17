@@ -79,7 +79,29 @@ def main():
     finally:
         pcs.run_canaries = orig
 
-    print(f"post_canary_status: parse_repo + decide_state (0=success/!=0=failure) + dry-run sem-rede — "
+    # (d) O NOME DO STATUS. E' o unico elo entre este script e a protecao da branch: a `main`
+    # exige um check chamado exatamente `canarios-local`, e e' este script que o publica. Trocar a
+    # constante nao quebrava nada aqui — e todo PR passaria a travar para sempre, sem que nenhum
+    # canario apitasse. Medido em 2026-08-16 ao sabotar `CONTEXT` e ver o verde persistir: a
+    # capacidade `byo-ci-gate` estava declarada como protegida sem que este canario a cobrisse.
+    CHECK_EXIGIDO = "canarios-local"
+    if pcs.CONTEXT != CHECK_EXIGIDO:
+        fails.append(f"CONTEXT={pcs.CONTEXT!r}, mas a protecao da main exige {CHECK_EXIGIDO!r} — "
+                     f"trocar isto trava TODO PR sem aviso")
+    orig2 = pcs.run_canaries
+    try:
+        pcs.run_canaries = lambda: (0, "RESULTADO: stub")
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            pcs.main(["post_canary_status.py", "--dry-run"])
+        if f"context={CHECK_EXIGIDO}" not in buf.getvalue():
+            fails.append(f"o payload publicado nao carrega context={CHECK_EXIGIDO} — o check "
+                         f"exigido nunca seria satisfeito")
+    finally:
+        pcs.run_canaries = orig2
+
+    print(f"post_canary_status: parse_repo + decide_state (0=success/!=0=failure) + dry-run sem-rede "
+          f"+ nome do check exigido — "
           f"{'OK' if not fails else 'FAIL'}")
     for f in fails:
         print("  -", f)

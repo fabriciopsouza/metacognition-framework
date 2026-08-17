@@ -158,6 +158,24 @@ def auditar(raiz):
                                    f"— gere com 'python tools/execution_report.py'")
     dims["execution-report"] = {"caminho": alvo_rel, "presente": ok_rep}
 
+    # 8. quadro de gestao em dia (ADR-102). O gerador deriva backlog/cronograma/status report das
+    # fontes; se elas andaram e ninguem regerou, o quadro virou ficcao. E' a dimensao que fecha o
+    # pedido "atualiza sem provocacao humana": o fechamento avisa, nao o dono.
+    quadro = raiz / "tools" / "projeto_docs.py"
+    dims["quadro-de-gestao"] = {"em_dia": None}
+    if quadro.is_file():
+        try:
+            r = subprocess.run([sys.executable, "-X", "utf8", str(quadro), "--verificar",
+                                "--repo", str(raiz)], capture_output=True, text=True,
+                               encoding="utf-8", errors="replace", timeout=120,
+                               stdin=subprocess.DEVNULL)
+            dims["quadro-de-gestao"] = {"em_dia": r.returncode == 0}
+            if r.returncode != 0:
+                anotar("quadro-de-gestao", "backlog/cronograma/status report desatualizados "
+                                           "— rode `python tools/projeto_docs.py`")
+        except (OSError, subprocess.SubprocessError):
+            pass
+
     return pend, dims
 
 
