@@ -13,6 +13,32 @@
 > **Poda de contexto (ADR-107):** este arquivo quente mantem os ultimos **10** checkpoints + `## Em aberto` + `## Aprendizado`. **56** checkpoints mais antigos estao em [`docs/history/history-archive.md`](docs/history/history-archive.md) (nada deletado — so realocado). Rotacao: `python tools/rotate_history.py`.
 <!-- history-archive-pointer -->
 
+## 2026-08-17 — Release v1.87.0 (MINOR): o silêncio das distribuições vira número (ADR-049)
+
+Fecha o único ponto de falha silencioso que restava. As cinco distribuições são geradas do
+canônico por um workflow do GitHub Actions; quando ele esteve desligado por billing, elas
+**congelaram por vinte releases sem nenhum alarme**, e a deriva só apareceu quando alguém foi
+olhar à mão, meses depois. O workflow voltou a funcionar — medido nesta sessão —, mas o risco é
+estrutural: se cair de novo, o silêncio volta igual.
+
+`tools/shadow_drift.py` mede a distância em commits, lendo o SHA que o próprio workflow grava na
+mensagem de publicação de cada distribuição. Melhor que comparar versão: pega também o caso em que
+o export rodou e falhou no meio.
+
+**A decisão que mais importa:** sem rede ou sem credencial, ele declara `SKIP` e diz por quê, em
+vez de reportar "em dia". Foi exatamente assim que a deriva passou despercebida da primeira vez —
+ausência de medição lida como aprovação. O canário protege essa propriedade de forma explícita: se
+o `SKIP` virar aprovação, ele fica vermelho. E não reprova por falta de internet, porque
+verificador que trava offline é desligado na primeira viagem.
+
+**O canário de vitrine funcionou como projetado, na mesma sessão em que nasceu.** Ao registrar a
+capacidade nova, os números da página ficaram defasados e a suíte caiu na hora. Corrigi e passou.
+É a primeira vez que o mecanismo cobra o próprio autor.
+
+**Próximo passo:** o passivo — dezessete capacidades que declaram bloquear falha e nunca foram
+provadas, e trinta e quatro que não declaram como se protegem. Volume, com método já validado em
+doze migrações.
+
 ## 2026-08-17 — Release v1.86.0 (MINOR): a vitrine promete menos, prova mais, e não pode mais envelhecer mentindo
 
 **Correção de premissa antes do trabalho.** O dono pediu para atualizar todas as distribuições

@@ -1520,6 +1520,30 @@
         "status-report",
         "adr-102"
       ]
+    },
+    {
+      "id": "shadow-drift-alarm",
+      "title": "Deriva das distribuicoes publicadas vira numero; falta de medicao nao vira aprovacao",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/shadow_drift.py",
+      "test": "tools/test_shadow_drift.py",
+      "adr": "docs/adr/049-tres-distribuicoes-premium-baseline-single-source.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "mutacao": {
+        "arquivo": "tools/shadow_drift.py",
+        "de": "        return [], \"`gh` ausente ou nao autenticado — sem como consultar as publicadas\"",
+        "para": "        return [], None",
+        "canario": "tools/test_shadow_drift.py",
+        "espera": "[FALHA] sem `gh` autenticado, declara SKIP"
+      },
+      "tags": [
+        "distribuicao",
+        "deriva",
+        "alarme",
+        "anti-silencio"
+      ]
     }
   ],
   "registry_waivers": [

@@ -7,19 +7,19 @@
 
 | release | data | o quê |
 |---|---|---|
+| 1.87.0 | 2026-08-17 | O silêncio das distribuições vira número (ADR-049) |
 | 1.86.0 | 2026-08-17 | A vitrine promete menos e prova mais, e não pode mais envelhecer mentindo |
 | 1.85.0 | 2026-08-16 | Documentação de gestão que não envelhece: |
 | 1.84.0 | 2026-08-16 | "O processo foi seguido?" deixa de ser opinião e vira número (ADR-097 Aceito) |
 | 1.83.0 | 2026-08-16 | "NÃO SEI" só vale depois de busca provada, e a instalação passa a se verificar (ADR-092 fechado… |
-| 1.82.0 | 2026-08-16 | O gate do squad passa a rodar sozinho: |
 
 ## Estado agora
 
-- Branch **docs/vitrine-com-numeros-verificados**, commit `ef63737 v1.85.0 — quadro de gestao derivado e canarios que passam a cobrir`
-- Última tag: **v1.85.0**
+- Branch **feat/alarme-de-deriva-das-sombras**, commit `3b7cef3 v1.86.0 — vitrine com numeros verificados`
+- Última tag: **v1.86.0**
 - Commits não enviados: **?**
 - Árvore de trabalho: **com alterações não commitadas**
-- Canários: **76 PASS · 1 SKIP · 0 FAIL (de 77 canários)**
+- Canários: **77 PASS · 1 SKIP · 0 FAIL (de 78 canários)**
 
 ## O que falta
 
