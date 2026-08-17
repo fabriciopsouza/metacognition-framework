@@ -15,9 +15,9 @@
 
 ## Estado agora
 
-- Branch **feat/alarme-de-deriva-das-sombras**, commit `3b7cef3 v1.86.0 — vitrine com numeros verificados`
-- Última tag: **v1.86.0**
-- Commits não enviados: **?**
+- Branch **main**, commit `cedbbc7 v1.87.0 — alarme de deriva das distribuicoes`
+- Última tag: **v1.87.0**
+- Commits não enviados: **0**
 - Árvore de trabalho: **com alterações não commitadas**
 - Canários: **77 PASS · 1 SKIP · 0 FAIL (de 78 canários)**
 
