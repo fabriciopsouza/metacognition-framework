@@ -1,0 +1,16 @@
+﻿id,item,tipo,prioridade,responsavel,estado,origem
+B001,Quitação do override da régua §0 do ADR-102 (aberto em 13/08/2026):,dívida,2,squad,aberto,history.md · Em aberto
+B002,"[2026-08-07] Débitos de fechamento do bloco v1.77.0 — 3 achados, NADA aplicado.",dívida,2,squad,aberto,history.md · Em aberto
+B003,"ADR-097 itens 4 e 5 do §Mecanismo (aberto em 16/08/2026, ao aceitar o ADR):",dívida,2,squad,aberto,history.md · Em aberto
+B004,"Pendência permanente (não-código, dono/TI):",dívida,2,squad,aberto,history.md · Em aberto
+B005,"Backlog ativo (trigger-gated, NÃO WIP):",dívida,2,squad,aberto,history.md · Em aberto
+B006,"Backlog ativo (trigger-gated, NÃO WIP): · Canário README × topo do CHANGELOG inexistente (dívida PRÉ-EXISTENTE exposta pelo qa-critic em v1.",dívida,2,squad,aberto,"history.md · Em aberto › Backlog ativo (trigger-gated, NÃO WIP):"
+B007,"Backlog ativo (trigger-gated, NÃO WIP): · 36 capabilities sem campo enforcement são invisíveis à auditoria anti-teatro (observado 2026-07-22",dívida,2,squad,aberto,"history.md · Em aberto › Backlog ativo (trigger-gated, NÃO WIP):"
+B008,"Backlog ativo (trigger-gated, NÃO WIP): · Proveniência de raciocínio POR-TURNO (gap empírico 2026-06-22, sessão ee8a9a49):",dívida,2,squad,aberto,"history.md · Em aberto › Backlog ativo (trigger-gated, NÃO WIP):"
+B009,"Backlog ativo (trigger-gated, NÃO WIP): · Corrida do 1º prompt do liveness (route-gate dispara antes do carimbo dos SessionStart;",dívida,2,squad,aberto,"history.md · Em aberto › Backlog ativo (trigger-gated, NÃO WIP):"
+B010,"Backlog ativo (trigger-gated, NÃO WIP): · Cascata v1.55.0–v1.60.0 para os shadows via export-clean — trigger:",dívida,2,squad,aberto,"history.md · Em aberto › Backlog ativo (trigger-gated, NÃO WIP):"
+B011,"Backlog ativo (trigger-gated, NÃO WIP): · ADR-011 §Pendências:",dívida,2,squad,aberto,"history.md · Em aberto › Backlog ativo (trigger-gated, NÃO WIP):"
+B012,"Backlog ativo (trigger-gated, NÃO WIP): · ADR-011 §Pendências:",dívida,2,squad,aberto,"history.md · Em aberto › Backlog ativo (trigger-gated, NÃO WIP):"
+B013,"Backlog ativo (trigger-gated, NÃO WIP): · Item D4 (cross-platform hooks Linux/macOS port) — trigger:",dívida,2,squad,aberto,"history.md · Em aberto › Backlog ativo (trigger-gated, NÃO WIP):"
+B014,"Backlog ativo (trigger-gated, NÃO WIP): · Integração protocolo cross-IA no fluxo J0-J5 — trigger:",dívida,2,squad,aberto,"history.md · Em aberto › Backlog ativo (trigger-gated, NÃO WIP):"
+B015,Passivo de prova: 51 capacidades sem gate provado,dívida,2,squad,aberto,capabilities.json

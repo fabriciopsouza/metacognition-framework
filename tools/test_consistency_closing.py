@@ -168,8 +168,28 @@ def main():
         if leftover:
             print(f"[advisory] {len(leftover)} transiente(s) em docs/_intake/ (remover no fechamento): {', '.join(leftover)}")
 
+    # PONTEIRO MORTO EM GUIA. "Toda doc alinhada com o que fazemos" so' se sustenta se algo
+    # conferir: guia que manda rodar ferramenta inexistente e' pior que guia ausente — quem segue
+    # descobre errando, e passa a desconfiar do resto do documento. Varre os arquivos que o usuario
+    # de fato le e exige que cada `tools/*.py` citado exista.
+    docs_vivos = sorted(glob.glob(os.path.join(ROOT, "guia", "*.md"))) + [
+        os.path.join(ROOT, n) for n in ("CLAUDE.md", "AGENTS.md", "AGENT-FRAMEWORK.md")]
+    mortos = []
+    for doc in docs_vivos:
+        if not os.path.isfile(doc):
+            continue
+        try:
+            txt = open(doc, encoding="utf-8", errors="replace").read()
+        except OSError:
+            continue
+        for ref in sorted(set(re.findall(r"tools/[A-Za-z0-9_\-]+\.py", txt))):
+            if not os.path.isfile(os.path.join(ROOT, ref)):
+                mortos.append(f"{os.path.basename(doc)} cita {ref}, que nao existe")
+    fails += mortos
+
     print(f"{len(nums)} ADR(s); duplicatas: {len(dups)}; entregue-mas-Proposto: {len(proposto_shipped)}; "
-          f"version-claim sem heading: {len(claimed_missing)} — {'OK' if not fails else 'FAIL'}")
+          f"version-claim sem heading: {len(claimed_missing)}; ponteiro morto em guia: "
+          f"{len(mortos)} — {'OK' if not fails else 'FAIL'}")
     for f in fails:
         print("  -", f)
     print("-" * 50)

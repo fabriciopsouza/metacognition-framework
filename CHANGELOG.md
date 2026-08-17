@@ -15,6 +15,54 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.85.0] — 2026-08-16 — Documentação de gestão que não envelhece: backlog, cronograma e status report derivados do estado real (ADR-102)
+
+[CONSOLIDADO] · [CONFIRMADO — 21 verificações; o gerador achou uma inconsistência real na primeira execução]
+
+### O problema com quadro digitado à mão
+
+Alguém fecha um item e esquece de riscar; alguém abre outro e esquece de anotar. O quadro vira
+ficção e todo mundo para de olhar. `tools/projeto_docs.py` não pede digitação — **deriva** das
+fontes que já são mantidas por obrigação: a seção `## Em aberto` do `history.md`, os ADRs em
+`Proposto`, o passivo medido em `capabilities.json`, o `CHANGELOG` e o estado do git.
+
+Na **primeira execução real** ele já provou o ponto: apontou um item listado como pendente que
+tinha sido **entregue na release anterior** e ninguém havia riscado.
+
+### O que produz, em `docs/projeto/`
+
+| arquivo | para quê |
+|---|---|
+| `backlog.csv` | importa direto em Trello **e** Planner — as duas grafias de coluna na mesma planilha, para ninguém precisar renomear nada |
+| `cronograma.csv` | mesma base, ordenada por prioridade, com **quem responde** por cada item; abre no Excel |
+| `STATUS-REPORT.md` | de onde partimos, onde chegamos, o que falta, e o que depende de decisão do dono |
+| `CONTEXTO.md` | objetivo, visão, quem é afetado, o que está em jogo — **o único escrito à mão**, porque nenhum dado revela propósito |
+
+CSV e não xlsx, por decisão do dono: o núcleo não instala biblioteca nenhuma, e é isso que o faz
+rodar em máquina corporativa travada. Os arquivos saem com marca de codificação para o Excel em
+português não abrir com acento quebrado — documento com mojibake é descartado na primeira olhada.
+
+### O quadro se mantém sozinho
+
+O gate de fechamento ganhou uma oitava dimensão: se as fontes andaram e ninguém regerou, ele avisa.
+É a parte do pedido *"atualiza sem provocação humana"* que faltava — quem cobra é o fechamento,
+não o dono.
+
+### Documentação alinhada, mecanizada
+
+*"Toda doc alinhada com o que fazemos"* só se sustenta se algo conferir. O canário de consistência
+passa a exigir que **todo `tools/*.py` citado nos guias exista**. Guia que manda rodar ferramenta
+inexistente é pior que guia ausente: quem segue descobre errando e passa a desconfiar do resto.
+Varredura atual: zero ponteiros mortos.
+
+### Sobre a marca de pendência
+
+A capacidade entra com `validado_em_projetos: 1`. O desenho original do ADR-102 só a promoveria
+depois de um segundo projeto usá-la — condição **circular**, apontada pelo dono: nenhum segundo
+projeto consegue usar o que não está na `main`. Sobe marcada; a marca sai no segundo uso real.
+
+Capacidades: 88 → **89**. Suíte: **76 PASS · 1 SKIP · 0 FAIL** de 77 canários.
+
 ## [1.84.0] — 2026-08-16 — "O processo foi seguido?" deixa de ser opinião e vira número (ADR-097 Aceito)
 
 [CONSOLIDADO] · [CONFIRMADO — 20 verificações; o crítico reprovou a primeira versão com um achado que esvaziava o mecanismo]

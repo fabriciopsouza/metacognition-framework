@@ -870,7 +870,14 @@
         "process-evidence",
         "closure",
         "canary"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": "tools/qa_evidence.py",
+        "de": "    if last in JUNCTION_ORDER and JUNCTION_ORDER[j] < JUNCTION_ORDER[last] and not rewind:",
+        "para": "    if False:",
+        "canario": "tools/test_qa_evidence.py",
+        "espera": "regressao sem rewind: aceitou indevidamente"
+      }
     },
     {
       "id": "posture-gate",
@@ -1035,7 +1042,14 @@
         "merge",
         "deterministic",
         "canary"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": "tools/post_canary_status.py",
+        "de": "CONTEXT = \"canarios-local\"",
+        "para": "CONTEXT = \"outro-nome\"",
+        "canario": "tools/test_post_canary_status.py",
+        "espera": "mas a protecao da main exige"
+      }
     },
     {
       "id": "autonomy-retry-policy",
@@ -1479,6 +1493,32 @@
         "process-mining",
         "topologia",
         "anti-teatro"
+      ]
+    },
+    {
+      "id": "projeto-docs-derivados",
+      "title": "Backlog, cronograma e status report DERIVADOS do estado real — quadro que nao envelhece",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/projeto_docs.py",
+      "test": "tools/test_projeto_docs.py",
+      "adr": "docs/adr/102-padrao-do-conjunto-documental-de-projeto.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "mutacao": {
+        "arquivo": "tools/projeto_docs.py",
+        "de": "             \"titulo\": f\"Passivo de prova: {total} capacidades sem gate provado\",",
+        "para": "             \"titulo\": \"Passivo de prova\",",
+        "canario": "tools/test_projeto_docs.py",
+        "espera": "[FALHA] passivo entra AGREGADO"
+      },
+      "validado_em_projetos": 1,
+      "_nota_validacao": "ADR-102 sobe marcado como PENDENTE de validacao em 2o projeto — decisao do dono em 16/08 que desfez a circularidade do desenho original (so' promovia apos 2o uso, mas nenhum 2o projeto conseguia usar antes da promocao). A marca sai quando um segundo projeto real adotar.",
+      "tags": [
+        "gestao",
+        "backlog",
+        "status-report",
+        "adr-102"
       ]
     }
   ],
