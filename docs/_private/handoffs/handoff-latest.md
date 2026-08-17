@@ -1,4 +1,4 @@
-# Handoff — v1.85.0 · 2026-08-16T19:58:32-03:00 · papel-alvo: developer
+# Handoff — v1.86.0 · 2026-08-16T22:20:43-03:00 · papel-alvo: developer
 
 > Pacote P14 (ADR-012) gerado DETERMINISTICAMENTE do estado do repo por `tools/handoff.py` (ADR-076).
 > Teste binario (P14): a proxima sessao comeca SEM perguntar nada de volta?
@@ -7,19 +7,19 @@
 - **Proxima sessao: `claude-opus-4-8`** (opus). Motivo: developer -> tier baseline (opus): papel AUTORAL roda no baseline (= modelo padrao/standard); custo do erro a montante > custo do token (ADR-082). Subagente developer spawnado < baseline = proibido; risco sobrepoe p/ tier max..
 
 ## [P14] Artefato consumivel — com versao
-- Repo na versao **v1.85.0** (topo do CHANGELOG). Branch `feat/documentacao-de-gestao` @ `a7d3606`.
+- Repo na versao **v1.86.0** (topo do CHANGELOG). Branch `docs/vitrine-com-numeros-verificados` @ `ef63737`.
 
 ## [P14] Localizacao
 - origin: https://github.com/fabriciopsouza/metacognition-framework
-- branch/commit: `feat/documentacao-de-gestao` @ `a7d3606` · (sem PR aberto para esta branch)
+- branch/commit: `docs/vitrine-com-numeros-verificados` @ `ef63737` · (sem PR aberto para esta branch)
 - raiz absoluta desta copia: `C:\Users\fabriciosouza\metacognition-framework` (paths relativos abaixo ancoram AQUI)
 
 ## [P14] Acesso
-- Nao-protegido (recovery = conta GitHub): estado de push DESCONHECIDO (branch sem upstream — pode haver commits locais nao protegidos), 23 arquivo(s) nao-commitado(s)
+- Nao-protegido (recovery = conta GitHub): estado de push DESCONHECIDO (branch sem upstream — pode haver commits locais nao protegidos), 15 arquivo(s) nao-commitado(s)
 
 ## [P14] Prompt pronto-para-colar
 - **Papel:** developer · **Modelo:** `claude-opus-4-8`
-- **Objetivo (do 'Proximo passo'):** o passivo de 54 capacidades sem prova. É volume, não descoberta — o método está
+- **Objetivo (do 'Proximo passo'):** o passivo de 51 capacidades — volume, não descoberta. E, como candidato de menor
 - **Produz/decide:** execute o objetivo acima ate o criterio de aceite citado; rode `tools/run_canaries.py` antes de fechar.
 
 ## [P14] Pendencias e premissas herdadas
@@ -32,8 +32,8 @@
 
 ## Extensoes (ADR-016 — evita re-derivar)
 - **5 arquivos mais recentes:**
-  1. capabilities.json
-  2. CAPABILITIES.md
-  3. CHANGELOG.md
-  4. PROMPT-CHAT-WEB-v4.5.md
-  5. README.md
+  1. CAPABILITIES.md
+  2. CHANGELOG.md
+  3. PROMPT-CHAT-WEB-v4.5.md
+  4. README.md
+  5. _meta/qa/release-1.85.0-quadro-de-gestao-e-canarios-que-mentiam.json

@@ -7,16 +7,16 @@
 
 | release | data | o quê |
 |---|---|---|
+| 1.86.0 | 2026-08-17 | A vitrine promete menos e prova mais, e não pode mais envelhecer mentindo |
 | 1.85.0 | 2026-08-16 | Documentação de gestão que não envelhece: |
 | 1.84.0 | 2026-08-16 | "O processo foi seguido?" deixa de ser opinião e vira número (ADR-097 Aceito) |
 | 1.83.0 | 2026-08-16 | "NÃO SEI" só vale depois de busca provada, e a instalação passa a se verificar (ADR-092 fechado… |
 | 1.82.0 | 2026-08-16 | O gate do squad passa a rodar sozinho: |
-| 1.81.0 | 2026-08-16 | Rotação determinística do history.md: |
 
 ## Estado agora
 
-- Branch **feat/documentacao-de-gestao**, commit `a7d3606 fix: mutacao do conformance reapontada para alvo unicamente coberto`
-- Última tag: **v1.84.0**
+- Branch **docs/vitrine-com-numeros-verificados**, commit `ef63737 v1.85.0 — quadro de gestao derivado e canarios que passam a cobrir`
+- Última tag: **v1.85.0**
 - Commits não enviados: **?**
 - Árvore de trabalho: **com alterações não commitadas**
 - Canários: **76 PASS · 1 SKIP · 0 FAIL (de 77 canários)**

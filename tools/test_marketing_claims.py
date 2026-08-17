@@ -14,6 +14,7 @@ Prova:
 
 Uso: python tools/test_marketing_claims.py   (exit 0 PASS; 1 se qualquer gate falha)
 """
+import glob
 import os
 import re
 import sys
@@ -105,6 +106,58 @@ def main():
              f"versões de release na vitrine == main v{mv} (stale={stale or 'nenhum'})")
 
     print("-" * 60)
+    # (g) OS NUMEROS DA VITRINE SAO OS DO REPO, E SIGNIFICAM O QUE A PAGINA DIZ.
+    #
+    # A 1a versao desta checagem tinha DOIS defeitos, os dois achados pelo qa-critic (Sonnet,
+    # 2026-08-17), e o primeiro era grave:
+    #
+    # (i) a pagina afirmava "38 de 89 capacidades tiveram o mecanismo SABOTADO de proposito". O
+    #     numero batia com o auditor, mas a FRASE era falsa para 27 delas: "em conformidade" conta
+    #     tambem quem declara protecao nao-bloqueante, sem sabotagem nenhuma. So' 11 tem `mutacao`.
+    #     Era overclaim mecanizado — na pagina inicial do repo que existe para combater overclaim.
+    #     Agora a vitrine separa os dois numeros e diz o que cada um mede.
+    #
+    # (ii) a comparacao era `substring in arquivo inteiro`, cega a contexto: a string dentro de um
+    #      comentario HTML satisfazia o gate enquanto o numero VISIVEL estava errado. Agora os
+    #      comentarios sao removidos e a busca acontece SO' dentro da secao `#provas`.
+    #
+    # A fórmula de "conforme" e' IMPORTADA do auditor, nao copiada: duplicar a regra faria este
+    # canario validar contra uma versao velha dela sem ninguem perceber — o mesmo defeito que o
+    # `test_qa_evidence` tinha e que foi corrigido na v1.85.0.
+    if os.path.isfile(VITRINE):
+        import json as _json
+        sys.path.insert(0, os.path.join(ROOT, "tools"))
+        from audit_enforcement import valida_mutacao  # noqa: E402
+        try:
+            _caps = _json.load(open(os.path.join(ROOT, "capabilities.json"), encoding="utf-8"))
+            _caps = _caps.get("capabilities", _caps)
+            total = len(_caps)
+            provadas = sum(1 for c in _caps
+                           if c.get("mutacao") and valida_mutacao(c["mutacao"], c)[0])
+            fc_sem_prova = sum(1 for c in _caps
+                               if c.get("enforcement") == "fail-closed" and not c.get("mutacao"))
+            sem_campo = sum(1 for c in _caps if not c.get("enforcement"))
+            fracos = total - provadas - fc_sem_prova - sem_campo
+            conformes = sum(1 for c in _caps if c.get("enforcement")
+                            and (c.get("enforcement") != "fail-closed" or c.get("mutacao")))
+            canarios = len(glob.glob(os.path.join(ROOT, "tools", "test_*.py")))
+        except Exception as e:
+            gate(False, f"nao consegui derivar os numeros da vitrine: {e}")
+        else:
+            visivel = re.sub(r"<!--.*?-->", "", vtext, flags=re.S)
+            m = re.search(r'id="provas".*?</section>', visivel, re.S)
+            secao = m.group(0) if m else ""
+            gate(bool(secao), "vitrine sem a secao #provas — os numeros nao tem onde morar")
+            for valor, oquee in ((f"{provadas} de {total}", "capacidades com sabotagem provada"),
+                                 (f"{canarios} canários", "canarios na suite"),
+                                 (f"{fc_sem_prova} capacidades", "declaram bloquear e nao foram provadas"),
+                                 (f"<b>{sem_campo}</b>", "sem declaracao de protecao"),
+                                 (f"<b>{fracos}</b>", "protecao nao-bloqueante"),
+                                 (f"{conformes} de {total}", "em conformidade no registro")):
+                gate(valor in secao,
+                     f"a secao #provas nao afirma '{valor}' ({oquee}) — numero da pagina divergiu "
+                     f"do repo, ou saiu da secao; atualize guia/web/index.html")
+
     print("RESULTADO:", f"FAIL ({fails})" if fails
           else "PASS (marketing+vitrine ancorados: LIMITS sync · zero órfão · prompt web fail-closed · "
                "vitrine sem overclaim · limites disclosos)")
