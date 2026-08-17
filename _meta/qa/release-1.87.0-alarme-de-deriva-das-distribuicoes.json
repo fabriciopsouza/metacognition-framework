@@ -1,0 +1,70 @@
+{
+  "bloco": "release-1.87.0-alarme-de-deriva-das-distribuicoes",
+  "release": "1.87.0",
+  "papel": "qa_critic",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "sha_revisado": "3b7cef3",
+  "resumo": "Fable isolado contra autor Opus. R1 REPROVOU com dois achados ALTOS, e ambos eram o defeito ORIGINAL voltando disfarcado — o alarme criado para acabar com o silencio podia ficar mudo de duas formas. (1) Duvida por sombra nunca afetava o codigo de saida: sem permissao de leitura, ou se o workflow mudasse o formato da mensagem de publicacao, as cinco viravam '?' e o alarme saia ZERO para sempre. Verde perpetuo com um interrogacao que ninguem le. (2) A lista de distribuicoes e' lida do workflow por regex; trocar aspas duplas por simples, renomear a variavel ou migrar para matrix zerava a lista e virava SKIP silencioso — e o canario so' testava contra um workflow FALSO, entao o defeito voltava pela porta que o teste dizia guardar. Mais um achado medio na vitrine: o rotulo 'protecao nao-bloqueante (aviso, registro, prosa)' descrevia mal um grupo que inclui uma capacidade de garantia fisica. Os tres corrigidos.",
+  "verificacoes_executadas": [
+    "R1 reproduziu os dois cenarios mudos por monkeypatch, sem tocar arquivo: gh sem permissao e mensagem sem SHA -> exit 0",
+    "R1 reproduziu o regex falhando com aspas simples: re.findall devolve lista vazia",
+    "R1 mediu a tolerancia contra o historico real: releases empurram 2 a 4 commits, o publish dispara a cada push, em regime normal o atraso e ~0 — tolerancia de 3 nao vira ruido. Sem achado nesta pergunta",
+    "R1 derivou as contagens da vitrine e apontou que o rotulo de um grupo estava impreciso",
+    "correcao do ALTO 1: duvida passa a sair com codigo 2, distinto de 1 (atrasada) e de 0 (em dia). Os codigos estao documentados no cabecalho",
+    "correcao do ALTO 2: workflow que EXISTE mas nao foi entendido deixa de virar SKIP e passa a ser reportado como defeito, com codigo 2 — arquivo local ilegivel nao e' ausencia de dado",
+    "correcao do ALTO 2, parte do canario: caso novo exige que sombras() leia as 5 distribuicoes do workflow REAL deste repositorio, nao so do fake",
+    "correcao do MEDIO: o rotulo passa a dizer 'aviso, registro, prosa, garantia fisica'",
+    "prova de mutacao da guarda nova: sabotando o retorno de duvida para 0, o caso 'todas em DUVIDA sai com codigo 2' fica [FALHA] e o canario sai com 1; restaurado, 19/19",
+    "canario 14 -> 19 verificacoes; medicao real contra as 5 distribuicoes: 2 commits atras, dentro da tolerancia"
+  ],
+  "problemas": [
+    {
+      "severidade": "alto",
+      "local": "tools/shadow_drift.py (codigo de saida)",
+      "descricao": "CORRIGIDO. Duvida por sombra nao afetava o exit code. Com todas em duvida, o alarme saia zero indefinidamente.",
+      "cenario_de_falha": "gh autenticado sem permissao nos 5 alvos, ou workflow muda o formato da mensagem: 5 duvidas, exit 0, verde perpetuo em CI."
+    },
+    {
+      "severidade": "alto",
+      "local": "tools/shadow_drift.py (leitura do workflow) e tools/test_shadow_drift.py",
+      "descricao": "CORRIGIDO. Aspas simples ou rename zeravam a lista e viravam SKIP; e o canario so exercitava um workflow fake, sem exigir a leitura do real.",
+      "cenario_de_falha": "refactor inocente no workflow: lista vazia, SKIP, exit 0 — o alarme emudece pela porta que o teste dizia guardar."
+    },
+    {
+      "severidade": "medio",
+      "local": "guia/web/index.html (rotulo do grupo de 27)",
+      "descricao": "CORRIGIDO. O rotulo dizia 'nao-bloqueante (aviso, registro, prosa)' para um grupo que inclui garantia fisica. A contagem fechava; a descricao mentia.",
+      "cenario_de_falha": "leitor conclui que as 27 sao todas fracas; uma delas e' de outra natureza."
+    }
+  ],
+  "escopo_paths": [
+    "tools/shadow_drift.py",
+    "tools/test_shadow_drift.py",
+    "guia/web/index.html",
+    "capabilities.json"
+  ],
+  "atestacao": {
+    "agentId": "ad7491791042dc1e6",
+    "modelo": "claude-fable-5",
+    "modelo_autor": "claude-opus-5",
+    "isolamento": "subagente qa-critic isolado, revisao read-only na arvore de trabalho; reproduziu os cenarios em memoria por monkeypatch para nao tocar arquivo, e declarou isso",
+    "instrucao": "hipotese default de defeito; construir os casos em que o alarme fica MUDO, que e o defeito que ele existe para matar",
+    "cadeia": "R1 REPROVOU (2 ALTOS, 1 MEDIO) -> autor corrigiu os tres com prova de mutacao -> veredito registrado. 12a rodada da sessao."
+  },
+  "postura": {
+    "rrc": "PASSA — o critico nao revisou o que o alarme faz, revisou como ele PODE FICAR CALADO, que e a unica pergunta que importa num alarme; e mediu a tolerancia contra o historico real de releases em vez de opinar sobre ela.",
+    "metodo_senior": "N/A: ferramenta nova sob ADR ja aceito.",
+    "discovery": "leitura do historico da deriva antes de julgar o desenho; medicao das tags recentes para avaliar se a tolerancia geraria ruido",
+    "fonte_canonica": false,
+    "lacunas_declaradas": "o ciclo mutacao->FALHA->reversao nao foi executado pelo critico, so conferido que a linha existe; colisao real de SHA de 7 caracteres nao reproduzida; execucao contra o GitHub real nao feita por ele"
+  },
+  "nao_verificado": [
+    "colisao de SHA de 7 caracteres com outro commit ancestral — daria distancia errada em silencio; sem repro viavel",
+    "execucao do verificador contra os 5 repositorios publicados com credencial de outra pessoa",
+    "comportamento se o workflow migrar para matrix — o caso testado foi aspas simples"
+  ],
+  "data": "2026-08-17T03:20:00Z"
+}

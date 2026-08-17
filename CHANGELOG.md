@@ -15,6 +15,32 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.87.0] — 2026-08-17 — O silêncio das distribuições vira número (ADR-049)
+
+[CONSOLIDADO] · [CONFIRMADO — 14 verificações; medido contra as cinco distribuições reais]
+
+Fecha o único ponto de falha silencioso que restava. As cinco distribuições — `public`,
+`public-nonadmin`, `premium`, `web`, `web-premium` — são geradas do canônico por um workflow no
+GitHub Actions. Quando o Actions esteve desligado por billing, elas **congelaram por vinte
+releases sem nenhum alarme**; a deriva só apareceu quando alguém foi olhar à mão, meses depois.
+
+O workflow voltou a funcionar — medido nesta sessão, três execuções no dia, todas com sucesso.
+Mas o risco é estrutural, não conjuntural: se ele cair de novo, o silêncio volta igual.
+
+`tools/shadow_drift.py` mede a distância exata. O workflow grava, na mensagem de commit de cada
+distribuição, o SHA do canônico que originou aquele export; comparar esse SHA com o `HEAD` dá o
+atraso em commits — melhor que comparar versão, porque pega também o caso em que o export rodou e
+falhou no meio.
+
+**A decisão que mais importa aqui: ausência de medição não é aprovação.** Sem rede ou sem `gh`
+autenticado, ele declara `SKIP` e diz por quê, em vez de reportar "em dia" — porque foi
+exatamente assim que a deriva passou despercebida da primeira vez. O canário protege essa
+propriedade explicitamente: se o `SKIP` algum dia virar aprovação, ele fica vermelho.
+
+E não reprova por falta de internet: verificador que trava offline é desligado na primeira viagem.
+
+Capacidades: 89 → **90**. Canários: 77 → **78**. Suíte: **77 PASS · 1 SKIP · 0 FAIL**.
+
 ## [1.86.0] — 2026-08-17 — A vitrine promete menos e prova mais, e não pode mais envelhecer mentindo
 
 [CONSOLIDADO] · [CONFIRMADO — os três números da página são derivados das mesmas fontes que o auditor usa]
