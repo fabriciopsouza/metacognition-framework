@@ -1,4 +1,4 @@
-# Handoff — v1.87.0 · 2026-08-17T08:33:37-03:00 · papel-alvo: developer
+# Handoff — v1.87.0 · 2026-08-17T09:10:41-03:00 · papel-alvo: developer
 
 > Pacote P14 (ADR-012) gerado DETERMINISTICAMENTE do estado do repo por `tools/handoff.py` (ADR-076).
 > Teste binario (P14): a proxima sessao comeca SEM perguntar nada de volta?
@@ -7,15 +7,15 @@
 - **Proxima sessao: `claude-opus-4-8`** (opus). Motivo: developer -> tier baseline (opus): papel AUTORAL roda no baseline (= modelo padrao/standard); custo do erro a montante > custo do token (ADR-082). Subagente developer spawnado < baseline = proibido; risco sobrepoe p/ tier max..
 
 ## [P14] Artefato consumivel — com versao
-- Repo na versao **v1.87.0** (topo do CHANGELOG). Branch `feat/alarme-de-deriva-das-sombras` @ `3b7cef3`.
+- Repo na versao **v1.87.0** (topo do CHANGELOG). Branch `main` @ `cedbbc7`.
 
 ## [P14] Localizacao
 - origin: https://github.com/fabriciopsouza/metacognition-framework
-- branch/commit: `feat/alarme-de-deriva-das-sombras` @ `3b7cef3` · (sem PR aberto para esta branch)
+- branch/commit: `main` @ `cedbbc7` · (sem PR aberto para esta branch)
 - raiz absoluta desta copia: `C:\Users\fabriciosouza\metacognition-framework` (paths relativos abaixo ancoram AQUI)
 
 ## [P14] Acesso
-- Nao-protegido (recovery = conta GitHub): estado de push DESCONHECIDO (branch sem upstream — pode haver commits locais nao protegidos), 18 arquivo(s) nao-commitado(s)
+- Nao-protegido (recovery = conta GitHub): nada pendente (tudo pushado/commitado)
 
 ## [P14] Prompt pronto-para-colar
 - **Papel:** developer · **Modelo:** `claude-opus-4-8`
@@ -32,8 +32,8 @@
 
 ## Extensoes (ADR-016 — evita re-derivar)
 - **5 arquivos mais recentes:**
-  1. CHANGELOG.md
-  2. PROMPT-CHAT-WEB-v4.5.md
-  3. README.md
-  4. _meta/qa/release-1.86.0-vitrine-com-numeros-verificados.json
-  5. _meta/qa/release-1.86.0-vitrine-com-numeros-verificados.md
+  1. CAPABILITIES.md
+  2. CHANGELOG.md
+  3. PROMPT-CHAT-WEB-v4.5.md
+  4. README.md
+  5. _meta/qa/release-1.87.0-alarme-de-deriva-das-distribuicoes.json
