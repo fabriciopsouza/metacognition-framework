@@ -1,0 +1,57 @@
+{
+  "bloco": "passivo-lote-4-registro-sem-enforcement",
+  "papel": "qa_critic",
+  "rodada": 1,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "sha_revisado": "c31327d",
+  "resumo": "Sonnet isolado vs autor Opus, read-only sobre arvore nao-commitada. O critico atacou a hipotese certa (classificacao desonesta para escapar da exigencia de prova): varreu as 38 capacidades nao-fail-closed atras de padroes de bloqueio real (decision:deny, sys.exit(2)) e achou ZERO — os rotulos batem com o codigo. Achou 1 ALTO e 1 MEDIO, ambos corrigidos e provados nesta rodada. O ALTO e a licao da sessao inteira reencarnada: a fixture que eu escrevi para provar a contagem da vitrine NAO distinguia 'tem o campo mutacao' de 'tem mutacao VALIDA' — o critico reescreveu contar_vitrine sem a validacao e obteve resultado IDENTICO. Canario cego, dentro do bloco que zera o passivo de canarios cegos.",
+  "verificacoes_executadas": [
+    "run_canaries: 78 PASS / 1 SKIP / 0 FAIL (79)",
+    "audit_enforcement --passivo: 90 conformes, 0 no passivo, 0 novas sem prova",
+    "--provar sem --id contra HEAD: 49/52 PROVADO; os 3 restantes sao os canarios alterados NESTE bloco (nao-commitados), verificados a mao com restauracao byte-a-byte",
+    "varredura das 38 capacidades nao-fail-closed atras de decision:deny e sys.exit(2): zero ocorrencias — nenhuma bloqueia de fato sob rotulo mais fraco",
+    "mechanism corrigido em oracle-bias-canary/sycophancy-canary/discovery-eval conferido contra os imports reais dos canarios",
+    "test_skill_contract.py novo: 5 fixtures nas duas direcoes, usando as MESMAS funcoes do validador real (nao reimplementacao)",
+    "test_doc_intake.py: os 5 testes seguem executando mesmo com falha (try/except por teste); nao mascara",
+    "vitrine recalculada: 52+0+38+0=90; 79 canarios bate com ls tools/test_*.py"
+  ],
+  "problemas": [
+    {
+      "severidade": "alto",
+      "local": "tools/test_marketing_claims.py (autoteste_contagem)",
+      "descricao": "CORRIGIDO E PROVADO. A fixture nao tinha caso com `mutacao` presente mas ESTRUTURALMENTE invalida, entao uma contagem ingenua (provadas = tem o campo mutacao) passava identica — o critico demonstrou reescrevendo a funcao. Acrescentada a 5a fixture (arquivo != mechanism, recusada por valida_mutacao) e provado que agora remover a validacao derruba o canario.",
+      "status": "corrigido"
+    },
+    {
+      "severidade": "medio",
+      "local": "tools/audit_enforcement.py (modo_provar)",
+      "descricao": "CORRIGIDO E PROVADO (emenda 6). O modo materializa o HEAD, entao mecanismo/canario com mudanca nao-commitada rodava a versao ANTIGA e reportava 'mutacao obsoleta'/'continuou VERDE' — acusando a MUTACAO por um problema de ESTADO DO REPO. O dano nao e o falso-positivo: e o habito de descartar [FALHA] como 'coisa do HEAD'. Agora e SKIP declarado com o motivo e o que fazer, guardado pelo caso (i-m) do canario do auditor.",
+      "status": "corrigido"
+    }
+  ],
+  "escopo_paths": [
+    "capabilities.json",
+    "guia/web/index.html",
+    "tools/test_doc_intake.py",
+    "tools/test_marketing_claims.py",
+    "tools/test_skill_contract.py",
+    "tools/audit_enforcement.py",
+    "tools/test_audit_enforcement.py"
+  ],
+  "atestacao": {
+    "agentId": "ad214688de0b78655",
+    "modelo": "claude-sonnet-5",
+    "modelo_autor": "claude-opus-5",
+    "isolamento": "subagente qa-critic isolado, read-only sobre arvore nao-commitada; proibicao explicita de comandos de estado; backup previo dos 5 arquivos + diff no scratchpad; o critico validou as proprias reversoes por git diff --stat vazio"
+  },
+  "postura": {
+    "rrc": "PASSA - o critico nao perguntou se a classificacao esta bonita, perguntou se algum rotulo mais fraco esconde um mecanismo que BLOQUEIA, que e a unica forma de este bloco ser fraude; e provou o achado ALTO reescrevendo a funcao em vez de opinar sobre ela"
+  },
+  "nao_verificado": [
+    "as 3 capacidades com canario alterado neste bloco so tem prova FORMAL apos o commit (--provar opera sobre o HEAD); verificadas a mao pelo critico",
+    "o padrao subprocess.run(text=True) sem encoding em outros arquivos de tools/ (fora de escopo)"
+  ],
+  "data": "2026-08-18T00:00:00Z"
+}
