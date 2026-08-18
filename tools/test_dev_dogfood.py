@@ -15,6 +15,7 @@ Uso: python tools/test_dev_dogfood.py   (exit 0 PASS; 1 se falha)
 import glob
 import os
 import sys
+import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -60,6 +61,46 @@ def _is_genuine_shadow():
         return None, f"repo_identity indisponivel ({type(e).__name__}) — fail-soft sinal unico"
 
 
+def autoteste():
+    """Fixtures que este canario e OBRIGADO a acertar (ADR-106).
+
+    O piso anti-placeholder (`_is_real_doc`) nasceu de um achado do qa-critic em 2026-06-08:
+    `glob != []` era gameavel por um arquivo de 4 bytes. Mas o piso em si nunca foi testado —
+    classe `mechanism == test`: com os documentos reais presentes no repo, afrouxar o piso
+    deixava o canario VERDE, e o gate voltava a ser gameavel sem nenhum sinal.
+    """
+    falhas = []
+    corpo = ("texto de verdade. " * 40)          # ~700 chars, acima dos dois pisos
+    with tempfile.TemporaryDirectory(prefix="dogfood-fx-") as td:
+        def doc(nome, conteudo):
+            p = os.path.join(td, nome)
+            with open(p, "w", encoding="utf-8") as fh:
+                fh.write(conteudo)
+            return p
+
+        bom = doc("bom.md", "# Titulo" + chr(10) + chr(10) + "## Secao" + chr(10) + corpo)
+        if not _is_real_doc(bom, MIN_REPORT_CHARS):
+            falhas.append("documento REAL (tamanho + secao) foi rejeitado — detector cego")
+
+        curto = doc("curto.md", "# t" + chr(10) + "## Secao" + chr(10) + "meia duzia de palavras")
+        if _is_real_doc(curto, MIN_REPORT_CHARS):
+            falhas.append("placeholder CURTO passou no piso de tamanho — e' exatamente a fraude "
+                          "que o piso existe para barrar (arquivo de 4 bytes gameava o glob)")
+
+        sem_secao = doc("sem-secao.md", "# So um titulo" + chr(10) + corpo)
+        if _is_real_doc(sem_secao, MIN_REPORT_CHARS):
+            falhas.append("documento SEM secao markdown passou — placeholder de 1 linha "
+                          "com muito texto continuaria valendo como dogfood")
+
+        if _is_real_doc(os.path.join(td, "nao-existe.md"), MIN_REPORT_CHARS):
+            falhas.append("arquivo INEXISTENTE foi aceito — fail-closed furado")
+
+        if MIN_HANDOFF_CHARS >= MIN_REPORT_CHARS:
+            falhas.append(f"pisos incoerentes: handoff ({MIN_HANDOFF_CHARS}) deveria ser menor "
+                          f"que report ({MIN_REPORT_CHARS})")
+    return falhas
+
+
 def main():
     priv = os.path.join(ROOT, "docs", "_private")
     if not os.path.isdir(priv):
@@ -72,6 +113,15 @@ def main():
         print(f"docs/_private ausente -> SHADOW. {why}. PASS (nao cobra dogfood).")
         print("RESULTADO: PASS (shadow — sem cobranca de cross-IA)")
         return 0
+
+    falhas_canario = autoteste()
+    if falhas_canario:
+        print("auto-teste do detector (5 fixtures) - FAIL")
+        for f in falhas_canario:
+            print("  -", f)
+        print("RESULTADO: FAIL (o piso anti-placeholder do dogfood esta furado)")
+        return 1
+    print("auto-teste do detector (5 fixtures) - OK")
 
     fails = []
     execs = [p for p in glob.glob(os.path.join(priv, "execution-report-*.md"))

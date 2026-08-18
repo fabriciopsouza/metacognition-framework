@@ -1,0 +1,62 @@
+{
+  "bloco": "passivo-lote-2-nove-capacidades-provadas",
+  "papel": "qa_critic",
+  "rodada": 1,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "sha_revisado": "d54e500",
+  "resumo": "Sonnet isolado contra autor Opus, revisao read-only na arvore de trabalho NAO-commitada (worktree isolado nao serviria: veria o HEAD, sem o bloco). O critico nao aceitou o relatorio do auditor: rodou --provar nas 9 e foi ler o trecho de/para no mecanismo real de cada uma, conferindo que a sabotagem atinge a logica que DEFINE a capacidade e nao algo periferico. Dois achados MEDIO, ambos corrigidos e provados nesta mesma rodada. O achado que mais importa: a trava estrutural que eu escrevi para prender a emenda 5 conferia a PRESENCA da chave `encoding`, nunca o VALOR - logo `encoding=None` reintroduziria o bug original e passaria. Era a terceira versao desse mesmo canario a nascer verde-sem-significado, dentro do mecanismo criado para acabar com verde-sem-significado.",
+  "verificacoes_executadas": [
+    "as 9 capacidades migradas rodadas uma a uma com --provar: 9/9 [PROVADO] pelo motivo declarado",
+    "trecho de/para lido no mecanismo real de cada uma das 9 (nao so confiando no auditor): todas sabotam o if/constante que decide o comportamento protegido",
+    "contagem de ocorrencias de cada `de` no arquivo-alvo: count=1 nas 9, logo o replace(...,1) do auditor nao pode acertar o trecho errado hoje",
+    "correcao de mechanism do advanced-elicitation conferida contra test_elicitation_catalog.py:20, que le literalmente methods.md; git log confirma que o catalogo mudou de arquivo na v1.64.0 -> correcao de ponteiro factual, nao rename",
+    "fixture acento conferida como criada ANTES do git add -A do repo-fixture (test_audit_enforcement.py:190-202)",
+    "numeros da vitrine recalculados do zero a partir do capabilities.json: 21+8+27+34=90; 21+27=48 bate com --passivo; 21/90=23,3% torna verdadeira a frase 'menos de um quarto'",
+    "run_canaries.py: 77 PASS / 1 SKIP / 0 FAIL (78 canarios), test_audit_enforcement 30/30",
+    "APOS as correcoes: prova negativa dupla do caso (i-l) - sem a chave encoding E com encoding=None, o canario reprova nomeando o caso (rc 1 nos dois)"
+  ],
+  "problemas": [
+    {
+      "severidade": "medio",
+      "local": "tools/test_audit_enforcement.py (caso i-l)",
+      "descricao": "CORRIGIDO. A checagem por AST exigia so a existencia do keyword `encoding`, nunca o valor. O critico reproduziu em memoria: `encoding=None` ou `encoding=locale.getpreferredencoding(False)` nas duas chamadas reintroduz exatamente o bug original e passa na trava. Passou a exigir o valor literal utf-8 (ast.Constant), e a correcao foi provada contra os DOIS cenarios.",
+      "status": "corrigido"
+    },
+    {
+      "severidade": "medio",
+      "local": "docs/adr/106-prova-de-mutacao-para-capacidade-fail-closed.md",
+      "descricao": "CORRIGIDO. O codigo nomeava 'EMENDA 5' mas o ADR - fonte canonica da decisao - parava na Emenda 4, quebrando o padrao das emendas 1-4. Emenda 5 registrada, incluindo a licao das tres tentativas de canario verde-sem-significado. Dois numeros defasados no proprio ADR corrigidos junto (19 -> 30 verificacoes; passivo 35/22 -> 34/8 com o motivo das 8 restantes).",
+      "status": "corrigido"
+    },
+    {
+      "severidade": "baixo",
+      "local": "capabilities.json (elicitation-gate, project-onboarding)",
+      "descricao": "ACEITO COMO DIVIDA. Os `de` 'ADR-089' e 'knowledge_catalog' sao curtos: hoje count=1, mas se um commit nao relacionado adicionar uma 2a mencao, o replace(...,1) do auditor sabota a PRIMEIRA ocorrencia, que pode nao ser mais a certa. O auditor detecta `de` que SUMIU ('mutacao obsoleta'), nunca `de` que DUPLICOU - o sintoma seria silencioso. Vira pendencia de manutencao do auditor, nao deste bloco.",
+      "status": "aceito_como_divida"
+    }
+  ],
+  "escopo_paths": [
+    "capabilities.json",
+    "guia/web/index.html",
+    "tools/audit_enforcement.py",
+    "tools/test_audit_enforcement.py",
+    "docs/adr/106-prova-de-mutacao-para-capacidade-fail-closed.md"
+  ],
+  "atestacao": {
+    "agentId": "a9c7f4dbbd1932ec4",
+    "modelo": "claude-sonnet-5",
+    "modelo_autor": "claude-opus-5",
+    "isolamento": "subagente qa-critic isolado, read-only na arvore de trabalho nao-commitada; proibicao explicita de git checkout/restore/stash/clean/reset e de qualquer escrita, com backup previo dos 4 arquivos no scratchpad"
+  },
+  "postura": {
+    "rrc": "PASSA - o critico nao revisou se as provas passam (o auditor ja diz isso), revisou se elas provam a COISA CERTA, que e a unica pergunta que importa aqui; e achou o buraco na trava do proprio autor"
+  },
+  "nao_verificado": [
+    "as 8 capacidades com mechanism == test seguem sem prova - o impedimento esta medido e declarado, a migracao delas nao foi tentada neste bloco",
+    "o padrao subprocess.run(text=True) sem encoding aparece em ~36 outros arquivos de tools/ nao tocados aqui (fora do escopo do bloco, registrado)",
+    "reproducao do bug de encoding num locale nao-Windows: a trava final e estrutural justamente por isso"
+  ],
+  "data": "2026-08-17T00:00:00Z"
+}

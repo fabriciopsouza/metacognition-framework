@@ -1,6 +1,6 @@
 # Execution-report — encerramento de bloco (ADR-038/052 · tier OWNER · privado, não distribuído)
 
-- **Tokens:** NÃO MEDIDO — sem telemetria de token exposta ao agente (dependência do host; ver LIMITS.md)
+- **Tokens:** input 371,149 + output 12,680,643 = 13,051,792 (fonte: transcripts do Claude Code, ADR-026)
 - **Tempo (wall-clock):** NÃO MEDIDO
 - **Turnos:** NÃO MEDIDO
 - **Arquivos tocados:** NÃO MEDIDO

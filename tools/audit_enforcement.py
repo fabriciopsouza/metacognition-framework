@@ -26,6 +26,17 @@ E recusa "vermelho por crash": se o canario morre carregando o arquivo sabotado
 (SyntaxError e afins citando o proprio arquivo), a prova e' invalida — quebrar o arquivo
 nao prova que o gate detecta.
 
+EMENDA 5 (2026-08-17) — a prova era silenciosamente ASCII-only.
+As duas execucoes do canario usavam `text=True` SEM `encoding=`, entao a saida UTF-8 do
+canario era decodificada com o encoding do LOCALE (cp1252 no Windows pt-BR). Resultado:
+`mutacao.espera` com qualquer caractere acentuado NUNCA casava: os bytes UTF-8 do acento
+eram lidos como dois caracteres cp1252, entao a comparacao `espera not in saida` dava
+sempre verdadeiro e a prova morria com "vermelho, mas NAO pelo motivo declarado" — que
+acusa o canario quando o defeito estava no LEITOR da saida. Medido em `project-onboarding`,
+cujo canario imprime uma mensagem acentuada. Consequencia pior que o falso-negativo: o
+migrador aprende a escolher `espera` so em ASCII, e passa a evitar justamente a frase
+especifica que o canario imprime. Agora le utf-8 com errors=replace.
+
 DECISAO DO DONO (2026-08-14), que este script mecaniza:
   (a) capacidade NOVA  -> fail-closed. Sem `mutacao` declarada, sai 1 e barra.
   (b) passivo herdado  -> advisory. Reporta, nao barra. O passivo esta congelado em
@@ -250,6 +261,7 @@ def modo_provar(caps, alvo, raiz=RAIZ):
                 # 1) o canario passa ANTES da mutacao?
                 antes = subprocess.run([sys.executable, "-X", "utf8", str(canario)],
                                        capture_output=True, text=True, cwd=str(wt),
+                                       encoding="utf-8", errors="replace",
                                        env=ENV_SEM_BYTECODE)
                 saida_antes = (antes.stdout or "") + (antes.stderr or "")
                 if antes.returncode != 0:
@@ -267,6 +279,7 @@ def modo_provar(caps, alvo, raiz=RAIZ):
                 _purgar_bytecode(wt)
                 dep = subprocess.run([sys.executable, "-X", "utf8", str(canario)],
                                      capture_output=True, text=True, cwd=str(wt),
+                                     encoding="utf-8", errors="replace",
                                      env=ENV_SEM_BYTECODE)
                 alvo_f.write_text(original, encoding="utf-8")
                 saida_dep = (dep.stdout or "") + (dep.stderr or "")

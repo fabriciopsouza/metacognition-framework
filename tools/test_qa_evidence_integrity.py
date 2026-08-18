@@ -23,6 +23,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 QA_DIR = os.path.join(ROOT, "_meta", "qa")
@@ -51,7 +52,14 @@ def verificar(qa_dir: str = QA_DIR):
     problemas, pares, sem_par = [], 0, []
     for jpath in sorted(glob.glob(os.path.join(qa_dir, "*.json"))):
         mpath = jpath[:-5] + ".md"
-        rel = os.path.relpath(jpath, ROOT)
+        try:
+            rel = os.path.relpath(jpath, ROOT)
+        except ValueError:
+            # Drive diferente do repo: `relpath` estoura no Windows (runner da CI monta o
+            # repo em D: e o tempdir em C:). O rotulo e' cosmetico — nunca pode derrubar o
+            # canario. Mesma armadilha ja registrada no test_handoff.py caso (j), la com
+            # `commonpath`. Pega pela matriz da CI; localmente tudo mora no mesmo drive.
+            rel = jpath
         if not os.path.isfile(mpath):
             sem_par.append(rel)
             continue
@@ -76,11 +84,69 @@ def verificar(qa_dir: str = QA_DIR):
     return problemas, pares, sem_par
 
 
+def autoteste():
+    """Fixtures que este canario e OBRIGADO a acertar (ADR-106).
+
+    Classe `mechanism == test`: como o repo real esta coerente, sabotar a comparacao deixava o
+    canario VERDE — o gate deixava de existir sem nenhum sinal. As fixtures montam pares
+    .json/.md que CONTRADIZEM um ao outro, que e' exatamente o defeito que originou o canario.
+    """
+    falhas = []
+    with tempfile.TemporaryDirectory(prefix="qa-integridade-fx-") as td:
+        def par(nome, rec_json, rec_md, passou_json, passou_md, com_md=True):
+            with open(os.path.join(td, nome + ".json"), "w", encoding="utf-8") as fh:
+                json.dump({"recomendacao": rec_json, "passou": passou_json}, fh)
+            if com_md:
+                with open(os.path.join(td, nome + ".md"), "w", encoding="utf-8") as fh:
+                    fh.write(f"**Recomendacao:** {rec_md}\n\n**Veredito (passou):** {passou_md}\n")
+
+        par("coerente", "aprovar", "aprovar", True, "True")
+        problemas, pares, sem_par = verificar(td)
+        if problemas:
+            falhas.append(f"par COERENTE foi acusado (falso-positivo): {problemas}")
+        if pares != 1:
+            falhas.append(f"contagem de pares = {pares}, esperado 1")
+
+    with tempfile.TemporaryDirectory(prefix="qa-integridade-fx2-") as td:
+        par_rec = os.path.join(td, "divergente.json")
+        with open(par_rec, "w", encoding="utf-8") as fh:
+            json.dump({"recomendacao": "reprovar", "passou": True}, fh)
+        with open(os.path.join(td, "divergente.md"), "w", encoding="utf-8") as fh:
+            fh.write("**Recomendacao:** aprovar\n\n**Veredito (passou):** True\n")
+        problemas, _, _ = verificar(td)
+        if not any("recomendacao divergente" in p for p in problemas):
+            falhas.append("recomendacao CONTRADITORIA entre .json e .md nao foi pega — "
+                          "detector cego (e' o defeito que originou este canario)")
+
+    with tempfile.TemporaryDirectory(prefix="qa-integridade-fx3-") as td:
+        with open(os.path.join(td, "passou.json"), "w", encoding="utf-8") as fh:
+            json.dump({"recomendacao": "aprovar", "passou": False}, fh)
+        with open(os.path.join(td, "passou.md"), "w", encoding="utf-8") as fh:
+            fh.write("**Recomendacao:** aprovar\n\n**Veredito (passou):** True\n")
+        problemas, _, _ = verificar(td)
+        if not any("'passou' divergente" in p for p in problemas):
+            falhas.append("campo 'passou' CONTRADITORIO nao foi pego — um veredito pode dizer "
+                          "reprovado na maquina e aprovado para o humano")
+
+    with tempfile.TemporaryDirectory(prefix="qa-integridade-fx4-") as td:
+        with open(os.path.join(td, "orfao.json"), "w", encoding="utf-8") as fh:
+            json.dump({"recomendacao": "aprovar", "passou": True}, fh)
+        problemas, pares, sem_par = verificar(td)
+        if problemas:
+            falhas.append("artefato SEM .md irmao reprovou — e' divida pre-existente, "
+                          "listada e nao bloqueante por decisao registrada")
+        if len(sem_par) != 1:
+            falhas.append(f"artefato sem par nao foi LISTADO (sem_par={sem_par}) — "
+                          f"silencia-lo o tornaria normal")
+    return falhas
+
+
 def main() -> int:
     if not os.path.isdir(QA_DIR):
         print("RESULTADO: SKIP (sem _meta/qa/ neste repo)")
         return 0
     problemas, pares, sem_par = verificar()
+    falhas_canario = autoteste()
     print(f"integridade .json x .md: {pares} par(es) conferido(s)")
     for p in problemas:
         print(f"  DIVERGENTE {p}")
@@ -90,12 +156,17 @@ def main() -> int:
               f"visao humana). NAO reprova, mas fica listado:")
         for s in sem_par:
             print(f"      - {s}")
+    print(f"auto-teste do detector (6 fixtures) - {'OK' if not falhas_canario else 'FAIL'}")
+    for f in falhas_canario:
+        print("  -", f)
     print("-" * 50)
-    if problemas:
-        print(f"RESULTADO: FAIL ({len(problemas)} divergencia(s) — regrave com "
+    if problemas or falhas_canario:
+        print(f"RESULTADO: FAIL ({len(problemas)} divergencia(s), "
+              f"{len(falhas_canario)} falha(s) do proprio detector - regrave com "
               f"`python tools/qa_evidence.py --from-json`, NUNCA editando .json/.md a mao)")
         return 1
-    print("RESULTADO: PASS (registro humano e registro-maquina contam a mesma historia)")
+    print("RESULTADO: PASS (registro humano e registro-maquina contam a mesma historia; "
+          "detector provado contra fixture)")
     return 0
 
 

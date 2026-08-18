@@ -1,0 +1,56 @@
+{
+  "bloco": "passivo-lote-3-classe-mechanism-igual-test",
+  "papel": "qa_critic",
+  "rodada": 1,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "veredito": "aprovar",
+  "sha_revisado": "fcfa8d7",
+  "resumo": "Sonnet isolado contra autor Opus, read-only sobre arvore NAO-commitada. O critico nao avaliou por leitura: aplicou MANUALMENTE cada uma das 8 mutacoes (mesmo str.replace que o auditor faz), rodou o canario mutado, conferiu o motivo declarado no stdout e restaurou comparando sha256 antes/depois — 8/8 morderam pelo motivo certo, restauracao limpa nas 8. Tambem checou ambiguidade de `de` nas 29 capacidades com mutacao (nao so nas 8 novas): todas count==1. APROVAR sem achados; 1 observacao redacional no ADR, aplicada.",
+  "verificacoes_executadas": [
+    "8 mutacoes aplicadas manualmente e revertidas com verificacao de sha256 antes/depois: 8/8 vermelho pelo motivo declarado",
+    "confirmado que main() e autoteste() chamam a MESMA funcao extraida nos 8 arquivos (nao reimplementacao paralela que apodreceria em silencio)",
+    "confirmado que os 8 autotestes cobrem as DUAS direcoes (caso sujo que deve ser pego + caso limpo que nao pode ser acusado)",
+    "ambiguidade de `de`: contagem literal nos arquivos-alvo das 29 capacidades com mutacao -> todas count==1",
+    "test_consistency_closing.py real: as 5 checagens originais (duplicatas, proposto-entregue, raiz-limpa, version-claim, ponteiro-morto) seguem executando e reportando apos o refactor de main()",
+    "return 1 antecipado em posture-gate/dev-dogfood conferido: ocorre DEPOIS do shadow-check e ANTES da logica do gate — mais estrito, nao mais frouxo",
+    "vitrine recalculada do zero: 29+0+27+34=90; distribuicao de enforcement soma 27; 29/90=0,322 confirma 'menos de um terco'; 'classe foi a zero' verificado contando fail-closed sem mutacao = 0",
+    "run_canaries.py completo: 77 PASS / 1 SKIP / 0 FAIL (78)"
+  ],
+  "problemas": [
+    {
+      "severidade": "baixo",
+      "local": "docs/adr/106-prova-de-mutacao-para-capacidade-fail-closed.md",
+      "descricao": "CORRIGIDO. Observacao redacional: a frase 'era 22 no registro do ADR' misturava o censo historico de 2026-08-14 com as 8 restantes deste bloco — exigia que o leitor ja soubesse de qual censo vinha o 22. Nao era erro factual. Reescrita para citar a data do censo.",
+      "status": "corrigido"
+    }
+  ],
+  "escopo_paths": [
+    "capabilities.json",
+    "docs/adr/106-prova-de-mutacao-para-capacidade-fail-closed.md",
+    "guia/web/index.html",
+    "tools/test_adr_changelog_sync.py",
+    "tools/test_consistency_closing.py",
+    "tools/test_core_no_vendor.py",
+    "tools/test_dev_dogfood.py",
+    "tools/test_posture_gate.py",
+    "tools/test_qa_evidence_integrity.py",
+    "tools/test_release_checkpoint.py",
+    "tools/test_web_prompt_currency.py"
+  ],
+  "atestacao": {
+    "agentId": "a5d64a9cb50c76457",
+    "modelo": "claude-sonnet-5",
+    "modelo_autor": "claude-opus-5",
+    "isolamento": "subagente qa-critic isolado, read-only na arvore nao-commitada; proibicao explicita de git checkout/restore/stash/clean/reset e de qualquer escrita; backup previo dos 11 arquivos + diff no scratchpad; o critico validou a propria reversao por sha256"
+  },
+  "postura": {
+    "rrc": "PASSA — o critico nao perguntou se os canarios passam (passam por construcao), perguntou se o auto-teste testa a MESMA funcao que roda em producao, que e a unica forma de a fixture significar alguma coisa; e conferiu as duas direcoes de cada uma"
+  },
+  "nao_verificado": [
+    "34 capacidades seguem sem o campo enforcement — classe diferente, nao tocada por este bloco",
+    "--provar formal das 8 so pode rodar APOS o commit: o modo cria worktree a partir do HEAD",
+    "o padrao subprocess.run(text=True) sem encoding em ~36 outros arquivos de tools/ (fora de escopo)"
+  ],
+  "data": "2026-08-17T00:00:00Z"
+}

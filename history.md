@@ -13,6 +13,32 @@
 > **Poda de contexto (ADR-107):** este arquivo quente mantem os ultimos **10** checkpoints + `## Em aberto` + `## Aprendizado`. **56** checkpoints mais antigos estao em [`docs/history/history-archive.md`](docs/history/history-archive.md) (nada deletado — so realocado). Rotacao: `python tools/rotate_history.py`.
 <!-- history-archive-pointer -->
 
+## 2026-08-17 — Release v1.88.0 (MINOR): nenhuma capacidade declara bloquear sem prova (ADR-106)
+
+A classe "declara `fail-closed` e nunca foi sabotada para confirmar" chegou a zero. Eram 22 no
+censo original do ADR-106; hoje são zero, e 29 capacidades têm sabotagem provada de verdade.
+
+**O passivo não era homogêneo, e essa foi a descoberta que orientou o bloco.** Nove capacidades
+tinham mecanismo e canário em arquivos distintos — bastava declarar a mutação. As outras oito
+tinham `mechanism == test`: o gate *era* o próprio canário, e sabotar a detecção o deixava
+**verde**. O auditor recusava a prova, corretamente. Não era desleixo acumulado; era impossível
+provar do jeito que estavam. Cada uma ganhou uma fixture sintética que é obrigada a acertar.
+
+**O que mais ensina não é o resultado, é o caminho.** O canário que escrevi para prender uma
+correção do próprio auditor nasceu verde-sem-significado **três vezes** — e a terceira só caiu
+porque o crítico independente mostrou que `encoding=None` passaria. Três verdes vazios dentro do
+mecanismo criado para acabar com verdes vazios. É a medida de quão fácil é escrever o teste que
+confirma o que já se acredita, mesmo sabendo disso.
+
+**Um gate pode falhar por não poder passar.** A proteção da `main` exigia um check que nenhum job
+produzia: a matriz rodava verde nos três sistemas e nenhum PR era mergeável. Ficou meses
+invisível porque merge bloqueado *parece* rigor.
+
+**Próximo passo:** classificar as 34 capacidades sem o campo `enforcement` pela leitura do que o
+canário de cada uma faz de fato — e não marcar nenhuma como `fail-closed` sem fixture, sob pena
+de recriar o passivo recém-zerado. Antes disso, mecanizar a detecção de trecho `de` ambíguo no
+auditor, que é barato e fecha a única dívida aberta desta classe.
+
 ## 2026-08-17 — Release v1.87.0 (MINOR): o silêncio das distribuições vira número (ADR-049)
 
 Fecha o único ponto de falha silencioso que restava. As cinco distribuições são geradas do

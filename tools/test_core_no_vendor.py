@@ -14,6 +14,7 @@ Exceção auditável: linha com `vendor-ok:allow` (estilo `# noqa`, exige justif
 Uso: python tools/test_core_no_vendor.py   (exit 0 PASS; 1 se vazou nome de produto)
 """
 import glob
+import tempfile
 import os
 import re
 import sys
@@ -45,31 +46,96 @@ def targets():
     return sorted(set(files))
 
 
-def main():
+def varrer(files, raiz):
+    """Devolve a lista de vazamentos nos arquivos dados.
+
+    Extraida de main() para que o AUTO-TESTE abaixo exercite a MESMA logica de deteccao
+    contra fixtures sinteticas — se ele testasse uma copia, sabotar a original passaria.
+    """
     leaks = []
-    files = targets()
     for path in files:
         try:
             lines = open(path, encoding="utf-8-sig").read().splitlines()
         except (OSError, UnicodeDecodeError):
             continue
-        rel = os.path.relpath(path, ROOT)
+        rel = os.path.relpath(path, raiz)
         for n, line in enumerate(lines, 1):
             if SENTINEL in line:
                 continue
-            scrub = ADR_PATH.sub("", line)  # remove refs a arquivo de ADR (proveniência ok)
+            scrub = ADR_PATH.sub("", line)  # remove refs a arquivo de ADR (proveniencia ok)
             m = VENDOR.search(scrub)
             if m:
-                leaks.append(f"{rel}:{n}: produto '{m.group(0)}' no conteúdo operativo -> {line.strip()[:90]}")
+                leaks.append(f"{rel}:{n}: produto {m.group(0)!r} no conteudo operativo "
+                             f"-> {line.strip()[:90]}")
+    return leaks
 
-    print(f"core-no-vendor: {len(files)} arquivos de núcleo varridos; nome de produto externo — "
+
+def autoteste():
+    """Fixtures que este canario e OBRIGADO a acertar — a prova de que ele nao esta cego.
+
+    ADR-106: capacidade `fail-closed` declara a mutacao que a derruba. Este canario nao
+    podia ser derrubado, porque `mechanism == test`: sabotar a deteccao o deixava VERDE
+    (medido em 17/08/2026, `--provar --id core-no-vendor` recusou a prova com "continuou
+    VERDE"). Com o auto-teste, esvaziar o VENDOR reprova aqui.
+
+    Devolve a lista de falhas do proprio detector (vazia = detector integro).
+    """
+    falhas = []
+    # 'bmad' abaixo e' DADO DE TESTE, nao conteudo operativo. tools/ esta fora do escopo
+    # varrido (ver CORE_GLOBS), e as linhas levam o SENTINEL como cinto de seguranca caso
+    # o escopo mude um dia.
+    produto = "bmad"
+    with tempfile.TemporaryDirectory(prefix="core-no-vendor-fx-") as td:
+        def escrever(nome, conteudo):
+            p = os.path.join(td, nome)
+            with open(p, "w", encoding="utf-8") as fh:
+                fh.write(conteudo)
+            return p
+
+        # (1) vazamento OBVIO -> TEM de ser pego. E' este caso que morre se o detector cegar.
+        sujo = escrever("sujo.md", "# Skill qualquer" + chr(10) + "Use o metodo do " + produto + " aqui." + chr(10))
+        if not varrer([sujo], td):
+            falhas.append("fixture COM nome de produto nao foi pega — detector cego "
+                          "(VENDOR vazio/quebrado?)")
+
+        # (2) fixture LIMPA nao pode acusar: detector que acusa tudo nao serve para nada.
+        limpo = escrever("limpo.md", "# Skill qualquer" + chr(10) + "Metodo agnostico, sem produto." + chr(10))
+        if varrer([limpo], td):
+            falhas.append("fixture LIMPA foi acusada — falso-positivo do detector")
+
+        # (3) a excecao auditavel continua valendo (senao vira ruido e alguem a desliga).
+        isento = escrever("isento.md", "Cita " + produto + " com justificativa. " + SENTINEL + chr(10))
+        if varrer([isento], td):
+            falhas.append("linha com " + SENTINEL + " foi acusada — excecao auditavel parou de valer")
+
+        # (4) referencia a ARQUIVO de ADR e proveniencia legitima -> nao pode acusar.
+        adr = escrever("adr.md", "Ver docs/adr/085-integracao-" + produto + "-por-recast.md" + chr(10))
+        if varrer([adr], td):
+            falhas.append("referencia a arquivo de ADR foi acusada — proveniencia legitima barrada")
+    return falhas
+
+
+def main():
+    files = targets()
+    leaks = varrer(files, ROOT)
+    falhas_canario = autoteste()
+
+    print(f"core-no-vendor: {len(files)} arquivos de nucleo varridos; nome de produto externo — "
           f"{'OK (nenhum)' if not leaks else 'FAIL'}")
     for lk in leaks:
         print("  -", lk)
+    print(f"auto-teste do detector (4 fixtures: suja/limpa/isenta/ADR) — "
+          f"{'OK' if not falhas_canario else 'FAIL'}")
+    for f in falhas_canario:
+        print("  -", f)
     print("-" * 50)
-    print("RESULTADO:", "PASS (núcleo product-free; proveniência só nos ADRs)"
-          if not leaks else f"FAIL ({len(leaks)} vazamento(s) de produto)")
-    return 1 if leaks else 0
+    if leaks or falhas_canario:
+        print(f"RESULTADO: FAIL ({len(leaks)} vazamento(s) de produto, "
+              f"{len(falhas_canario)} falha(s) do proprio detector)")
+        return 1
+    print("RESULTADO: PASS (nucleo product-free; proveniencia so nos ADRs; "
+          "detector provado contra fixture)")
+    return 0
 
 
 if __name__ == "__main__":

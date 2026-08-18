@@ -23,6 +23,56 @@ except Exception:
     pass
 
 
+def tem_checkpoint(hist, versao):
+    """A versao aparece DENTRO de um heading de checkpoint datado do history.md?
+
+    Extraida de main() para o auto-teste exercitar a MESMA regra. As duas sutilezas que ela
+    protege (e que ja falharam de verdade) estao nas fixtures de `autoteste()`:
+      - mencao fora de heading nao conta (false-PASS de "Proximo passo: lancar vX");
+      - fronteira numerica: 1.5.0 nao casa 1.50.0/11.5.0, e 1.51.0 nao casa 1.51.0-beta.
+    """
+    pat = re.compile(
+        rf"(?m)^##\s+\d{{4}}-\d{{2}}-\d{{2}}.*?(?<![\d.])v?{re.escape(versao)}(?![\d.\-A-Za-z])")
+    return bool(pat.search(hist))
+
+
+def versao_atual(chg):
+    """Topo do CHANGELOG = release atual (Keep a Changelog: mais novo no topo)."""
+    vers = re.findall(r"(?m)^## \[(\d+\.\d+\.\d+)\]", chg)
+    return vers[0] if vers else None
+
+
+def autoteste():
+    """Fixtures que este canario e OBRIGADO a acertar (ADR-106).
+
+    Antes disto o canario era da classe `mechanism == test`: sabotar a regra o deixava VERDE
+    (nao acha nada de errado no repo real e passa), entao a capacidade declarava `fail-closed`
+    sem poder ser provada. Cada fixture aqui e um false-PASS que ja aconteceu ou que a regra
+    foi escrita para impedir.
+    """
+    falhas = []
+    bom = "## 2026-08-17 - Release v1.87.0 (MINOR): titulo qualquer\n\ntexto\n"
+    if not tem_checkpoint(bom, "1.87.0"):
+        falhas.append("checkpoint datado LEGITIMO nao foi reconhecido — detector cego")
+
+    fora = "## Em aberto\n\n- Proximo passo: lancar v1.87.0 quando der\n"
+    if tem_checkpoint(fora, "1.87.0"):
+        falhas.append("mencao FORA de heading datado foi aceita — e o false-PASS que a regra "
+                      "existe para impedir (padrao real no history: 'Proximo passo: lancar vX')")
+
+    vizinha = "## 2026-08-17 - Release v1.50.0 (MINOR): outra\n"
+    if tem_checkpoint(vizinha, "1.5.0"):
+        falhas.append("fronteira numerica furada: 1.5.0 casou com 1.50.0")
+
+    pre = "## 2026-08-17 - Release v1.51.0-beta (MINOR): outra\n"
+    if tem_checkpoint(pre, "1.51.0"):
+        falhas.append("fronteira furada: 1.51.0 casou com 1.51.0-beta")
+
+    if versao_atual("## [2.0.0] - x\n## [1.0.0] - y\n") != "2.0.0":
+        falhas.append("versao atual nao e a do TOPO do CHANGELOG")
+    return falhas
+
+
 def main():
     try:
         chg = open(os.path.join(ROOT, "CHANGELOG.md"), encoding="utf-8-sig").read()
@@ -31,30 +81,31 @@ def main():
         print(f"RESULTADO: FAIL (CHANGELOG/history ilegivel: {e})")
         return 1
 
-    vers = re.findall(r"(?m)^## \[(\d+\.\d+\.\d+)\]", chg)
-    if not vers:
+    latest = versao_atual(chg)
+    if not latest:
         print("RESULTADO: FAIL (nenhuma versao no CHANGELOG)")
         return 1
-    latest = vers[0]  # topo do CHANGELOG = release atual (Keep a Changelog: mais novo no topo)
 
-    # Hardening (qa-critic 2026-06-08, achados ALTO/MEDIO): a versao tem de aparecer DENTRO de um
-    # heading de checkpoint (## YYYY-MM-DD ... vX.Y.Z) — NAO em qualquer ponto do corpo. O `latest in
-    # hist` antigo dava FALSE-PASS quando a versao era citada num "Proximo passo: lancar vX" de
-    # planejamento de um bloco anterior (padrao real no history). E exige fronteira numerica:
-    # `1.5.0` nao pode casar `1.50.0`/`11.5.0`. `.` nao cruza newline -> match preso a 1 linha-heading.
-    # fronteira: nem digito/ponto ANTES (1.5.0 != 11.5.0) nem digito/ponto/alfa/hifen DEPOIS
-    # (1.51.0 != 1.51.0-beta — achado BAIXO do process-critic 2026-06-08).
-    pat = re.compile(rf"(?m)^##\s+\d{{4}}-\d{{2}}-\d{{2}}.*?(?<![\d.])v?{re.escape(latest)}(?![\d.\-A-Za-z])")
-    ok = bool(pat.search(hist))
+    ok = tem_checkpoint(hist, latest)
+    falhas_canario = autoteste()
+
     if ok:
         print(f"release atual v{latest}: checkpoint presente no history.md (heading datado) — OK")
     else:
         print(f"release atual v{latest}: SEM checkpoint datado no history.md "
               f"(mencao fora de heading nao conta — anti false-PASS)")
+    print(f"auto-teste do detector (5 fixtures) — {'OK' if not falhas_canario else 'FAIL'}")
+    for f in falhas_canario:
+        print("  -", f)
     print("-" * 50)
-    print("RESULTADO:", f"PASS (release v{latest} tem fechamento documentado)" if ok
-          else f"FAIL (release v{latest} sem checkpoint — documente o fechamento no history.md)")
-    return 0 if ok else 1
+    if not ok or falhas_canario:
+        print(f"RESULTADO: FAIL (release v{latest}: "
+              f"{'sem checkpoint' if not ok else 'checkpoint ok'}, "
+              f"{len(falhas_canario)} falha(s) do proprio detector)")
+        return 1
+    print(f"RESULTADO: PASS (release v{latest} tem fechamento documentado; "
+          f"detector provado contra fixture)")
+    return 0
 
 
 if __name__ == "__main__":

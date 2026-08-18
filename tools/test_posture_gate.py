@@ -20,6 +20,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 QA_DIR = os.path.join(ROOT, "_meta", "qa")
@@ -62,6 +63,63 @@ def _is_genuine_shadow():
     return False, "nao-shadow (enforce — so export-shadow genuino pula; anti-forja)"
 
 
+def achar_artefato(qa_dir, versao):
+    """(nome, veredito) do artefato APROVATIVO daquele release, ou None.
+
+    Extraida de main() para o auto-teste exercitar a MESMA selecao. E' aqui que mora o
+    defeito historico mais caro do ledger: aceitar como evidencia um veredito que NAO
+    aprova, ou o veredito de OUTRO release.
+    """
+    for jf in sorted(glob.glob(os.path.join(qa_dir, "*.json"))):
+        try:
+            v = json.load(open(jf, encoding="utf-8"))
+        except Exception:
+            continue
+        if str(v.get("release", "")) == versao and v.get("recomendacao") in APPROVING:
+            return (os.path.basename(jf), v)
+    return None
+
+
+def autoteste():
+    """Fixtures que este canario e OBRIGADO a acertar (ADR-106).
+
+    Classe `mechanism == test`: com o repo real em ordem, afrouxar a selecao (ex.: aceitar
+    `reprovar` como aprovativo) deixava o canario VERDE. O gate que existe para impedir
+    "release fechado sem postura" passaria a liberar release REPROVADO, em silencio.
+    """
+    falhas = []
+    postura_boa = {"discovery": "elicitacao feita", "rrc": "PASSA - coerente",
+                   "metodo_senior": "9 passos"}
+    with tempfile.TemporaryDirectory(prefix="posture-fx-") as td:
+        def art(nome, release, rec, postura=None):
+            with open(os.path.join(td, nome), "w", encoding="utf-8") as fh:
+                json.dump({"release": release, "recomendacao": rec,
+                           "postura": postura if postura is not None else postura_boa}, fh)
+
+        art("aprovado.json", "9.9.9", "aprovar_com_ressalvas")
+        art("reprovado.json", "9.9.8", "reprovar")
+        art("outro-release.json", "1.2.3", "aprovar")
+
+        if achar_artefato(td, "9.9.9") is None:
+            falhas.append("artefato APROVATIVO do release nao foi encontrado — detector cego")
+        if achar_artefato(td, "9.9.8") is not None:
+            falhas.append("veredito REPROVADO foi aceito como evidencia aprovativa — e' o "
+                          "defeito historico do ledger (release reprovado liberando fechamento)")
+        if achar_artefato(td, "7.7.7") is not None:
+            falhas.append("artefato de OUTRO release foi aceito — evidencia tem de ser do release")
+
+    # a regra de postura em si (fonte unica: qa_evidence.validate_postura)
+    if validate_postura(postura_boa, for_release=True):
+        falhas.append("postura COMPLETA foi acusada (falso-positivo)")
+    if not validate_postura({**postura_boa, "rrc": "NAO PASSA"}, for_release=True):
+        falhas.append("rrc != PASSA nao foi pego num release")
+    if not validate_postura({**postura_boa, "discovery": ""}, for_release=True):
+        falhas.append("discovery vazio nao foi pego")
+    if not validate_postura(None, for_release=True):
+        falhas.append("postura AUSENTE nao foi pega — fail-closed furado")
+    return falhas
+
+
 def main():
     shadow, why = _is_genuine_shadow()
     if shadow:
@@ -86,15 +144,15 @@ def main():
         return 1
 
     # artefato aprovativo do release
-    rel_art = None
-    for jf in glob.glob(os.path.join(QA_DIR, "*.json")):
-        try:
-            v = json.load(open(jf, encoding="utf-8"))
-        except Exception:
-            continue
-        if str(v.get("release", "")) == latest and v.get("recomendacao") in APPROVING:
-            rel_art = (os.path.basename(jf), v)
-            break
+    rel_art = achar_artefato(QA_DIR, latest)
+    falhas_canario = autoteste()
+    if falhas_canario:
+        print(f"auto-teste do detector (7 fixtures) - FAIL")
+        for f in falhas_canario:
+            print("  -", f)
+        print("RESULTADO: FAIL (o proprio detector do posture-gate esta furado)")
+        return 1
+    print("auto-teste do detector (7 fixtures) - OK")
 
     if not rel_art:
         print(f"release v{latest}: SEM artefato qa-critic aprovativo (pre-requisito da postura)")
