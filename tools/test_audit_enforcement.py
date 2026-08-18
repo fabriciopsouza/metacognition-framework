@@ -184,6 +184,18 @@ def main():
             "bruto = P.read_text(encoding='utf-8')\n"
             "d = json.loads(bruto)\n"
             "sys.exit(0 if d.get('limite') == 7 else 1)\n", encoding="utf-8")
+        # Par acento/test_acento: o canario detecta e REPORTA COM ACENTO — como a maioria
+        # dos canarios reais deste repo. Existe para prender a emenda 5: a saida do canario
+        # tem de ser lida como utf-8, nao com o encoding do locale.
+        (fix / "tools" / "acento.py").write_text("LIMITE = 7\n", encoding="utf-8")
+        (fix / "tools" / "test_acento.py").write_text(
+            "import sys, pathlib\n"
+            "print('conferindo o limite')\n"
+            "t = (pathlib.Path(__file__).parent / 'acento.py').read_text(encoding='utf-8')\n"
+            "if 'LIMITE = 7' in t:\n"
+            "    sys.exit(0)\n"
+            "print('DETECTOU: limite fora da toler\u00e2ncia declarada')\n"
+            "sys.exit(1)\n", encoding="utf-8")
         git = ["git", "-c", "user.email=c@x", "-c", "user.name=canario"]
         pronto = all(subprocess.run(c, capture_output=True, cwd=str(fix)).returncode == 0
                      for c in (["git", "init", "-q"], ["git", "add", "-A"],
@@ -274,6 +286,8 @@ def main():
             # (i-j) as duas travas contra cache de bytecode existem de fato. Deterministico:
             # o caso (i-i) so reprova quando a corrida do relogio e' perdida, e canario que
             # depende de sorte nao e' canario.
+            import ast
+            import inspect
             import importlib.util as _ilu
             _spec = _ilu.spec_from_file_location("_audenf", AUDITOR)
             _mod = _ilu.module_from_spec(_spec)
@@ -285,6 +299,57 @@ def main():
             _mod._purgar_bytecode(_lixo.parent)
             caso("travas anti-cache de bytecode presentes (env + purga)", 0, "",
                  0 if (ok_env and not _lixo.exists()) else 1, "", resultados)
+
+            # (i-k) `espera` ACENTUADA. As duas execucoes do canario usavam text=True SEM
+            # encoding, entao a saida utf-8 era decodificada com o encoding do LOCALE (cp1252
+            # no Windows pt-BR): os bytes do acento viravam dois caracteres e a comparacao
+            # `espera not in saida` dava SEMPRE verdadeiro. Prova valida era recusada como
+            # "vermelho pelo motivo errado" — acusando o canario por um defeito do LEITOR.
+            # Emenda 5 (2026-08-17), medida em `project-onboarding`. Pior que o falso-negativo:
+            # ensina o migrador a escolher `espera` so em ASCII, fugindo justamente da frase
+            # especifica que o canario imprime.
+            caps, base = escrever(tmp, [{"id": "fk", "enforcement": "fail-closed",
+                "mechanism": "tools/acento.py", "test": "tools/test_acento.py", "mutacao": {
+                "arquivo": "tools/acento.py", "de": "LIMITE = 7", "para": "LIMITE = 9",
+                "canario": "tools/test_acento.py",
+                "espera": "limite fora da toler\u00e2ncia declarada"}}])
+            c, s = rodar(AUDITOR, caps, base, "--provar", "--raiz", str(fix))
+            caso("`espera` com acento casa end-to-end (nao distingue o fix — ver (i-l))", 0,
+                 "[provado]", c, s, resultados)
+
+            # (i-l) A trava REAL da emenda 5, estrutural e deterministica.
+            # O caso (i-k) acima NAO consegue reprovar quando o fix e removido: `rodar()`
+            # lanca o auditor com `-X utf8`, e em modo UTF-8 `locale.getpreferredencoding()`
+            # ja devolve UTF-8 — ou seja, o caso end-to-end mede um ambiente onde o bug nao
+            # existe. MEDIDO em 2026-08-17: passa com e sem o fix. O defeito aparece quando o
+            # auditor roda SEM modo UTF-8 (humano chamando `python tools/audit_enforcement.py
+            # --provar`, que foi como ele apareceu). Como reproduzir isso depende do locale da
+            # maquina, a trava e' estrutural: as DUAS execucoes do canario em `modo_provar`
+            # tem de declarar `encoding="utf-8"`. Mesmo precedente do caso (i-j).
+            # Contar `encoding="utf-8"` no fonte NAO serve: ele ja aparece 3x em
+            # `modo_provar` (read_text + os dois write_text), logo um limiar >=2 passa
+            # mesmo com as duas chamadas de subprocess sem encoding. Medido em 2026-08-17,
+            # na 1a versao desta propria verificacao. Por isso a checagem e por AST: acha as
+            # chamadas que executam o CANARIO e exige `encoding` em TODAS elas.
+            _arv = ast.parse(inspect.getsource(_mod.modo_provar))
+            _runs = [n for n in ast.walk(_arv) if isinstance(n, ast.Call)
+                     and getattr(n.func, "attr", "") == "run"
+                     and "canario" in ast.unparse(n)]
+            # Conferir a PRESENCA da chave `encoding` NAO basta: `encoding=None` ou
+            # `encoding=locale.getpreferredencoding(False)` reintroduzem exatamente o bug
+            # original (decodificar pelo locale) e passariam na checagem. Achado MEDIO do
+            # qa-critic (Sonnet, 2026-08-17), reproduzido em memoria antes de virar codigo.
+            # Exigimos o VALOR literal utf-8, nao so a chave.
+            def _le_utf8(n):
+                for k in n.keywords:
+                    if k.arg == "encoding":
+                        return (isinstance(k.value, ast.Constant)
+                                and str(k.value.value).lower().replace("-", "") == "utf8")
+                return False
+            _sem_enc = [n for n in _runs if not _le_utf8(n)]
+            caso(f"as {len(_runs)} execucoes do canario leem a saida como utf-8 "
+                 f"(sem utf-8 literal: {len(_sem_enc)}; esperado 2 e 0)", 0, "",
+                 0 if (len(_runs) == 2 and not _sem_enc) else 1, "", resultados)
 
             # (i-g) `espera` curta demais vira curinga: "Error" casa com qualquer excecao.
             # Achado ALTO 2 do mesmo crítico.

@@ -177,6 +177,41 @@ ambiente de quem a aplica não é sabotagem.
 congelado) e exige que o ambiente do executor detecte o que o ambiente padrão deixa passar.
 Registro de capacidades 81 → 82; com gate provado 24 → 28.
 
+## Emenda 5 (2026-08-17 — a prova era silenciosamente ASCII-only, e o guarda dela nasceu vazio)
+
+Ao migrar o passivo (lote 2), `project-onboarding` foi recusado com *“vermelho, mas NÃO pelo
+motivo declarado”*. O canário estava certo, a mutação estava certa e o gate estava certo — errado
+estava o **leitor da saída**: as duas execuções do canário em `modo_provar` usavam `text=True`
+**sem `encoding=`**, então a saída UTF-8 era decodificada com o encoding do *locale* (cp1252 no
+Windows pt-BR). Os bytes do acento viravam dois caracteres e `espera not in saida` dava sempre
+verdadeiro. Qualquer `mutacao.espera` acentuada era, por construção, improvável.
+
+O dano não é o falso-negativo isolado. A maioria dos canários deste repositório imprime mensagem
+acentuada; o migrador que batesse nisso aprenderia a escolher `espera` **só em ASCII**, fugindo
+justamente da frase específica que o canário emite — e a prova voltaria a ser aproximada, que é a
+fraude que a Emenda 1 fechou. Correção: ler `utf-8` com `errors=replace` nas duas execuções.
+
+### O que ensina, e é o motivo desta emenda existir
+
+O canário escrito para prender esta correção nasceu **verde e vazio duas vezes**:
+
+1. **End-to-end não mordia.** O caso roda o auditor via `rodar()`, que o lança com `-X utf8`; em
+   modo UTF-8 o `locale.getpreferredencoding()` já devolve UTF-8. O teste media um ambiente em que
+   o bug **não habita**. Medido: passava com e sem a correção.
+2. **Contagem não mordia.** A 2ª versão contava `encoding="utf-8"` no fonte de `modo_provar` e
+   exigia `>= 2`. Mas o token já aparecia 3× ali (`read_text` + dois `write_text`), então remover
+   as duas do `subprocess` ainda passava.
+3. **Presença de chave não bastava.** A 3ª versão, por AST, exigia a chave `encoding` nas chamadas
+   que executam o canário — e foi o **qa-critic (Sonnet, revisão adversarial deste bloco)** quem
+   mostrou que `encoding=None` ou `encoding=locale.getpreferredencoding(False)` reintroduzem o bug
+   original e passariam. A versão final exige o **valor** literal `utf-8`, e foi provada contra os
+   dois cenários.
+
+Três tentativas, três verdes sem significado, dentro do próprio mecanismo criado para acabar com
+verde sem significado. Isto não é ironia: é a medida de quão fácil é escrever o teste que confirma
+o que já se acredita. Reforça a escolha do ADR-011 (crítico em modelo diferente do autor) e a
+regra #12 — o autor não é juiz confiável do próprio canário, **inclusive quando sabe disso**.
+
 ## Alternativas consideradas
 
 - **Fail-closed para tudo, já.** Rejeitada: 57 reprovações imediatas, incluindo o
@@ -247,7 +282,7 @@ Fica registrado como pendência, não como entrega.
 ## Artefatos
 
 - `tools/audit_enforcement.py` — auditor. Modos `--declaracao` (padrão), `--passivo`, `--provar`.
-- `tools/test_audit_enforcement.py` — canário, **19 verificações**. Além das fixtures, ele roda o
+- `tools/test_audit_enforcement.py` — canário, **30 verificações**. Além das fixtures, ele roda o
   auditor contra o `capabilities.json` **real** e pina o passivo — é essa chamada que transforma o
   modo (a) em gate de CI (via `tools/run_canaries.py`) em vez de script que alguém precisa lembrar
   de rodar. Traz também a **prova de mutação de si mesmo**.
@@ -257,6 +292,9 @@ Fica registrado como pendência, não como entrega.
 
 ## Pendências
 
-- Migrar o passivo: 35 capacidades sem `enforcement` e 22 `fail-closed` sem `mutacao`.
+- Migrar o passivo: **34** capacidades sem `enforcement` e **8** `fail-closed` sem `mutacao`
+  (era 35/22 no registro; 21 ja migradas). As 8 restantes tem `mechanism == test` - o gate **e** o
+  proprio canario, entao sabotar a deteccao o deixa VERDE. Provar cada uma exige antes dar a ela
+  um caso sintetico obrigatorio, como faz `tools/test_rules_parity.py`.
 - Mecanizar a exigência 3 (coerência entre o adjetivo no índice e o campo `enforcement`).
 - Revisão adversarial deste bloco por modelo diferente do autor — **não realizada até o registro**.

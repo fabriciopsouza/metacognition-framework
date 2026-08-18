@@ -118,7 +118,14 @@
         "guard",
         "shadow",
         "runtime"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": "tools/hooks/shadow_write_guard.py",
+        "de": "if info.get(\"verdict\") == \"SOMBRA-EXPORT\":",
+        "para": "if info.get(\"verdict\") == \"SOMBRA-EXPORTX\":",
+        "canario": "tools/test_shadow_write_guard.py",
+        "espera": "shadow + push deveria ser DENY"
+      }
     },
     {
       "id": "shadow-sync",
@@ -135,7 +142,14 @@
         "guard",
         "shadow",
         "sync"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": "tools/hooks/shadow_sync.py",
+        "de": "if head == target:",
+        "para": "if head != target:",
+        "canario": "tools/test_shadow_sync.py",
+        "espera": "shadow divergente deveria"
+      }
     },
     {
       "id": "repo-mode-user-vs-dev",
@@ -302,7 +316,14 @@
         "determinism",
         "cross-session",
         "model-suggestion"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": "tools/handoff.py",
+        "de": "if st[\"unpushed\"] == \"?\":",
+        "para": "if st[\"unpushed\"] == \"?!\":",
+        "canario": "tools/test_handoff.py",
+        "espera": "renderizou 'nada pendente' (falso)"
+      }
     },
     {
       "id": "model-policy",
@@ -319,7 +340,14 @@
         "policy",
         "heterogeneity",
         "fallback"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": "tools/model-policy.json",
+        "de": "\"tier\": \"baseline\"",
+        "para": "\"tier\": \"economy\"",
+        "canario": "tools/test_handoff.py",
+        "espera": "(autoral) = haiku, esperado baseline opus"
+      }
     },
     {
       "id": "limits-catalog",
@@ -853,7 +881,14 @@
         "process-evidence",
         "junctions",
         "ledger"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": "tools/qa_evidence.py",
+        "de": "JUNCTION_ORDER[j] < JUNCTION_ORDER[last]",
+        "para": "JUNCTION_ORDER[j] > JUNCTION_ORDER[last]",
+        "canario": "tools/test_qa_evidence.py",
+        "espera": "aceitou indevidamente (deveria recusar)"
+      }
     },
     {
       "id": "qa-evidence-gate",
@@ -963,7 +998,14 @@
         "web-bundles",
         "planning",
         "external-integration"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": "tools/build_web_bundles.py",
+        "de": "## Nucleo do metodo (vale por LEITURA",
+        "para": "## Nucleo do metodo (vale por LEITURA-SABOTADO",
+        "canario": "tools/test_web_bundles.py",
+        "espera": "!= coaches.json (regenere e commite)"
+      }
     },
     {
       "id": "author-tier-gate",
@@ -988,7 +1030,7 @@
       "status": "PARTIAL",
       "enforcement": "fail-closed",
       "ai_owner": "claude",
-      "mechanism": ".agent/skills/advanced-elicitation/SKILL.md",
+      "mechanism": ".agent/skills/advanced-elicitation/methods.md",
       "test": "tools/test_elicitation_catalog.py",
       "adr": "docs/adr/081-integracao-bmad-elicitation-edge-case-party-readiness.md",
       "cross_ai": false,
@@ -999,7 +1041,14 @@
         "external-integration",
         "divergente",
         "canary"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": ".agent/skills/advanced-elicitation/methods.md",
+        "de": "| 40 |",
+        "para": "| 400 |",
+        "canario": "tools/test_elicitation_catalog.py",
+        "espera": "numeracao nao-contigua: faltam"
+      }
     },
     {
       "id": "risk-gate",
@@ -1111,7 +1160,14 @@
         "high-stakes",
         "enforcement",
         "canary"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": ".agent/skills/discovery/SKILL.md",
+        "de": "ADR-089",
+        "para": "ADR-08X",
+        "canario": "tools/test_elicitation_gate.py",
+        "espera": "ADR-089) ausente no discovery"
+      }
     },
     {
       "id": "web-prompt-currency",
@@ -1148,7 +1204,14 @@
         "composition",
         "external-integration",
         "canary"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": ".agent/workflows/generate-project-context.md",
+        "de": "knowledge_catalog",
+        "para": "knowledge-catalog",
+        "canario": "tools/test_project_onboarding.py",
+        "espera": "não compõe 'knowledge_catalog'"
+      }
     },
     {
       "id": "edge-case-hunter",
