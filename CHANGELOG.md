@@ -15,6 +15,75 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.88.0] — 2026-08-17 — Nenhuma capacidade declara bloquear sem prova (ADR-106, emenda 5)
+
+[CONSOLIDADO] · [CONFIRMADO — 29/29 provas de mutação executadas; 2 rodadas adversariais Sonnet × Opus]
+
+**A classe "declara `fail-closed` e nunca foi sabotada para confirmar" foi a zero.** Eram 22 no
+censo original do ADR-106 (2026-08-14); hoje são **0**. Capacidades com sabotagem provada:
+12 → **29**. Passivo: 51 → **34**. Em conformidade: 39 → **56**.
+
+### O passivo não era homogêneo — e a diferença é a entrega
+
+Das 17 capacidades que declaravam `fail-closed` sem prova, 9 tinham mecanismo e canário em
+arquivos distintos: bastava declarar a mutação. As outras 8 tinham `mechanism == test` — **o
+gate era o próprio canário**. Nelas, sabotar a detecção deixava o canário **verde**, não
+vermelho, e o auditor recusava a prova, corretamente. Não era falta de disciplina: era
+impossível provar do jeito que estavam.
+
+Cada uma recebeu um **auto-teste com fixture sintética** que é obrigada a acertar, no molde do
+`tools/test_rules_parity.py` — testa as duas direções: o repo real **passa** e a fixture
+sabotada **é pega**. A detecção foi extraída para uma função que `main()` e `autoteste()`
+chamam igualmente; se o auto-teste chamasse uma cópia, sabotar a original continuaria passando.
+
+Cada fixture é um false-PASS real ou uma regra que já custou caro: veredito REPROVADO aceito
+como evidência aprovativa (`posture-gate`); ADR entregue e citada no CHANGELOG com Status ainda
+Proposto (`consistency-closing-ci`, o bug recorrente do ADR-051); menção fora de heading datado
+(`release-checkpoint-gate`); o piso anti-placeholder que existia e nunca fora testado
+(`dev-dogfood-gate`); pares `.json`/`.md` contando histórias opostas (`qa-evidence-integrity`).
+
+**O padrão que isso expõe:** em quase todos, o repositório real estava em ordem — e era por
+isso que a sabotagem passava despercebida. Gate cuja única evidência é "não achou nada" é
+indistinguível de gate desligado.
+
+### O auditor tinha o mesmo defeito que combate (emenda 5)
+
+`modo_provar` lia a saída do canário com `text=True` **sem `encoding=`**, isto é, pelo encoding
+do *locale*. Qualquer `mutacao.espera` acentuada nunca casava, e a prova válida era recusada
+com *"vermelho pelo motivo errado"* — acusando o canário por um defeito do leitor. Pior que o
+falso-negativo: ensinava o migrador a escolher `espera` só em ASCII, fugindo justamente da
+frase que o canário imprime.
+
+O canário escrito para prender essa correção **nasceu verde e vazio três vezes**: o end-to-end
+media um ambiente onde o bug não habita (`-X utf8`); a contagem de `encoding="utf-8"` já batia
+por outros motivos; e exigir a *chave* `encoding` deixava `encoding=None` passar — este
+terceiro foi o qa-critic quem achou. A versão final exige o **valor** literal, por AST.
+
+### CI: a proteção da `main` exigia um check que ninguém produzia
+
+A branch protection requeria o contexto `canarios-local`; o workflow publicava
+`canários (ubuntu-latest)`, `(macos-latest)` e `(windows-latest)`. Resultado: a matriz passava
+verde e **nenhum PR era mergeável**, porque o check exigido nunca aparecia. Gate que não pode
+passar é tão inútil quanto gate que não pode barrar — e este ficou invisível porque o sintoma
+(merge bloqueado) parece rigor. Corrigido com um job agregador de nome estável, `if: always()`
+e fail-closed em qualquer resultado diferente de `success`.
+
+### Correções laterais
+
+- `advanced-elicitation` declarava `SKILL.md` como mecanismo; o canário sempre leu `methods.md`.
+  O cross-check `arquivo == mechanism` do próprio ADR-106 expôs o campo errado.
+- `junction-ledger`: a primeira mutação deixou o canário verde porque ele não cobre a regra
+  escolhida. A prova mediu a **cobertura** do canário, não só a cor dele.
+- A mutação de `core-no-vendor` citava nomes de produto e, como `capabilities.json` está no
+  escopo varrido, a própria declaração fazia o gate acusar a si mesmo.
+
+### Ainda em aberto (declarado, não silenciado)
+
+34 capacidades seguem sem o campo `enforcement`. É classe **diferente** e menos perigosa: elas
+não afirmam proteger nada, são apenas invisíveis à auditoria — não produzem a falsa
+tranquilidade que motivou o ADR-106. O auditor também detecta trecho `de` que **sumiu**
+(mutação obsoleta), mas nunca `de` que **duplicou**.
+
 ## [1.87.0] — 2026-08-17 — O silêncio das distribuições vira número (ADR-049)
 
 [CONSOLIDADO] · [CONFIRMADO — 14 verificações; medido contra as cinco distribuições reais]
