@@ -275,7 +275,14 @@
         "anti-bypass",
         "closing",
         "gate"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": "tools/test_consistency_closing.py",
+        "de": "Status:\\s*(?:\\*\\*)?\\s*proposto",
+        "para": "Status:\\s*(?:\\*\\*)?\\s*propostoZZ",
+        "canario": "tools/test_consistency_closing.py",
+        "espera": "o bug recorrente do ADR-051"
+      }
     },
     {
       "id": "rules-parity-guard",
@@ -558,7 +565,14 @@
         "doc-sync",
         "canary",
         "closure"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": "tools/test_adr_changelog_sync.py",
+        "de": "status[:* ]+.*aceito",
+        "para": "status[:* ]+.*aceitoZZ",
+        "canario": "tools/test_adr_changelog_sync.py",
+        "espera": "detector cego"
+      }
     },
     {
       "id": "release-checkpoint-gate",
@@ -575,7 +589,14 @@
         "closure",
         "process-evidence",
         "canary"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": "tools/test_release_checkpoint.py",
+        "de": "    return bool(pat.search(hist))",
+        "para": "    return True",
+        "canario": "tools/test_release_checkpoint.py",
+        "espera": "FORA de heading datado foi aceita"
+      }
     },
     {
       "id": "dev-dogfood-gate",
@@ -593,7 +614,14 @@
         "process-evidence",
         "cross-ai",
         "canary"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": "tools/test_dev_dogfood.py",
+        "de": "if len(t.strip()) < min_chars:",
+        "para": "if len(t.strip()) < 0:",
+        "canario": "tools/test_dev_dogfood.py",
+        "espera": "placeholder CURTO passou no piso de tamanho"
+      }
     },
     {
       "id": "route-gate",
@@ -929,7 +957,14 @@
         "process-evidence",
         "deep-research",
         "canary"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": "tools/test_posture_gate.py",
+        "de": "APPROVING = {\"aprovar\", \"aprovar_com_ressalvas\"}",
+        "para": "APPROVING = {\"aprovar\", \"aprovar_com_ressalvas\", \"reprovar\"}",
+        "canario": "tools/test_posture_gate.py",
+        "espera": "REPROVADO foi aceito como evidencia aprovativa"
+      }
     },
     {
       "id": "context-budget-gate",
@@ -1141,7 +1176,14 @@
         "core-purity",
         "guard",
         "canary"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": "tools/test_core_no_vendor.py",
+        "de": "m = VENDOR.search(scrub)",
+        "para": "m = None",
+        "canario": "tools/test_core_no_vendor.py",
+        "espera": "detector cego"
+      }
     },
     {
       "id": "elicitation-gate",
@@ -1185,7 +1227,14 @@
         "currency",
         "guard",
         "canary"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": "tools/test_web_prompt_currency.py",
+        "de": "if gap > GAP_MAX:",
+        "para": "if gap > GAP_MAX + 1000:",
+        "canario": "tools/test_web_prompt_currency.py",
+        "espera": "janela de currency parou de valer"
+      }
     },
     {
       "id": "project-onboarding",
@@ -1385,7 +1434,14 @@
         "integridade",
         "anti-teatro",
         "auditoria"
-      ]
+      ],
+      "mutacao": {
+        "arquivo": "tools/test_qa_evidence_integrity.py",
+        "de": "if rec_json and rec_md and rec_json != rec_md:",
+        "para": "if rec_json and rec_md and rec_json == rec_md:",
+        "canario": "tools/test_qa_evidence_integrity.py",
+        "espera": "CONTRADITORIA entre .json e .md nao foi pega"
+      }
     },
     {
       "id": "enforcement-mutation-audit",

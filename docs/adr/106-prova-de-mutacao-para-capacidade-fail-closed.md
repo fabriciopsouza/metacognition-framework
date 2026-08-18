@@ -292,9 +292,14 @@ Fica registrado como pendência, não como entrega.
 
 ## Pendências
 
-- Migrar o passivo: **34** capacidades sem `enforcement` e **8** `fail-closed` sem `mutacao`
-  (era 35/22 no registro; 21 ja migradas). As 8 restantes tem `mechanism == test` - o gate **e** o
-  proprio canario, entao sabotar a deteccao o deixa VERDE. Provar cada uma exige antes dar a ela
-  um caso sintetico obrigatorio, como faz `tools/test_rules_parity.py`.
+- **A classe `fail-closed` sem `mutacao` foi a ZERO** (o censo original deste ADR, em 2026-08-14, contava 22 nessa situacao; hoje sao 29 provadas).
+  As 8 ultimas eram a classe dura, `mechanism == test`: o gate **era** o proprio canario, entao
+  sabotar a deteccao o deixava VERDE e a prova era corretamente recusada. Cada uma recebeu um
+  **auto-teste com fixture sintetica** que ela e obrigada a acertar, no molde do
+  `tools/test_rules_parity.py` (testa as duas direcoes: repo real PASSA **e** fixture sabotada
+  e PEGA). So depois disso a mutacao pode derrubar o canario.
+- **Passivo restante: 34 capacidades sem o campo `enforcement`** — classe DIFERENTE e menos
+  perigosa: elas nao afirmam proteger nada, sao apenas invisiveis a auditoria. Nao produzem a
+  falsa tranquilidade que motivou este ADR.
 - Mecanizar a exigência 3 (coerência entre o adjetivo no índice e o campo `enforcement`).
 - Revisão adversarial deste bloco por modelo diferente do autor — **não realizada até o registro**.

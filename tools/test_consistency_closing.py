@@ -30,6 +30,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -37,6 +38,72 @@ try:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 except Exception:
     pass
+
+
+def auditar_adrs(dir_adr, changelog):
+    """(duplicados, proposto_mas_entregue). Extraida de main() para o auto-teste exercitar a
+    MESMA regra — inclusive a ancora de LINHA do campo Status, que existe para nao casar a
+    palavra "Proposto" solta no corpo do ADR."""
+    chg = (changelog or "").lower()
+    nums, proposto_shipped = {}, []
+    for a in sorted(glob.glob(os.path.join(dir_adr, "*.md"))):
+        name = os.path.basename(a)
+        if "template" in name.lower():
+            continue
+        m = re.match(r"(\d+)-", name)
+        if not m:
+            continue
+        n = m.group(1)
+        nums.setdefault(n, []).append(name)
+        txt = open(a, encoding="utf-8").read()
+        is_proposto = bool(re.search(r"(?im)^\s*-?\s*Status:\s*(?:\*\*)?\s*proposto", txt))
+        if is_proposto and f"adr-{n}" in chg:
+            proposto_shipped.append(name)
+    dups = {n: fs for n, fs in nums.items() if len(fs) > 1}
+    return nums, dups, proposto_shipped
+
+
+def autoteste():
+    """Fixtures que este canario e OBRIGADO a acertar (ADR-106).
+
+    Classe `mechanism == test`: com o repo real consistente, cegar a deteccao deixava o
+    canario VERDE. O caso 1 abaixo e' o bug RECORRENTE do ADR-051 (ADR entregue e citado no
+    CHANGELOG, mas o Status nunca virou Aceito); o caso 5 e' o falso-positivo que a ancora de
+    linha existe para impedir, e que ja tinha aparecido antes dela.
+    """
+    falhas = []
+    with tempfile.TemporaryDirectory(prefix="consist-fx-") as td:
+        def adr(nome, corpo):
+            with open(os.path.join(td, nome), "w", encoding="utf-8") as fh:
+                fh.write(corpo)
+
+        nl = chr(10)
+        adr("911-proposta-entregue.md", "# t" + nl + "- Status: Proposto" + nl)
+        adr("912-proposta-nao-entregue.md", "# t" + nl + "- Status: Proposto" + nl)
+        adr("913-aceita-entregue.md", "# t" + nl + "- Status: Aceito" + nl)
+        adr("914-aceita-que-fala-de-proposto.md",
+            "# t" + nl + "- Status: Aceito" + nl + nl + "Trata de ADRs em 'Proposto'." + nl)
+
+        _, dups, shipped = auditar_adrs(td, "changelog cita ADR-911, ADR-913 e ADR-914")
+        if "911-proposta-entregue.md" not in shipped:
+            falhas.append("ADR Proposta CITADA no changelog nao foi pega — e' o bug recorrente "
+                          "do ADR-051 (entregue mas Status nunca virou Aceito)")
+        if "912-proposta-nao-entregue.md" in shipped:
+            falhas.append("ADR Proposta NAO citada foi cobrada — proposta em andamento e legitima")
+        if "913-aceita-entregue.md" in shipped:
+            falhas.append("ADR Aceita foi cobrada — falso-positivo")
+        if "914-aceita-que-fala-de-proposto.md" in shipped:
+            falhas.append("ADR Aceita que MENCIONA 'Proposto' no corpo foi cobrada — a ancora de "
+                          "LINHA do campo Status parou de valer")
+        if dups:
+            falhas.append(f"duplicados detectados onde nao ha: {dups}")
+
+        adr("915-um.md", "# t" + nl + "- Status: Aceito" + nl)
+        adr("915-dois.md", "# t" + nl + "- Status: Aceito" + nl)
+        _, dups, _ = auditar_adrs(td, "")
+        if "915" not in dups:
+            falhas.append("numero de ADR DUPLICADO nao foi detectado")
+    return falhas
 
 
 def main():
@@ -47,27 +114,11 @@ def main():
         print(f"RESULTADO: FAIL (CHANGELOG.md ilegivel: {e})")
         return 1
 
-    nums = {}
-    proposto_shipped = []
-    for a in sorted(glob.glob(os.path.join(ROOT, "docs", "adr", "*.md"))):
-        name = os.path.basename(a)
-        if "template" in name.lower():
-            continue
-        m = re.match(r"(\d+)-", name)
-        if not m:
-            continue
-        n = m.group(1)
-        nums.setdefault(n, []).append(name)
-        txt = open(a, encoding="utf-8").read()
-        # ancora na LINHA do campo Status (como consistency-gate.ps1) — senao casa a palavra
-        # "Proposto" no corpo do ADR (ex.: "ADRs em 'Proposto'") e gera falso-positivo.
-        is_proposto = bool(re.search(r"(?im)^\s*-?\s*Status:\s*(?:\*\*)?\s*proposto", txt))
-        # (2) entregue (citado no CHANGELOG) mas ainda Proposto = o bug recorrente ADR-051
-        if is_proposto and f"adr-{n}" in chg:
-            proposto_shipped.append(name)
+    falhas_canario = autoteste()
+    for f in falhas_canario:
+        fails.append(f"AUTO-TESTE do detector: {f}")
 
-    # (1) numeros de ADR duplicados (dim 'contagens')
-    dups = {n: fs for n, fs in nums.items() if len(fs) > 1}
+    nums, dups, proposto_shipped = auditar_adrs(os.path.join(ROOT, "docs", "adr"), chg)
     for n, fs in sorted(dups.items()):
         fails.append(f"ADR numero {n} DUPLICADO: {', '.join(fs)}")
     for name in proposto_shipped:
