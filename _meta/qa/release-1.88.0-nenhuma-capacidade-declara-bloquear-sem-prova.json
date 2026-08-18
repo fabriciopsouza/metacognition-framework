@@ -51,6 +51,17 @@
   ],
   "atestacao": {
     "agentId": "a5d64a9cb50c76457",
+    "provas": [
+      {
+       "agentId": "a9c7f4dbbd1932ec4",
+       "prova_transcript": "sha256:dd5d3ffb77af54ba91acd51e09f1a084e2dece0578af26ca62db4c01e0dffed6"
+      },
+      {
+       "agentId": "a5d64a9cb50c76457",
+       "prova_transcript": "sha256:e88e92edd4a40e5f86e1368ade102b138306bb7a55b4cf6819bbfae3a03f19db"
+      }
+     ],
+   "prova_transcript": "sha256:e88e92edd4a40e5f86e1368ade102b138306bb7a55b4cf6819bbfae3a03f19db",
     "modelo": "claude-sonnet-5",
     "modelo_autor": "claude-opus-5",
     "isolamento": "2 subagentes qa-critic isolados (a9c7f4dbbd1932ec4 na R1, a5d64a9cb50c76457 na R2), read-only sobre arvore nao-commitada, com proibicao explicita de comandos de estado e backup previo no scratchpad"

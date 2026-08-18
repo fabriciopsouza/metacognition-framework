@@ -42,6 +42,7 @@
   ],
   "atestacao": {
     "agentId": "ad214688de0b78655",
+   "prova_transcript": "sha256:3abd6f11638b58929b1299d91aa6b9701ab6ad9744fbadd2bd1ad538b84fdb22",
     "modelo": "claude-sonnet-5",
     "modelo_autor": "claude-opus-5",
     "isolamento": "subagente qa-critic isolado, read-only sobre arvore nao-commitada; proibicao explicita de comandos de estado; backup previo dos 5 arquivos + diff no scratchpad; o critico validou as proprias reversoes por git diff --stat vazio"

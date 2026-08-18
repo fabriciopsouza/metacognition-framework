@@ -1,0 +1,73 @@
+{
+  "bloco": "release-1.90.0-procedencia-do-veredito",
+  "release": "1.90.0",
+  "papel": "qa_critic",
+  "rodada": 6,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "sha_revisado": "824e6ce",
+  "resumo": "Seis rodadas adversariais Sonnet isolado vs autor Opus, CINCO REPROVAR, sobre um mecanismo de integridade de evidencia. O bloco fecha o furo que o dono nomeou: o registro do processo era escrito pelo avaliado. A prova passa a vir do log do harness, que o agente nao produz. Aprovado na 6a rodada com dois limites declarados.",
+  "verificacoes_executadas": [
+    "6 rodadas com reproducao em codigo, cada vetor derrubado virou caso de canario provado por reversao",
+    "18 vereditos com procedencia provada contra o relatorio real do critico",
+    "run_canaries: 77 PASS / 1 SKIP / 0 FAIL apos o veredito de release",
+    "audit_enforcement: 91 conformes, 0 no passivo, 0 novas sem prova"
+  ],
+  "problemas": [
+    {
+      "severidade": "alto",
+      "local": "tools/verify_qa_attestation.py",
+      "descricao": "CORRIGIDO em 5 rodadas: leitura da conclusao abandonou heuristica de posicao e passou a contrato (sentinela unico) com ambiguidade resolvida por contagem.",
+      "status": "corrigido"
+    },
+    {
+      "severidade": "medio",
+      "local": "tools/verify_qa_attestation.py",
+      "descricao": "LIMITE DECLARADO por recomendacao do critico: exemplo que e a ultima coisa escrita nao e distinguivel de conclusao por nenhuma regra de forma. Nao sera perseguido.",
+      "status": "aceito_como_divida"
+    },
+    {
+      "severidade": "medio",
+      "local": "tools/verify_qa_attestation.py",
+      "descricao": "DIVIDA com criterio de monitoramento: sem_leitura e ressalva tem o mesmo custo (exit 3). Se sem_leitura seguir majoritario depois de a norma pegar, e evasao e nao legado.",
+      "status": "aceito_como_divida"
+    }
+  ],
+  "escopo_paths": [
+   ".agent/skills/qa-critic/rules.md",
+   "CAPABILITIES.md",
+   "CHANGELOG.md",
+   "README.md",
+   "_meta/qa/",
+   "capabilities.json",
+   "docs/adr/108-procedencia-do-veredito-de-qa-critic.md",
+   "guia/web/index.html",
+   "history.md",
+   "tools/test_verify_qa_attestation.py",
+   "tools/verify_qa_attestation.py",
+   "web-bundles/brainstorming-coach.md",
+   "web-bundles/market-and-industry-research.md",
+   "web-bundles/prd-coach.md",
+   "web-bundles/prfaq-coach.md",
+   "web-bundles/product-brief-coach.md",
+   "web-bundles/ux-coach.md"
+  ],
+  "atestacao": {
+    "agentId": "afe12442cf60517e7",
+    "modelo": "claude-sonnet-5",
+    "modelo_autor": "claude-opus-5",
+    "prova_transcript": "sha256:491d269ac2193cf304197bf0fa73691d0b2107754f6b57c3788281877d7418ea",
+    "isolamento": "subagente qa-critic isolado, 6 rodadas, read-only, reproducoes em copias"
+  },
+  "postura": {
+    "discovery": "o furo foi MEDIDO antes de ser atacado: inspecionei os transcripts para descobrir quais fatos o harness grava e o agente nao produz, e so entao desenhei a prova em cima deles",
+    "rrc": "PASSA - o critico reprovou cinco vezes e a cada uma o conserto foi mais estreito que a classe; a 6a so passou quando o mecanismo parou de adivinhar e virou contrato",
+    "metodo_senior": "file-first nos transcripts antes de afirmar o que dava para provar; limites declarados no codigo e no ADR em vez de propriedades fingidas; e aceitar a recomendacao de NAO perseguir o residual"
+  },
+  "nao_verificado": [
+    "concordancia deste veredito: o relatorio da rodada 6 tem dois sentinelas (um no exemplo do achado MEDIO), entao o verificador marca sem_leitura em vez de adivinhar",
+    "qual modelo respondeu de fato — o harness nao grava turnos de subagente"
+  ],
+  "data": "2026-08-18T00:00:00Z"
+}

@@ -42,6 +42,7 @@
   ],
   "atestacao": {
     "agentId": "a9b57aa73fccbf19f",
+   "prova_transcript": "sha256:99e6153eb905416fc7608d9def290922d12d7676cfd032978b10b23c61ff7f9c",
     "modelo": "claude-sonnet-5",
     "modelo_autor": "claude-opus-5",
     "isolamento": "subagente qa-critic isolado, read-only sobre arvore nao-commitada; o critico rodou sondas diretas contra _listado_explicitamente e _recente_o_bastante fora da suite, alem dos canarios"

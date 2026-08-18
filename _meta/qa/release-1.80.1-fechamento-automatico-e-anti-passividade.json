@@ -45,6 +45,7 @@
   ],
   "atestacao": {
     "agentId": "a86e87d90cd6411d8",
+   "prova_transcript": "sha256:745bbc1deddd31bec4b73a71542899fd1940a79c49c216b7d52326a09a000b07",
     "modelo": "claude-sonnet-4-6",
     "modelo_autor": "claude-opus-5",
     "isolamento": "subagente qa-critic isolado, contexto proprio, worktree separado",

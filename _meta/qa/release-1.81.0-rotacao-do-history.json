@@ -55,6 +55,7 @@
   ],
   "atestacao": {
     "agentId": "aaba4f69bf67ca0e9",
+   "prova_transcript": "sha256:589c988761381e541187ffb0fa41e2f037cfa6902593bb02c9ac0f7b52e7e09f",
     "modelo": "claude-fable-5",
     "modelo_autor": "claude-opus-5",
     "isolamento": "subagente qa-critic isolado; R1 em git worktree separado, R2 na arvore principal a pedido, sem comando destrutivo",

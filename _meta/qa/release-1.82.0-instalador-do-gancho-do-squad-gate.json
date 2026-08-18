@@ -41,6 +41,7 @@
   ],
   "atestacao": {
     "agentId": "a08d3d55e0100c91e",
+   "prova_transcript": "sha256:7be0d2bb4b12709d0f39f9615bc496bd9e61c00f6358bb4136f0b988acc39526",
     "modelo": "claude-sonnet-4-6",
     "modelo_autor": "claude-opus-5",
     "isolamento": "subagente qa-critic isolado, revisao na arvore de trabalho em stage a pedido, com proibicao explicita de comando destrutivo; arvore devolvida identica",

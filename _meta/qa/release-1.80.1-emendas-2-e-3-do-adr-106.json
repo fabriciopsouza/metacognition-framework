@@ -47,6 +47,7 @@
   ],
   "atestacao": {
     "agentId": "a79c4b37d7ea2d821",
+   "prova_transcript": "sha256:04f7b4a145c74bdbdefe34e685ff7169eff59961d65c14db32d1cfb837bdc951",
     "modelo": "claude-sonnet-4-6",
     "modelo_autor": "claude-opus-5",
     "isolamento": "tres subagentes qa-critic isolados, contexto proprio, cada um revisando em git worktree separado do trabalho em curso; dois modelos distintos entre si e ambos distintos do autor",

@@ -35,6 +35,7 @@
   ],
   "atestacao": {
     "agentId": "a32af88646761bee4",
+   "prova_transcript": "sha256:e8d2102a33eea49c647cbe9359dea55c6e5bf794f2a1096fffa432ca73b8e485",
     "modelo": "claude-sonnet-5",
     "modelo_autor": "claude-opus-5",
     "isolamento": "subagente qa-critic isolado, read-only; as simulacoes de reversao rodaram em COPIAS no scratchpad, nunca nos arquivos do repo"

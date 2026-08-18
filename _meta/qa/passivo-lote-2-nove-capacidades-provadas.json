@@ -46,6 +46,7 @@
   ],
   "atestacao": {
     "agentId": "a9c7f4dbbd1932ec4",
+   "prova_transcript": "sha256:dd5d3ffb77af54ba91acd51e09f1a084e2dece0578af26ca62db4c01e0dffed6",
     "modelo": "claude-sonnet-5",
     "modelo_autor": "claude-opus-5",
     "isolamento": "subagente qa-critic isolado, read-only na arvore de trabalho nao-commitada; proibicao explicita de git checkout/restore/stash/clean/reset e de qualquer escrita, com backup previo dos 4 arquivos no scratchpad"

@@ -65,6 +65,7 @@
   ],
   "atestacao": {
     "agentId": "ac1a25fa751b6e0ea",
+   "prova_transcript": "sha256:79ae2569711817a2c37e0cc494a274463898442c95f736c90c00bf3a810ec08e",
     "modelo": "claude-fable-5",
     "modelo_autor": "claude-opus-5",
     "isolamento": "subagente qa-critic isolado, revisao na arvore de trabalho com proibicao explicita de comando destrutivo; devolveu a arvore como encontrou e declarou a unica escrita que fez",
