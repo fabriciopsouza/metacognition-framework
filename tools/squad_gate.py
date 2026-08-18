@@ -118,6 +118,17 @@ def _git(*args):
     return r.stdout.strip() if r.returncode == 0 else None
 
 
+def _listado_explicitamente(v, path: str) -> bool:
+    """O veredito cita este path EXATO no `escopo_paths` (nao por prefixo de diretorio)?
+
+    E' a unica forma de cobertura aceita para arquivo sem historico no git. Um escopo amplo
+    como `tools/` alcanca qualquer arquivo futuro daquela pasta — inclusive um que o critico
+    nunca viu; o path exato, nao: alguem teve de escreve-lo, sabendo que existe.
+    """
+    p = path.replace("\\", "/").strip()
+    return any(str(e).replace("\\", "/").strip() == p for e in (v.get("escopo_paths") or []))
+
+
 def _recente_o_bastante(v, paths) -> bool:
     """O veredito cobre o ESTADO ATUAL dos paths, ou e' anterior a eles? (ADR-103 emenda 3)
 
@@ -151,9 +162,41 @@ def _recente_o_bastante(v, paths) -> bool:
             # `continue`, e um veredito de escopo amplo (ex.: "tools/") com sha valido
             # liberava um arquivo que NENHUM critico jamais viu — "revisado uma vez =
             # liberado para sempre" virava "nunca revisado = liberado mesmo assim".
-            # Conteudo que nao existe em nenhum commit nao pode estar coberto por um
-            # veredito ancorado num commit. Fail-closed.
-            return False
+            #
+            # EMENDA (2026-08-18): o `return False` seco tinha um efeito nao-intencionado —
+            # tornava TODO arquivo novo permanentemente nao-commitavel, sem caminho legitimo
+            # para o primeiro commit. Medido ao adicionar `tools/test_skill_contract.py`: o
+            # arquivo FOI revisado pelo qa-critic, estava no `escopo_paths`, e mesmo assim o
+            # unico jeito de commitar seria `--no-verify` — ou seja, a regra empurrava para o
+            # bypass, que e' pior do que o buraco que ela fecha.
+            #
+            # O criterio que separa os dois casos e' o TIPO de cobertura, nao a existencia de
+            # historico: escopo AMPLO (prefixo `tools/`) nao pode alcancar arquivo que nunca
+            # existiu — e' exatamente a lavagem que a 8a rodada barrou. Escopo EXPLICITO (o
+            # path exato, digitado no veredito) so pode ter sido escrito por quem sabia que
+            # aquele arquivo existe: e' declaracao de que o critico o viu.
+            if not _listado_explicitamente(v, p):
+                return False
+            # Achado ALTO do qa-critic (2026-08-18): so o path explicito NAO basta. Sem
+            # `ultimo` nao existe `merge-base --is-ancestor` para rodar, entao neste ramo o
+            # `sha_revisado` ficava DECORATIVO — um veredito com o sha do primeiro commit da
+            # historia liberava um arquivo novo (reproduzido ao vivo pelo critico). Era a
+            # versao estreita do "revisado uma vez = liberado para sempre" que este arquivo
+            # ja tratou como bloqueante duas vezes (B2/B2-r2 e 7a rodada).
+            #
+            # Sem commit do arquivo para ancorar, a unica aproximacao de "o veredito e' atual"
+            # e' "foi emitido na ponta corrente da branch".
+            #
+            # LIMITE DECLARADO: isto NAO cobre edicao do arquivo DEPOIS do veredito e ANTES do
+            # commit — sem historico, o git nao tem como registrar essa mudanca. Fechar isso
+            # exigiria carimbar hash de CONTEUDO no veredito e compara-lo aqui; fica como
+            # debito explicito, nao como propriedade que este gate finge ter.
+            # Normaliza os DOIS lados: os vereditos reais gravam sha CURTO (7 chars) e
+            # `rev-parse HEAD` devolve os 40. Comparar as strings cruas reprovava veredito
+            # legitimo — pego ao usar a emenda pela primeira vez, minutos depois de escreve-la.
+            if _git("rev-parse", sha) != _git("rev-parse", "HEAD"):
+                return False
+            continue
         if _git("merge-base", "--is-ancestor", ultimo, sha) is None:
             return False          # ultimo commit do path NAO e' ancestral do revisado
     return True

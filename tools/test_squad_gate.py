@@ -234,6 +234,53 @@ def test_arquivo_NOVO_sem_historico_NAO_e_liberado_por_escopo_amplo():
     faltam, _ = sg.evaluate(["tools/_arquivo_que_nunca_existiu_xyz.py"], MANIFEST, artifacts=[ev])
     assert "qa_critic" in faltam, "arquivo sem historico nao pode ser liberado por escopo amplo"
 
+def test_arquivo_NOVO_passa_SO_com_escopo_EXPLICITO():
+    """Emenda (2026-08-18): o `return False` seco tornava TODO arquivo novo permanentemente
+    nao-commitavel — nao havia caminho legitimo para o primeiro commit de um arquivo que o
+    critico REVISOU, e a regra empurrava para `--no-verify`, que e' pior que o buraco.
+
+    O criterio que separa os casos e' o TIPO de cobertura, nao a existencia de historico:
+    escopo AMPLO nao pode alcancar arquivo que nunca existiu (a lavagem que a 8a rodada
+    barrou); path EXPLICITO so pode ter sido escrito por quem sabia que o arquivo existe.
+
+    Este teste guarda as DUAS metades — sem a segunda assercao, a emenda teria reaberto o
+    buraco original.
+    """
+    novo = "tools/_arquivo_que_nunca_existiu_xyz.py"
+
+    # (a) escopo EXPLICITO libera: e' declaracao de que o critico viu ESTE arquivo.
+    ex = _ev(agentId="a1", modelo="sonnet", autor="opus", escopo=(novo,))
+    assert sg._recente_o_bastante(ex, [novo]) is True
+    faltam, _ = sg.evaluate([novo], MANIFEST, artifacts=[ex])
+    assert "qa_critic" not in faltam, "path explicito no escopo deveria liberar arquivo novo"
+
+    # (b) escopo AMPLO continua barrando — a metade que nao pode regredir.
+    amplo = _ev(agentId="a1", modelo="sonnet", autor="opus", escopo=("tools/",))
+    assert sg._recente_o_bastante(amplo, [novo]) is False
+
+    # (c) o auxiliar nao confunde prefixo com path exato.
+    assert sg._listado_explicitamente(amplo, novo) is False
+    assert sg._listado_explicitamente(ex, novo) is True
+
+    # (d) Achado ALTO do qa-critic: path explicito sozinho deixava `sha_revisado` DECORATIVO
+    #     neste ramo — sem `ultimo`, o merge-base nunca roda. Um veredito com o sha do
+    #     PRIMEIRO commit da historia liberava o arquivo novo. Agora exige a ponta da branch.
+    primeiro = sg._git("rev-list", "--max-parents=0", "HEAD").split()[0]
+    velho = _ev(agentId="a1", modelo="sonnet", autor="opus", escopo=(novo,), sha=primeiro)
+    assert sg._recente_o_bastante(velho, [novo]) is False, (
+        "sha antigo nao pode liberar arquivo novo — seria 'revisado uma vez, liberado sempre'")
+
+    # (e) sha inexistente tambem nao passa por aqui (fail-closed antes de chegar ao ramo).
+    fake = _ev(agentId="a1", modelo="sonnet", autor="opus", escopo=(novo,), sha="0" * 40)
+    assert sg._recente_o_bastante(fake, [novo]) is False
+    # (f) sha CURTO (7 chars) e o que os vereditos reais gravam; o HEAD vem com 40.
+    #     Comparar as strings cruas reprovava veredito legitimo — pego ao usar a emenda
+    #     pela primeira vez. Os dois lados passam por rev-parse.
+    curto = sg._git("rev-parse", "--short", "HEAD")
+    ev_curto = _ev(agentId="a1", modelo="sonnet", autor="opus", escopo=(novo,), sha=curto)
+    assert sg._recente_o_bastante(ev_curto, [novo]) is True, (
+        "sha curto do HEAD deve ser aceito — e o formato que qa_evidence grava")
+
 
 def test_recencia_veredito_SEM_sha_revisado_NAO_libera():
     """Emenda 3 (7a rodada): evidencia que nao diz sobre qual estado foi emitida nao vale."""
