@@ -15,6 +15,61 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.89.0] — 2026-08-18 — O passivo do registro acabou (ADR-106 fechado)
+
+[CONSOLIDADO] · [CONFIRMADO — 52/52 provas de mutação; 3 rodadas adversariais Sonnet × Opus]
+
+**As duas classes do passivo foram a zero.** `fail-closed` sem prova: 22 → **0** (fechada no
+v1.88.0). Capacidades sem o campo `enforcement`: 35 → **0**. Das 90, **52 têm sabotagem
+provada**; 38 declaram proteção mais fraca — e continuam contando como "em dia no registro,
+mas ninguém as sabotou", que é a distinção que a vitrine mede.
+
+### Classificar foi o trabalho, não declarar
+
+O risco deste bloco era rotular para baixo e escapar da exigência de prova. Cada uma das 34
+foi classificada pelo que o código faz: `mission_gate` ("fail-soft: nunca bloqueia"),
+`prepush_sync_guard` (usa `ask`, não `deny`, e é fail-open por design), `route-gate` (injeta
+contexto), os geradores que não gateiam nada. O qa-critic varreu as 38 não-`fail-closed` atrás
+de `decision: deny` e `sys.exit(2)`: zero ocorrências.
+
+Duas só viraram prováveis depois de consertar o canário:
+
+- **`doc-intake`** — a asserção de reconstrução usava os offsets e **descartava** o texto
+  guardado. Encurtar cada chunk em um caractere passava despercebido, e o manifesto é o que o
+  consumidor lê. Além disso o canário falava por `assert`: detecção legítima saía como
+  traceback, que a prova recusa como "vermelho por crash" — um canário correto não podia ser
+  provado enquanto falasse assim.
+- **`skill-contract`** — `validate_skills.py` existia, passava, e **nada o executava**. Validador
+  de contrato que ninguém invoca é documentação com sintaxe colorida. Ganhou canário próprio e
+  entrou na suíte.
+
+### O gate tornava todo arquivo novo não-commitável
+
+A regra da 8ª rodada do ADR-103 (path sem histórico = fail-closed) tinha efeito não-intencionado:
+não havia caminho legítimo para o primeiro commit de um arquivo revisado, e a regra **empurrava
+para `--no-verify`** — pior que o buraco que fecha. Agora path sem histórico passa apenas se
+listado **explicitamente** no `escopo_paths`, nunca por prefixo, **e** com `sha_revisado` na ponta
+da branch. O crítico achou que sem essa segunda metade o `sha_revisado` ficava decorativo: o sha
+do primeiro commit da história liberava o arquivo.
+
+### Três defeitos meus, achados por usar o que eu acabara de escrever
+
+- a fixture que escrevi para provar a contagem da vitrine **não distinguia** "tem o campo
+  `mutacao`" de "tem mutação válida" — o crítico provou reescrevendo a função sem a validação e
+  obtendo resultado idêntico;
+- a comparação byte-a-byte da emenda 6 acusava arquivo **idêntico**, porque o git converte
+  LF↔CRLF ao materializar o worktree;
+- o resumo do `--provar` contava SKIP como prova: dizia "52 provas" tendo feito 51.
+
+E o fix do CRLF **não estava guardado**: o crítico reverteu numa cópia e a suíte seguiu verde.
+Fechado com um caso que grava o mesmo conteúdo com quebra de linha diferente.
+
+### Ainda aberto, declarado
+
+`--provar` retorna 0 quando há capacidades puladas e nenhuma falha — "nada falhou" lido como
+"tudo provado"; documentado na linha de códigos de saída. `escopo_paths` não é validado contra o
+que o crítico revisou. A âncora por `sha == HEAD` não cobre edição entre o veredito e o commit.
+
 ## [1.88.0] — 2026-08-17 — Nenhuma capacidade declara bloquear sem prova (ADR-106, emenda 5)
 
 [CONSOLIDADO] · [CONFIRMADO — 29/29 provas de mutação executadas; 2 rodadas adversariais Sonnet × Opus]

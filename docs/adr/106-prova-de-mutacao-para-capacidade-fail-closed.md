@@ -292,14 +292,27 @@ Fica registrado como pendência, não como entrega.
 
 ## Pendências
 
-- **A classe `fail-closed` sem `mutacao` foi a ZERO** (o censo original deste ADR, em 2026-08-14, contava 22 nessa situacao; hoje sao 29 provadas).
-  As 8 ultimas eram a classe dura, `mechanism == test`: o gate **era** o proprio canario, entao
-  sabotar a deteccao o deixava VERDE e a prova era corretamente recusada. Cada uma recebeu um
-  **auto-teste com fixture sintetica** que ela e obrigada a acertar, no molde do
-  `tools/test_rules_parity.py` (testa as duas direcoes: repo real PASSA **e** fixture sabotada
-  e PEGA). So depois disso a mutacao pode derrubar o canario.
-- **Passivo restante: 34 capacidades sem o campo `enforcement`** — classe DIFERENTE e menos
-  perigosa: elas nao afirmam proteger nada, sao apenas invisiveis a auditoria. Nao produzem a
-  falsa tranquilidade que motivou este ADR.
-- Mecanizar a exigência 3 (coerência entre o adjetivo no índice e o campo `enforcement`).
-- Revisão adversarial deste bloco por modelo diferente do autor — **não realizada até o registro**.
+- **PASSIVO ZERADO (2026-08-18).** As duas classes acabaram: `fail-closed` sem `mutacao` = **0**
+  (eram 22 no censo original) e capacidades sem o campo `enforcement` = **0** (eram 35). Das 90
+  capacidades, **52 tem sabotagem provada** e 38 declaram protecao mais fraca (aviso, registro,
+  prosa, garantia fisica, gate manual) — estas contam como em dia no registro, mas **ninguem as
+  sabotou**, e essa distincao continua sendo a que importa.
+- **A classe dura exigiu consertar o canario antes, nao so declarar.** As 8 com `mechanism == test`
+  (o gate E o proprio canario) precisaram de auto-teste com fixture sintetica no molde do
+  `tools/test_rules_parity.py`; `doc-intake` so virou provavel depois de a assercao passar a
+  conferir o TEXTO do chunk contra os offsets (encurtar cada chunk em 1 caractere passava
+  despercebido) e de a falha por `assert` virar mensagem — traceback e recusado como 'vermelho
+  por crash', entao um canario correto nao podia ser provado enquanto falasse assim.
+- **Zero passivo nao e zero risco.** Significa que toda capacidade declara COMO protege, e que
+  toda declaracao de bloqueio foi derrubada de proposito ao menos uma vez. O que sobra e' visivel.
+
+## Follow-ups abertos
+
+- `--provar` retorna 0 quando ha capacidades PULADAS e nenhuma falha — 'nada falhou' lido como
+  'tudo provado'. Documentado na linha de codigos de saida; rc distinto fica como follow-up.
+- `escopo_paths` do veredito nao e validado contra o que o critico de fato revisou (auto-atestacao
+  estrutural, pre-existente).
+- Arquivo novo: a ancoragem por `sha == HEAD` nao cobre edicao entre o veredito e o commit. Fechar
+  exigiria carimbar hash de CONTEUDO no veredito.
+- Mecanizar a exigencia 3 (coerencia entre o adjetivo do indice e o campo `enforcement`).
+
