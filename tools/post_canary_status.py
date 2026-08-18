@@ -56,8 +56,15 @@ def _git(*args):
 
 def run_canaries():
     """Roda a suíte; retorna (exit_code, ultima_linha_resumo)."""
-    proc = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "run_canaries.py")],
-                          capture_output=True, text=True, cwd=ROOT, stdin=subprocess.DEVNULL)
+    # `encoding=` explicito: sem ele, `text=True` decodifica pelo LOCALE (cp1252 no Windows
+    # pt-BR) e a saida UTF-8 dos canarios estoura UnicodeDecodeError. Medido em 2026-08-17:
+    # o resumo virava "sem saida" e um traceback aparecia no meio de um post bem-sucedido.
+    # O `state` vinha do exit-code, entao o verde nunca foi falso — mas a ferramenta que
+    # decide merge nao pode depender de sorte de encoding. Mesma classe da emenda 5 do ADR-106.
+    proc = subprocess.run([sys.executable, "-X", "utf8",
+                           os.path.join(ROOT, "tools", "run_canaries.py")],
+                          capture_output=True, text=True, encoding="utf-8", errors="replace",
+                          cwd=ROOT, stdin=subprocess.DEVNULL)
     out = (proc.stdout or "").strip().splitlines()
     summary = next((l for l in reversed(out) if "RESULTADO" in l), out[-1] if out else "sem saída")
     return proc.returncode, summary
