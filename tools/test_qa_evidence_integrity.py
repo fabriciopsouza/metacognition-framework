@@ -52,7 +52,14 @@ def verificar(qa_dir: str = QA_DIR):
     problemas, pares, sem_par = [], 0, []
     for jpath in sorted(glob.glob(os.path.join(qa_dir, "*.json"))):
         mpath = jpath[:-5] + ".md"
-        rel = os.path.relpath(jpath, ROOT)
+        try:
+            rel = os.path.relpath(jpath, ROOT)
+        except ValueError:
+            # Drive diferente do repo: `relpath` estoura no Windows (runner da CI monta o
+            # repo em D: e o tempdir em C:). O rotulo e' cosmetico — nunca pode derrubar o
+            # canario. Mesma armadilha ja registrada no test_handoff.py caso (j), la com
+            # `commonpath`. Pega pela matriz da CI; localmente tudo mora no mesmo drive.
+            rel = jpath
         if not os.path.isfile(mpath):
             sem_par.append(rel)
             continue
