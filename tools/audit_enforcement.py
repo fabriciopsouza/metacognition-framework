@@ -58,6 +58,12 @@ Uso:
     python tools/audit_enforcement.py --gerar-baseline # congela o passivo (1x, ja feito)
 
 Codigos de saida: 0 OK · 1 capacidade nova sem prova · 2 mutacao NAO derrubou o canario.
+ATENCAO no --provar: rc==0 significa 'nenhuma prova FALHOU', nao 'tudo foi provado'. Se ha
+capacidade pulada (mecanismo/canario nao-commitado, emenda 6), o rc continua 0 e a contagem
+impressa cai. LEIA a contagem, nunca so o codigo — e' a mesma armadilha de 'verde nao e
+evidencia' que esta ferramenta combate, agora na propria interface dela. Debito declarado
+pelo qa-critic (2026-08-18): considerar rc distinto para 'nada foi provado' se algum dia
+alguem automatizar a leitura deste comando.
 NAO usa IA.
 """
 import argparse
@@ -224,6 +230,11 @@ def modo_declaracao(caps, baseline, so_passivo=False):
     return 0
 
 
+def _sem_crlf(b: bytes) -> bytes:
+    """Quebra de linha normalizada — o git converte LF<->CRLF e isso nao e' 'mudanca'."""
+    return b.replace(b"\r\n", b"\n")
+
+
 def _difere_do_head(raiz, wt, rel):
     """O arquivo da arvore de trabalho difere do que o worktree materializou do HEAD?
 
@@ -237,7 +248,11 @@ def _difere_do_head(raiz, wt, rel):
     if not congelado.is_file():
         return True                       # arquivo novo, ainda nao existe no HEAD
     try:
-        return vivo.read_bytes() != congelado.read_bytes()
+        # Normaliza quebra de linha antes de comparar: o git converte LF<->CRLF ao materializar
+        # o worktree (core.autocrlf), entao bytes crus acusam diferenca em arquivo IDENTICO.
+        # Medido minutos depois de escrever esta funcao: `test_skill_contract.py`, recem
+        # commitado e sem nenhuma edicao pendente, foi reportado como nao-commitado.
+        return _sem_crlf(vivo.read_bytes()) != _sem_crlf(congelado.read_bytes())
     except OSError:
         return False                      # ilegivel: deixa o fluxo normal reportar
 
@@ -267,7 +282,7 @@ def modo_provar(caps, alvo, raiz=RAIZ):
             print(f"  git disse: {(r.stderr or '').strip()[:200]}")
             return 0
         try:
-            falhas = []
+            falhas, pulados = [], []
             for c in escolhidas:
                 cid, m = c.get("id", "?"), c["mutacao"]
                 bom, motivo = valida_mutacao(m, c)
@@ -296,6 +311,7 @@ def modo_provar(caps, alvo, raiz=RAIZ):
                     print(f"  [SKIP declarado] {cid}: {', '.join(pendentes)} com mudanca "
                           f"NAO-COMMITADA — a prova roda contra o HEAD, entao ela testaria a "
                           f"versao antiga. Commite e rode de novo (ou sabote a mao e restaure).")
+                    pulados.append(cid)
                     continue
 
                 if not alvo_f.is_file() or not canario.is_file():
@@ -356,7 +372,13 @@ def modo_provar(caps, alvo, raiz=RAIZ):
                 for cid, motivo in falhas:
                     print(f"  - {cid}: {motivo}")
                 return 2
-            print(f"\nOK: {len(escolhidas)} prova(s) de mutacao — todos os canarios "
+            # NUNCA contar SKIP como prova: e' a mesma classe de mentira que este
+            # auditor existe para combater — numero que soa como evidencia sem ser.
+            provadas = len(escolhidas) - len(pulados)
+            if pulados:
+                print(f"\n[SKIP] {len(pulados)} nao testada(s) contra o HEAD: "
+                      f"{', '.join(sorted(pulados))}")
+            print(f"\nOK: {provadas} prova(s) de mutacao — todos os canarios "
                   f"ficaram vermelhos quando o mecanismo foi sabotado.")
             return 0
         finally:

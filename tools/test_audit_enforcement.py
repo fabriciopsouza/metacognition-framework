@@ -366,8 +366,31 @@ def main():
                 c, s = rodar(AUDITOR, caps, base, "--provar", "--raiz", str(fix))
                 caso("mecanismo nao-commitado vira SKIP declarado (nao acusa a mutacao)",
                      0, "skip declarado", c, s, resultados)
+                # E o resumo NAO pode contar a pulada como prova: "OK: 1 prova(s)" com uma
+                # pulada e a mesma classe de mentira que este auditor combate. Pego ao usar
+                # a emenda 6 pela primeira vez, que reportava 52 provas com 1 SKIP.
+                caso("skip NAO e contado como prova no resumo", 0, "0 prova(s)",
+                     c, s, resultados)
             finally:
                 _vivo.write_text(_antes_txt, encoding="utf-8")
+
+            # (i-n) diferenca SO de quebra de linha NAO e' mudanca pendente. O git converte
+            # LF<->CRLF ao materializar o worktree, entao comparar bytes crus reportava
+            # arquivo IDENTICO como nao-commitado — foi o que aconteceu com
+            # `test_skill_contract.py`, recem-commitado, na primeira execucao da emenda 6.
+            # Buraco de cobertura apontado pelo qa-critic: sem este caso, alguem
+            # 'simplifica' de volta para read_bytes() e a suite inteira segue verde.
+            _p = fix / 'tools' / 'x.py'
+            _txt = _p.read_text(encoding='utf-8')
+            try:
+                # mesmo CONTEUDO, quebra de linha diferente do que esta no HEAD
+                _p.write_bytes(_txt.replace('\n', '\r\n').encode('utf-8'))
+                caps, base = escrever(tmp, cap_fx())
+                c, s = rodar(AUDITOR, caps, base, "--provar", "--raiz", str(fix))
+                caso("diferenca so de quebra de linha NAO vira skip", 0, "[provado]",
+                     c, s, resultados)
+            finally:
+                _p.write_text(_txt, encoding='utf-8', newline='')
 
             # (i-g) `espera` curta demais vira curinga: "Error" casa com qualquer excecao.
             # Achado ALTO 2 do mesmo crítico.
