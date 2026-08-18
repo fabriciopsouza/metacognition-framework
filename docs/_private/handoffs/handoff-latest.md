@@ -1,4 +1,4 @@
-# Handoff — v1.87.0 · 2026-08-17T09:10:41-03:00 · papel-alvo: developer
+# Handoff — v1.88.0 · 2026-08-17T23:19:13-03:00 · papel-alvo: developer
 
 > Pacote P14 (ADR-012) gerado DETERMINISTICAMENTE do estado do repo por `tools/handoff.py` (ADR-076).
 > Teste binario (P14): a proxima sessao comeca SEM perguntar nada de volta?
@@ -7,11 +7,11 @@
 - **Proxima sessao: `claude-opus-4-8`** (opus). Motivo: developer -> tier baseline (opus): papel AUTORAL roda no baseline (= modelo padrao/standard); custo do erro a montante > custo do token (ADR-082). Subagente developer spawnado < baseline = proibido; risco sobrepoe p/ tier max..
 
 ## [P14] Artefato consumivel — com versao
-- Repo na versao **v1.87.0** (topo do CHANGELOG). Branch `main` @ `cedbbc7`.
+- Repo na versao **v1.88.0** (topo do CHANGELOG). Branch `main` @ `d7f0a37`.
 
 ## [P14] Localizacao
 - origin: https://github.com/fabriciopsouza/metacognition-framework
-- branch/commit: `main` @ `cedbbc7` · (sem PR aberto para esta branch)
+- branch/commit: `main` @ `d7f0a37` · (sem PR aberto para esta branch)
 - raiz absoluta desta copia: `C:\Users\fabriciosouza\metacognition-framework` (paths relativos abaixo ancoram AQUI)
 
 ## [P14] Acesso
@@ -19,7 +19,7 @@
 
 ## [P14] Prompt pronto-para-colar
 - **Papel:** developer · **Modelo:** `claude-opus-4-8`
-- **Objetivo (do 'Proximo passo'):** o passivo — dezessete capacidades que declaram bloquear falha e nunca foram
+- **Objetivo (do 'Proximo passo'):** classificar as 34 capacidades sem o campo `enforcement` pela leitura do que o
 - **Produz/decide:** execute o objetivo acima ate o criterio de aceite citado; rode `tools/run_canaries.py` antes de fechar.
 
 ## [P14] Pendencias e premissas herdadas
@@ -32,8 +32,8 @@
 
 ## Extensoes (ADR-016 — evita re-derivar)
 - **5 arquivos mais recentes:**
-  1. CAPABILITIES.md
-  2. CHANGELOG.md
-  3. PROMPT-CHAT-WEB-v4.5.md
-  4. README.md
-  5. _meta/qa/release-1.87.0-alarme-de-deriva-das-distribuicoes.json
+  1. tools/post_canary_status.py
+  2. .github/workflows/ci.yml
+  3. tools/test_qa_evidence_integrity.py
+  4. CHANGELOG.md
+  5. README.md
