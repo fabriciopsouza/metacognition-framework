@@ -13,6 +13,33 @@
 > **Poda de contexto (ADR-107):** este arquivo quente mantem os ultimos **10** checkpoints + `## Em aberto` + `## Aprendizado`. **56** checkpoints mais antigos estao em [`docs/history/history-archive.md`](docs/history/history-archive.md) (nada deletado — so realocado). Rotacao: `python tools/rotate_history.py`.
 <!-- history-archive-pointer -->
 
+## 2026-08-18 — Release v1.89.0 (MINOR): o passivo do registro acabou (ADR-106 fechado)
+
+Das 90 capacidades, **52 têm sabotagem provada** e nenhuma declara bloquear falha sem prova.
+As 35 que sequer diziam como se protegiam foram classificadas pelo que o código faz — e a
+maioria honestamente **não** bloqueia: avisa, registra, ou pede confirmação humana.
+
+**Classificar foi o trabalho; declarar teria sido fácil e falso.** O risco era rotular para
+baixo e escapar da exigência de prova, então o crítico varreu as 38 não-`fail-closed` atrás de
+`decision: deny` e `sys.exit(2)` — zero ocorrências. Duas capacidades só viraram prováveis
+depois de consertar o canário delas, e uma terceira (`skill-contract`) descobriu-se que tinha
+um validador que **ninguém nunca executou**.
+
+**A lição que se repetiu quatro vezes, incluindo comigo:** o teste que confirma o que já se
+acredita nasce verde e vazio. A fixture que escrevi para provar a contagem da vitrine não
+distinguia "tem o campo mutação" de "tem mutação válida", e o crítico demonstrou reescrevendo a
+função sem a validação — mesmo resultado. Depois, o fix de CRLF que eu tinha acabado de fazer
+não estava guardado por canário nenhum. Em ambos, quem separou "funciona" de "está guardado"
+foi a reversão feita numa cópia, não a leitura do diff.
+
+**Um gate também falha por não deixar passar.** A regra que barra arquivo sem histórico tornava
+todo arquivo novo permanentemente não-commitável, empurrando para `--no-verify` — mais perigoso
+que o buraco que ela fecha.
+
+**Próximo passo:** os follow-ups declarados no ADR-106 — `--provar` que retorna 0 com
+capacidades puladas, `escopo_paths` sem validação contra o que o crítico revisou, e a âncora por
+HEAD que não cobre edição entre veredito e commit. Nenhum é urgente; todos estão escritos.
+
 ## 2026-08-17 — Release v1.88.0 (MINOR): nenhuma capacidade declara bloquear sem prova (ADR-106)
 
 A classe "declara `fail-closed` e nunca foi sabotada para confirmar" chegou a zero. Eram 22 no

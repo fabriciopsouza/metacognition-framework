@@ -41,7 +41,13 @@ def test_textlike_and_chunking():
     # invariante declarado no docstring, não só um proxy — BAIXO-2 qa-critic).
     recon = []
     prev_end = 0
-    for (cstart, cend, _ptext) in pieces:
+    for (cstart, cend, ptext) in pieces:
+        # O TEXTO guardado tem de bater com os offsets declarados. Sem isto, so os offsets
+        # eram verificados e o conteudo do chunk podia divergir em silencio — e o manifesto
+        # e' justamente o que o consumidor le. Medido em 2026-08-18: uma mutacao que
+        # encurtava cada `piece` em 1 caractere passava despercebida (ADR-106).
+        assert ptext == text[cstart:cend], (
+            f"chunk [{cstart}:{cend}] guardado difere do texto nesses offsets")
         recon.append(text[prev_end:cend])
         prev_end = cend
     assert "".join(recon) == text, "reconstrução por offsets deve devolver o texto exato"
@@ -112,11 +118,27 @@ def test_validacao_de_parametros():
 
 
 def main():
-    test_textlike_and_chunking()
-    test_manifest_determinismo_e_skip()
-    test_chunk_ids_unicos_entre_subpastas()
-    test_skip_graceful_para_binario_sem_parser()
-    test_validacao_de_parametros()
+    # Falha vira MENSAGEM, nao traceback. Este canario e' escrito com `assert` puro,
+    # entao uma deteccao legitima saia como AssertionError — indistinguivel, para quem
+    # le o CI e para o auditor de mutacao (ADR-106), de um canario que MORREU
+    # processando arquivo sabotado. A prova recusa 'vermelho por crash' de proposito;
+    # sem esta traducao, um canario CORRETO nunca poderia ser provado. Medido em
+    # 2026-08-18, ao migrar o passivo.
+    testes = (test_textlike_and_chunking, test_manifest_determinismo_e_skip,
+              test_chunk_ids_unicos_entre_subpastas,
+              test_skip_graceful_para_binario_sem_parser, test_validacao_de_parametros)
+    falhas = []
+    for t in testes:
+        try:
+            t()
+        except AssertionError as e:
+            falhas.append(f"{t.__name__}: {e}")
+    if falhas:
+        print(f"doc_intake: {len(falhas)} INVARIANTE(S) VIOLADO(S)")
+        for f in falhas:
+            print("  -", f)
+        print("RESULTADO: FAIL (invariante de intake violado)")
+        return 1
     print("\nTODOS OS CANÁRIOS PASSARAM (doc_intake).")
     return 0
 

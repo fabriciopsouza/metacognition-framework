@@ -1,0 +1,57 @@
+{
+  "bloco": "emenda-squad-gate-arquivo-novo",
+  "papel": "qa_critic",
+  "rodada": 1,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "sha_revisado": "7ddbe71",
+  "resumo": "Sonnet isolado vs autor Opus, sobre mudanca em GATE DE SEGURANCA. A regra da 8a rodada do ADR-103 (arquivo sem historico = fail-closed) tinha efeito nao-intencionado: tornava TODO arquivo novo permanentemente nao-commitavel, empurrando para --no-verify. A emenda libera APENAS com path EXPLICITO no escopo_paths, nunca por prefixo. O critico atacou a pergunta certa (a emenda reabre a lavagem por escopo amplo?) e demonstrou AO VIVO que nao: escopo amplo segue barrando, inclusive combinado com um explicito. Mas achou um ALTO real: sem `ultimo`, o merge-base nunca roda, entao `sha_revisado` ficava DECORATIVO — o sha do PRIMEIRO commit da historia liberava o arquivo novo. Corrigido e provado na mesma rodada.",
+  "verificacoes_executadas": [
+    "escopo amplo + explicito juntos contra um SEGUNDO arquivo novo nao listado: _recente_o_bastante = False (a lavagem da 8a rodada segue fechada)",
+    "arquivo COM historico e sha antigo + escopo explicito: False (a emenda so afeta o ramo `not ultimo`)",
+    "variacoes de string em _listado_explicitamente (barra invertida, ./, case, absoluto, espacos): todas falham no sentido SEGURO, nenhuma abre bypass",
+    "reproducao ao vivo do ALTO: veredito com sha do primeiro commit liberava arquivo novo -> corrigido exigindo a ponta da branch",
+    "test_squad_gate.py: 27/27 PASS; run_canaries: 78 PASS / 1 SKIP / 0 FAIL",
+    "prova negativa das duas travas: remover a excecao explicita OU a checagem de sha derruba o canario nomeando o caso"
+  ],
+  "problemas": [
+    {
+      "severidade": "alto",
+      "local": "tools/squad_gate.py (_recente_o_bastante, ramo `not ultimo`)",
+      "descricao": "CORRIGIDO E PROVADO. Sem `ultimo` nao ha merge-base para rodar, entao o `sha_revisado` nao tinha efeito algum neste ramo: o critico reproduziu liberando um arquivo novo com o sha do primeiro commit da historia. E a versao estreita do 'revisado uma vez = liberado para sempre' que este arquivo ja tratou como bloqueante duas vezes. Agora o ramo exige sha == HEAD.",
+      "status": "corrigido"
+    },
+    {
+      "severidade": "medio",
+      "local": "tools/qa_evidence.py + tools/squad_gate.py (auto-atestacao)",
+      "descricao": "ACEITO COMO DIVIDA PRE-EXISTENTE, ampliada em raio. `escopo_paths` nao e validado contra o que o critico revisou, e quem grava o veredito e o orquestrador, nao o subagente. Isso ja valia antes. O que muda: antes, forjar escopo para arquivo novo nao adiantava (bloqueio incondicional); agora funciona. Com a correcao do ALTO o custo volta a nao ser trivial (exige o sha da ponta), mas a divida estrutural continua aberta.",
+      "status": "aceito_como_divida"
+    },
+    {
+      "severidade": "baixo",
+      "local": "tools/squad_gate.py (ramo `not ultimo`)",
+      "descricao": "LIMITE DECLARADO no codigo. A checagem por HEAD nao cobre edicao do arquivo DEPOIS do veredito e ANTES do commit — sem historico, o git nao registra essa mudanca. Fechar exigiria carimbar hash de CONTEUDO no veredito. Fica como debito explicito, nao como propriedade que o gate finge ter.",
+      "status": "aceito_como_divida"
+    }
+  ],
+  "escopo_paths": [
+    "tools/squad_gate.py",
+    "tools/test_squad_gate.py",
+    "tools/test_skill_contract.py"
+  ],
+  "atestacao": {
+    "agentId": "a9b57aa73fccbf19f",
+    "modelo": "claude-sonnet-5",
+    "modelo_autor": "claude-opus-5",
+    "isolamento": "subagente qa-critic isolado, read-only sobre arvore nao-commitada; o critico rodou sondas diretas contra _listado_explicitamente e _recente_o_bastante fora da suite, alem dos canarios"
+  },
+  "postura": {
+    "rrc": "PASSA - a pergunta feita ao critico foi a unica que importa numa mudanca de gate ('a emenda reabre o buraco que a regra fechava?'), e ele respondeu com reproducao ao vivo nos dois sentidos: mostrou o que continua fechado E achou o que ficou aberto"
+  },
+  "nao_verificado": [
+    "edicao do arquivo novo entre o veredito e o commit (sem historico, o git nao registra) — limite declarado no codigo",
+    "validacao de escopo_paths contra a execucao real do subagente — divida estrutural pre-existente"
+  ],
+  "data": "2026-08-18T00:00:00Z"
+}

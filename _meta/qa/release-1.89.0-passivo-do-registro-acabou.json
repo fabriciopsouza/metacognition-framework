@@ -1,0 +1,79 @@
+{
+  "bloco": "release-1.89.0-passivo-do-registro-acabou",
+  "release": "1.89.0",
+  "papel": "qa_critic",
+  "rodada": 3,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "veredito": "aprovar",
+  "sha_revisado": "1eef1ab",
+  "resumo": "Tres rodadas adversariais Sonnet isolado x autor Opus, todas read-only sobre arvore nao-commitada. R1 (34 capacidades classificadas): aprovar_com_ressalvas — o critico atacou a hipotese certa (rotulo mais fraco para escapar da prova), varreu as 38 nao-fail-closed atras de decision:deny e sys.exit(2), achou ZERO, e em vez disso achou que a MINHA fixture da contagem da vitrine era cega. R2 (emenda do squad_gate para arquivo novo): aprovar_com_ressalvas — provou ao vivo que a lavagem por escopo amplo continua fechada, e achou que o sha_revisado ficava decorativo no ramo novo. R3 (dois fixes da emenda 6): aprovar_com_ressalvas — reverteu cada fix numa copia e reexecutou o canario real, separando 'funciona' de 'esta guardado'; o fix do CRLF nao estava. Todos os achados corrigidos e provados nas proprias rodadas.",
+  "verificacoes_executadas": [
+    "52/52 provas de mutacao formais apos os commits (audit_enforcement --provar)",
+    "audit_enforcement --passivo: 90 conformes, 0 no passivo, 0 novas sem prova",
+    "varredura das 38 nao-fail-closed atras de padroes de bloqueio real: zero — nenhuma bloqueia sob rotulo mais fraco",
+    "R2 reproduziu ao vivo que escopo amplo (inclusive combinado com explicito) segue barrando arquivo novo nao listado",
+    "R2 reproduziu o sha decorativo: veredito com sha do primeiro commit liberava arquivo novo",
+    "R3 reverteu cada fix em copia fora do repo e reexecutou o canario real: metodo que separa 'o fix funciona' de 'o fix esta guardado'",
+    "run_canaries: 78 PASS / 1 SKIP / 0 FAIL (79 canarios)"
+  ],
+  "problemas": [
+    {
+      "severidade": "alto",
+      "local": "tools/test_marketing_claims.py (autoteste_contagem)",
+      "descricao": "CORRIGIDO. Fixture nao distinguia 'tem o campo mutacao' de 'tem mutacao VALIDA'; o critico provou reescrevendo contar_vitrine sem a validacao e obtendo resultado identico. 5a fixture adicionada e provada.",
+      "status": "corrigido"
+    },
+    {
+      "severidade": "alto",
+      "local": "tools/squad_gate.py (_recente_o_bastante, ramo sem historico)",
+      "descricao": "CORRIGIDO. Sem `ultimo` o merge-base nunca roda, entao sha_revisado ficava decorativo — o sha do primeiro commit liberava arquivo novo. Ramo passa a exigir sha == HEAD, com os dois lados normalizados por rev-parse (sha curto x 40 chars).",
+      "status": "corrigido"
+    },
+    {
+      "severidade": "medio",
+      "local": "tools/test_audit_enforcement.py (cobertura do fix CRLF)",
+      "descricao": "CORRIGIDO. O fix da normalizacao CRLF nao tinha caso: reverte-lo deixava a suite verde. Caso (i-n) adicionado e provado.",
+      "status": "corrigido"
+    },
+    {
+      "severidade": "medio",
+      "local": "tools/audit_enforcement.py (rc do --provar)",
+      "descricao": "ACEITO COMO DIVIDA, documentado onde engana. Com puladas e nenhuma falha, retorna 0 — indistinguivel de 'tudo provado' para quem le so o rc. Consistente com o precedente do worktree indisponivel; hoje inofensivo porque nada consome so o returncode.",
+      "status": "aceito_como_divida"
+    },
+    {
+      "severidade": "medio",
+      "local": "tools/qa_evidence.py (auto-atestacao do escopo_paths)",
+      "descricao": "ACEITO COMO DIVIDA PRE-EXISTENTE. escopo_paths nao e validado contra o que o critico revisou, e quem grava o veredito e o orquestrador. Estrutural, anterior a este bloco.",
+      "status": "aceito_como_divida"
+    }
+  ],
+  "escopo_paths": [
+    "capabilities.json",
+    "tools/",
+    "docs/adr/",
+    "guia/web/index.html",
+    "CHANGELOG.md",
+    "README.md",
+    "history.md",
+    "web-bundles/"
+  ],
+  "atestacao": {
+    "agentId": "a32af88646761bee4",
+    "modelo": "claude-sonnet-5",
+    "modelo_autor": "claude-opus-5",
+    "isolamento": "3 subagentes qa-critic isolados (ad214688de0b78655, a9b57aa73fccbf19f, a32af88646761bee4), read-only sobre arvore nao-commitada, com backup previo no scratchpad"
+  },
+  "postura": {
+    "discovery": "o passivo foi lido capacidade a capacidade (docstring + sinais de bloqueio) antes de qualquer rotulo; a classificacao saiu da evidencia, e as 3 que resistiram viraram trabalho de canario em vez de rotulo conveniente",
+    "rrc": "PASSA - em cada rodada o critico foi apontado para a pergunta que poderia derrubar o bloco (rotulo desonesto? a emenda reabre o buraco? o fix esta guardado?), e respondeu com reproducao ao vivo nos dois sentidos",
+    "metodo_senior": "file-first antes de afirmar; sabotagem manual com restauracao verificada em vez de confiar no relatorio do proprio auditor; e, ao bater no --no-verify, consertar a lacuna do gate em vez de contorna-la"
+  },
+  "nao_verificado": [
+    "edicao de arquivo novo entre o veredito e o commit (sem historico o git nao registra) — limite declarado no codigo",
+    "rc distinto para 'nada foi provado' — follow-up declarado",
+    "validacao de escopo_paths contra a execucao real do subagente — divida estrutural"
+  ],
+  "data": "2026-08-18T00:00:00Z"
+}

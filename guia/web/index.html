@@ -174,7 +174,7 @@
 <div class="wrap">
 
   <header>
-    <a class="ver" href="https://github.com/fabriciopsouza/metacognition-framework/releases/tag/v1.88.0">v<b>1.88.0</b> · release ↗</a>
+    <a class="ver" href="https://github.com/fabriciopsouza/metacognition-framework/releases/tag/v1.89.0">v<b>1.89.0</b> · release ↗</a>
     <div class="tag">Orquestração de agentes · Claude Code · open source</div>
     <h1>Onde <em>verde</em><br>significa alguma coisa.</h1>
     <p class="lede">Num repositório qualquer, um teste verde pode significar "está correto", "não
@@ -197,10 +197,11 @@
       <div class="col good">
         <h3>✓ Sabotagem provada</h3>
         <ul>
-          <li><b>29 de 90</b> capacidades tiveram o mecanismo sabotado de propósito, e o teste
+          <li><b>52 de 90</b> capacidades tiveram o mecanismo sabotado de propósito, e o teste
             apitou. Só estas cabem na frase "está protegido" — é o padrão mais alto do repositório,
-            e ainda é menos de um terço do total.</li>
-          <li><b>78 canários</b> na suíte, cada um em processo próprio. O runner recusa arquivo que
+            e agora é a maioria: toda capacidade que declara bloquear falha foi derrubada de
+            propósito ao menos uma vez.</li>
+          <li><b>79 canários</b> na suíte, cada um em processo próprio. O runner recusa arquivo que
             passaria sem executar asserção alguma — defeito real que já ocorreu aqui.</li>
           <li><b>Zero</b> decisões arquiteturais pendentes, zero ponteiros mortos nos guias, zero
             divergência entre a versão do README e a do changelog.</li>
@@ -215,17 +216,19 @@
             vermelho. Cada uma recebeu um caso sintético que é obrigada a pegar; é isso que tornou
             a sabotagem possível de provar. Zero aqui não significa "sem risco": significa que este
             risco específico saiu da lista.</li>
-          <li><b>34</b> não declaram sequer como se protegem: são invisíveis para a auditoria, e
-            hoje são o passivo inteiro. Outras <b>27</b> declaram proteção de outro tipo — aviso,
-            registro, prosa, garantia física. Contam como em dia no registro, mas ninguém as
-            sabotou.</li>
+          <li><b>0</b> ainda não declaram como se protegem — eram 34. O passivo do registro
+            acabou: toda capacidade diz hoje de que forma protege (ou não protege).</li>
+          <li><b>38</b> declaram proteção de outro tipo — aviso, registro, prosa, garantia
+            física, gate manual. Contam como em dia no registro, mas <b>ninguém as sabotou</b>,
+            e é essa a distinção que a coluna da esquerda mede. Zero passivo <b>não</b> quer
+            dizer zero risco: quer dizer que o que falta parou de ser invisível.</li>
           <li>O <b>agente escreve os registros</b> que os verificadores leem, e <b>qualidade de
             raciocínio não se mecaniza</b>: ordem de etapa sim, ceticismo do crítico não.</li>
         </ul>
       </div>
     </div>
-    <p class="sub">A conta fecha em <b>90</b>: vinte e nove provadas, nenhuma declarada sem prova, vinte e sete com proteção mais fraca, trinta e quatro sem declaração. O registro chama
-      <b>56 de 90</b> de "em conformidade" — mas conformidade ali significa "declarou algo
+    <p class="sub">A conta fecha em <b>90</b>: cinquenta e duas provadas, nenhuma declarada sem prova, trinta e oito com proteção mais fraca, nenhuma sem declaração. O registro chama
+      <b>90 de 90</b> de "em conformidade" — mas conformidade ali significa "declarou algo
       coerente", não "foi sabotada". Os dois números são verdadeiros e medem coisas diferentes;
       quem confunde os dois está fazendo propaganda.</p>
     <p class="sub">Numa única sessão de revisão adversarial, <b>seis de dez rodadas reprovaram</b> —
@@ -417,14 +420,14 @@
     <p class="sub">Quatro passos, sem quebra. <b>Por projeto você preenche só 2 arquivos</b> (<code>docs/briefing.md</code> — objetivo/escopo/aceite — e <code>.agent/rules/00-glossario.md</code> — nomes/termos); o resto a IA usa, e <b>não é rígido</b>: ela elicita por perguntas/inspeção se faltar.</p>
     <div class="steps">
       <div class="step"><div class="num">1</div><div><div class="t">Instale o Claude Code</div><div class="d">O runtime onde o framework foi testado e desenhado (CLI + extensão de VS Code). Instalação na doc oficial: <a href="https://code.claude.com/docs">code.claude.com/docs</a>.</div></div></div>
-      <div class="step"><div class="num">2</div><div><div class="t">Clone o repositório</div><div class="d">Ou <a href="https://github.com/fabriciopsouza/metacognition-framework/archive/refs/tags/v1.88.0.zip">baixe a release v1.88.0 (.zip)</a>:<span class="cmd">git clone https://github.com/fabriciopsouza/metacognition-framework</span></div></div></div>
+      <div class="step"><div class="num">2</div><div><div class="t">Clone o repositório</div><div class="d">Ou <a href="https://github.com/fabriciopsouza/metacognition-framework/archive/refs/tags/v1.89.0.zip">baixe a release v1.89.0 (.zip)</a>:<span class="cmd">git clone https://github.com/fabriciopsouza/metacognition-framework</span></div></div></div>
       <div class="step"><div class="num">3</div><div><div class="t">Rode o bootstrap — o "instalador"</div><div class="d">Idempotente (roda 2× sem quebrar): configura git, garante o <code>gh</code> CLI, espelha o framework. <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/bootstrap.ps1">bootstrap.ps1</a> · <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/bootstrap.sh">bootstrap.sh</a>:<span class="cmd">pwsh ./bootstrap.ps1        # Windows
 ./bootstrap.sh             # macOS / Linux</span></div></div></div>
       <div class="step"><div class="num">4</div><div><div class="t">Abra a pasta no VS Code e diga <b>"iniciar"</b></div><div class="d">O Claude Code lê o <code>CLAUDE.md</code> nativamente e o squad <b>acorda sozinho</b> (hooks de SessionStart: sincroniza o repo, confere o modo, lê o histórico). Diga <b>"iniciar"</b> para abrir a sessão pelo PMO — e traga seu pedido. O discovery conduz até a entrega validada.</div></div></div>
     </div>
     <div class="btns">
       <a class="btn" href="https://github.com/fabriciopsouza/metacognition-framework">Ver no GitHub ↗</a>
-      <a class="btn ghost" href="https://github.com/fabriciopsouza/metacognition-framework/archive/refs/tags/v1.88.0.zip">Baixar v1.88.0 (.zip)</a>
+      <a class="btn ghost" href="https://github.com/fabriciopsouza/metacognition-framework/archive/refs/tags/v1.89.0.zip">Baixar v1.89.0 (.zip)</a>
       <a class="btn ghost" href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/guia/INSTALAR-NO-VSCODE.md">Guia de instalação</a>
     </div>
   </section>
@@ -437,9 +440,9 @@
       <button class="sbtn" type="button" title="Instagram não compartilha link pela web — copie e cole no story/bio" onclick="navigator.clipboard&&navigator.clipboard.writeText('https://fabriciopsouza.github.io/metacognition-framework/');this.textContent='link copiado ✓'">Instagram (copiar link)</button>
     </div>
     <p><a href="https://github.com/fabriciopsouza/metacognition-framework">Repositório no GitHub ↗</a> ·
-       <a href="https://github.com/fabriciopsouza/metacognition-framework/releases/tag/v1.88.0">Release v1.88.0 ↗</a> ·
+       <a href="https://github.com/fabriciopsouza/metacognition-framework/releases/tag/v1.89.0">Release v1.89.0 ↗</a> ·
        <a href="https://github.com/fabriciopsouza/metacognition-framework/blob/main/CHANGELOG.md">CHANGELOG</a></p>
-    <p>Framework Metacognitivo Agêntico · <b>v1.88.0</b> · PT-BR · CC BY 4.0 (livre para usar, adaptar e distribuir, com atribuição).</p>
+    <p>Framework Metacognitivo Agêntico · <b>v1.89.0</b> · PT-BR · CC BY 4.0 (livre para usar, adaptar e distribuir, com atribuição).</p>
     <p>Adaptável no método, especializado por clonagem. A bibliografia (A0–A3) e todo o histórico de decisões acompanham o repositório.</p>
   </footer>
 
