@@ -108,3 +108,32 @@ jobs:
             echo "no runner (submodulo ou deploy key). Logica validada pelos canarios"
             echo "test_equivalence_gate.py + test_verify_hitl_proofs.py. Dependencia declarada (ADR-071)."
           fi
+
+  # Check AGREGADOR — o unico contexto que a branch protection deve exigir.
+  #
+  # Por que existe: o job da matriz se chama `canários (${{ matrix.os }})`, nome que (a) muda a
+  # cada alteracao da matriz e (b) tem acento. Um required check preso a esse nome quebra em
+  # silencio quando a matriz muda, e foi assim que a protecao da `main` ficou pedindo
+  # `canarios-local` — um contexto que NENHUM job produzia. Consequencia medida em 17/08/2026:
+  # a matriz passava verde nos 3 SOs e MESMO ASSIM nenhum PR era mergeavel, porque o check
+  # exigido nunca aparecia. Gate que nao pode passar e tao inutil quanto gate que nao barra.
+  #
+  # Fail-closed de proposito: `if: always()` faz este job rodar mesmo se a matriz falhar/for
+  # cancelada, e qualquer resultado != success reprova. Sem o `always()`, um `needs` que falha
+  # SKIPPA este job, e check skippado conta como nao-executado — a protecao voltaria a travar.
+  canarios-local:
+    name: canarios-local
+    needs: [canaries]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Consolidar o veredito da matriz de canarios
+        shell: bash
+        run: |
+          resultado="${{ needs.canaries.result }}"
+          echo "matriz de canarios (3 SOs) -> ${resultado}"
+          if [ "${resultado}" != "success" ]; then
+            echo "::error::canarios reprovaram ou nao executaram (resultado=${resultado})"
+            exit 1
+          fi
+          echo "todas as plataformas verdes"
