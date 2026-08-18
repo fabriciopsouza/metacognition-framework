@@ -34,6 +34,63 @@ VITRINE = os.path.join(ROOT, "guia", "web", "index.html")
 WEB_PROMPT_RE = re.compile(r"PROMPT-CHAT-WEB-v.*\.md$")
 
 
+def contar_vitrine(caps):
+    """Numeros que a secao #provas da vitrine tem de afirmar. Extraida de main() para que a
+    fixture abaixo exercite a MESMA contagem que roda contra o registry real."""
+    from audit_enforcement import valida_mutacao  # local: o import de main() nao alcanca aqui
+    total = len(caps)
+    provadas = sum(1 for c in caps
+                   if c.get("mutacao") and valida_mutacao(c["mutacao"], c)[0])
+    fc_sem_prova = sum(1 for c in caps
+                       if c.get("enforcement") == "fail-closed" and not c.get("mutacao"))
+    sem_campo = sum(1 for c in caps if not c.get("enforcement"))
+    fracos = total - provadas - fc_sem_prova - sem_campo
+    conformes = sum(1 for c in caps if c.get("enforcement")
+                    and (c.get("enforcement") != "fail-closed" or c.get("mutacao")))
+    return {"total": total, "provadas": provadas, "fc_sem_prova": fc_sem_prova,
+            "sem_campo": sem_campo, "fracos": fracos, "conformes": conformes}
+
+
+def autoteste_contagem():
+    """Registry sintetico com UMA capacidade de cada classe — a contagem tem de separa-las.
+
+    A fixture `e` tem o campo `mutacao` preenchido mas ESTRUTURALMENTE invalido (o `arquivo`
+    nao e' o `mechanism` da capacidade), e `valida_mutacao` a recusa. E' ela que separa
+    'provada' de 'tem o campo mutacao': sem ela, uma contagem ingenua que nunca chamasse
+    `valida_mutacao` passaria identica — medido pelo qa-critic em 2026-08-18, que reescreveu
+    a funcao sem a validacao e obteve o MESMO resultado. Era canario cego, a classe que o
+    proprio ADR-106 existe para proibir.
+    """
+    falhas = []
+    fake = [
+        {"id": "a", "enforcement": "fail-closed", "mechanism": "tools/x.py",
+         "test": "tools/test_x.py",
+         "mutacao": {"arquivo": "tools/x.py", "de": "A", "para": "B",
+                     "canario": "tools/test_x.py", "espera": "mensagem suficientemente longa"}},
+        {"id": "b", "enforcement": "fail-closed"},
+        {"id": "c", "enforcement": "advisory"},
+        {"id": "d"},
+        # tem `mutacao`, mas o `arquivo` nao e o `mechanism` -> valida_mutacao RECUSA.
+        # Conta como protecao mais fraca, nunca como provada.
+        {"id": "e", "enforcement": "fail-closed", "mechanism": "tools/y.py",
+         "test": "tools/test_y.py",
+         "mutacao": {"arquivo": "tools/OUTRO.py", "de": "A", "para": "B",
+                     "canario": "tools/test_y.py", "espera": "mensagem suficientemente longa"}},
+    ]
+    n = contar_vitrine(fake)
+    # `e` NAO pode entrar em `provadas` (mutacao invalida) nem em `fc_sem_prova` (tem o
+    # campo). Cai em `fracos`, que e o resto — e e por isso que `fracos` sobe de 1 para 2.
+    esperado = {"total": 5, "provadas": 1, "fc_sem_prova": 1, "sem_campo": 1,
+                "fracos": 2, "conformes": 3}
+    for k, v in esperado.items():
+        if n[k] != v:
+            falhas.append(f"contagem '{k}' = {n[k]}, esperado {v} — a vitrine publicaria "
+                          f"um numero errado sem ninguem notar")
+    if n["provadas"] + n["fc_sem_prova"] + n["sem_campo"] + n["fracos"] != n["total"]:
+        falhas.append("as quatro classes nao somam o total — a conta da pagina nao fecha")
+    return falhas
+
+
 def main():
     fails = 0
 
@@ -131,15 +188,12 @@ def main():
         try:
             _caps = _json.load(open(os.path.join(ROOT, "capabilities.json"), encoding="utf-8"))
             _caps = _caps.get("capabilities", _caps)
-            total = len(_caps)
-            provadas = sum(1 for c in _caps
-                           if c.get("mutacao") and valida_mutacao(c["mutacao"], c)[0])
-            fc_sem_prova = sum(1 for c in _caps
-                               if c.get("enforcement") == "fail-closed" and not c.get("mutacao"))
-            sem_campo = sum(1 for c in _caps if not c.get("enforcement"))
-            fracos = total - provadas - fc_sem_prova - sem_campo
-            conformes = sum(1 for c in _caps if c.get("enforcement")
-                            and (c.get("enforcement") != "fail-closed" or c.get("mutacao")))
+            _n = contar_vitrine(_caps)
+            total, provadas = _n["total"], _n["provadas"]
+            fc_sem_prova, sem_campo = _n["fc_sem_prova"], _n["sem_campo"]
+            fracos, conformes = _n["fracos"], _n["conformes"]
+            for _f in autoteste_contagem():
+                gate(False, f"auto-teste da contagem da vitrine: {_f}")
             canarios = len(glob.glob(os.path.join(ROOT, "tools", "test_*.py")))
         except Exception as e:
             gate(False, f"nao consegui derivar os numeros da vitrine: {e}")

@@ -37,6 +37,15 @@ cujo canario imprime uma mensagem acentuada. Consequencia pior que o falso-negat
 migrador aprende a escolher `espera` so em ASCII, e passa a evitar justamente a frase
 especifica que o canario imprime. Agora le utf-8 com errors=replace.
 
+EMENDA 6 (2026-08-18) - prova nao-executada deixa de ser reportada como prova quebrada.
+A prova so existe contra o HEAD (o worktree e materializado dele). Mecanismo ou canario com
+mudanca NAO-COMMITADA fazia o modo rodar a versao ANTIGA e reportar 'mutacao obsoleta' ou
+'continuou VERDE' - mensagens que acusam a MUTACAO por um problema de ESTADO DO REPO.
+Achado MEDIO do qa-critic: o dano nao e o falso-positivo isolado, e o habito que ele ensina -
+depois de ver alguns, o mantenedor aprende a descartar [FALHA] como 'coisa do HEAD' sem
+conferir, e ai uma mutacao genuinamente quebrada passa. Agora e SKIP declarado, com o motivo
+e o que fazer. Mesmo principio do worktree indisponivel: prova nao executada nunca vira prova.
+
 DECISAO DO DONO (2026-08-14), que este script mecaniza:
   (a) capacidade NOVA  -> fail-closed. Sem `mutacao` declarada, sai 1 e barra.
   (b) passivo herdado  -> advisory. Reporta, nao barra. O passivo esta congelado em
@@ -215,6 +224,24 @@ def modo_declaracao(caps, baseline, so_passivo=False):
     return 0
 
 
+def _difere_do_head(raiz, wt, rel):
+    """O arquivo da arvore de trabalho difere do que o worktree materializou do HEAD?
+
+    Cobre os dois casos que impedem a prova: arquivo NOVO (ausente no HEAD) e arquivo com
+    edicao nao-commitada. Compara bytes — nao usa `git status`, que dependeria de o `rel`
+    estar rastreado e de o cwd ser o repo.
+    """
+    vivo, congelado = Path(raiz) / rel, Path(wt) / rel
+    if not vivo.is_file():
+        return False                      # sumiu da arvore: nao e' o caso desta checagem
+    if not congelado.is_file():
+        return True                       # arquivo novo, ainda nao existe no HEAD
+    try:
+        return vivo.read_bytes() != congelado.read_bytes()
+    except OSError:
+        return False                      # ilegivel: deixa o fluxo normal reportar
+
+
 def modo_provar(caps, alvo, raiz=RAIZ):
     """Aplica a mutacao num worktree isolado e EXIGE que o canario fique vermelho.
 
@@ -249,6 +276,28 @@ def modo_provar(caps, alvo, raiz=RAIZ):
                     continue
                 alvo_f = wt / m["arquivo"]
                 canario = wt / m["canario"]
+
+                # A prova SO existe contra o HEAD (o worktree e' materializado dele). Se o
+                # mecanismo ou o canario tem mudanca NAO-COMMITADA, o que roda aqui e' a versao
+                # ANTIGA — e as mensagens genericas abaixo ("mutacao obsoleta", "continuou
+                # VERDE") acusariam a mutacao por um problema que e' de estado do repo.
+                #
+                # Achado MEDIO do qa-critic (2026-08-18): o dano nao e' o falso-positivo isolado,
+                # e' o habito que ele ensina — depois de ver algumas dessas, o mantenedor aprende
+                # a descartar [FALHA] como "coisa do HEAD" sem conferir, e ai uma mutacao
+                # genuinamente quebrada passa despercebida. Por isso a mensagem e' SEPARADA e diz
+                # o que fazer. SKIP declarado, no mesmo espirito do worktree indisponivel acima:
+                # prova nao executada NUNCA e' reportada como prova.
+                # dict.fromkeys: dedup preservando ordem — em capacidade com `mechanism == test`
+                # os dois campos apontam o MESMO arquivo, e listar duas vezes so confunde.
+                pendentes = [p for p in dict.fromkeys((m["arquivo"], m["canario"]))
+                             if _difere_do_head(raiz, wt, p)]
+                if pendentes:
+                    print(f"  [SKIP declarado] {cid}: {', '.join(pendentes)} com mudanca "
+                          f"NAO-COMMITADA — a prova roda contra o HEAD, entao ela testaria a "
+                          f"versao antiga. Commite e rode de novo (ou sabote a mao e restaure).")
+                    continue
+
                 if not alvo_f.is_file() or not canario.is_file():
                     falhas.append((cid, f"arquivo ou canario inexistente no HEAD: "
                                         f"{m['arquivo']} / {m['canario']}"))

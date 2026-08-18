@@ -197,10 +197,11 @@
       <div class="col good">
         <h3>✓ Sabotagem provada</h3>
         <ul>
-          <li><b>29 de 90</b> capacidades tiveram o mecanismo sabotado de propósito, e o teste
+          <li><b>52 de 90</b> capacidades tiveram o mecanismo sabotado de propósito, e o teste
             apitou. Só estas cabem na frase "está protegido" — é o padrão mais alto do repositório,
-            e ainda é menos de um terço do total.</li>
-          <li><b>78 canários</b> na suíte, cada um em processo próprio. O runner recusa arquivo que
+            e agora é a maioria: toda capacidade que declara bloquear falha foi derrubada de
+            propósito ao menos uma vez.</li>
+          <li><b>79 canários</b> na suíte, cada um em processo próprio. O runner recusa arquivo que
             passaria sem executar asserção alguma — defeito real que já ocorreu aqui.</li>
           <li><b>Zero</b> decisões arquiteturais pendentes, zero ponteiros mortos nos guias, zero
             divergência entre a versão do README e a do changelog.</li>
@@ -215,17 +216,19 @@
             vermelho. Cada uma recebeu um caso sintético que é obrigada a pegar; é isso que tornou
             a sabotagem possível de provar. Zero aqui não significa "sem risco": significa que este
             risco específico saiu da lista.</li>
-          <li><b>34</b> não declaram sequer como se protegem: são invisíveis para a auditoria, e
-            hoje são o passivo inteiro. Outras <b>27</b> declaram proteção de outro tipo — aviso,
-            registro, prosa, garantia física. Contam como em dia no registro, mas ninguém as
-            sabotou.</li>
+          <li><b>0</b> ainda não declaram como se protegem — eram 34. O passivo do registro
+            acabou: toda capacidade diz hoje de que forma protege (ou não protege).</li>
+          <li><b>38</b> declaram proteção de outro tipo — aviso, registro, prosa, garantia
+            física, gate manual. Contam como em dia no registro, mas <b>ninguém as sabotou</b>,
+            e é essa a distinção que a coluna da esquerda mede. Zero passivo <b>não</b> quer
+            dizer zero risco: quer dizer que o que falta parou de ser invisível.</li>
           <li>O <b>agente escreve os registros</b> que os verificadores leem, e <b>qualidade de
             raciocínio não se mecaniza</b>: ordem de etapa sim, ceticismo do crítico não.</li>
         </ul>
       </div>
     </div>
-    <p class="sub">A conta fecha em <b>90</b>: vinte e nove provadas, nenhuma declarada sem prova, vinte e sete com proteção mais fraca, trinta e quatro sem declaração. O registro chama
-      <b>56 de 90</b> de "em conformidade" — mas conformidade ali significa "declarou algo
+    <p class="sub">A conta fecha em <b>90</b>: cinquenta e duas provadas, nenhuma declarada sem prova, trinta e oito com proteção mais fraca, nenhuma sem declaração. O registro chama
+      <b>90 de 90</b> de "em conformidade" — mas conformidade ali significa "declarou algo
       coerente", não "foi sabotada". Os dois números são verdadeiros e medem coisas diferentes;
       quem confunde os dois está fazendo propaganda.</p>
     <p class="sub">Numa única sessão de revisão adversarial, <b>seis de dez rodadas reprovaram</b> —

@@ -351,6 +351,24 @@ def main():
                  f"(sem utf-8 literal: {len(_sem_enc)}; esperado 2 e 0)", 0, "",
                  0 if (len(_runs) == 2 and not _sem_enc) else 1, "", resultados)
 
+            # (i-m) mecanismo com mudanca NAO-COMMITADA -> SKIP declarado, nunca [FALHA].
+            # A prova roda contra o HEAD (worktree --detach). Se o arquivo vivo difere, o que
+            # seria testado e a versao ANTIGA, e as mensagens genericas ("mutacao obsoleta",
+            # "continuou VERDE") acusariam a mutacao por um problema de estado do repo.
+            # Achado MEDIO do qa-critic (2026-08-18): o dano nao e o falso-positivo, e o
+            # habito de descartar [FALHA] como "coisa do HEAD" — que deixa passar mutacao
+            # genuinamente quebrada. Emenda 6.
+            _vivo = fix / "tools" / "x.py"
+            _antes_txt = _vivo.read_text(encoding="utf-8")
+            try:
+                _vivo.write_text(_antes_txt + "# alteracao nao-commitada\n", encoding="utf-8")
+                caps, base = escrever(tmp, cap_fx())
+                c, s = rodar(AUDITOR, caps, base, "--provar", "--raiz", str(fix))
+                caso("mecanismo nao-commitado vira SKIP declarado (nao acusa a mutacao)",
+                     0, "skip declarado", c, s, resultados)
+            finally:
+                _vivo.write_text(_antes_txt, encoding="utf-8")
+
             # (i-g) `espera` curta demais vira curinga: "Error" casa com qualquer excecao.
             # Achado ALTO 2 do mesmo crítico.
             caps, base = escrever(tmp, cap_fx(espera="Error"))
