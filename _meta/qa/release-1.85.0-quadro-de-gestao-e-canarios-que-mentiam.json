@@ -69,6 +69,7 @@
   ],
   "atestacao": {
     "agentId": "ac5851bfca0eb3a2d",
+   "prova_transcript": "sha256:b2ffcf4c1e9235e4f2a8a6226e7284d5ecfb3f6f6073c15e16248341ecedd115",
     "modelo": "claude-fable-5",
     "modelo_autor": "claude-opus-5",
     "isolamento": "subagente qa-critic isolado, revisao na arvore de trabalho com proibicao de comando destrutivo; devolveu identica e declarou cada escrita",

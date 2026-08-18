@@ -15,6 +15,48 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.90.0] — 2026-08-18 — O boletim deixa de ser escrito só pelo avaliado (ADR-108)
+
+[CONSOLIDADO] · [CONFIRMADO — 17 vereditos verificados retroativamente contra o relatório real do crítico]
+
+Fecha o furo que sobrou depois do passivo zerado, e que o dono nomeou direto: *"pedi que o
+framework fosse determinístico, que as ferramentas funcionassem e não fosse TEATRO"*.
+
+**O método já estava certo** — QA adversarial em subagente isolado, modelo ≠ autor, rodando de
+verdade. O que faltava não era independência de julgamento: era **procedência do registro**. O
+`agentId` e o `modelo` do veredito eram strings que o orquestrador digitava, e o texto era
+transcrito à mão do relatório. Um agente com pressa gravaria um veredito plausível sem nunca ter
+rodado crítico nenhum, e o gate liberaria.
+
+**A prova agora vem de fora do agente.** Os transcripts do harness são escritos por ele, no
+momento em que cada coisa acontece. O veredito declara `atestacao.prova_transcript` — o sha256 do
+relatório devolvido — e `tools/verify_qa_attestation.py` procura no log um `tool_result` cujo hash
+bata. Sem relatório real com aquele texto não existe hash que bata: **achado não pode ser
+inventado nem amaciado sem quebrar a prova**. A invariante de maior valor: relatório que REPROVA
+não vira veredito aprovativo.
+
+**17 dos 51 vereditos existentes foram verificados retroativamente.** Os 34 sem execução no log
+ficam **listados como legados**, não reprovados — fabricar procedência para veredito antigo seria
+exatamente o teatro que este ADR combate.
+
+### O falso-positivo que a 1ª versão cometeu
+
+O detector varria os últimos 4000 caracteres atrás de `REPROVAR` e **acusou fraude num veredito
+legítimo**: o relatório dizia `## Veredito: APROVAR_COM_RESSALVAS` no topo e, no fim, explicava
+*"por que não é REPROVAR nem APROVAR limpo"*. Ele leu a explicação como conclusão. Aqui o
+falso-positivo custa **mais** que o falso-negativo — detector que acusa o inocente é desligado, e
+aí não sobra nem o falso-negativo. A regra passou a ler o veredito **declarado**, e a devolver
+"não sei" em vez de inventar. O caso `(f)` do canário prende isso.
+
+### Limites declarados
+
+**Qual modelo realmente respondeu não é verificável** — o harness não grava os turnos do
+subagente. Prova-se o modelo *pedido* e o do *autor*. **Amaciamento fino escapa**: o hash prova
+que o relatório existe e que o veredito global concorda com ele, não que cada achado manteve a
+severidade. **O transcript é arquivo local**: o modelo de ameaça é "agente com pressa corta
+caminho", não "agente forja o log do harness". **Local, não CI.** E a concordância só vale onde o
+relatório declara veredito — hoje 5 dos 51.
+
 ## [1.89.0] — 2026-08-18 — O passivo do registro acabou (ADR-106 fechado)
 
 [CONSOLIDADO] · [CONFIRMADO — 52/52 provas de mutação; 3 rodadas adversariais Sonnet × Opus]

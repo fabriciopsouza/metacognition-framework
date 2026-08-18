@@ -3,6 +3,30 @@
   "note": "Registry SSoT de capacidades (ADR-072). UM registro por feature. Fonte única; CAPABILITIES.md e o manifest de equivalencia sao DERIVADOS (build_capabilities.py). Canario anti-drift: tools/test_capabilities.py. status: PROVIDES|PARTIAL|ABSENT|JUSTIFIED_ABSENT.",
   "capabilities": [
     {
+      "id": "qa-attestation-provenance",
+      "title": "Procedencia do veredito de qa-critic: hash do relatorio real do subagente conferido contra o log do harness",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/verify_qa_attestation.py",
+      "test": "tools/test_verify_qa_attestation.py",
+      "adr": "docs/adr/108-procedencia-do-veredito-de-qa-critic.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "tags": [
+        "qa",
+        "evidence",
+        "anti-teatro",
+        "provenance"
+      ],
+      "mutacao": {
+        "arquivo": "tools/verify_qa_attestation.py",
+        "de": "        return \"divergente\", (\"o relatorio do critico diz REPROVAR e o veredito gravado e' \"",
+        "para": "        return \"verificado\", (\"SABOTADO: aceita veredito que contradiz o relatorio \"",
+        "canario": "tools/test_verify_qa_attestation.py",
+        "espera": "relatorio REPROVA + veredito aprovativo e PEGO"
+      }
+    },
+    {
       "id": "capability-index",
       "title": "Indice de capacidades derivado + canario anti-drift",
       "status": "PROVIDES",

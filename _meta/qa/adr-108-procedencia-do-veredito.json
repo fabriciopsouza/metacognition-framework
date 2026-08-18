@@ -1,0 +1,65 @@
+{
+  "bloco": "adr-108-procedencia-do-veredito",
+  "papel": "qa_critic",
+  "rodada": 6,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "sha_revisado": "824e6ce",
+  "resumo": "SEIS rodadas adversariais, Sonnet isolado vs autor Opus, CINCO REPROVAR. Cada rodada fechou o vetor apontado e nenhuma fechou a CLASSE: negacao -> ultima nao-negada -> linha formal -> janela ancorada no trailer -> sentinela por posicao. O critico nomeou o motivo na rodada 4 (heuristica de posicao sobre prosa livre nao distingue a conclusao de qualquer outra linha formatada como token) e a saida nao foi mais uma regex: foi mudar o CONTRATO (sentinela unico, rule #13) e resolver ambiguidade por CONTAGEM, que reuso quebra em qualquer ordem. Na rodada 6 aprovou com uma ressalva declarada e a recomendacao explicita de NAO persegui-la com mais regex.",
+  "verificacoes_executadas": [
+    "6 rodadas com reproducao em codigo de cada vetor, sempre em copias fora do repo",
+    "os 5 vetores derrubados foram convertidos em casos de canario e provados por reversao",
+    "regex do sentinela atacada em 8 eixos (case, espacos, >>> extra, negacao dentro, quebra de linha, colagem sem boundary)",
+    "rollup com sem_leitura + ressalva + verificado juntos: precedencia conferida",
+    "run_canaries: 77 PASS / 1 SKIP / 2 FAIL esperadas; canario do bloco 34/34"
+  ],
+  "problemas": [
+    {
+      "severidade": "alto",
+      "local": "tools/verify_qa_attestation.py (veredito_do_relatorio)",
+      "descricao": "CORRIGIDO ao longo de 5 rodadas. A leitura da conclusao por heuristica de posicao foi abandonada; a conclusao passou a ser um sentinela UNICO, com ambiguidade resolvida por contagem.",
+      "status": "corrigido"
+    },
+    {
+      "severidade": "alto",
+      "local": "tools/verify_qa_attestation.py (agentId, dedup, autor, rollup)",
+      "descricao": "CORRIGIDOS. agentId ancorado no trailer; dedup de provas; autor por sessao; rollup com N provas e categorias nao-limpas concatenadas.",
+      "status": "corrigido"
+    },
+    {
+      "severidade": "medio",
+      "local": "tools/verify_qa_attestation.py (limite declarado)",
+      "descricao": "ACEITO COMO LIMITE, por recomendacao explicita do critico. Um relatorio que NUNCA escreve o proprio sentinela e cita um exemplo ('o formato e assim: <<<...>>>') tem exatamente um sentinela e ele e o ultimo — as duas propriedades verificadas. Nenhuma regra de posicao ou contagem distingue exemplo de conclusao quando tem forma identica. Persegui-lo com mais regex repetiria o erro das rodadas 1-5. Declarado no ADR.",
+      "status": "aceito_como_divida"
+    },
+    {
+      "severidade": "medio",
+      "local": "tools/verify_qa_attestation.py (custo de sem_leitura)",
+      "descricao": "ACEITO COMO DIVIDA com criterio de monitoramento dado pelo critico: sem_leitura e ressalva saem com o mesmo exit 3 e a mesma linha. Se sem_leitura continuar sendo maioria DEPOIS de a norma ter tido tempo de pegar em relatorios novos, e sinal de evasao, nao de legado.",
+      "status": "aceito_como_divida"
+    }
+  ],
+  "escopo_paths": [
+    "tools/verify_qa_attestation.py",
+    "tools/test_verify_qa_attestation.py",
+    "docs/adr/108-procedencia-do-veredito-de-qa-critic.md",
+    ".agent/skills/qa-critic/rules.md",
+    "capabilities.json"
+  ],
+  "atestacao": {
+    "agentId": "afe12442cf60517e7",
+    "modelo": "claude-sonnet-5",
+    "modelo_autor": "claude-opus-5",
+    "prova_transcript": "sha256:491d269ac2193cf304197bf0fa73691d0b2107754f6b57c3788281877d7418ea",
+    "isolamento": "subagente qa-critic isolado, 6 rodadas via SendMessage sobre o mesmo contexto, read-only; todas as reproducoes rodaram em tempdirs e copias no scratchpad, com git status conferido identico ao inicio"
+  },
+  "postura": {
+    "rrc": "PASSA - o critico nao perguntou se o mecanismo funciona, perguntou se ele e teatro, e reprovou cinco vezes seguidas ate a resposta parar de ser uma regex melhor. Na 6a, recomendou explicitamente NAO perseguir o residual — que e' o oposto de inflar achado para parecer util"
+  },
+  "nao_verificado": [
+    "a CONCORDANCIA deste proprio veredito: o relatorio da rodada 6 contem DOIS sentinelas (o de fechamento e um dentro do exemplo do achado MEDIO), entao o verificador marca sem_leitura em vez de adivinhar — o critico virou o exemplo vivo do limite que ele mesmo declarou",
+    "qual modelo respondeu de fato (o harness nao grava turnos de subagente)"
+  ],
+  "data": "2026-08-18T00:00:00Z"
+}

@@ -55,6 +55,7 @@
   ],
   "atestacao": {
     "agentId": "a60a8246b50f08eca",
+   "prova_transcript": "sha256:2fa7ccbc3691442934ad32e4bfe31786b84b88d19cfa6765b69191e2168d14af",
     "modelo": "claude-sonnet-4-6",
     "modelo_autor": "claude-opus-5",
     "isolamento": "subagente qa-critic isolado, revisao na arvore de trabalho com proibicao explicita de comando destrutivo; devolveu a arvore identica e declarou o metodo de restauracao",

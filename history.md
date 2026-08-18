@@ -13,6 +13,35 @@
 > **Poda de contexto (ADR-107):** este arquivo quente mantem os ultimos **10** checkpoints + `## Em aberto` + `## Aprendizado`. **56** checkpoints mais antigos estao em [`docs/history/history-archive.md`](docs/history/history-archive.md) (nada deletado — so realocado). Rotacao: `python tools/rotate_history.py`.
 <!-- history-archive-pointer -->
 
+## 2026-08-18 — Release v1.90.0 (MINOR): o boletim deixa de ser escrito só pelo avaliado (ADR-108)
+
+O dono fez a pergunta que faltava: depois de zerar o passivo, dá para dizer que é determinístico
+e que não é teatro? Não dava — e o motivo não era o número de capacidades provadas. Era que **eu
+escrevia o boletim que o gate lia**.
+
+O método dele estava certo e rodando: crítico isolado, modelo diferente, quatro rodadas achando
+defeito real. O furo era outro — independência de **julgamento** havia; procedência do **registro**
+não. `agentId` e `modelo` eram strings que eu digitava.
+
+**A correção usa dado que eu não produzo:** os transcripts do harness. O veredito passa a carregar
+o sha256 do relatório que o crítico devolveu, e o verificador procura esse hash no log. Dezessete
+dos cinquenta e um vereditos existentes foram verificados retroativamente contra o relatório real;
+os trinta e quatro restantes ficam listados como legados, porque fabricar procedência para
+veredito antigo seria o teatro que o mecanismo combate.
+
+**E a primeira versão do detector acusou fraude num veredito honesto** — leu a frase "por que não
+é REPROVAR" como se fosse a conclusão. Vale registrar porque a lição é assimétrica: aqui o
+falso-positivo custa mais que o falso-negativo, já que um detector que acusa o inocente é
+desligado, e aí não resta nem o falso-negativo.
+
+**O que continua aberto, e está escrito:** qual modelo de fato respondeu não é verificável (o
+harness não grava os turnos do subagente); amaciamento fino de severidade escapa; o `escopo_paths`
+segue escolhido por mim; e o prompt dado ao crítico também — crítico independente apontado para a
+pergunta errada é independente e cego.
+
+**Próximo passo:** amarrar o verificador ao `squad_gate` como bloqueio, hoje ele é canário da
+suíte. Depois, o furo irmão: validar `escopo_paths` contra o que o crítico de fato leu.
+
 ## 2026-08-18 — Release v1.89.0 (MINOR): o passivo do registro acabou (ADR-106 fechado)
 
 Das 90 capacidades, **52 têm sabotagem provada** e nenhuma declara bloquear falha sem prova.
