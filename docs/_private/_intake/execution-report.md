@@ -1,6 +1,6 @@
 # Execution-report — encerramento de bloco (ADR-038/052 · tier OWNER · privado, não distribuído)
 
-- **Tokens:** input 372,343 + output 13,162,627 = 13,534,970 (fonte: transcripts do Claude Code, ADR-026)
+- **Tokens:** input 372,833 + output 13,464,285 = 13,837,118 (fonte: transcripts do Claude Code, ADR-026)
 - **Tempo (wall-clock):** NÃO MEDIDO
 - **Turnos:** NÃO MEDIDO
 - **Arquivos tocados:** NÃO MEDIDO
