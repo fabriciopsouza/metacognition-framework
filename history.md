@@ -625,6 +625,50 @@ Riscos ativos: corte do release feito de `9TRP7H4` (não-kerberus); se kerberus 
 
 ## Em aberto
 
+- **PRIORIDADE MÁXIMA DO PRÓXIMO BLOCO — o squad e a crítica adversarial não são determinísticos
+  fora do repo do framework** (aberto em 18/08/2026, por reclamação do dono; **não é a primeira vez
+  que ele reclama exatamente disto** — o gatilho declarado no ADR-097 item 4 está atingido duas vezes:
+  o dono declarou E o passo desapareceu sem ninguém notar, por horas).
+  **O que aconteceu, medido em 18/08/2026 na abertura do projeto `migracao-sac`:** o conjunto
+  documental inteiro foi escrito, commitado três vezes e declarado pronto **sem uma única rodada de
+  crítica adversarial em modelo isolado**. Pior: o autor ofereceu *autocrítica* no lugar, e o dono
+  precisou dizer que nunca pediu autocrítica — é sempre adversarial. Substituir o crítico
+  independente por autocrítica é exatamente o defeito que o ADR-108 fechou do outro lado (o avaliado
+  escrevendo o próprio boletim), reaparecendo por outra porta.
+  **As quatro causas, todas verificadas por comando, não supostas:**
+  **(1) A aplicação é por repositório e o repositório novo nasceu sem ela.**
+  `migracao-sac/.git/hooks/pre-commit` **não existe**; `tools/install_git_hooks.py` existe e ninguém
+  o chamou na criação do projeto. O `.claude/settings.json` do framework (route-gate, mission-gate)
+  não vale em outra pasta — então nenhum gate de boot ou de turno rodou lá.
+  **(2) O gate é de COMMIT, e o que precisa ser barrado é a ENTREGA.** O `pre-commit` bloqueia
+  `git commit`; ele não tem como impedir o agente de dizer "pronto" no chat, que é onde a entrega
+  acontece de fato. Um gate que só vive no commit é cego para o canal principal.
+  **(3) O `squad_gate` depende de `behaviors/manifest.json`, que só existe no núcleo.** Projeto de
+  domínio não tem manifesto, então não há o que cobrar — o gate passaria mesmo instalado.
+  **(4) A CAUSA NOVA, e a mais grave porque é invisível: o runtime pode VETAR o subagente e o
+  framework não detecta o veto.** A sessão rodou com instrução de não disparar subagente sem pedido
+  explícito do usuário. O framework declara o crítico isolado como obrigatório, o runtime proibiu, e
+  o efeito foi o passo obrigatório **desaparecer em silêncio** — o agente seguiu trabalhando e
+  pedindo autorização em vez de falhar ruidosamente. Enquanto o framework não distinguir
+  "não rodou porque passou" de "não rodou porque foi proibido", o mecanismo é opcional na prática.
+  **O que o dono pediu, e é o veículo da correção:** empacotar o framework como **plugin instalável
+  a partir de repositório** — um stack que o time da Natulab configura UMA vez e que traz junto, em
+  sequência: skills, subagentes com `model:` fixado (crítico != autor por definição, não por
+  lembrança), hooks de boot/turno/entrega, e comandos. **Verificado em 18/08/2026: não existe.**
+  Não há `.claude-plugin/` nem `marketplace.json` no repo — hoje a instalação é manual, por guia.
+  **Candidatos de mecanismo, a decidir por ADR no próximo bloco (nenhum implementado):**
+  (a) gate de ENTREGA, não de commit — o bloco não fecha sem veredito de crítico isolado no ledger;
+  (b) semeadura de projeto novo: um comando único que instala hooks + settings + manifesto mínimo ao
+  criar projeto de domínio, para o enforcement viajar com o trabalho em vez de ficar no núcleo;
+  (c) **fail-closed no veto**: se o subagente não pode ser disparado, o framework anuncia e trava,
+  em vez de continuar; o veto vira registro, não silêncio;
+  (d) empacotamento como plugin, com o subagente crítico declarando `model:` diferente do autor.
+  **Critério de aceite, binário:** abrir um projeto novo de domínio numa pasta virgem e o crítico
+  adversarial em modelo diferente rodar **sem ninguém pedir** — e, se o runtime proibir, o bloco
+  falhar visivelmente em vez de seguir. Enquanto isso não passar, esta pendência não fecha.
+  **Rastro desta ocorrência:** o projeto em `migracao-sac` (3 commits sem veredito) e o registro em
+  `~/.claude/trabalhos/migracao-sac.md`.
+
 - **Quitação do override da régua §0 do ADR-102** (aberto em 13/08/2026): o padrão documental
   entrou como **adição pura** sob override explícito do dono. Duas condições fecham o débito, e
   enquanto não fecharem o override permanece visível aqui: **(a)** aplicar o padrão em **dois
