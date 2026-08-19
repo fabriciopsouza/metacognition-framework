@@ -391,7 +391,7 @@
     },
     {
       "id": "model-policy",
-      "title": "Politica de modelo como dado: papel x risco -> tier com chain de fallback + escada de heterogeneidade + indisponibilidade declarada (env)",
+      "title": "Politica de modelo como dado: papel x risco -> tier com chain de fallback + escada de heterogeneidade + indisponibilidade declarada (env) + escada RELATIVA ao default (executor/1o QA/2o QA) com regra de borda verificada em codigo",
       "status": "PROVIDES",
       "ai_owner": "claude",
       "mechanism": "tools/model-policy.json",
@@ -407,11 +407,13 @@
       ],
       "mutacao": {
         "arquivo": "tools/model-policy.json",
-        "de": "\"tier\": \"baseline\"",
-        "para": "\"tier\": \"economy\"",
+        "de": "\"tier\": \"baseline\",\n      \"why\": \"papel AUTORAL",
+        "para": "\"tier\": \"economy\",\n      \"why\": \"papel AUTORAL",
         "canario": "tools/test_handoff.py",
-        "espera": "(autoral) = haiku, esperado baseline opus"
-      }
+        "espera": "(autoral) = haiku, esperado baseline opus",
+        "_ancora": "a ancora inclui o inicio do campo `why` da regra `developer` DE PROPOSITO: existem duas regras com `tier: baseline` (architect e developer) e audit_enforcement.py substitui so a primeira ocorrencia. Ancora curta miraria a regra errada e a prova falharia pelo motivo errado — achado ALTO do qa-critic (Sonnet) em 19/08/2026."
+      },
+      "adr_emenda": "docs/adr/109-escada-relativa-de-qa-e-norma-de-escrita-com-canario.md"
     },
     {
       "id": "limits-catalog",
@@ -1883,6 +1885,33 @@
         "alarme",
         "anti-silencio"
       ]
+    },
+    {
+      "id": "escrita-padrao",
+      "title": "Norma de escrita com canario: alcance da regra em todo papel do squad + referencia citada como apoio, nunca no lugar da explicacao",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "_shared/output-format/SKILL.md",
+      "test": "tools/test_escrita_padrao.py",
+      "adr": "docs/adr/109-escada-relativa-de-qa-e-norma-de-escrita-com-canario.md",
+      "cross_ai": false,
+      "enforcement": "fail-closed",
+      "tags": [
+        "escrita",
+        "formato",
+        "clareza",
+        "acionavel"
+      ],
+      "mutacao": {
+        "arquivo": "_shared/output-format/SKILL.md",
+        "de": "## Parte A.0 — O texto se sustenta sozinho",
+        "para": "## Parte A.0 — (secao removida pela sabotagem)",
+        "canario": "tools/test_escrita_padrao.py",
+        "espera": "nao contem mais a secao da norma",
+        "_por_que": "a sabotagem apaga o TITULO DA NORMA no arquivo que a capacidade declara como mecanismo. Antes ela mexia numa skill de papel, que e consumidora e nao mecanismo — provaria outra coisa. Achado do canario de auditoria."
+      },
+      "_limite_declarado": "o canario checa ALCANCE (todo papel aponta para a norma) e REFERENCIA SOLTA (frase cujo unico conteudo e um codigo interno). NAO checa qualidade de redacao: gate que adivinha se um texto esta bom erra, e gate que erra e desligado por quem tem pressa. A parte nao mecanizavel da norma continua cobravel em revisao adversarial.",
+      "_secao": "secao A.0 — o texto se sustenta sozinho"
     }
   ],
   "registry_waivers": [

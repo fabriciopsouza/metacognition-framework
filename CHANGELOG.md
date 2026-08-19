@@ -15,6 +15,66 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [Não liberado] — branch `feat/enforcement-que-viaja-para-projeto-novo` — A escada de crítica passa a ser relativa (ADR-109), o degrau caro passa a exigir autorização (ADR-110) e o bloco passa a ser confirmado antes (ADR-111)
+
+[EMERGENTE] · [estado do QA declarado sem antecipar veredito: **dois QA adversariais isolados**
+rodaram nesta branch — junção em Sonnet e entrega em Fable — e **os dois REPROVARAM**. Os achados de
+ambos foram tratados. **Não existe veredito de aprovação**: a rodada que avalia estas correções ainda
+não rodou. A versão anterior desta linha dizia que os achados estavam tratados enquanto o segundo QA
+ainda rodava — boletim antes da prova, que é a classe que o ADR-108 fechou. Achado do próprio QA de
+entrega.]
+
+> **Não é release.** Fica aqui como registro da mudança na branch, para o gate de sincronia entre ADR
+> aceito e CHANGELOG não ficar vermelho. O número de versão sai quando o bloco fechar, com checkpoint
+> e evidência de QA no ledger — que é o rito que os canários de release cobram, e com razão.
+
+### Por que
+
+O dono cobrou, repetidamente, crítica adversarial em modelo isolado — e ela não rodou na abertura de um
+projeto novo. O conjunto foi escrito, commitado três vezes e declarado pronto sem crítica externa, com
+autocrítica oferecida no lugar. Quando finalmente rodou, reprovou duas vezes: o primeiro crítico achou
+treze defeitos, e o segundo achou o pior deles — as correções tinham mexido nas fontes e ninguém havia
+regenerado o que o leitor lê.
+
+### O que mudou
+
+- **A escada de crítica é relativa ao modelo default**, e não presa a nome: executor no default, primeiro
+  QA um degrau abaixo, segundo QA um degrau acima. Modelo novo entra na ordem e a regra se ajusta sozinha.
+  O segundo QA é de **entrega** — marco, etapa, resultado, funcionalidade — e não de junção interna, para
+  o degrau caro não encarecer a prática até alguém desligá-la.
+- **Três decisões do dono no mesmo dia mudam quando o degrau caro roda — ADR-110.** O 2º QA (degrau
+  **acima** do default) deixou de ser automático e passa a exigir **autorização ativa**; sem resposta,
+  não roda, e o veredito declara a lacuna. O **1º QA não mudou**: o degrau **abaixo** segue automático e
+  obrigatório, sem pedir licença. Coordenação entre IAs saiu do tier `max`, que **deixa de ser alcançável
+  por papel** — só por risco declarado. E *autor sempre default* virou invariante testada, que reprovou na
+  primeira execução e revelou um defeito no **casador de papel**: chave genérica engolia a específica, e um
+  papel autoral resolvia dois degraus abaixo do default. Consertado na raiz; *longest-match* puro foi
+  medido sobre 58 frases e **recusado** por criar duas regressões piores. Motivo da primeira decisão, e
+  ele é medido: rodar o degrau acima por reflexo esgotou a janela de 5h de tokens de uma sessão.
+
+- **Confirmar o bloco com o dono ANTES de executar virou o default — ADR-111.** O plano vem primeiro
+  (o que será tocado, decisões em aberto com alternativas, o que fica de fora), o dono aprova ou corrige,
+  e só então o bloco roda inteiro. Uma interrupção por bloco, em conversa — documento com perguntas
+  abertas não é elicitar. **Não passam pelo gate:** leitura/investigação, os gates anunciados do
+  framework, e o **QA adversarial obrigatório do degrau abaixo, que é automático** — carve-out escrito
+  porque foi violado no ato de propor a regra. Nasceu de contagem: numa sessão, três pedidos do dono
+  viraram sete decisões que ele nunca viu, e ao revisar mandou desfazer a primeira. A regra vive em
+  `.agent/rules/`, que viaja para projeto novo, e o linter de regras ganhou **guarda de ponteiro morto**
+  provada por sabotagem: regra citada por nome tem de existir.
+
+- **A norma de escrita ganhou canário** (`escrita-padrao`): ele verifica que a norma existe no arquivo
+  dono, que todo papel do squad aponta para ela, e que a prosa entregue não cita identificador no lugar
+  da explicação. Não julga qualidade de redação, e o limite está declarado.
+- **A elicitação passa a ser conduzida, e não delegada:** perguntar em conversa, em lotes pequenos, é o
+  padrão; entregar documento com perguntas abertas é opção do dono.
+
+### O que o QA de junção derrubou, e foi corrigido
+
+A primeira versão tinha três furos que o crítico provou por sabotagem: na ponta da escada o segundo
+crítico caía no **mesmo modelo do autor** com o canário aprovando; **inverter a ordem da escada** passava
+verde, porque a asserção se calculava da própria ordem; e o canário de escrita isentava referência entre
+parênteses e aceitava enchimento como explicação. Os três viraram verificação.
+
 ## [1.90.0] — 2026-08-18 — O boletim deixa de ser escrito só pelo avaliado (ADR-108)
 
 [CONSOLIDADO] · [CONFIRMADO — 17 vereditos verificados retroativamente contra o relatório real do crítico]

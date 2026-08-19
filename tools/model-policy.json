@@ -3,34 +3,56 @@
   "note": "FONTE UNICA da politica de modelo por papel+risco (ADR-078). Antes vivia em 3 lugares divergentes: suggest_model hardcoded (so opus/sonnet, cego ao tier acima), frontmatter dos subagentes (sonnet fixo) e prosa (ADR-018). Consumidores: tools/handoff.py (sugestao de modelo no Pacote P14), orquestrador ao spawnar subagente (Agent model:<id>), _meta/subagent-isolation.md (escada). Atualizar modelo novo = editar AQUI (dado), nao codigo. Canario: test_handoff.py valida schema + regras.",
   "model_ids": {
     "fable": "claude-fable-5",
-    "opus": "claude-opus-4-8",
+    "opus": "claude-opus-5",
     "sonnet": "claude-sonnet-4-6",
     "haiku": "claude-haiku-4-5-20251001"
   },
   "tiers": {
     "max": {
-      "chain": ["fable", "opus", "sonnet"],
+      "chain": [
+        "fable",
+        "opus",
+        "sonnet"
+      ],
       "why": "tier mais capaz disponivel (Mythos-class > Opus); cadeia degrada na ordem"
     },
     "balanced": {
-      "chain": ["sonnet", "opus", "haiku"],
+      "chain": [
+        "sonnet",
+        "opus",
+        "haiku"
+      ],
       "why": "equilibrio capacidade/custo; indisponivel -> sobe p/ opus antes de descer p/ haiku (qualidade > custo)"
     },
     "economy": {
-      "chain": ["haiku", "sonnet"],
+      "chain": [
+        "haiku",
+        "sonnet"
+      ],
       "why": "mecanico/bulk validado por canario Python, nao pelo modelo"
     },
     "baseline": {
-      "chain": ["opus", "sonnet", "haiku"],
+      "chain": [
+        "opus",
+        "sonnet",
+        "haiku"
+      ],
       "why": "tier do BASELINE DE AUTOR = modelo padrao/standard atual (hoje opus; fable=preview/situacional, NAO o standard diario). Papel autoral roda aqui; critico/docops descem abaixo. ADR-082 (emenda ADR-078)."
     }
   },
   "baseline_author": {
     "model": "opus",
     "_comment": "BASELINE DE AUTOR = o modelo PADRAO/recomendado/standard disponivel atual. Hoje 'opus' (fable e preview/situacional, nao o standard diario). RELATIVO e EVOLUTIVO: quando fable/mythos/+ virar o default/standard, promover 'model' AQUI (editar DADO, nunca hardcode em codigo) -> opus/sonnet descem para critico/docops automaticamente. Papeis autorais rodam >= baseline; critico/QA e docops-mecanico rodam ABAIXO do baseline (heterogeneidade barata + custo). Autor < baseline COM baseline disponivel = PROIBIDO silencioso: so desce com FRAMEWORK_MODELS_UNAVAILABLE declarado, e ANUNCIA o downgrade.",
-    "author_roles": ["orchestrator", "developer", "architect", "discovery", "docops-generative"],
+    "author_roles": [
+      "orchestrator",
+      "developer",
+      "architect",
+      "discovery",
+      "docops-generative"
+    ],
     "enforced_by": "tools/boot_check.py:check_author_tier (session-time, banner LOUD se autor<baseline); subagent dispatch via role 'developer'->tier 'baseline'",
-    "harness_limit": "o framework NAO troca o modelo INTERATIVO da sessao (controle do harness / comando /model); ele DETECTA + ANUNCIA + EXIGE troca. Mesma classe de limite declarada no ADR-078 (trava fisica exige recurso do harness)."
+    "harness_limit": "o framework NAO troca o modelo INTERATIVO da sessao (controle do harness / comando /model); ele DETECTA + ANUNCIA + EXIGE troca. Mesma classe de limite declarada no ADR-078 (trava fisica exige recurso do harness).",
+    "author_invariant": "AUTOR E SEMPRE O DEFAULT. DECISAO DO DONO 19/08/2026, nas palavras dele: 'nao teremos autor sonnet - autor sempre default'. Nenhum papel autoral roda ABAIXO do baseline, e nenhum roda ACIMA sem autorizacao ativa (qa_final_duplo.passo_2.autorizacao). A UNICA saida por baixo e' FRAMEWORK_MODELS_UNAVAILABLE declarada - e mesmo assim o downgrade e' ANUNCIADO, nunca silencioso. Consequencia que torna a invariante util: com ela valendo, o ramo heterogeneous_preference.order_otherwise (autor de tier baixo -> critico no tier max) e' DORMENTE, e o degrau acima deixa de ter qualquer porta automatica. Testada, nao prometida: o canario test_handoff.py resolve TODO papel de author_roles e reprova quem cair abaixo do baseline - e reprovou de cara, pegando `docops-generative` em haiku - defeito do CASADOR de papel, consertado na raiz em handoff.py e provado por permutacao da ordem das regras (ADR-110)."
   },
   "unavailability": {
     "how": "indisponibilidade SITUACIONAL (modelo deprecado, plano sem acesso, API fora) e DECLARADA, nao sondada: env FRAMEWORK_MODELS_UNAVAILABLE=fam1,fam2 (sessao) ou remover de model_ids (permanente). Resolucao caminha a chain do tier pulando indisponiveis e DECLARA o fallback usado no output. Mantem determinismo: entrada = arquivo + env explicita, nunca probe de rede.",
@@ -38,37 +60,94 @@
   },
   "roles": [
     {
-      "match": ["qa", "critic", "review", "revis", "verif"],
+      "match": [
+        "qa",
+        "critic",
+        "review",
+        "revis",
+        "verif"
+      ],
       "tier": "heterogeneous",
       "why": "ADR-018 anti-vies de auto-aprovacao: modelo distinto do autor (ver heterogeneity_ladder)"
     },
     {
-      "match": ["cross-ai", "cross-ia", "handoff", "gemini"],
-      "tier": "max",
-      "why": "coordenacao cross-IA -> mais capaz"
+      "match": [
+        "cross-ai",
+        "cross-ia",
+        "handoff",
+        "gemini"
+      ],
+      "tier": "baseline",
+      "why": "coordenacao entre IAs roda no BASELINE (opus). DECISAO DO DONO 19/08/2026, resolvendo a pendencia aberta em 18/08: este papel era a ULTIMA porta que abria o degrau acima do default POR PAPEL, sem autorizacao ativa e sem ninguem perceber - e coordenar handoff e' coordenacao, nao critica adversarial; nao e' o papel que justifica pagar o degrau caro. Depois desta mudanca, o tier `max` so e' alcancavel por `risk_override` (alto-risco/regulado/irreversivel, que e' gate de seguranca e foi mantido de proposito) ou por heterogeneidade quando o AUTOR e' de tier baixo - caminho dormente hoje, ja que papel autoral roda no baseline. Precisa do degrau acima num handoff especifico? Pede autorizacao, como no qa_final_duplo.passo_2."
     },
     {
-      "match": ["architect", "arquitet", "discovery", "design", "spec", "plan"],
-      "tier": "max",
-      "why": "decisao/elicitacao -> mais capaz (custo do erro a montante > custo do token)"
+      "match": [
+        "architect",
+        "arquitet",
+        "discovery",
+        "design",
+        "spec",
+        "plan"
+      ],
+      "tier": "baseline",
+      "why": "decisao/elicitacao/plano rodam no BASELINE (opus), nao no tier max. DECISAO DO DONO 18/08/2026: fable NAO fica ativado por padrao — executor, planejador e arquiteto sao OPUS. Fable entra so no SEGUNDO QA adversarial final (ver qa_final_duplo)."
     },
     {
-      "match": ["docops", "document", "mechan", "bulk", "format", "lint", "rename", "migrate"],
+      "match": [
+        "docops-generative",
+        "docops generative",
+        "docops-gerativo",
+        "redacao autoral"
+      ],
+      "tier": "baseline",
+      "why": "docops que ESCREVE e' papel autoral e roda no baseline; docops MECANICO (formatar, renomear, lint, migrar) continua em economy, gateado por canario. Esta entrada nasceu de um BUG achado em 19/08/2026 ao tornar testavel a invariante 'autor sempre default': `docops-generative` estava declarado em baseline_author.author_roles e resolvia para HAIKU, dois degraus abaixo do default. A causa era o CASADOR, nao esta regra: ele parava no primeiro casamento por substring na ordem do arquivo, entao a chave curta `docops` engolia a longa `docops-generative`. Consertado na raiz (handoff.py): entre chaves em relacao de CONTENCAO vence a que CONTEM a outra. Por isso a POSICAO desta entrada no arquivo NAO importa mais - o canario prova movendo-a para o fim. Fora da contencao, a ordem segue mandando de proposito: a regra `qa/critic` e' a primeira para que QA va sempre a modelo heterogeneo (ADR-018), e longest-match PURO foi medido e reprovado por quebrar isso ('qa do docops' caia para haiku)."
+    },
+    {
+      "match": [
+        "developer",
+        "implement",
+        "author",
+        "autor",
+        "produz",
+        "orchestr",
+        "orquestr"
+      ],
+      "tier": "baseline",
+      "why": "papel AUTORAL roda no baseline (= modelo padrao/standard); custo do erro a montante > custo do token (ADR-082). Subagente developer spawnado < baseline = proibido; risco sobrepoe p/ tier max. POSICAO IMPORTA E E' DELIBERADA (ADR-110, achado ALTA do QA de juncao 19/08/2026): esta regra tem de vir ANTES da regra `docops`/economy. A ordem de `roles` E' a precedencia do casador — seguranca (qa/critic) > autoral > mecanico — e com a mecanica na frente, um papel composto como 'developer docops' resolvia para HAIKU, dois degraus abaixo do default. O canario testa o PRODUTO CARTESIANO chave-autoral x chave-mecanica, nao um exemplo: exemplo que passa nao prova classe."
+    },
+    {
+      "match": [
+        "docops",
+        "document",
+        "mechan",
+        "bulk",
+        "format",
+        "lint",
+        "rename",
+        "migrate"
+      ],
       "tier": "economy",
       "why": "saida mecanica gateada por canarios; julgamento nao desce de balanced"
-    },
-    {
-      "match": ["developer", "implement", "author", "autor", "produz", "orchestr", "orquestr"],
-      "tier": "baseline",
-      "why": "papel AUTORAL roda no baseline (= modelo padrao/standard); custo do erro a montante > custo do token (ADR-082). Subagente developer spawnado < baseline = proibido; risco sobrepoe p/ tier max."
     }
   ],
   "default_tier": "balanced",
   "heterogeneous_preference": {
-    "high_authors": ["fable", "opus"],
-    "order_if_high": ["balanced", "max", "economy"],
-    "order_otherwise": ["max", "balanced", "economy"],
-    "why": "autor tier-alto -> critico balanced (sonnet) basta e e barato; autor balanced/economy -> critico tier max (anti-vies exige distinto, capacidade compensa)"
+    "high_authors": [
+      "fable",
+      "opus"
+    ],
+    "order_if_high": [
+      "balanced",
+      "max",
+      "economy"
+    ],
+    "order_otherwise": [
+      "max",
+      "balanced",
+      "economy"
+    ],
+    "why": "autor tier-alto -> critico balanced (sonnet) basta e e barato; autor balanced/economy -> critico tier max (anti-vies exige distinto, capacidade compensa)",
+    "_quando_order_otherwise_dispara": "DORMENTE pela invariante 'autor sempre default' (baseline_author.author_invariant): autor de tier baixo nao existe em operacao normal, entao este ramo - o unico que ainda apontaria um critico para o tier max, que comeca no degrau acima - nao tem como disparar. Ele SO acorda sob FRAMEWORK_MODELS_UNAVAILABLE declarada, que ja e' um estado anunciado e nao silencioso. Se acordar e apontar para o degrau ACIMA do default, vale a MESMA exigencia de autorizacao ativa do qa_final_duplo.passo_2: pergunta-se antes, nao se gasta por inercia. O ramo fica no arquivo porque removê-lo deixaria o anti-vies do ADR-018 sem regra justamente no caso degradado - o critico cairia no proprio modelo do autor."
   },
   "risk_override": {
     "high": "max",
@@ -80,5 +159,55 @@
     "1. familia DIFERENTE via hub cross-IA quando configurado (Gemini revisa bloco Claude e vice-versa — ADR-069)",
     "2. modelo diferente, MESMA familia: autor max/balanced -> critico no degrau distinto mais capaz disponivel (autor fable/opus -> sonnet; autor sonnet/haiku -> fable, fallback opus)",
     "3. mesmo modelo, contexto fresh — PERMITIDO mas DECLARADO no veredito ('heterogeneidade indisponivel'), nunca silencioso (ADR-018: declarar, nao fingir)"
-  ]
+  ],
+  "qa_final_duplo": {
+    "_leia": "DECISAO DO DONO 18-19/08/2026: alem dos QA adversariais de JUNCAO, todo bloco fecha com QA adversarial final. O PRIMEIRO (degrau abaixo do default) e OBRIGATORIO e roda sozinho. O SEGUNDO (degrau acima do default) e CONDICIONADO A AUTORIZACAO ATIVA do dono e NAO roda por default — ver passo_2.autorizacao. Um so critico final nao basta em entrega de peso: o primeiro critico deste projeto reprovou com 13 achados, e o segundo achou o pior de todos - que as correcoes tinham mexido na fonte e ninguem havia regenerado o que o leitor le. Mas rodar o segundo por reflexo esgotou a janela de 5h de tokens de uma sessao inteira. As duas coisas sao verdadeiras ao mesmo tempo, e por isso o segundo virou OFERTA com custo declarado, nao automatismo.",
+    "regra": "relativa ao default, nunca por nome de modelo - ver escada_relativa. O degrau ACIMA do default so roda com autorizacao ATIVA (ver passo_2.autorizacao); todos os demais degraus rodam sozinhos.",
+    "executor": {
+      "degrau": "default",
+      "resolve_hoje": "opus",
+      "por_que": "papel autoral e de execucao roda no modelo padrao: custo do erro a montante supera o custo do token"
+    },
+    "passo_1": {
+      "degrau": "um abaixo do default",
+      "resolve_hoje": "sonnet",
+      "papel": "primeiro QA adversarial final",
+      "por_que": "distinto do autor e barato o suficiente para ler o conjunto inteiro e derrubar o obvio"
+    },
+    "passo_2": {
+      "degrau": "um acima do default",
+      "resolve_hoje": "fable",
+      "papel": "segundo QA adversarial, na entrega de funcionalidade ou marco - CONDICIONADO",
+      "autorizacao": "ATIVA E OBRIGATORIA. O degrau acima do default NUNCA roda por default, por inercia nem por 'a regra manda'. Ele so roda em dois casos: (a) o dono ORDENOU explicitamente naquele bloco, ou (b) o orquestrador PERGUNTOU - declarando o que sera criticado e que o degrau acima custa mais - e o dono AUTORIZOU. Silencio, ausencia de resposta, 'siga', 'ok' e 'pode continuar' NAO sao autorizacao: autorizam continuar o escopo declarado, nao abrir o degrau caro.",
+      "default_sem_resposta": "NAO RODA. Sem autorizacao ativa o bloco fecha com o passo_1, e o veredito DECLARA que o segundo QA nao rodou e por que - nunca finge que rodou nem omite a lacuna (ADR-018: declarar, nao fingir).",
+      "por_que_ativa": "DECISAO DO DONO 19/08/2026, de falha observada: rodar o degrau acima como reflexo esgotou rapidamente os tokens da janela de 5h. O custo do degrau caro nao recai sobre a tarefa que o invocou - recai sobre a sessao inteira, inclusive sobre o trabalho que ainda nem comecou. Quem paga a conta decide, entrega a entrega, se aquela entrega vale o gasto. Automatizar essa escolha e' tira-la de quem tem a informacao para faze-la.",
+      "por_que_existe": "quando autorizado, e' distinto do autor E do primeiro critico; cobra as correcoes do passo 1 e caca a classe de defeito que o passo 1 nao cacou.",
+      "quando_ofertar": "na ENTREGA, nao em juncao interna: fechamento de marco, de etapa, de resultado, de tarefa, e sobretudo de FUNCIONALIDADE - o momento em que algo passa a ser usado por alguem. E' ali que vale a pena PERGUNTAR, porque e' ali que o degrau acima pode pagar o proprio custo: erro que escapa depois da entrega custa retrabalho, credibilidade e, em ambiente regulado, auditoria. Ofertar e' o dever do orquestrador; decidir e' do dono."
+    },
+    "juncoes": {
+      "degrau": "um abaixo do default",
+      "resolve_hoje": "sonnet",
+      "por_que": "QA de juncao acontece muitas vezes por bloco; o degrau acima nao e gasto aqui",
+      "quando": "nas juncoes internas do trabalho (J0 a J6), que acontecem muitas vezes por bloco. O degrau acima NAO e gasto aqui — se fosse, o custo mataria a pratica e alguem desligaria o gate, que e o modo classico de um controle deixar de existir."
+    },
+    "mecanico": {
+      "degrau": "o mais baixo da escada",
+      "resolve_hoje": "haiku",
+      "por_que": "tarefa que nao demanda decisao nem entendimento — renomear, formatar, contar, converter. Gateada por canario Python, nao pelo julgamento do modelo"
+    },
+    "proibido": "o degrau ACIMA do default como padrao de papel autoral ou de juncao; o degrau ACIMA rodando sem autorizacao ativa do dono, em qualquer papel (ver passo_2.autorizacao); o degrau abaixo como autor; o degrau mais baixo em qualquer coisa que exija decisao ou entendimento.",
+    "excecao_declarada": "`risk_override` (alto-risco, regulado, irreversivel) manda para o tier max, cuja cadeia comeca no degrau acima do default - inclusive para papel autoral como `developer`. Isso NAO e' violacao da regra de que o degrau acima nao roda por padrao: 'default' e' o que roda quando nada mais fala, e risco declarado fala mais alto. Esta e' HOJE a UNICA porta para o tier max, e e' de proposito: e' gate de seguranca, nao de custo. O papel `cross-ai` TAMBEM resolvia para max e estava pendente de confirmacao; o dono decidiu em 19/08 e ele desceu para `baseline` (ADR-110) - a frase anterior aqui seguia dizendo 'PENDENTE' depois da decisao, contradizendo o proprio arquivo no mesmo commit, e foi achado ALTA do QA de juncao. E' a segunda vez que este campo especifico envelhece mentindo: da primeira, afirmava categoricamente o contrario do que o arquivo fazia.",
+    "ainda_nao_existe": "ESTE BLOCO E DADO, NAO MECANISMO. Nenhum gate verifica hoje que um bloco fechou com o passo_1 nem que o passo_2, se rodou, foi autorizado: qa_evidence.py, verify_qa_attestation.py, squad_gate.py e o CLAUDE.md continuam falando de UM process-critic por bloco. O que existe e' o canario test_handoff.py, que garante que esta politica - inclusive a exigencia de autorizacao ativa do passo_2 - nao seja apagada nem afrouxada em silencio. Cabear o duplo e o gate de autorizacao e' item da pendencia prioritaria registrada no history.md; ate la, a ordem passo_1 -> (autorizar?) -> passo_2 e' cumprida pelo orquestrador e cobravel em revisao, nao imposta por codigo."
+  },
+  "escada_relativa": {
+    "ordem": [
+      "haiku",
+      "sonnet",
+      "opus",
+      "fable"
+    ],
+    "_leia": "Ordem do MENOS para o MAIS capaz. E a espinha da regra relativa: o executor roda no default (baseline_author.model), o 1o QA um degrau ABAIXO e o 2o QA um degrau ACIMA - este ultimo APENAS com autorizacao ativa do dono (qa_final_duplo.passo_2.autorizacao). Modelo novo entra AQUI, na posicao certa, e a regra de QA se ajusta sozinha - sem editar prosa e sem editar codigo.",
+    "por_que_relativa": "presa a nome, a regra envelhece a cada lancamento e alguem tem de lembrar de atualizar tres lugares. Relativa, ela sobrevive ao lancamento. E mantem o custo sob controle: o critico barato vem primeiro e derruba o obvio; o caro so paga o que sobrou.",
+    "borda": "se o default estiver na ponta da escada, o degrau que faltaria nao existe: use o degrau disponivel mais proximo e DECLARE no veredito. Nunca cair no mesmo modelo do autor em silencio (ADR-018)."
+  }
 }

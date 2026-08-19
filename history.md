@@ -663,8 +663,11 @@ Riscos ativos: corte do release feito de `9TRP7H4` (não-kerberus); se kerberus 
   (c) **fail-closed no veto**: se o subagente não pode ser disparado, o framework anuncia e trava,
   em vez de continuar; o veto vira registro, não silêncio;
   (d) empacotamento como plugin, com o subagente crítico declarando `model:` diferente do autor.
-  **Critério de aceite, binário:** abrir um projeto novo de domínio numa pasta virgem e o crítico
-  adversarial em modelo diferente rodar **sem ninguém pedir** — e, se o runtime proibir, o bloco
+  **Critério de aceite, binário (EMENDADO em 19/08/2026 por achado do QA de entrega):** abrir um
+  projeto novo de domínio numa pasta virgem, o crítico do **degrau abaixo** rodar **sem ninguém pedir**
+  nas junções, **e o crítico do degrau acima rodar na entrega quando autorizado** — e a ausência dele, quando não houver autorização, aparecer **declarada** no veredito em vez de silenciosa (ADR-110; achado MÉDIA do QA de junção de 19/08, que pegou este critério exigindo incondicionalmente o degrau caro e portanto impossível de fechar sem violar a política que ele mesmo deveria cobrar) — a versão anterior falava de "a crítica
+  adversarial" no singular, e podia ser quitada com um crítico só, deixando o segundo morrer sem
+  cobrança — e, se o runtime proibir, o bloco
   falhar visivelmente em vez de seguir. Enquanto isso não passar, esta pendência não fecha.
   **Rastro desta ocorrência:** o projeto em `migracao-sac` (3 commits sem veredito) e o registro em
   `~/.claude/trabalhos/migracao-sac.md`.

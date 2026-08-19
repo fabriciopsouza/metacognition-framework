@@ -182,14 +182,35 @@ def suggest_model(next_role, risk, author):
     if risk_tier in POLICY["tiers"]:
         fam, fb = _tier_model(risk_tier)
         return fam, f"alto-risco/regulado/irreversivel -> tier max ({fam}) + gate humano (HITL){fb}"
-    for rule in POLICY["roles"]:
-        if any(k in role for k in rule["match"]):
-            if rule["tier"] == "heterogeneous":
-                het, fb = _heterogeneous(author)
-                return het, (f"qa/review -> HETEROGENEO (autor={author}; ADR-018 anti-vies; "
-                             f"escada completa em model-policy.json){fb}")
-            fam, fb = _tier_model(rule["tier"])
-            return fam, f"{rule['match'][0]} -> tier {rule['tier']} ({fam}): {rule['why']}{fb}"
+    # [ADR-110, 19/08/2026] a ORDEM do arquivo continua mandando — ela carrega precedencia de
+    # SEGURANCA, nao acidente: a regra `qa/critic` esta em primeiro lugar de proposito, para que
+    # tarefa de QA va para modelo heterogeneo (ADR-018) por mais palavras que a frase tenha.
+    #
+    # A UNICA excecao e a relacao de CONTENCAO entre chaves, que era o defeito real: uma chave
+    # generica e CURTA engolia a especifica que a CONTEM (`docops` dentro de `docops-generative`),
+    # mandando um papel AUTORAL para o tier `economy` (haiku) — dois degraus abaixo do default, o
+    # "proibido silencioso" que o proprio baseline_author descreve. Achado ao tornar testavel a
+    # invariante "autor sempre default" (dono, 19/08/2026).
+    #
+    # Medido antes de escolher: trocar isto por longest-match PURO resolvia o bug e criava dois
+    # outros — "qa do docops" caia para haiku (QA no degrau mecanico, heterogeneidade perdida) e
+    # "verificar o design" ia para o arquiteto. Por isso a excecao e' estreita: fora da contencao,
+    # nada muda. Com ela, a POSICAO da regra no arquivo deixa de ser semantica.
+    casamentos = [(idx, k, rule)
+                  for idx, rule in enumerate(POLICY["roles"])
+                  for k in rule["match"] if k in role]
+    if casamentos:
+        _i, chave, rule = casamentos[0]                     # desempate padrao: ordem do arquivo
+        mais_especificas = [m for m in casamentos
+                            if len(m[1]) > len(chave) and chave in m[1]]
+        if mais_especificas:                                # excecao: a que CONTEM a generica vence
+            _i, chave, rule = max(mais_especificas, key=lambda m: len(m[1]))
+        if rule["tier"] == "heterogeneous":
+            het, fb = _heterogeneous(author)
+            return het, (f"qa/review -> HETEROGENEO (autor={author}; ADR-018 anti-vies; "
+                         f"escada completa em model-policy.json){fb}")
+        fam, fb = _tier_model(rule["tier"])
+        return fam, (f"{chave} -> tier {rule['tier']} ({fam}): {rule['why']}{fb}")
     fam, fb = _tier_model(POLICY["default_tier"])
     return fam, f"default -> tier {POLICY['default_tier']} ({fam}){fb}"
 
