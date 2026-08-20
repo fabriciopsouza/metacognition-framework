@@ -10,7 +10,9 @@ Prova:
     EXISTE; há exatamente 1 `PROMPT-CHAT-WEB-v*.md` em disco e ele == PUBLIC_SRC. Mata o bug do
     skip silencioso por versão fixa defasada (antes apontava `v4.3` inexistente -> `continue`);
 (f) [ADR-059 G2] a vitrine (`guia/web/index.html`) tem ZERO overclaim (absoluto-sem-hedge);
-(g) [ADR-059 G3] a vitrine DISCLOSA os limites residuais (não pode overclaim E esconder o limite).
+(g) [ADR-059 G3] a vitrine DISCLOSA os limites residuais (não pode overclaim E esconder o limite);
+(i) a prosa PUBLICA que alega um CASO aponta onde conferir — mesma vara do (b), agora para
+    narrativa e não só para claim PROVADO (gap medido em 19/08/2026: caso inventado na vitrine).
 
 Uso: python tools/test_marketing_claims.py   (exit 0 PASS; 1 se qualquer gate falha)
 """
@@ -89,6 +91,122 @@ def autoteste_contagem():
     if n["provadas"] + n["fc_sem_prova"] + n["sem_campo"] + n["fracos"] != n["total"]:
         falhas.append("as quatro classes nao somam o total — a conta da pagina nao fecha")
     return falhas
+
+
+
+# --- (i) PROCEDENCIA DE AFIRMACAO NARRATIVA -------------------------------------------------
+# Gap medido em 19/08/2026: o autor INVENTOU um caso ("pediram a um agente uma extracao de dados
+# ... tres nomes de campo nao existiam") e o pos na vitrine PUBLICA em tempo de fato consumado.
+# Nenhum canario podia pegar: (f) caca overclaim LEXICO (promessa absoluta) e caso fabricado e' o
+# oposto — modesto, plausivel, especifico. Ironia registrada: o lexico tem como frase PROIBIDA
+# "O framework jamais inventa nomes de campo", e a fabricacao foi um caso SOBRE isso.
+#
+# O PRINCIPIO nao e' novo — (b) ja exige que todo claim PROVADO aponte para um canario que
+# existe — mas o MECANISMO aqui e' novo e independente: (b) valida o PAR claim-canario via
+# CLAIMS; este so verifica presenca de ponteiro. Chamar isso de "apenas estender (b)" seria
+# enquadramento generoso, e o QA de juncao apontou a generosidade: em linhas, e' adicao. A
+# justificativa e' de SUBSTANCIA, nao de forma — um incidente medido em que conteudo
+# fabricado chegou a prosa publica e nenhum gate existente podia ve-lo (regua §0 porta c:
+# destrava um eval que nao existia, e o eval reprovou no ato de ser ligado).
+# Aqui a mesma regra vale para CASO: se a prosa publica alega que algo aconteceu, ela diz onde
+# conferir. Padrao declarado ("alucina nomes de campo com confianca") NAO e' alegacao de caso e
+# passa — a pagina precisa poder descrever comportamento sem citar processo.
+#
+# LIMITE DECLARADO, e ESPECIFICO — limite vago e' sobre-promessa disfarcada. O QA de juncao de
+# 19/08/2026 executou as fugas; ficam nomeadas em vez de resumidas num "nao pega tudo":
+#   (1) abertura sem gatilho lexical: "Em um projeto recente, o agente..." — escapa;
+#   (2) invencao embutida no meio da frase, sem abrir a sentenca — escapa;
+#   (3) conjugacao fora da lista: "Um cliente PEDIU uma extracao" (singular, voz ativa) — escapa.
+#       NAO ampliado de proposito: "pediu" solto casa com prosa legitima ("o dono pediu que...") e
+#       o falso positivo custa mais que a fuga, dado o modelo de ameaca abaixo;
+#   (4) FONTE DECORATIVA: qualquer ponteiro citado no bloco satisfaz TEM_FONTE, mesmo sem
+#       relacao nenhuma com o caso — arquivo .md, URL solta, ADR-NNN solto, 'decisao 109'.
+#       O QA de juncao testou os quatro e todos lavam. Vale tambem via bloco SEGUINTE. E' bar mais fraco que o do gate (b), que valida o PAR claim-canario. Aceito
+#       porque o alvo e' o AUTOR DESATENTO — que inventa sem perceber e nao cola fonte falsa — e
+#       nao um adversario. Contra adversario este gate nao serve, e dizer o contrario seria mentira.
+# A calibragem estreita e' deliberada (decisao do dono, 19/08/2026): detector de linguagem natural
+# com falso positivo vira gate desligado, e gate desligado protege menos que gate estreito.
+# ESCOPO: vitrine + prompt web. README nao e' varrido — hoje nao tem trecho que dispare, e ampliar
+# sem necessidade medida e' o oposto da regua §0. Se um caso aparecer la, entra aqui.
+ABRE_CASO = re.compile(
+    r"(?i)\b("
+    r"um caso concreto|um caso real|certo caso|um exemplo real|um caso pratico|um caso pr[áa]tico|"
+    r"certa vez|uma vez,|houve um caso|aconteceu que|"
+    r"pediram a|pediu-se a|solicitaram a|"
+    r"num[a]? (sess[ãa]o|projeto|cliente|empresa|reposit[óo]rio) (real|espec[íi]fic)"
+    r")\b")
+
+# o que conta como FONTE: arquivo do repo, ADR, canario, ou link — a mesma vara de (b)
+# [QA de juncao 19/08/2026, achado ALTA] a 1a versao reconhecia QUATRO formatos de fonte e
+# reprovava prosa honesta que citasse de qualquer outro jeito: "ver secao 09", link markdown sem
+# extensao, "decisao 109" sem o prefixo ADR. O critico executou os quatro. Gate que reprova o certo
+# e' desligado por quem tem pressa — e este arquivo ja carrega essa licao em outro achado. A vara
+# passa a ser "aponta para ALGUM lugar conferivel", nao "cita no formato que eu previ".
+TEM_FONTE = re.compile(
+    r"(?i)("
+    r"\b[\w./-]+\.(md|py|json|html|yml|yaml|txt)\b|"        # arquivo citado
+    r"\b(ADR|RFC)[-\s]?\d+\b|"                              # decisao registrada, por sigla
+    r"\bdecis(ao|ão|oes|ões)\s+n?[ºo°]?\s*\d+|"             # ...ou por extenso
+    r"\[fonte:|\]\(|\bhttps?://|"                           # link (marcador, markdown, url)
+    r"\bver\s+(a|o|as|os)?\s*"                               # ponteiro explicito, generico:
+    r"(se(c|ç)(ao|ão)|cap(itulo|ítulo)|anexo|hist[óo]ri[ac]|"   # "ver secao 9", "ver o anexo B"...
+    r"history|CHANGELOG|LIMITS|ledger|registro|veredito)"
+    r")")
+
+
+def _paragrafos(texto_visivel: str):
+    """Blocos separados por linha em branco — a unidade em que a fonte pode morar."""
+    return [b for b in re.split(r"\n\s*\n", texto_visivel) if b.strip()]
+
+
+def casos_sem_procedencia(texto_visivel: str):
+    """Devolve [(trecho, motivo)] de paragrafos que ABREM um caso e nao dizem onde conferir.
+
+    [QA de juncao 19/08/2026] a fonte vale no bloco do caso OU no bloco imediatamente seguinte —
+    "caso num paragrafo, nota-fonte no proximo" e' padrao de escrita comum e honesto, e exigir os
+    dois no mesmo bloco reprovava texto correto. Nao vale dois blocos adiante: a partir dai a fonte
+    deixa de estar visivel junto da afirmacao, que e' o ponto.
+    """
+    blocos = _paragrafos(texto_visivel)
+    achados = []
+    for k, bloco in enumerate(blocos):
+        m = ABRE_CASO.search(bloco)
+        if not m:
+            continue
+        vizinhanca = bloco + "\n" + (blocos[k + 1] if k + 1 < len(blocos) else "")
+        if TEM_FONTE.search(vizinhanca):
+            continue
+        trecho = re.sub(r"\s+", " ", bloco).strip()
+        achados.append((trecho[:120], f"abre caso em {m.group(0)!r} e nao aponta fonte"))
+    return achados
+
+
+def autoteste_procedencia():
+    """Prova o detector contra o caso REAL que ele deveria ter pego, e contra prosa honesta.
+    Sem isto o gate seria mais uma promessa nao verificada — a classe que este repo mede."""
+    fabricado = ("Um caso concreto, para sair do abstrato: pediram a um agente uma extracao de "
+                 "dados de um sistema corporativo. Ele devolveu um script coerente, com nomes de "
+                 "campo plausiveis - e tres deles nao existiam naquele sistema.")
+    # [QA de juncao 19/08/2026] os quatro primeiros sao FALSOS POSITIVOS que o critico executou
+    # contra a versao anterior: prosa honesta que citava a fonte fora do formato previsto, ou no
+    # bloco seguinte. Ficam aqui como regressao — voltar a reprova-los reprova o canario.
+    honestos = [
+        "Um caso real regulado validado com delta 0.000000, ver a secao 09.",
+        "Um caso real: o agente inventou campos. [confira aqui](https://exemplo.com/casos/1)",
+        "Certa vez o critico reprovou o autor, conforme decisao 109.",
+        "Um caso concreto aconteceu aqui.\n\nFonte: docs/adr/110-decisao.md",
+        "Um caso real regulado validado com delta 0.000000 contra o baseline, ver COMO-FOI-CONSTRUIDO.md.",
+        "Alucina nomes de campo, sintaxe e regras com confianca - e voce so descobre depois.",
+        "O runner recusa arquivo que passaria sem executar assercao alguma.",
+        "Certa vez o critico reprovou o autor, conforme docs/adr/110-decisao.md.",
+    ]
+    fails = []
+    if not casos_sem_procedencia(fabricado):
+        fails.append("o detector NAO pega o caso fabricado que motivou este gate (19/08/2026)")
+    for h in honestos:
+        if casos_sem_procedencia(h):
+            fails.append(f"falso positivo em prosa honesta: {h[:60]!r}")
+    return fails
 
 
 def main():
@@ -211,6 +329,42 @@ def main():
                 gate(valor in secao,
                      f"a secao #provas nao afirma '{valor}' ({oquee}) — numero da pagina divergiu "
                      f"do repo, ou saiu da secao; atualize guia/web/index.html")
+
+    # (i) procedencia de afirmacao NARRATIVA na prosa publica (vitrine + prompt web)
+    for _f in autoteste_procedencia():
+        gate(False, f"auto-teste do detector de procedencia narrativa: {_f}")
+    # [QA de juncao r2, 19/08/2026] o auto-teste acima prova a FUNCAO; NAO provava a FIACAO.
+    # O critico demonstrou em copia: trocando este laco por uma tupla vazia — sem tocar em
+    # casos_sem_procedencia nem no auto-teste — o caso fabricado injetado na vitrine passava
+    # batido, com o gate reportando PASS. Detector perfeito ligado a lista vazia reporta PASS
+    # para sempre. E' o mesmo modo de falha que este arquivo ja registra ter causado o bug do
+    # gate (e) (skip silencioso). O contador abaixo fecha isso: se nada foi varrido, reprova.
+    _varridos = 0
+    for _rot, _caminho in (("vitrine", VITRINE), ("prompt web", src)):
+        if not os.path.isfile(_caminho):
+            continue
+        _varridos += 1
+        with open(_caminho, encoding="utf-8") as _fh:
+            _bruto = _fh.read()
+        _vis = re.sub(r"<(script|style)[^>]*>.*?</\1>", " ", _bruto, flags=re.S | re.I)
+        _vis = re.sub(r"<!--.*?-->", " ", _vis, flags=re.S)
+        # [autocorrecao 19/08/2026] a 1a versao apagava as tags ANTES de procurar a fonte,
+        # entao todo `href` sumia para a funcao que o procurava: o detector reprovava frase
+        # que TINHA link. O link vira marcador textual e sobrevive a limpeza.
+        _vis = re.sub(r'<a\s[^>]*href=["\']([^"\']+)["\'][^>]*>', r' [fonte:\1] ',
+                      _vis, flags=re.I)
+        # paragrafo em HTML e' BLOCO, nao linha em branco: separa pelos fechamentos de bloco
+        _vis = re.sub(r'</(p|li|div|section|h[1-6])>', '\n\n', _vis, flags=re.I)
+        _vis = re.sub(r"<[^>]+>", " ", _vis)
+        _achados = casos_sem_procedencia(_vis)
+        gate(not _achados,
+             f"{_rot}: {len(_achados)} trecho(s) alegam um CASO sem dizer onde conferir — "
+             f"prosa publica que afirma fato precisa apontar fonte, como todo claim PROVADO ja "
+             f"precisa apontar canario. {_achados[:2]}")
+
+    gate(_varridos >= 1,
+         f"o detector de procedencia varreu {_varridos} arquivo(s) reais — zero significa que a"
+         f" fiacao quebrou e o gate virou carimbo: ele reportaria PASS sem olhar nada")
 
     print("RESULTADO:", f"FAIL ({fails})" if fails
           else "PASS (marketing+vitrine ancorados: LIMITS sync · zero órfão · prompt web fail-closed · "
