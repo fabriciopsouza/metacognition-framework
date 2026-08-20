@@ -61,6 +61,13 @@ regenerado o que o leitor lê.
   medição, é o canário que reprova as duas. Motivo da primeira decisão, e
   ele é medido: rodar o degrau acima por reflexo esgotou a janela de 5h de tokens de uma sessão.
 
+- **Prosa pública que alega um CASO passa a ter de dizer onde conferir.** Gate novo em
+  `test_marketing_claims.py`, na vitrine e no prompt público — a mesma vara que já valia para todo
+  claim `PROVADO`. Nasceu de incidente medido: um caso **inventado** foi escrito e posto na vitrine, e
+  nenhum canário podia vê-lo (o léxico caça promessa absoluta; caso fabricado é o oposto — modesto e
+  plausível). Calibragem **estreita por decisão do dono**: detector de linguagem natural com falso
+  positivo vira gate desligado. As quatro classes de fuga estão nomeadas no código, incluindo a fonte
+  decorativa — o alvo é o autor desatento, não um adversário.
 - **Confirmar o bloco com o dono ANTES de executar virou o default — ADR-111.** O plano vem primeiro
   (o que será tocado, decisões em aberto com alternativas, o que fica de fora), o dono aprova ou corrige,
   e só então o bloco roda inteiro. Uma interrupção por bloco, em conversa — documento com perguntas

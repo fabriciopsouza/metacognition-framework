@@ -1,0 +1,97 @@
+{
+  "bloco": "2o-qa-final-fable-da-sessao",
+  "papel": "qa_critic",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "sha_revisado": "4c19a6c",
+  "resumo": "SEGUNDO QA adversarial final, no degrau ACIMA do default (Fable), autorizado EXPLICITAMENTE pelo dono — primeira vez que o gate do ADR-110 e' exercido como desenhado. Ele REPROVOU a entrega da sessao com 6 achados, dois ALTA, e provou o valor do degrau caro: o achado principal e' de uma CLASSE que sete rodadas de Sonnet nao tocaram. ALTA-1: a precedencia SEGURANCA > autoral estava DECLARADA em tres lugares e NAO TESTADA — movendo a regra `qa/critic` para o fim de `roles`, a suite inteira ficava VERDE enquanto 'qa do developer' resolvia para o modelo do PROPRIO AUTOR, matando o anti-vies do ADR-018 em silencio. E' o mesmo defeito das rodadas anteriores (espaco testado menor que o espaco declarado) uma camada acima, e falsificava por execucao uma frase escrita no proprio ADR-110. ALTA-2: o ADR-111 se contradizia entre Contexto e Alternativas justamente na evidencia que sustentava a decisao. MEDIA-3, e e' o achado mais fino da serie: a verificacao da autorizacao era LEXICA — o critico trocou o texto por um de sentido INVERTIDO mantendo as palavras-chave ('ATIVA e recomendada, mas PODE rodar automaticamente') e a suite ficou verde. Verificacao lexica de prosa nunca segura inversao semantica. Corrigido tirando a decisao da prosa: `roda_sem_resposta` virou BOOLEANO, que nao se inverte mantendo as palavras. Os seis foram tratados; tres verificados por mutacao (210 composicoes de QA acusadas ao mover a regra de seguranca; a inversao semantica reprova; a suite segue 80/1/0). NAO EXISTE veredito de aprovacao limpa: a rodada que avalia ESTAS correcoes nao rodou.",
+  "verificacoes_executadas": [
+    "moveu a regra qa/critic para o fim de roles em copia e provou suite verde com QA no modelo do autor",
+    "inverteu o sentido de passo_2.autorizacao mantendo palavras-chave e provou exit 0",
+    "conferiu 5 alegacoes narrativas dos ADR contra a fonte: 112, 96, canario do cross-ai, caso inventado nunca commitado, contagem de achados do ledger — todas batem",
+    "reproduziu as mutacoes do 1o critico e confirmou que as correcoes dele sao honestas",
+    "leu ADR-109, ADR-110 e ADR-111 em sequencia procurando contradicao entre pecas",
+    "conferiu model_ids contra o modelo realmente registrado nas atestacoes",
+    "rodou run_canaries: 80 PASS, 1 SKIP, 0 FAIL",
+    "autor apos as correcoes: mutacao da regra de seguranca -> 210 composicoes acusadas",
+    "autor apos as correcoes: inversao semantica -> reprova pelo booleano"
+  ],
+  "problemas": [
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "tools/test_handoff.py + tools/model-policy.json:roles",
+      "descricao": "precedencia SEGURANCA > autoral declarada e nao testada: mover a regra qa/critic para o fim mantinha a suite verde com QA composto resolvendo para o modelo do autor. Cartesiano QA x demais adicionado; a mutacao acusa 210 composicoes."
+    },
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "docs/adr/111 (Contexto x Alternativas recusadas)",
+      "descricao": "o ADR afirmava, em dois lugares, coisas incompativeis sobre o que o dono mandou desfazer — e a versao errada era a que sustentava a recusa da alternativa enxuta. Reconciliado com o que de fato ocorreu: tres decisoes revisitadas, so uma era regra."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/model-policy.json:qa_final_duplo.passo_2",
+      "descricao": "a autorizacao do degrau acima era verificada por SUBSTRING em prosa; inverter o sentido mantendo as palavras-chave passava verde. A decisao saiu da prosa e virou booleano `roda_sem_resposta`, que o canario checa por identidade."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "CHANGELOG.md",
+      "descricao": "o gate de procedencia narrativa (commit 4c19a6c) nao estava no CHANGELOG, e a decisao do dono sobre a calibragem so vivia em comentario de codigo."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/model-policy.json:model_ids.sonnet",
+      "descricao": "dizia claude-sonnet-4-6 enquanto as atestacoes registravam claude-sonnet-5 — o irmao do defeito anotado no opus horas antes. A licao nao foi propagada aos irmaos na mesma iteracao; foi preciso outro critico."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "docs/adr/110",
+      "descricao": "a frase que o proprio ADR declara falsificada ressuscitava verbatim mais adiante no mesmo documento — efeito de contar a mesma historia em cinco lugares."
+    }
+  ],
+  "escopo_paths": [
+    "CHANGELOG.md",
+    "_meta/qa/2o-qa-final-fable-da-sessao.json",
+    "_meta/qa/2o-qa-final-fable-da-sessao.md",
+    "docs/adr/110-autorizacao-ativa-do-degrau-acima-e-autor-sempre-default.md",
+    "docs/adr/111-confirmacao-interativa-de-bloco-e-o-default.md",
+    "tools/model-policy.json",
+    "tools/test_handoff.py"
+  ],
+  "atestacao": {
+    "agentId": "a63eda8ff00c3e0f2",
+    "prova_transcript": "sha256:f79c1270026a89ebe05a7527bc7b0a61c44ddd9deeb7ab57aec5f668a8097e19",
+    "modelo": "claude-fable-5",
+    "modelo_autor": "claude-opus-5",
+    "isolamento": "subagente qa-critic isolado no degrau ACIMA do default, read-only; sabotagens em copia no scratchpad, nunca no repo. Autorizacao ativa do dono registrada na conversa ('uso de fable no segundo qa esta autorizado').",
+    "provas": [
+      {
+        "agentId": "a63eda8ff00c3e0f2",
+        "prova_transcript": "sha256:f79c1270026a89ebe05a7527bc7b0a61c44ddd9deeb7ab57aec5f668a8097e19",
+        "rodada": "2o QA final (Fable)"
+      },
+      {
+        "agentId": "a5c6362503982d799",
+        "prova_transcript": "sha256:1723b3d76380443ecdc49c982c7324eaa1806af9be6708e311c32a59541366f6",
+        "rodada": "1o QA final (Sonnet)"
+      }
+    ]
+  },
+  "postura": {
+    "adversarial": "o 2o critico recebeu dever DIFERENTE do primeiro: cobrar as correcoes dele e cacar a classe que ele nao cacou. Foi assim que o ALTA-1 apareceu — nenhuma das sete rodadas anteriores havia testado a precedencia de seguranca. E' a evidencia empirica a favor do degrau acima na ENTREGA, que era ate agora uma aposta declarada no ADR-110."
+  },
+  "nao_verificado": [
+    "a rodada que avalia ESTAS correcoes nao rodou — nao existe veredito de aprovacao limpa.",
+    "o canario NAO cobre reescrever a JUSTIFICATIVA em prosa mantendo o booleano correto: confunde o leitor humano e passa verde. Declarado, nao negado.",
+    "as 4 causas do 'enforcement que viaja para projeto novo' seguem intocadas, como ja declarado no CHANGELOG.",
+    "os dois arquivos deste veredito estao em escopo por serem o artefato do ledger, produzidos PELO QA e nao revisados POR ele."
+  ],
+  "data": "2026-08-20T00:00:00Z"
+}

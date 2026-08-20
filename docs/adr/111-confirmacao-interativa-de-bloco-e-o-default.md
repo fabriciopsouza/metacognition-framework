@@ -12,12 +12,13 @@
 
 ## Contexto
 
-Numa sessão só, o dono pediu três coisas e recebeu **sete decisões que nunca viu**: uma regra nova
-adicionada ao núcleo, um ADR emendado em vez de outro aberto, um teste com o portador trocado, o
-escopo de documentação decidido sozinho três vezes, a memória reescrita, asserções acrescentadas a um
-canário e a decisão de não commitar. Nenhuma foi maliciosa e várias eram razoáveis — mas o dono só
-soube delas depois de prontas, e ao revisar **mandou desfazer a primeira**, que era adição pura ao
-núcleo pela causa errada.
+Numa sessão só, o dono pediu três coisas e recebeu **sete decisões que nunca viu** — contadas por
+assunto, não por edição: uma regra nova adicionada ao núcleo, um ADR emendado em vez de outro aberto,
+um teste com o portador trocado, o escopo de documentação decidido sozinho (três vezes, o mesmo
+assunto), a memória reescrita, asserções acrescentadas a um canário e a decisão de não commitar.
+Nenhuma foi maliciosa e várias eram razoáveis — mas o dono só soube delas depois de prontas. Ao
+revisar, ele **mandou revisitar três**: a regra nova, a escolha de emendar em vez de abrir ADR, e o
+escopo de documentação. Só a primeira era regra; as outras duas eram decisão de rastro e de volume.
 
 Antes disso, na mesma sessão, o dono já havia dito: *"isto deve ser interativo, não mds"* — depois de
 receber, como se fosse consulta, um documento com perguntas em aberto.
@@ -87,8 +88,12 @@ desligado, e aí não protege nada — o mesmo raciocínio que manteve o degrau 
 ADR-110.
 
 **Confirmar só regra/política e irreversível.** Era a opção enxuta, e foi recusada pelo dono. A
-evidência está do lado dele: das sete decisões não vistas, várias não eram nem regra nem
-irreversíveis — e foram justamente essas que ele mandou desfazer.
+evidência sustenta a recusa: das três decisões que ele mandou revisitar, **só uma era regra** — as
+outras duas (emendar um ADR em vez de abrir outro; o volume de documentação) não eram regra nem
+irreversíveis, e a opção enxuta as teria deixado passar. **Correção de honestidade:** a primeira
+versão deste parágrafo dizia que ele "mandou desfazer" decisões que "não eram regra", enquanto o
+Contexto dizia que a desfeita **era** uma regra — as duas não podiam ser verdade, e a contradição
+sustentava justamente esta recusa. Achado ALTA do 2º QA (Fable).
 
 **Registrar só na memória do agente.** Recusada: não viaja para projeto novo, não vale para outra IA
 nem para outra conta. Era exatamente o furo que esta branch existe para fechar.

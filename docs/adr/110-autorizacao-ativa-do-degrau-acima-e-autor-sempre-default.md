@@ -102,7 +102,9 @@ que roda sempre, e não quando alguém acha que precisa.
 ele resolvia este bug e criava dois piores — `qa do docops` caía para `haiku` (heterogeneidade do
 ADR-018 perdida) e `verificar o design` ia para o arquiteto. A prova durável não são os números desta
 sessão: é o canário, que reprova qualquer reordenação que ponha um papel autoral abaixo do default e
-qualquer configuração que tire QA do degrau heterogêneo. Números de sessão sem artefato foram achado
+qualquer configuração que tire QA do degrau heterogêneo — esta segunda metade **era falsa quando
+foi escrita** e só passou a ser verdade depois que o 2º QA a falsificou por execução e o cartesiano
+QA × demais entrou no canário. Números de sessão sem artefato foram achado
 MÉDIA do mesmo QA, e esta versão os substitui por asserção executável.
 
 ## Régua §0 (ADR-007)
@@ -142,8 +144,11 @@ sessão: mudou resoluções, duas delas regressões sérias — `qa do docops` p
 não é o número da medição, e sim o canário que reprova as duas regressões.
 
 **Tirar `docops-generative` da lista de papéis autorais.** Era a opção mais enxuta e teria fechado o
-achado sem tocar em código. Recusada pelo dono, que preferiu consertar a raiz — decisão que se pagou:
-a classe de bug some para todo papel futuro, não só para este.
+achado sem tocar em código. Recusada pelo dono, que preferiu consertar a raiz — decisão que se
+pagou: a classe de contenção deixou de depender da ordem do arquivo. **Não** "some para todo papel
+futuro": essa é exatamente a frase que o QA falsificou acima, e ela havia ressuscitado aqui,
+verbatim, no mesmo documento que narra a falsificação — achado BAIXA do 2º QA (Fable). Contar a
+mesma história em cinco lugares é como uma versão corrigida sobrevive ao lado da versão errada.
 
 **Manter o degrau acima automático na entrega.** Era a decisão do ADR-109, e durou um dia. Recusada por
 evidência: esgotou a janela de tokens de uma sessão de 5h.

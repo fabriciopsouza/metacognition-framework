@@ -215,6 +215,16 @@ def main():
                     f"({len(autoriz)} caracteres) - a decisao do dono 19/08/2026 e' que o degrau "
                     "ACIMA do default NUNCA roda por default: so com ordem explicita ou pergunta "
                     "respondida. Exige-se o criterio escrito, nao um carimbo")
+            # [2o QA Fable 20/08/2026] a checagem passou a ser do VALOR, nao da prosa: o
+            # critico inverteu o sentido do texto mantendo as palavras-chave e a suite ficou
+            # verde. Booleano nao se inverte mantendo as palavras.
+            if p2.get("roda_sem_resposta") is not False:
+                fails.append(
+                    f"qa_final_duplo.passo_2.roda_sem_resposta = "
+                    f"{p2.get('roda_sem_resposta')!r}; tem de ser exatamente False. E' o "
+                    f"campo que decide se o degrau ACIMA dispara sem resposta do dono, e ele "
+                    f"e' booleano de proposito: a versao anterior verificava PROSA por "
+                    f"substring e o 2o QA inverteu o sentido mantendo as palavras-chave")
             sem_resp = str(p2.get("default_sem_resposta") or "").strip().upper()
             if "NAO RODA" not in sem_resp:
                 fails.append(
@@ -318,6 +328,40 @@ def main():
         elif len(_aut) * len(_mec) == 0:
             fails.append("produto cartesiano autoral x mecanico vazio — o teste nao esta exercitando "
                          "nada; confira os tiers em `roles`")
+
+    # [2o QA Fable 19-20/08/2026, achado ALTA] o cartesiano acima cobria autoral x mecanica e
+    # PAROU AI. A precedencia declarada e' SEGURANCA > autoral > mecanico, e o degrau de SEGURANCA
+    # nao tinha teste: movendo a regra `qa/critic` para o fim de `roles`, a suite ficava VERDE
+    # enquanto "qa do developer", "revisar a implementacao do developer" e "review do design"
+    # resolviam para o modelo do PROPRIO AUTOR — exatamente o auto-vies que o ADR-018 proibe, e o
+    # oposto do que docs/adr/110 afirma ("reprova qualquer configuracao que tire QA do degrau
+    # heterogeneo"). Mesmo defeito da rodada anterior — espaco testado menor que o espaco
+    # declarado — uma camada acima. Agora: papel COMPOSTO que contenha gatilho de QA tem de sair
+    # heterogeneo, isto e', NUNCA no modelo do autor, venha o outro gatilho de onde vier.
+    if isinstance(ba, dict) and ba.get("model"):
+        _base = ba["model"]
+        _qa_keys, _outras = [], []
+        for _r in (pol.get("roles") or []):
+            if _r.get("tier") == "heterogeneous":
+                _qa_keys += _r.get("match") or []
+            else:
+                _outras += _r.get("match") or []
+        _viol = []
+        for _q in _qa_keys:
+            for _o in _outras:
+                for _frase in (f"{_q} do {_o}", f"{_o} {_q}"):
+                    _f, _ = handoff.suggest_model(_frase, "low", _base)
+                    if _f == _base:
+                        _viol.append((_frase, _f))
+        if _viol:
+            _am = ", ".join(f"{f!r}->{v}" for f, v in _viol[:4])
+            fails.append(
+                f"{len(_viol)} papeis COMPOSTOS com gatilho de QA resolvem para o MODELO DO AUTOR "
+                f"{_base!r}: {_am}. A regra `qa/critic` tem de vencer qualquer outra que case na mesma "
+                f"frase — e' a precedencia de SEGURANCA (ADR-018 anti-vies), e ela vive na POSICAO da "
+                f"regra em `roles`: ela e' a PRIMEIRA de proposito (ADR-110)")
+        elif len(_qa_keys) * len(_outras) == 0:
+            fails.append("cartesiano QA x demais vazio — o teste nao exercita nada; confira os tiers")
 
     fam_dev, _ = handoff.suggest_model("developer", "low", "opus")
     if fam_dev != (ba.get("model") if isinstance(ba, dict) else None):
