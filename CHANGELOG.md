@@ -24,6 +24,14 @@ não rodou. A versão anterior desta linha dizia que os achados estavam tratados
 ainda rodava — boletim antes da prova, que é a classe que o ADR-108 fechou. Achado do próprio QA de
 entrega.]
 
+> **O nome da branch promete mais do que este bloco entrega, e isto fica dito aqui.** A branch
+> `feat/enforcement-que-viaja-para-projeto-novo` nasceu de **quatro causas medidas** para o
+> enforcement não chegar a um projeto novo (hook não instalado lá; o gate ser de commit enquanto a
+> entrega acontece no chat; `squad_gate` depender de um manifesto que só existe no núcleo; e o
+> runtime poder vetar o subagente em silêncio). **Nenhuma das quatro foi tocada até aqui** — este
+> bloco entrega ADR-110, ADR-111 e o conserto da vitrine. A pendência segue aberta no `history.md`,
+> e quem ler só o nome da branch conclui o contrário. Achado do QA final da sessão.
+
 > **Não é release.** Fica aqui como registro da mudança na branch, para o gate de sincronia entre ADR
 > aceito e CHANGELOG não ficar vermelho. O número de versão sai quando o bloco fechar, com checkpoint
 > e evidência de QA no ledger — que é o rito que os canários de release cobram, e com razão.
@@ -49,7 +57,8 @@ regenerado o que o leitor lê.
   por papel** — só por risco declarado. E *autor sempre default* virou invariante testada, que reprovou na
   primeira execução e revelou um defeito no **casador de papel**: chave genérica engolia a específica, e um
   papel autoral resolvia dois degraus abaixo do default. Consertado na raiz; *longest-match* puro foi
-  medido sobre 58 frases e **recusado** por criar duas regressões piores. Motivo da primeira decisão, e
+  medido e **recusado** por criar duas regressões piores — a prova durável não é o número da
+  medição, é o canário que reprova as duas. Motivo da primeira decisão, e
   ele é medido: rodar o degrau acima por reflexo esgotou a janela de 5h de tokens de uma sessão.
 
 - **Confirmar o bloco com o dono ANTES de executar virou o default — ADR-111.** O plano vem primeiro

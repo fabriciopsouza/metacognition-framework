@@ -213,11 +213,12 @@
         </ul>
       </div>
     </div>
-  </section>
+    </section>
 
   <section id="provas">
     <h2><span class="n">01</span>O que está provado, em número</h2>
     <p class="sub">A promessa acima é verificável, e é isto que a sustenta. Cada número abaixo é conferido automaticamente a cada execução dos testes: se divergir do repositório, a suíte falha — esta página não pode envelhecer mentindo.</p>
+    <p class="sub">Duas palavras aparecem aqui e valem ser ditas em português antes: uma <b>proteção</b> é qualquer coisa que impede um erro de passar — um teste, uma trava, uma regra que barra. Um <b>canário</b> é o teste que vigia a proteção: ele quebra o mecanismo de propósito e confere se alguém apita. Se ninguém apita, a proteção não existia — existia a sensação de que existia.</p>
     <div class="story">
       <div class="col good">
         <h3>✓ Sabotagem provada</h3>
@@ -241,8 +242,8 @@
             vermelho. Cada uma recebeu um caso sintético que é obrigada a pegar; é isso que tornou
             a sabotagem possível de provar. Zero aqui não significa "sem risco": significa que este
             risco específico saiu da lista.</li>
-          <li><b>0</b> ainda não declaram como se protegem — eram 34. O passivo do registro
-            acabou: toda capacidade diz hoje de que forma protege (ou não protege).</li>
+          <li><b>0</b> ainda não declaram como se protegem — eram 34. Toda proteção diz hoje
+            de que forma protege, ou admite que não protege. Nenhuma fica em silêncio.</li>
           <li><b>38</b> declaram proteção de outro tipo — aviso, registro, prosa, garantia
             física, gate manual. Contam como em dia no registro, mas <b>ninguém as sabotou</b>,
             e é essa a distinção que a coluna da esquerda mede. Zero passivo <b>não</b> quer
@@ -256,11 +257,17 @@
       <b>92 de 92</b> de "em conformidade" — mas conformidade ali significa "declarou algo
       coerente", não "foi sabotada". Os dois números são verdadeiros e medem coisas diferentes;
       quem confunde os dois está fazendo propaganda.</p>
-    <p class="sub">Numa única sessão de revisão adversarial, <b>seis de dez rodadas reprovaram</b> —
-      e em cinco o defeito estava dentro do mecanismo criado para impedir aquele mesmo tipo de
-      defeito. Inclusive esta seção: a primeira versão dela dizia "38 sabotadas", e o crítico
-      mostrou que era falso para a maioria. É o argumento mais forte a favor do crítico
-      independente, e ele não é teórico.</p>
+    <p class="sub"><b>O que nos surpreendeu.</b> O autor escreveu, num registro de decisão, que um
+      defeito tinha sumido "para todo papel futuro". O revisor — outro modelo, sem acesso ao
+      raciocínio dele — rodou o código e mostrou que não: uma combinação de dois termos ainda
+      falhava. O conserto cobria <i>um caso</i>; o autor chamou de <i>classe</i>. Foi preciso outro
+      modelo para ver a diferença. Na mesma revisão, a correção do autor introduziu um defeito
+      novo — e foi a segunda rodada que o pegou.</p>
+    <p class="sub">Não é episódio isolado. Numa única sessão de revisão adversarial, <b>seis de dez
+      rodadas reprovaram</b> — e em cinco o defeito estava dentro do mecanismo criado para impedir
+      aquele mesmo tipo de defeito. Inclusive esta seção: a primeira versão dela dizia "38
+      sabotadas", e o crítico mostrou que era falso para a maioria. É por isso que a revisão roda
+      sempre, e nunca no mesmo modelo que escreveu.</p>
   </section>
 
   <section id="metodo">

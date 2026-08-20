@@ -2,6 +2,7 @@
   "schema_version": 1,
   "note": "FONTE UNICA da politica de modelo por papel+risco (ADR-078). Antes vivia em 3 lugares divergentes: suggest_model hardcoded (so opus/sonnet, cego ao tier acima), frontmatter dos subagentes (sonnet fixo) e prosa (ADR-018). Consumidores: tools/handoff.py (sugestao de modelo no Pacote P14), orquestrador ao spawnar subagente (Agent model:<id>), _meta/subagent-isolation.md (escada). Atualizar modelo novo = editar AQUI (dado), nao codigo. Canario: test_handoff.py valida schema + regras.",
   "model_ids": {
+    "_comment": "IDs de modelo por familia. Trocar um ID e' decisao registravel como qualquer outra deste arquivo: 'opus' passou de claude-opus-4-8 para claude-opus-5 no WIP desta branch e foi commitado SEM justificativa - unico campo do arquivo sem anotacao, achado do QA final da sessao 19/08/2026. O valor esta correto (opus-5 e' o standard atual e e' o baseline_author), mas o registro faltava, e este arquivo e' justamente o que o ADR-111 nasceu para proteger de decisao nao-vista. Quem trocar um ID daqui: diga por que, aqui.",
     "fable": "claude-fable-5",
     "opus": "claude-opus-5",
     "sonnet": "claude-sonnet-4-6",
