@@ -15,7 +15,7 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
-## [Não liberado] — branch `feat/enforcement-que-viaja-para-projeto-novo` — A escada de crítica passa a ser relativa (ADR-109), o degrau caro passa a exigir autorização (ADR-110) e o bloco passa a ser confirmado antes (ADR-111)
+## [Não liberado] — branch `feat/enforcement-que-viaja-para-projeto-novo` — A escada de crítica passa a ser relativa (ADR-109), o degrau caro passa a exigir autorização (ADR-110) o bloco passa a ser confirmado antes (ADR-111) e e o trabalho em curso não é abandonado (ADR-112)
 
 [EMERGENTE] · [estado do QA declarado sem antecipar veredito: **dois QA adversariais isolados**
 rodaram nesta branch — junção em Sonnet e entrega em Fable — e **os dois REPROVARAM**. Os achados de
@@ -68,6 +68,18 @@ regenerado o que o leitor lê.
   plausível). Calibragem **estreita por decisão do dono**: detector de linguagem natural com falso
   positivo vira gate desligado. As quatro classes de fuga estão nomeadas no código, incluindo a fonte
   decorativa — o alvo é o autor desatento, não um adversário.
+- **Trabalho em curso deixa de ser abandonado por mensagem nova — ADR-112.** Tarefa em andamento ou
+  programada **é concluída**: o agente pausa, responde, **retoma** e termina. Exceção única — ordem
+  ao mesmo tempo **clara, imperativa e sem margem de interpretação**. Pergunta de status, crítica ao
+  resultado, pedido novo que chega junto, `"ok"` e `"siga"` **não param nada**; vários deles
+  acrescentam trabalho. Nasceu de reincidência medida: duas vezes na mesma sessão o dono precisou
+  cobrar trabalho que o agente havia anunciado e deixado pela metade. A causa não é distração, é
+  ordem de prioridade errada — **recência não é precedência**. **Régua §0, corrigida pelo QA:** a primeira versão alegou porta (a) — que a regra absorvia a
+  que existia só para QA. Falso: aquela nunca esteve no repositório, vivia em memória fora do git
+  e não viajava. É **adição**, autorizada por **ordem explícita do dono**, e fica registrada como
+  override em vez de disfarçada de fusão. A absorção passou a ser real depois do achado: a memória
+  virou ponteiro para a regra.
+
 - **Confirmar o bloco com o dono ANTES de executar virou o default — ADR-111.** O plano vem primeiro
   (o que será tocado, decisões em aberto com alternativas, o que fica de fora), o dono aprova ou corrige,
   e só então o bloco roda inteiro. Uma interrupção por bloco, em conversa — documento com perguntas
