@@ -112,7 +112,69 @@ def _test_junction_ledger():
     return not fails
 
 
+def conferir_cadeia():
+    """A cadeia do ledger acumula atraves de VARIAS regravacoes? (falhas).
+
+    POR QUE TRES E NAO DUAS: com duas gravacoes o defeito NAO aparece — uma
+    cadeia de profundidade 1 parece correta. Ele so' se revela na terceira,
+    quando o elo mais antigo deveria continuar la'. Foi exatamente por testar
+    com duas que o autor afirmou "testado ponta a ponta" sobre um mecanismo
+    quebrado, e foi o QA adversarial de 17/09/2026 que mediu a terceira.
+
+    O defeito: `historico = list(verdict.get("substitui") or [])` lia o campo do
+    veredito que ENTRA — sempre vazio, porque o qa-critic nao carrega historico
+    — em vez do campo do ANTERIOR, onde o elo antigo mora. Como o arquivo e'
+    reescrito inteiro, a rodada 1 desaparecia na 3a gravacao. Num bloco com 30
+    rodadas, o artefato final mostraria um unico elo.
+    """
+    import json
+    import tempfile
+    import qa_evidence
+
+    falhas = []
+    antes = qa_evidence.QA_DIR
+    qa_evidence.QA_DIR = tempfile.mkdtemp(prefix="cadeia-")
+    try:
+        base = dict(bloco="bloco-da-cadeia", papel="qa_critic", passou=False,
+                    data="2026-09-17T00:00:00Z", escopo_paths=["a.py"],
+                    problemas=[], verificacoes_executadas=["rodou"],
+                    atestacao={"agentId": "a1", "modelo": "sonnet",
+                               "autor": "opus", "isolamento": "subagente"})
+        caminho = None
+        for rodada, decisao in ((1, "reprovar"), (2, "reprovar"), (3, "aprovar")):
+            caminho, _md = qa_evidence.write_artifact(
+                dict(base, rodada=rodada, recomendacao=decisao,
+                     resumo=f"rodada {rodada}", passou=(decisao == "aprovar")))
+
+        final = json.load(open(caminho, encoding="utf-8"))
+        cadeia = final.get("substitui") or []
+        rodadas = [a.get("rodada") for a in cadeia]
+        if rodadas != [1, 2]:
+            falhas.append(f"a cadeia perdeu historico: esperava [1, 2], veio {rodadas}")
+        if not all(a.get("recomendacao") for a in cadeia):
+            falhas.append("antecedente sem `recomendacao` — o campo obrigatorio do schema")
+        if final.get("substitui_reprovacao") is not True:
+            falhas.append("aprovativo que substitui REPROVACAO nao se declarou")
+
+        md = open(caminho[:-5] + ".md", encoding="utf-8").read()
+        if "Substitui vereditos anteriores" not in md:
+            falhas.append("a cadeia existe no JSON e some no .md, que e' o que humano le")
+        elif "REPROVACAO" not in md:
+            falhas.append("o .md nao destaca que houve reprovacao substituida")
+    finally:
+        qa_evidence.QA_DIR = antes
+    return falhas
+
+
 def main():
+    falhas_cadeia = conferir_cadeia()
+    for f in falhas_cadeia:
+        print(f"  FAIL cadeia do ledger: {f}")
+    if falhas_cadeia:
+        print("RESULTADO: FAIL (a cadeia de vereditos nao preserva a historia)")
+        return 1
+    print("  ok   a cadeia do ledger acumula por 3 gravacoes e aparece no .md")
+
     shadow, why = _is_genuine_shadow()
     if shadow:
         print(f"{why}. PASS (shadow — nao cobra artefato qa-critic).")

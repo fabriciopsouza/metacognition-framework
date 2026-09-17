@@ -476,6 +476,7 @@ def modo_provar(caps, alvo, raiz=RAIZ):
                 # 1) o canario passa ANTES da mutacao?
                 antes = subprocess.run([sys.executable, "-X", "utf8", str(canario)],
                                        capture_output=True, text=True, cwd=str(wt),
+                                       stdin=subprocess.DEVNULL, timeout=300,
                                        encoding="utf-8", errors="replace",
                                        env=ENV_SEM_BYTECODE)
                 saida_antes = (antes.stdout or "") + (antes.stderr or "")
@@ -534,10 +535,17 @@ def modo_provar(caps, alvo, raiz=RAIZ):
                                         f"sabote a LOGICA"))
                     continue
                 _purgar_bytecode(wt)
+                # `stdin` fechado e `timeout` explicito nas DUAS execucoes do
+                # canario — nao so' na carga do modulo. Mecanismo que le
+                # `sys.stdin` em nivel de modulo travaria ate o pai fechar, e o
+                # `--provar` inteiro morreria sem relatorio por capacidade. Hoje
+                # nenhum canario depende do stdin herdado, mas isso e' convencao
+                # incidental, nao contrato. [QA de 17/09/2026]
                 dep = subprocess.run([sys.executable, "-X", "utf8", str(canario)],
                                      capture_output=True, text=True, cwd=str(wt),
                                      encoding="utf-8", errors="replace",
-                                     env=ENV_SEM_BYTECODE)
+                                     env=ENV_SEM_BYTECODE,
+                                     stdin=subprocess.DEVNULL, timeout=300)
                 alvo_f.write_text(original, encoding="utf-8")
                 saida_dep = (dep.stdout or "") + (dep.stderr or "")
                 # `espera` so' conta no STDOUT — o canario que RELATA escreve no

@@ -209,7 +209,23 @@ def write_artifact(verdict, when=None):
         except (ValueError, OSError):
             anterior = None
         if anterior:
-            historico = list(verdict.get("substitui") or [])
+            # FUNDE O HISTORICO DO ANTERIOR, nao so' o do veredito que entra.
+            #
+            # `verdict.get("substitui")` e' quase sempre VAZIO: quem escreve o
+            # JSON e' o qa-critic, que nao carrega historico nenhum. Ler dali e
+            # anexar so' o antecedente imediato deixava a cadeia presa em
+            # profundidade 1 PARA SEMPRE — na 3a gravacao do mesmo bloco, a
+            # rodada 1 sumia do artefato, porque o arquivo inteiro e' reescrito.
+            #
+            # Num bloco com 30 rodadas registradas, o artefato final mostraria
+            # um unico elo. A pergunta e' "a historia INTEIRA persiste atraves de
+            # N regravacoes?", e a versao anterior media "existe UM antecedente
+            # nesta gravacao?" — proxy que passa mesmo com a historia funda ja'
+            # descartada. [achado CRITICO do QA de 17/09/2026]
+            historico = list(anterior.get("substitui") or [])
+            for antigo in (verdict.get("substitui") or []):
+                if antigo not in historico:
+                    historico.append(antigo)
             # `recomendacao` e' o campo OBRIGATORIO do schema (REQUIRED) e e' o
             # que o `squad_gate` le. `veredito` e' chave paralela OPCIONAL que
             # esta ferramenta nunca escreve — 30 dos 87 artefatos reais nao a
