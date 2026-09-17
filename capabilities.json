@@ -1955,11 +1955,11 @@
     "adr-113"
    ],
    "mutacao": {
-    "arquivo": "tools/controle_base.py",
-    "de": "    if cru is None and alternativa:",
-    "para": "    if not cru and alternativa:  # sabotado: teto 0 vira 'nao declarado'",
+    "arquivo": "tools/controle_projeto.py",
+    "de": "                                      \"limite_em_execucao\", 3)",
+    "para": "                                      \"limite_em_execucao\", 99)  # sabotado",
     "canario": "tools/test_controle_projeto.py",
-    "espera": "FAIL "
+    "espera": "FAIL adiantamento respeita o teto por pessoa"
    }
   },
   {
@@ -2051,9 +2051,9 @@
     "adr-113"
    ],
    "mutacao": {
-    "arquivo": "tools/controle_base.py",
-    "de": "    return f if math.isfinite(f) else None",
-    "para": "    return f  # sabotado: nan atravessa e a copia intacta deixa de passar",
+    "arquivo": "tools/test_mutacao_controle.py",
+    "de": "            checar(f\"a copia intacta passa em {canario}\", r.returncode == 0,",
+    "para": "            checar(f\"a copia intacta passa em {canario}\", r.returncode != 0,",
     "canario": "tools/test_mutacao_controle.py",
     "espera": "FAIL a copia intacta passa em test_controle_base.py"
    },
