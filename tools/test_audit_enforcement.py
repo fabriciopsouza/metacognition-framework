@@ -169,6 +169,25 @@ def main():
             "    print('DETECTOU: y.VALOR fora do declarado')\n"
             "    sys.exit(1)\n"
             "sys.exit(0)\n", encoding="utf-8")
+        # Par defensivo/test_defensivo: o canario CAPTURA a propria excecao e
+        # reformata no stdout. `str(excecao)` nunca traz o nome da classe, entao a
+        # marca de crash some do texto — e sair no stdout derruba tambem o filtro
+        # por canal. E' o ataque CRITICO da 27a rodada: so' a PRE-CONDICAO (parsear
+        # o arquivo sabotado antes de rodar) consegue barra-lo.
+        (fix / "tools" / "defensivo.py").write_text("VALOR = 42\n", encoding="utf-8")
+        (fix / "tools" / "test_defensivo.py").write_text(
+            "import sys, pathlib\n"
+            "sys.path.insert(0, str(pathlib.Path(__file__).parent))\n"
+            "def main():\n"
+            "    try:\n"
+            "        import defensivo\n"
+            "        assert defensivo.VALOR == 42\n"
+            "    except Exception as e:\n"
+            "        print(f'FAIL regra-de-negocio-violada: {e}')\n"
+            "        return 1\n"
+            "    print('PASS regra-de-negocio-violada')\n"
+            "    return 0\n"
+            "sys.exit(main())\n", encoding="utf-8")
         # Par dados.json/test_dados: mecanismo que NAO e' Python. Quebrar o JSON mata o canario
         # com `JSONDecodeError`, cujo traceback cita `json/decoder.py` e NUNCA `dados.json` —
         # a escapatoria que o qa-critic achou em 2026-08-15. `model-policy` e' um caso real disto.
@@ -254,7 +273,12 @@ def main():
                 "arquivo": "tools/y.py", "de": "VALOR = 42", "para": "VALOR = (42",
                 "canario": "tools/test_y.py", "espera": "y.VALOR divergiu"}}])
             c, s = rodar(AUDITOR, caps, base, "--provar", "--raiz", str(fix))
-            caso("vermelho por CRASH (sintaxe quebrada) e' barrado", 2, "morreu processando",
+            # A recusa continua sendo exit 2 — o que mudou foi ONDE ela nasce. Ate a 26a
+            # rodada era inferida da SAIDA do canario ("morreu processando"); desde a 27a e'
+            # PRE-CONDICAO do arquivo (`ast.parse`/`json.loads` no texto sabotado, antes de
+            # rodar qualquer coisa), porque um canario que captura a propria excecao apaga o
+            # sinal de crash do texto. O codigo 2 e' que prova a regra; a frase so' a nomeia.
+            caso("vermelho por CRASH (sintaxe quebrada) e' barrado", 2, "QUEBROU a sintaxe",
                  c, s, resultados)
 
             # (i-f) crash em mecanismo NAO-Python: o traceback do JSONDecodeError nao cita
@@ -266,7 +290,24 @@ def main():
                 "canario": "tools/test_dados.py", "espera": "limite fora do declarado"}}])
             c, s = rodar(AUDITOR, caps, base, "--provar", "--raiz", str(fix))
             caso("crash em mecanismo .json (traceback sem o nome) e' barrado", 2,
-                 "morreu processando", c, s, resultados)
+                 "QUEBROU a sintaxe", c, s, resultados)
+
+            # (i-g) O CANARIO DEFENSIVO — achado CRITICO da 27a rodada, e a razao de a
+            # recusa ter virado pre-condicao. Um canario que faz
+            #     except Exception as e: print(f"FAIL regra-violada: {e}")
+            # apaga o sinal para sempre: `str(excecao)` em Python NUNCA traz o nome da
+            # classe, isso so' aparece quando o INTERPRETADOR formata traceback nao
+            # capturado. E o texto sai no stdout, entao nem filtrar por canal resolvia.
+            # Com sabotagem PURAMENTE sintatica, isto saia [PROVADO].
+            caps, base = escrever(tmp, [{"id": "fd", "enforcement": "fail-closed",
+                "mechanism": "tools/defensivo.py", "test": "tools/test_defensivo.py",
+                "mutacao": {
+                "arquivo": "tools/defensivo.py", "de": "VALOR = 42", "para": "VALOR = (42",
+                "canario": "tools/test_defensivo.py",
+                "espera": "FAIL regra-de-negocio-violada"}}])
+            c, s = rodar(AUDITOR, caps, base, "--provar", "--raiz", str(fix))
+            caso("canario DEFENSIVO (captura a excecao) nao mascara crash", 2,
+                 "QUEBROU a sintaxe", c, s, resultados)
 
             # (i-i) mutacao que preserva o TAMANHO do arquivo, em mecanismo IMPORTADO. Se a prova
             # aceitar cache de bytecode, o interpretador reusa o `.pyc` velho quando o horario cai
