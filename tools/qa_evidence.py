@@ -170,6 +170,43 @@ def write_artifact(verdict, when=None):
     slug = _slug(verdict["bloco"])
     jpath = os.path.join(QA_DIR, slug + ".json")
     mpath = os.path.join(QA_DIR, slug + ".md")
+    # NAO SOBRESCREVE VEREDITO ATESTADO EM SILENCIO.
+    #
+    # `open(jpath, "w")` cru apagava o veredito anterior do MESMO bloco sem
+    # checar existencia nem encadear: um segundo registro com o mesmo `bloco`
+    # triturava a reprovacao que veio antes, e o ledger passava a contar uma
+    # historia em que ela nunca existiu. Achado CRITICO do QA adversarial
+    # (bloco adr-115, artefato `adr-115-rodada-27-o-escritor-do-ledger-e-o-
+    # triturador.json`), reaberto e confirmado em 17/09/2026: a linha ainda era
+    # `open(jpath, "w", ...)`.
+    #
+    # O ledger e' a memoria de quem reprovou o que. Ferramenta que o reescreve
+    # sem deixar rastro derruba a cadeia inteira que o ADR-115 existe para
+    # proteger — e nao adianta o gate ser fail-closed se o registro que ele le
+    # pode ser trocado por baixo.
+    if os.path.isfile(jpath):
+        try:
+            anterior = json.load(open(jpath, encoding="utf-8"))
+        except (ValueError, OSError):
+            anterior = None
+        if anterior:
+            historico = list(verdict.get("substitui") or [])
+            assinatura = {
+                "rodada": anterior.get("rodada"),
+                "data": anterior.get("data"),
+                "veredito": anterior.get("veredito"),
+                "sha_revisado": anterior.get("sha_revisado"),
+                "agentId": (anterior.get("atestacao") or {}).get("agentId"),
+            }
+            if assinatura not in historico:
+                historico.append(assinatura)
+            verdict["substitui"] = historico
+            # Reprovacao nao se apaga por regravacao: ela vira ANTECEDENTE
+            # explicito do veredito novo, e quem ler sabe que houve.
+            if anterior.get("veredito") in ("reprovar", "corrigir") and \
+                    not verdict.get("substitui_reprovacao"):
+                verdict["substitui_reprovacao"] = True
+
     json.dump(verdict, open(jpath, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
     open(mpath, "w", encoding="utf-8").write(render_md(verdict))
     return jpath, mpath

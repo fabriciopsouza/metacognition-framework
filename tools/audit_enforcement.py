@@ -160,7 +160,7 @@ def quebrou_sintaxe(caminho: str, texto: str):
     quando o INTERPRETADOR formata um traceback nao-capturado. Um canario
     defensivo apaga o sinal e ainda escreve no stdout, entao nenhuma heuristica
     sobre o texto de saida podia funcionar. Nao era ordem de checagem: era a
-    fonte da informacao. [achado CRITICO da 27a rodada do ADR-115]
+    fonte da informacao. [achado CRITICO do QA adversarial de 17/09/2026 — canario defensivo apaga o sinal de crash]
 
     Quebra de sintaxe e' fato DO ARQUIVO, conhecivel sem executar coisa alguma.
     """
@@ -170,6 +170,26 @@ def quebrou_sintaxe(caminho: str, texto: str):
             ast.parse(texto)
         except SyntaxError as erro:
             return f"{type(erro).__name__}: {erro.msg} (linha {erro.lineno})"
+        # PARSEAR NAO E' CARREGAR. `THRESHOLD = 10` seguido de
+        # `import modulo_inexistente` passa no `ast.parse` e mata o canario no
+        # import — mesma fraude, por uma porta que o parser nao ve. Entao o
+        # arquivo sabotado e' EXECUTADO em processo separado: se nem carrega, a
+        # mutacao quebrou o mecanismo em vez de mudar o comportamento dele.
+        with tempfile.TemporaryDirectory(prefix="precond-") as td:
+            alvo = os.path.join(td, os.path.basename(caminho))
+            with open(alvo, "w", encoding="utf-8") as saida:
+                saida.write(texto)
+            r = subprocess.run(
+                [sys.executable, "-c",
+                 "import importlib.util,sys;"
+                 "s=importlib.util.spec_from_file_location('_m',sys.argv[1]);"
+                 "m=importlib.util.module_from_spec(s);s.loader.exec_module(m)",
+                 alvo],
+                capture_output=True, text=True, encoding="utf-8",
+                errors="replace", env=ENV_SEM_BYTECODE, timeout=60)
+            if r.returncode != 0:
+                ultima = [l for l in (r.stderr or "").strip().splitlines() if l.strip()]
+                return f"nao CARREGA: {ultima[-1][:120] if ultima else 'erro no import'}"
         return None
     if baixo.endswith(".json"):
         try:
@@ -178,6 +198,32 @@ def quebrou_sintaxe(caminho: str, texto: str):
             return f"JSON invalido: {erro}"
         return None
     return None
+
+
+def canario_defensivo(fonte: str) -> bool:
+    """O canario ENGOLE qualquer excecao e reformata a mensagem?
+
+    `except Exception` / `except:` amplo em volta do uso do mecanismo apaga o
+    unico sinal que distingue "detectou" de "morreu": a mensagem que sai e' a
+    mesma nos dois casos. Para mecanismo `.py`/`.json` isso nao importa, porque
+    a pre-condicao responde pelo ARQUIVO. Para `.ps1`, `.md`, `.yml` e afins nao
+    ha' parser aqui — e ai a combinacao vira indecidivel.
+
+    Indecidivel se declara, nao se adivinha.
+    """
+    try:
+        arvore = ast.parse(fonte)
+    except SyntaxError:
+        return False
+    for no in ast.walk(arvore):
+        if not isinstance(no, ast.ExceptHandler):
+            continue
+        if no.type is None:                                  # `except:` puro
+            return True
+        nomes = {x.id for x in ast.walk(no.type) if isinstance(x, ast.Name)}
+        if nomes & {"Exception", "BaseException"}:
+            return True
+    return False
 
 
 def valida_mutacao(m, cap=None):
@@ -390,6 +436,30 @@ def modo_provar(caps, alvo, raiz=RAIZ):
                 # PRE-CONDICAO: o mecanismo sabotado ainda e' valido? Se a mutacao
                 # quebrou a sintaxe, ela nao prova nada — e isso se sabe ANTES de
                 # rodar o canario, sem depender do que ele escolhe imprimir.
+                # INDECIDIVEL, e por isso recusado: mecanismo cujo tipo nao tem
+                # parser aqui (`.ps1`, `.md`, `.yml`) + canario que engole
+                # qualquer excecao. Nesse par, "detectou" e "morreu" produzem a
+                # MESMA mensagem, e nao ha' fato nenhum que os separe — nem no
+                # arquivo (sem parser), nem na saida (o `except` amplo apaga o
+                # sinal). Medido: mecanismo `.ps1` corrompido fazia o canario
+                # estourar `AttributeError` num `re.search(...).group(1)` e o
+                # `except Exception` imprimia a mensagem declarada, sem nunca ter
+                # conferido valor nenhum. Saia [PROVADO].
+                #
+                # Nao da' para adivinhar qual dos dois foi. Entao se declara.
+                if quebrou_sintaxe(m["arquivo"], sabotado) is None \
+                        and not m["arquivo"].lower().endswith((".py", ".json")):
+                    fonte_canario = (raiz / m["canario"])
+                    if fonte_canario.is_file() and canario_defensivo(
+                            fonte_canario.read_text(encoding="utf-8", errors="replace")):
+                        alvo_f.write_text(original, encoding="utf-8")
+                        falhas.append((cid, f"INDECIDIVEL: `{m['arquivo']}` nao tem parser aqui "
+                                            f"e `{m['canario']}` engole qualquer excecao "
+                                            f"(`except Exception`) — 'detectou' e 'morreu' dao a "
+                                            f"MESMA mensagem. Capture a excecao ESPECIFICA, ou "
+                                            f"cite `type(e).__name__` na saida"))
+                        continue
+
                 quebrou = quebrou_sintaxe(m["arquivo"], sabotado)
                 if quebrou:
                     alvo_f.write_text(original, encoding="utf-8")
@@ -430,7 +500,7 @@ def modo_provar(caps, alvo, raiz=RAIZ):
                     # que relata falha de assercao IMPRIMINDO O TRACEBACK. `test_squad_gate.py`
                     # faz exatamente isso: por causa dele, `veredito-fail-closed` saia como
                     # "canario MORREU" quando na verdade acusava 16 testes com nome e codigo 1.
-                    # [achado da 25a rodada do ADR-115]
+                    # [achado do QA adversarial de 17/09/2026 — prova por crash disfarcada]
                     #
                     # "Apareceu marca de crash" NAO distingue "o canario morreu" de "o canario
                     # relatou por traceback". O que distingue e' ter chegado a imprimir o achado
