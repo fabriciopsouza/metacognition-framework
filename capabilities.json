@@ -1959,7 +1959,7 @@
     "de": "                                      \"limite_em_execucao\", 3)",
     "para": "                                      \"limite_em_execucao\", 99)  # sabotado",
     "canario": "tools/test_controle_projeto.py",
-    "espera": "FAIL adiantamento respeita o teto por pessoa"
+    "espera": "FAIL teto None -> 3"
    }
   },
   {
@@ -2003,7 +2003,7 @@
     "de": "            elif valor not in validos:",
     "para": "            elif False:  # sabotado: numero inventado deixa de ser pego",
     "canario": "tools/test_numeros_controle.py",
-    "espera": "FAIL auto-teste: numero inventado na prosa e' pego"
+    "espera": "FAIL auto-teste: sabotagem inventada tambem e' pega"
    },
    "_leia": "Nasceu de um achado do QA rodada 3: a versao anterior vivia dentro de test_controle_projeto.py e ALEGAVA conferir os numeros contra a realidade medida, mas media UM e bloqueava quatro strings. Denylist nao e' verificacao. Mora separado por motivo mecanico: para medir quantas verificacoes um canario executa e' preciso roda-lo, e um teste que roda a si mesmo nao termina."
   },
