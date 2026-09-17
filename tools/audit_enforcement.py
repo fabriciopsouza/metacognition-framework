@@ -355,18 +355,32 @@ def modo_provar(caps, alvo, raiz=RAIZ):
                 if dep.returncode == 0:
                     falhas.append((cid, f"canario `{m['canario']}` continuou VERDE com "
                                         f"`{m['arquivo']}` sabotado — nao prova nada"))
+                elif m["espera"] in saida_dep:
+                    # DETECTOU — e a ORDEM aqui e' o conserto.
+                    #
+                    # A versao anterior checava a marca de crash ANTES, e reprovava todo canario
+                    # que relata falha de assercao IMPRIMINDO O TRACEBACK. `test_squad_gate.py`
+                    # faz exatamente isso: por causa dele, `veredito-fail-closed` saia como
+                    # "canario MORREU" quando na verdade acusava 16 testes com nome e codigo 1.
+                    # [achado da 25a rodada do ADR-115]
+                    #
+                    # "Apareceu marca de crash" NAO distingue "o canario morreu" de "o canario
+                    # relatou por traceback". O que distingue e' ter chegado a imprimir o achado
+                    # DECLARADO: quem morre carregando o arquivo para antes disso.
+                    #
+                    # E nao abre porta para prova por crash: `valida_mutacao` ja RECUSA `espera`
+                    # que contenha marca de crash, entao ninguem declara "SyntaxError" e passa.
+                    print(f"  [PROVADO] {cid}: mutacao em {m['arquivo']} deixou "
+                          f"{m['canario']} vermelho (codigo {dep.returncode}) "
+                          f"pelo motivo declarado ({m['espera']!r})")
                 elif novas:
                     falhas.append((cid, f"canario MORREU processando `{m['arquivo']}` sabotado "
                                         f"({novas[0]} apareceu so depois da mutacao): crash, nao "
                                         f"deteccao — quebrar o arquivo nao prova que o gate "
                                         f"detecta; sabote a LOGICA, nao a sintaxe"))
-                elif m["espera"] not in saida_dep:
+                else:
                     falhas.append((cid, f"canario ficou vermelho, mas NAO pelo motivo declarado: "
                                         f"`espera` ({m['espera']!r}) ausente da saida"))
-                else:
-                    print(f"  [PROVADO] {cid}: mutacao em {m['arquivo']} deixou "
-                          f"{m['canario']} vermelho (codigo {dep.returncode}) "
-                          f"pelo motivo declarado ({m['espera']!r})")
             if falhas:
                 print(f"\n[FALHA] {len(falhas)} prova(s) de mutacao invalida(s):")
                 for cid, motivo in falhas:

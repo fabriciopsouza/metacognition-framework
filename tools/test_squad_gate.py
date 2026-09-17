@@ -438,6 +438,12 @@ def test_matriz_cobre_os_INTERRUPTORES_do_proprio_mecanismo():
         "tools/anonymize-map.txt",            # o que o anonimizador troca antes de publicar
         "tools/effect-rules.json",            # o que o effect-gate considera destrutivo
         "tools/agnostic-denylist.txt",        # o que conta como vazamento no nucleo
+        # Os interruptores da RAIZ, onde nenhum prefixo de pasta alcanca.
+        # 24a e 25a rodadas: `capabilities.json` decide o que e' fail-closed, e
+        # `.repo-identity.json` parametriza o classificador que libera escrita.
+        "capabilities.json",                  # decide enforcement e se ha' prova
+        "CAPABILITIES.md",                    # espelho publico do registro
+        ".repo-identity.json",                # editar um campo = writable_master
     ]
     for alvo in interruptores:
         assert sg.classify([alvo], man), "%s controla o gate e nao exige papel nenhum" % alvo

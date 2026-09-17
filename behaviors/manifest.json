@@ -219,6 +219,15 @@
     "qa_critic"
    ],
    "porque": "espelho publico de `capabilities.json` — mesma razao, mesmo achado da 24a rodada."
+  },
+  {
+   "match": {
+    "exact": ".repo-identity.json"
+   },
+   "exige": [
+    "qa_critic"
+   ],
+   "porque": "`canonical_remote`, `canonical_branch` e `stale_behind_threshold` deste arquivo sao LIDOS por `repo_identity.classify()` para decidir a ancestralidade e, com ela, `writable_master` — o sinal que `framework_onboarding.py` usa para liberar escrita na arvore. O critico da 25a rodada provou em clone descartavel: editando um unico campo (`canonical_remote`) para casar com o origin local, o veredito vira MASTER-CANONICO com `writable_master: true`. O `note` do proprio arquivo dizia que copiar o arquivo nao bastava — verdade; o que basta e' EDITA-LO. Sexta instancia de 'interruptor fora da matriz' (as anteriores: .gitignore 19a/20a, .ps1 22a, dados de tools/ 23a, capabilities.json 24a). [achado ALTA da 25a rodada do ADR-115]"
   }
  ],
  "comportamentos": {

@@ -20,10 +20,10 @@
    ],
    "mutacao": {
     "arquivo": "tools/verify_qa_attestation.py",
-    "de": "        return \"divergente\", (\"o relatorio do critico diz REPROVAR e o veredito gravado e' \"",
-    "para": "        return \"verificado\", (\"SABOTADO: aceita veredito que contradiz o relatorio \"",
+    "de": "    if do_relatorio == \"reprovar\" and declarado in APROVATIVOS:",
+    "para": "    if False:  # sabotado: relatorio que REPROVA vira veredito aprovativo calado",
     "canario": "tools/test_verify_qa_attestation.py",
-    "espera": "relatorio REPROVA + veredito aprovativo e PEGO"
+    "espera": "FAIL relatorio REPROVA + veredito aprovativo vira RESSALVA visivel"
    }
   },
   {
@@ -1955,11 +1955,11 @@
     "adr-113"
    ],
    "mutacao": {
-    "arquivo": "tools/controle_projeto.py",
-    "de": "    teto = (projeto.get(\"capacidade\") or {}).get(\"em_execucao_por_pessoa\")",
-    "para": "    teto = (projeto.get(\"capacidade\") or {}).get(\"em_execucao_por_pessoa\") or 3",
+    "arquivo": "tools/controle_base.py",
+    "de": "    if cru is None and alternativa:",
+    "para": "    if not cru and alternativa:  # sabotado: teto 0 vira 'nao declarado'",
     "canario": "tools/test_controle_projeto.py",
-    "espera": "teto 0 (congelar) volta a cair no default 3 e o adiantamento libera tarefa — o canario reprova"
+    "espera": "FAIL "
    }
   },
   {
@@ -2000,10 +2000,10 @@
    ],
    "mutacao": {
     "arquivo": "tools/test_numeros_controle.py",
-    "de": "            if int(m.group(1)) not in validos:",
-    "para": "            if False:",
+    "de": "            elif valor not in validos:",
+    "para": "            elif False:  # sabotado: numero inventado deixa de ser pego",
     "canario": "tools/test_numeros_controle.py",
-    "espera": "o auto-teste do detector cai: numero inventado deixa de ser pego, e o canario passa a carimbar em vez de verificar"
+    "espera": "FAIL auto-teste: numero inventado na prosa e' pego"
    },
    "_leia": "Nasceu de um achado do QA rodada 3: a versao anterior vivia dentro de test_controle_projeto.py e ALEGAVA conferir os numeros contra a realidade medida, mas media UM e bloqueava quatro strings. Denylist nao e' verificacao. Mora separado por motivo mecanico: para medir quantas verificacoes um canario executa e' preciso roda-lo, e um teste que roda a si mesmo nao termina."
   },
@@ -2029,7 +2029,7 @@
     "de": "    return f if math.isfinite(f) else None",
     "para": "    return f",
     "canario": "tools/test_controle_base.py",
-    "espera": "'nan' volta a atravessar a fronteira, grava JSON invalido no estado e escapa do relatorio de ilegibilidade — o canario reprova"
+    "espera": "FAIL _num('nan') = None"
    },
    "_leia": "Nasceu da decisao do dono de REABRIR O DESENHO depois de cinco rodadas de critica adversarial, todas reprovando: quase todos os ~28 achados moravam nesta camada, e ela estava espalhada entre dois modulos — a validacao de tipo existia num e faltava no irmao, lendo o MESMO projeto.json."
   },
@@ -2051,11 +2051,11 @@
     "adr-113"
    ],
    "mutacao": {
-    "arquivo": "tools/test_mutacao_controle.py",
-    "de": "                   f\"-> {canario} continuou VERDE com o defeito vivo; a correcao nao tem rede\")",
-    "para": "                   f\"-> ignorado\")\n            checar(f\"{rotulo}\", True)",
+    "arquivo": "tools/controle_base.py",
+    "de": "    return f if math.isfinite(f) else None",
+    "para": "    return f  # sabotado: nan atravessa e a copia intacta deixa de passar",
     "canario": "tools/test_mutacao_controle.py",
-    "espera": "o teste passa a aprovar mutacao nao detectada — vira carimbo em vez de prova"
+    "espera": "FAIL a copia intacta passa em test_controle_base.py"
    },
    "_leia": "Nasceu de um achado MEDIA do QA rodada 8: a documentacao afirmava 'N defeitos provados por mutacao' e a prova morava num script de rascunho, fora do repositorio. A afirmacao era verdadeira mas nao verificavel, ao lado de duas que eram medidas. Nao escreve no repositorio: copia o pacote para pasta temporaria e muta a copia."
   },
@@ -2101,7 +2101,7 @@
     "de": "return _norm(problema.get(\"severidade\")) not in SEVERIDADE_LEVE",
     "para": "return _norm(problema.get(\"severidade\")) in {\"ALTA\"}",
     "canario": "tools/test_squad_gate.py",
-    "espera": "grafia 'ALTO' deveria bloquear — casar so com 'ALTA' cobriria 15 de 91 achados graves do ledger (instantaneo de 14/09/2026) e deixaria passar ALTO, CRITICO, BLOQUEANTE e GRAVE"
+    "espera": "FAIL test_grafia_DESCONHECIDA_bloqueia_fail_closed"
    }
   }
  ],
