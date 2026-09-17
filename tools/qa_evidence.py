@@ -166,6 +166,32 @@ def _head_sha():
     return r.stdout.strip() if r.returncode == 0 else None
 
 
+def validate_substitui(valor):
+    """(erros). Mesma disciplina que `validate_problemas`, e pela mesma razao.
+
+    `list(anterior.get("substitui") or [])` aceita uma STRING e a fragmenta em
+    caracteres, sem erro naquela linha. O crash so' aparece depois, em
+    `render_md` — e a essa altura o `json.dump` JA' GRAVOU o JSON corrompido,
+    porque ele roda antes. A cada nova tentativa a lista de fragmentos cresce e
+    nunca converge; o `.md` fica permanentemente desatualizado.
+
+    Este arquivo ja' tinha aprendido isso com `problemas` (item fora do schema
+    passava e o `.md` saia com celulas vazias, sem erro). A licao nao foi
+    generalizada para `substitui`, que a correcao anterior acabou de tornar o
+    campo central da cadeia. [achado do QA de 17/09/2026]
+    """
+    if valor is None:
+        return []
+    if not isinstance(valor, list):
+        return [f"precisa ser lista, veio {type(valor).__name__}"]
+    erros = []
+    for i, item in enumerate(valor):
+        if not isinstance(item, dict):
+            erros.append(f"item {i} precisa ser objeto, veio "
+                         f"{type(item).__name__}: {str(item)[:40]!r}")
+    return erros
+
+
 def write_artifact(verdict, when=None):
     missing = [k for k in REQUIRED if k not in verdict]
     if missing:
@@ -173,6 +199,9 @@ def write_artifact(verdict, when=None):
     pe = validate_problemas(verdict.get("problemas"))
     if pe:
         raise ValueError("veredito invalido — itens de 'problemas' fora do schema: " + "; ".join(pe))
+    se = validate_substitui(verdict.get("substitui"))
+    if se:
+        raise ValueError("veredito invalido — `substitui` fora do schema: " + "; ".join(se))
     # ADR-074 emenda 3 (posture-gate): veredito que FECHA release exige bloco de postura valido.
     if verdict.get("release"):
         pp = validate_postura(verdict.get("postura"), for_release=True)
@@ -222,6 +251,16 @@ def write_artifact(verdict, when=None):
             # N regravacoes?", e a versao anterior media "existe UM antecedente
             # nesta gravacao?" — proxy que passa mesmo com a historia funda ja'
             # descartada. [achado CRITICO do QA de 17/09/2026]
+            # O que esta' NO DISCO tambem passa: artefato de versao antiga,
+            # editado a mao, ou escrito por ferramenta que nao passe por aqui.
+            # Recusar ANTES de gravar — `json.dump` vem antes de `render_md`,
+            # entao "crashar no render" ja' deixou o ledger corrompido no disco.
+            no_disco = validate_substitui(anterior.get("substitui"))
+            if no_disco:
+                raise ValueError(
+                    f"o veredito ja' gravado em {jpath} tem `substitui` fora do schema "
+                    f"({'; '.join(no_disco)}) — conserte o arquivo antes de regravar; "
+                    f"mesclar por cima corromperia a cadeia")
             historico = list(anterior.get("substitui") or [])
             for antigo in (verdict.get("substitui") or []):
                 if antigo not in historico:

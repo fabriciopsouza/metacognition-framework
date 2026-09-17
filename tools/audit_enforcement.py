@@ -474,11 +474,23 @@ def modo_provar(caps, alvo, raiz=RAIZ):
                                         f"— mutacao esta obsoleta"))
                     continue
                 # 1) o canario passa ANTES da mutacao?
-                antes = subprocess.run([sys.executable, "-X", "utf8", str(canario)],
-                                       capture_output=True, text=True, cwd=str(wt),
-                                       stdin=subprocess.DEVNULL, timeout=300,
-                                       encoding="utf-8", errors="replace",
-                                       env=ENV_SEM_BYTECODE)
+                try:
+                    antes = subprocess.run(
+                        [sys.executable, "-X", "utf8", str(canario)],
+                        capture_output=True, text=True, cwd=str(wt),
+                        stdin=subprocess.DEVNULL, timeout=300,
+                        encoding="utf-8", errors="replace", env=ENV_SEM_BYTECODE)
+                except subprocess.TimeoutExpired:
+                    # O `timeout` que eu acrescentei para impedir travamento criou um
+                    # jeito novo de perder TUDO: `TimeoutExpired` nao era capturado em
+                    # lugar nenhum — nem no laco, nem em `main()` — entao um canario
+                    # acima de 300s derrubava o `--provar` inteiro, sem relatorio para
+                    # NENHUMA capacidade, nem as ja' provadas antes dela no laco.
+                    # Infinito virou 300s, e o silencio total continuou.
+                    # [achado do QA de 17/09/2026]
+                    falhas.append((cid, f"canario `{m['canario']}` nao terminou em 300s "
+                                        f"nem ANTES da mutacao — travado, prova impossivel"))
+                    continue
                 saida_antes = (antes.stdout or "") + (antes.stderr or "")
                 if antes.returncode != 0:
                     falhas.append((cid, "canario ja estava VERMELHO antes da mutacao "
@@ -541,11 +553,25 @@ def modo_provar(caps, alvo, raiz=RAIZ):
                 # `--provar` inteiro morreria sem relatorio por capacidade. Hoje
                 # nenhum canario depende do stdin herdado, mas isso e' convencao
                 # incidental, nao contrato. [QA de 17/09/2026]
-                dep = subprocess.run([sys.executable, "-X", "utf8", str(canario)],
-                                     capture_output=True, text=True, cwd=str(wt),
-                                     encoding="utf-8", errors="replace",
-                                     env=ENV_SEM_BYTECODE,
-                                     stdin=subprocess.DEVNULL, timeout=300)
+                try:
+                    dep = subprocess.run(
+                        [sys.executable, "-X", "utf8", str(canario)],
+                        capture_output=True, text=True, cwd=str(wt),
+                        encoding="utf-8", errors="replace", env=ENV_SEM_BYTECODE,
+                        stdin=subprocess.DEVNULL, timeout=300)
+                except subprocess.TimeoutExpired:
+                    # O `timeout` que eu acrescentei para impedir travamento criou um
+                    # jeito novo de perder TUDO: `TimeoutExpired` nao era capturado em
+                    # lugar nenhum — nem no laco, nem em `main()` — entao um canario
+                    # acima de 300s derrubava o `--provar` inteiro, sem relatorio para
+                    # NENHUMA capacidade, nem as ja' provadas antes dela no laco.
+                    # Infinito virou 300s, e o silencio total continuou.
+                    # [achado do QA de 17/09/2026]
+                    alvo_f.write_text(original, encoding="utf-8")
+                    falhas.append((cid, f"canario `{m['canario']}` nao terminou em 300s "
+                                        f"com `{m['arquivo']}` sabotado — travar nao "
+                                        f"prova deteccao"))
+                    continue
                 alvo_f.write_text(original, encoding="utf-8")
                 saida_dep = (dep.stdout or "") + (dep.stderr or "")
                 # `espera` so' conta no STDOUT — o canario que RELATA escreve no

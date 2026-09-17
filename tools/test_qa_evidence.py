@@ -166,8 +166,67 @@ def conferir_cadeia():
     return falhas
 
 
+def conferir_substitui_malformado():
+    """JSON ja' gravado com `substitui` fora do schema tem de RECUSAR, nao mesclar.
+
+    O fail-open: `list(anterior.get("substitui") or [])` aceita uma STRING e a
+    fragmenta em caracteres, sem erro naquela linha. O crash so' aparecia depois,
+    em `render_md` — e a essa altura o `json.dump` JA' TINHA GRAVADO a corrupcao,
+    porque ele roda antes. Cada regravacao fazia a lista de fragmentos crescer, e
+    o `.md` ficava permanentemente desatualizado.
+
+    Este arquivo ja' tinha aprendido a licao com `problemas`; ela nao foi
+    generalizada para `substitui`. [achado do QA de 17/09/2026]
+    """
+    import json
+    import os
+    import tempfile
+    import qa_evidence
+
+    falhas = []
+    antes = qa_evidence.QA_DIR
+    qa_evidence.QA_DIR = tempfile.mkdtemp(prefix="malformado-")
+    try:
+        base = dict(bloco="bloco-corrompido", papel="qa_critic", passou=False,
+                    data="2026-09-17T00:00:00Z", escopo_paths=["a.py"], problemas=[],
+                    verificacoes_executadas=["rodou"], recomendacao="reprovar",
+                    resumo="r1", rodada=1,
+                    atestacao={"agentId": "a1", "modelo": "sonnet",
+                               "autor": "opus", "isolamento": "subagente"})
+        caminho, _ = qa_evidence.write_artifact(dict(base))
+
+        for rotulo, veneno in (("string", "nao sou lista"),
+                               ("lista de nao-dicts", ["x", 3])):
+            disco = json.load(open(caminho, encoding="utf-8"))
+            disco["substitui"] = veneno
+            json.dump(disco, open(caminho, "w", encoding="utf-8"), ensure_ascii=False)
+            antes_bytes = os.path.getsize(caminho)
+            try:
+                qa_evidence.write_artifact(dict(base, rodada=2, recomendacao="aprovar",
+                                                passou=True, resumo="r2"))
+                falhas.append(f"`substitui` como {rotulo} foi ACEITO — deveria recusar")
+            except ValueError as erro:
+                if "substitui" not in str(erro):
+                    falhas.append(f"recusou {rotulo}, mas sem dizer o campo: {erro}")
+            except Exception as erro:
+                falhas.append(f"{rotulo} quebrou com {type(erro).__name__}, nao com ValueError")
+            if os.path.getsize(caminho) != antes_bytes:
+                falhas.append(f"o ledger foi ESCRITO mesmo com {rotulo} invalido — "
+                              f"recusar depois de gravar nao adianta")
+
+        # e o veredito que ENTRA com `substitui` torto tambem e' recusado
+        try:
+            qa_evidence.write_artifact(dict(base, bloco="outro", substitui="torto"))
+            falhas.append("`substitui` invalido no veredito que ENTRA foi aceito")
+        except ValueError:
+            pass
+    finally:
+        qa_evidence.QA_DIR = antes
+    return falhas
+
+
 def main():
-    falhas_cadeia = conferir_cadeia()
+    falhas_cadeia = conferir_cadeia() + conferir_substitui_malformado()
     for f in falhas_cadeia:
         print(f"  FAIL cadeia do ledger: {f}")
     if falhas_cadeia:
