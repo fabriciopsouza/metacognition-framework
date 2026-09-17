@@ -444,6 +444,8 @@ def test_matriz_cobre_os_INTERRUPTORES_do_proprio_mecanismo():
         "capabilities.json",                  # decide enforcement e se ha' prova
         "CAPABILITIES.md",                    # espelho publico do registro
         ".repo-identity.json",                # editar um campo = writable_master
+        "_meta/enforcement-baseline.json",    # dispensa do bloqueio: desliga o ALVO
+        ".claude/commands/start-session.md",  # a "primeira acao obrigatoria" do CLAUDE.md
     ]
     for alvo in interruptores:
         assert sg.classify([alvo], man), "%s controla o gate e nao exige papel nenhum" % alvo

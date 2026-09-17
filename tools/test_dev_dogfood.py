@@ -124,13 +124,26 @@ def main():
     print("auto-teste do detector (5 fixtures) - OK")
 
     fails = []
-    execs = [p for p in glob.glob(os.path.join(priv, "execution-report-*.md"))
-             if _is_real_doc(p, MIN_REPORT_CHARS)]
+    # OS DOIS CAMINHOS, e a razao e' um achado, nao zelo.
+    #
+    # `execution_report.py` escreve o relatorio canonico em `docs/_private/_intake/`.
+    # Este gate varria SO' `docs/_private/`, onde moram sete arquivos de junho/2026 —
+    # e passava por causa deles, cego aos dez relatorios do caminho atual. Gate
+    # fail-closed permanentemente VERDE por artefato morto.
+    #
+    # Como se descobriu: o critico da 26a rodada apagou os sete por acidente e o gate
+    # ficou vermelho na hora. Sem o acidente, ele seguiria verde sem olhar nada do que
+    # esta sessao produziu. Varrer o caminho ERRADO nao e' o mesmo que nao varrer: e'
+    # pior, porque o placar diz que olhou.
+    execs = [p for padrao in (os.path.join(priv, "execution-report-*.md"),
+                              os.path.join(priv, "_intake", "execution-report*.md"))
+             for p in glob.glob(padrao) if _is_real_doc(p, MIN_REPORT_CHARS)]
     handoffs = [p for p in glob.glob(os.path.join(priv, "cross-ai", "outbox", "*.md"))
                 if _is_real_doc(p, MIN_HANDOFF_CHARS)]
     if not execs:
-        fails.append("MASTER sem execution-report nao-trivial (docs/_private/execution-report-*.md, "
-                     f">={MIN_REPORT_CHARS} chars + secao) — dogfood dev nao gerado/placeholder")
+        fails.append("MASTER sem execution-report nao-trivial (docs/_private/ OU "
+                     f"docs/_private/_intake/, >={MIN_REPORT_CHARS} chars + secao) — "
+                     f"dogfood dev nao gerado/placeholder")
     if not handoffs:
         fails.append("MASTER sem handoff cross-IA nao-trivial (docs/_private/cross-ai/outbox/*.md, "
                      f">={MIN_HANDOFF_CHARS} chars + secao) — melhoria nao propagada/placeholder")

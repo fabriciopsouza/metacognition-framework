@@ -228,6 +228,24 @@
     "qa_critic"
    ],
    "porque": "`canonical_remote`, `canonical_branch` e `stale_behind_threshold` deste arquivo sao LIDOS por `repo_identity.classify()` para decidir a ancestralidade e, com ela, `writable_master` — o sinal que `framework_onboarding.py` usa para liberar escrita na arvore. O critico da 25a rodada provou em clone descartavel: editando um unico campo (`canonical_remote`) para casar com o origin local, o veredito vira MASTER-CANONICO com `writable_master: true`. O `note` do proprio arquivo dizia que copiar o arquivo nao bastava — verdade; o que basta e' EDITA-LO. Sexta instancia de 'interruptor fora da matriz' (as anteriores: .gitignore 19a/20a, .ps1 22a, dados de tools/ 23a, capabilities.json 24a). [achado ALTA da 25a rodada do ADR-115]"
+  },
+  {
+   "match": {
+    "exact": "_meta/enforcement-baseline.json"
+   },
+   "exige": [
+    "qa_critic"
+   ],
+   "porque": "e' a lista que DISPENSA capacidades do bloqueio fail-closed do ADR-106. Quem esta' nela e' passivo herdado e nao barra o CI; quem NAO esta' e' capacidade nova e precisa de prova. O critico da 26a rodada provou: `modo_declaracao` com a capacidade quebrada FORA da baseline devolve rc=1 e bloqueia; com o mesmo id DENTRO, devolve rc=0. Acrescentar uma linha aqui apaga o bloqueio de qualquer capacidade recem-quebrada, sem exigir papel nenhum. E' o interruptor mais direto de todos: nao desliga o gate, desliga o ALVO. Setima instancia de 'interruptor fora da matriz' (anteriores: .gitignore 19a/20a, .ps1 22a, dados de tools/ 23a, capabilities.json 24a, .repo-identity.json 25a). [achado ALTA da 26a rodada do ADR-115]"
+  },
+  {
+   "match": {
+    "prefix": ".claude/commands/"
+   },
+   "exige": [
+    "qa_critic"
+   ],
+   "porque": "os comandos do Claude Code SAO o processo. `.claude/commands/start-session.md` e' o que o proprio CLAUDE.md chama de 'primeira acao obrigatoria em toda sessao' — quem edita ele muda a sequencia de boot do squad (rules, briefing, history, gates) sem tocar em codigo nenhum, e a matriz classificava isso como 'papeis exigidos: nenhum'. Vale para todo comando: `controle-projeto.md` e `controle-sharepoint.md` entraram nesta mesma sessao. Oitava instancia de 'interruptor fora da matriz' (anteriores: .gitignore 19a/20a, .ps1 22a, dados de tools/ 23a, capabilities.json 24a, .repo-identity.json 25a, _meta/enforcement-baseline.json 26a). [achado ALTA da 27a rodada do ADR-115]"
   }
  ],
  "comportamentos": {
