@@ -205,7 +205,13 @@ def nao_carrega(raiz, arquivo: str):
          "m=importlib.util.module_from_spec(s); s.loader.exec_module(m)",
          caminho, pasta],
         cwd=str(raiz), capture_output=True, text=True, encoding="utf-8",
-        errors="replace", env=ENV_SEM_BYTECODE, timeout=60)
+        # `stdin` FECHADO: varios mecanismos reais (`compaction_gate.py`,
+        # `effect_gate.py`, `overwrite_guard.py`) fazem `sys.stdin.read()` em
+        # NIVEL DE MODULO, sem guarda de `__main__`. Herdar o stdin do pai
+        # travava a leitura ate o timeout num terminal interativo, e o
+        # `TimeoutExpired` derrubava o `--provar` inteiro sem relatorio.
+        errors="replace", env=ENV_SEM_BYTECODE, timeout=60,
+        stdin=subprocess.DEVNULL)
     if r.returncode == 0:
         return None
     linhas = [l for l in (r.stderr or "").strip().splitlines() if l.strip()]
@@ -237,24 +243,44 @@ def canario_defensivo(fonte: str) -> bool:
             amplo = bool(nomes & {"Exception", "BaseException"})
         if not amplo:
             continue
-        # SO' MASCARA QUEM ESCREVE. `except Exception: pass` em volta de
-        # `sys.stdout.reconfigure(...)` — preambulo de encoding presente em
-        # metade dos canarios — nao produz mensagem nenhuma, logo nao confunde
-        # "detectou" com "morreu".
+        # O DEFAULT E' "MASCARA", e a excecao e' estreita.
         #
-        # A 1a versao marcava QUALQUER handler amplo e acusou tres canarios
-        # legitimos pelo preambulo deles. A pergunta nao e' "ha' handler amplo?",
-        # e' "ha' handler amplo capaz de produzir a mensagem que eu leria como
-        # deteccao?".
-        for dentro in ast.walk(no):
-            if not isinstance(dentro, ast.Call):
-                continue
-            alvo = dentro.func
-            if isinstance(alvo, ast.Name) and alvo.id == "print":
-                return True
-            if isinstance(alvo, ast.Attribute) and alvo.attr in (
-                    "write", "print", "info", "error", "warning", "exception"):
-                return True
+        # A versao anterior fazia o contrario: so' marcava se houvesse `print`
+        # DENTRO do proprio handler. O QA derrubou isso de ponta a ponta com o
+        # idioma mais comum de captura defensiva em Python — mais comum que o
+        # print no handler:
+        #
+        #     ok = True
+        #     try:    roda_o_mecanismo()
+        #     except Exception:  ok = False
+        #     if not ok:  print("FAIL regra-violada"); sys.exit(1)
+        #
+        # Nada e' impresso no handler, entao a regra dizia "nao e' defensivo" — e
+        # uma mutacao que so' quebrava a SINTAXE do mecanismo saia [PROVADO].
+        # Gravar em arquivo em vez de imprimir tinha o mesmo efeito.
+        #
+        # Nao da' para enumerar as formas de emitir a mensagem depois. Da' para
+        # enumerar as formas de NAO emitir nada: um handler cujo corpo e' inerte
+        # (`pass`, `...`, `continue`, `break`, `raise` puro) nao produz mensagem
+        # que se confunda com deteccao, e e' justamente o preambulo de encoding
+        # (`except Exception: pass` em volta de `sys.stdout.reconfigure`) que
+        # aparece em metade dos canarios deste repo.
+        #
+        # Lista curta e fechada de coisas inertes; tudo o mais e' candidato.
+        if all(_inerte(linha) for linha in no.body):
+            continue
+        return True
+    return False
+
+
+def _inerte(no) -> bool:
+    """A instrucao nao produz efeito observavel fora do handler."""
+    if isinstance(no, (ast.Pass, ast.Continue, ast.Break)):
+        return True
+    if isinstance(no, ast.Raise) and no.exc is None:      # re-lanca
+        return True
+    if isinstance(no, ast.Expr) and isinstance(no.value, ast.Constant):
+        return True                                       # `...` ou docstring
     return False
 
 

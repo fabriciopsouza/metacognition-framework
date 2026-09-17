@@ -72,6 +72,25 @@ def render_md(v):
         L.append(f"- **Discovery:** {p.get('discovery', '—')}")
         L.append(f"- **RRC:** {p.get('rrc', '—')}")
         L.append(f"- **Metodo-senior:** {p.get('metodo_senior', '—')}")
+    # A CADEIA TEM DE APARECER NO QUE O HUMANO LE.
+    #
+    # O `.md` e' o artefato que gente abre — e ele nao mostrava nada de
+    # `substitui`/`substitui_reprovacao`. Consertar a cadeia so' no JSON deixava
+    # a informacao existindo para a maquina e invisivel para quem decide: um
+    # veredito aprovativo que APAGOU uma reprovacao parecia um aprovativo
+    # comum. [achado ALTA do QA de 17/09/2026]
+    antecedentes = v.get("substitui") or []
+    if antecedentes:
+        L += ["", "## Substitui vereditos anteriores deste bloco", ""]
+        if v.get("substitui_reprovacao"):
+            L.append("> **ATENCAO: este veredito substitui uma REPROVACAO.** "
+                     "Leia os antecedentes antes de tratar o bloco como aprovado.")
+            L.append("")
+        for a in antecedentes:
+            L.append(f"- rodada {a.get('rodada', '?')} · {a.get('data', '?')} · "
+                     f"**{a.get('recomendacao') or a.get('veredito') or '?'}** · "
+                     f"sha `{str(a.get('sha_revisado'))[:12]}` · "
+                     f"agentId `{a.get('agentId') or '—'}`")
     if v.get("steelman"):
         L += ["", "## Steelman", v["steelman"]]
     L += ["", "## Problemas", ""]
@@ -191,10 +210,17 @@ def write_artifact(verdict, when=None):
             anterior = None
         if anterior:
             historico = list(verdict.get("substitui") or [])
+            # `recomendacao` e' o campo OBRIGATORIO do schema (REQUIRED) e e' o
+            # que o `squad_gate` le. `veredito` e' chave paralela OPCIONAL que
+            # esta ferramenta nunca escreve — 30 dos 87 artefatos reais nao a
+            # tem. Perguntar por ela era perguntar ao campo errado, e o campo
+            # errado responde `None` quase sempre: a guarda contra apagar uma
+            # reprovacao NUNCA disparava. [achado CRITICO do QA de 17/09/2026]
+            decisao_anterior = anterior.get("recomendacao") or anterior.get("veredito")
             assinatura = {
                 "rodada": anterior.get("rodada"),
                 "data": anterior.get("data"),
-                "veredito": anterior.get("veredito"),
+                "recomendacao": decisao_anterior,
                 "sha_revisado": anterior.get("sha_revisado"),
                 "agentId": (anterior.get("atestacao") or {}).get("agentId"),
             }
@@ -203,7 +229,7 @@ def write_artifact(verdict, when=None):
             verdict["substitui"] = historico
             # Reprovacao nao se apaga por regravacao: ela vira ANTECEDENTE
             # explicito do veredito novo, e quem ler sabe que houve.
-            if anterior.get("veredito") in ("reprovar", "corrigir") and \
+            if str(decisao_anterior).lower() in ("reprovar", "corrigir") and \
                     not verdict.get("substitui_reprovacao"):
                 verdict["substitui_reprovacao"] = True
 
