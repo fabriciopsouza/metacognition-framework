@@ -170,26 +170,6 @@ def quebrou_sintaxe(caminho: str, texto: str):
             ast.parse(texto)
         except SyntaxError as erro:
             return f"{type(erro).__name__}: {erro.msg} (linha {erro.lineno})"
-        # PARSEAR NAO E' CARREGAR. `THRESHOLD = 10` seguido de
-        # `import modulo_inexistente` passa no `ast.parse` e mata o canario no
-        # import — mesma fraude, por uma porta que o parser nao ve. Entao o
-        # arquivo sabotado e' EXECUTADO em processo separado: se nem carrega, a
-        # mutacao quebrou o mecanismo em vez de mudar o comportamento dele.
-        with tempfile.TemporaryDirectory(prefix="precond-") as td:
-            alvo = os.path.join(td, os.path.basename(caminho))
-            with open(alvo, "w", encoding="utf-8") as saida:
-                saida.write(texto)
-            r = subprocess.run(
-                [sys.executable, "-c",
-                 "import importlib.util,sys;"
-                 "s=importlib.util.spec_from_file_location('_m',sys.argv[1]);"
-                 "m=importlib.util.module_from_spec(s);s.loader.exec_module(m)",
-                 alvo],
-                capture_output=True, text=True, encoding="utf-8",
-                errors="replace", env=ENV_SEM_BYTECODE, timeout=60)
-            if r.returncode != 0:
-                ultima = [l for l in (r.stderr or "").strip().splitlines() if l.strip()]
-                return f"nao CARREGA: {ultima[-1][:120] if ultima else 'erro no import'}"
         return None
     if baixo.endswith(".json"):
         try:
@@ -198,6 +178,38 @@ def quebrou_sintaxe(caminho: str, texto: str):
             return f"JSON invalido: {erro}"
         return None
     return None
+
+
+def nao_carrega(raiz, arquivo: str):
+    """O modulo sabotado, JA' NO LUGAR DELE, chega a carregar? (motivo | None).
+
+    PARSEAR NAO E' CARREGAR: `VALOR = 10` seguido de `import modulo_inexistente`
+    passa no `ast.parse` e mata o canario no import — mesma fraude por uma porta
+    que o parser nao ve.
+
+    E o teste TEM de rodar onde o modulo vive. A 1a versao copiava o arquivo para
+    um diretorio temporario e executava la': qualquer modulo que importe um irmao
+    (`controle_base`, `web_export`) falhava com `ModuleNotFoundError` — nao pela
+    sabotagem, mas porque eu o tinha tirado do lugar. Cinco falsos positivos
+    numa rodada, todos acusando o vizinho ausente em vez do defeito.
+    """
+    if not str(arquivo).lower().endswith(".py"):
+        return None
+    caminho = os.path.join(str(raiz), *str(arquivo).split("/"))
+    pasta = os.path.dirname(caminho)
+    r = subprocess.run(
+        [sys.executable, "-c",
+         "import importlib.util,sys;"
+         "sys.path.insert(0, sys.argv[2]);"
+         "s=importlib.util.spec_from_file_location('_sob_teste', sys.argv[1]);"
+         "m=importlib.util.module_from_spec(s); s.loader.exec_module(m)",
+         caminho, pasta],
+        cwd=str(raiz), capture_output=True, text=True, encoding="utf-8",
+        errors="replace", env=ENV_SEM_BYTECODE, timeout=60)
+    if r.returncode == 0:
+        return None
+    linhas = [l for l in (r.stderr or "").strip().splitlines() if l.strip()]
+    return f"nao CARREGA: {linhas[-1][:120] if linhas else 'erro no import'}"
 
 
 def canario_defensivo(fonte: str) -> bool:
@@ -219,10 +231,30 @@ def canario_defensivo(fonte: str) -> bool:
         if not isinstance(no, ast.ExceptHandler):
             continue
         if no.type is None:                                  # `except:` puro
-            return True
-        nomes = {x.id for x in ast.walk(no.type) if isinstance(x, ast.Name)}
-        if nomes & {"Exception", "BaseException"}:
-            return True
+            amplo = True
+        else:
+            nomes = {x.id for x in ast.walk(no.type) if isinstance(x, ast.Name)}
+            amplo = bool(nomes & {"Exception", "BaseException"})
+        if not amplo:
+            continue
+        # SO' MASCARA QUEM ESCREVE. `except Exception: pass` em volta de
+        # `sys.stdout.reconfigure(...)` — preambulo de encoding presente em
+        # metade dos canarios — nao produz mensagem nenhuma, logo nao confunde
+        # "detectou" com "morreu".
+        #
+        # A 1a versao marcava QUALQUER handler amplo e acusou tres canarios
+        # legitimos pelo preambulo deles. A pergunta nao e' "ha' handler amplo?",
+        # e' "ha' handler amplo capaz de produzir a mensagem que eu leria como
+        # deteccao?".
+        for dentro in ast.walk(no):
+            if not isinstance(dentro, ast.Call):
+                continue
+            alvo = dentro.func
+            if isinstance(alvo, ast.Name) and alvo.id == "print":
+                return True
+            if isinstance(alvo, ast.Attribute) and alvo.attr in (
+                    "write", "print", "info", "error", "warning", "exception"):
+                return True
     return False
 
 
@@ -468,6 +500,13 @@ def modo_provar(caps, alvo, raiz=RAIZ):
                                         f"sabote a LOGICA"))
                     continue
                 alvo_f.write_text(sabotado, encoding="utf-8")
+                morreu = nao_carrega(wt, m["arquivo"])
+                if morreu:
+                    alvo_f.write_text(original, encoding="utf-8")
+                    falhas.append((cid, f"a mutacao impediu `{m['arquivo']}` de CARREGAR "
+                                        f"({morreu}) — vermelho por crash nao prova deteccao; "
+                                        f"sabote a LOGICA"))
+                    continue
                 _purgar_bytecode(wt)
                 dep = subprocess.run([sys.executable, "-X", "utf8", str(canario)],
                                      capture_output=True, text=True, cwd=str(wt),
