@@ -480,7 +480,16 @@ def modo_provar(caps, alvo, raiz=RAIZ):
                         capture_output=True, text=True, cwd=str(wt),
                         stdin=subprocess.DEVNULL, timeout=300,
                         encoding="utf-8", errors="replace", env=ENV_SEM_BYTECODE)
-                except subprocess.TimeoutExpired:
+                except (subprocess.TimeoutExpired, OSError,
+                        subprocess.SubprocessError) as erro_exec:
+                    # A FAMILIA INTEIRA, nao so' o timeout. `OSError` e
+                    # `SubprocessError` atravessavam `modo_provar` e subiam ate
+                    # `main()` — que nao tem try/except — reproduzindo LITERALMENTE
+                    # o crash total do lote que a captura do timeout foi escrita
+                    # para eliminar. O padrao `except (OSError, SubprocessError)`
+                    # ja' existe QUATRO vezes neste repo em volta de outros
+                    # `subprocess.run`; so' nao tinha sido replicado aqui.
+                    # [achado do QA de 17/09/2026]
                     # O `timeout` que eu acrescentei para impedir travamento criou um
                     # jeito novo de perder TUDO: `TimeoutExpired` nao era capturado em
                     # lugar nenhum — nem no laco, nem em `main()` — entao um canario
@@ -488,8 +497,8 @@ def modo_provar(caps, alvo, raiz=RAIZ):
                     # NENHUMA capacidade, nem as ja' provadas antes dela no laco.
                     # Infinito virou 300s, e o silencio total continuou.
                     # [achado do QA de 17/09/2026]
-                    falhas.append((cid, f"canario `{m['canario']}` nao terminou em 300s "
-                                        f"nem ANTES da mutacao — travado, prova impossivel"))
+                    falhas.append((cid, f"canario `{m['canario']}` nao rodou ANTES da mutacao "
+                                        f"({type(erro_exec).__name__}) — prova impossivel"))
                     continue
                 saida_antes = (antes.stdout or "") + (antes.stderr or "")
                 if antes.returncode != 0:
@@ -559,7 +568,16 @@ def modo_provar(caps, alvo, raiz=RAIZ):
                         capture_output=True, text=True, cwd=str(wt),
                         encoding="utf-8", errors="replace", env=ENV_SEM_BYTECODE,
                         stdin=subprocess.DEVNULL, timeout=300)
-                except subprocess.TimeoutExpired:
+                except (subprocess.TimeoutExpired, OSError,
+                        subprocess.SubprocessError) as erro_exec:
+                    # A FAMILIA INTEIRA, nao so' o timeout. `OSError` e
+                    # `SubprocessError` atravessavam `modo_provar` e subiam ate
+                    # `main()` — que nao tem try/except — reproduzindo LITERALMENTE
+                    # o crash total do lote que a captura do timeout foi escrita
+                    # para eliminar. O padrao `except (OSError, SubprocessError)`
+                    # ja' existe QUATRO vezes neste repo em volta de outros
+                    # `subprocess.run`; so' nao tinha sido replicado aqui.
+                    # [achado do QA de 17/09/2026]
                     # O `timeout` que eu acrescentei para impedir travamento criou um
                     # jeito novo de perder TUDO: `TimeoutExpired` nao era capturado em
                     # lugar nenhum — nem no laco, nem em `main()` — entao um canario
@@ -568,9 +586,9 @@ def modo_provar(caps, alvo, raiz=RAIZ):
                     # Infinito virou 300s, e o silencio total continuou.
                     # [achado do QA de 17/09/2026]
                     alvo_f.write_text(original, encoding="utf-8")
-                    falhas.append((cid, f"canario `{m['canario']}` nao terminou em 300s "
-                                        f"com `{m['arquivo']}` sabotado — travar nao "
-                                        f"prova deteccao"))
+                    falhas.append((cid, f"canario `{m['canario']}` nao completou com "
+                                        f"`{m['arquivo']}` sabotado "
+                                        f"({type(erro_exec).__name__}) — nao prova deteccao"))
                     continue
                 alvo_f.write_text(original, encoding="utf-8")
                 saida_dep = (dep.stdout or "") + (dep.stderr or "")

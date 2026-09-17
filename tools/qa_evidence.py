@@ -189,6 +189,23 @@ def validate_substitui(valor):
         if not isinstance(item, dict):
             erros.append(f"item {i} precisa ser objeto, veio "
                          f"{type(item).__name__}: {str(item)[:40]!r}")
+            continue
+        # AS CHAVES, e nao so' o tipo do container.
+        #
+        # A 1a versao checava apenas `isinstance(item, dict)` — e o docstring
+        # dizia "mesma disciplina que `validate_problemas`", o que era FALSO:
+        # aquele exige as chaves e recusa vazio. Entao `{}` e `{"foo": "bar"}`
+        # passavam, e o `.md` saia com uma linha de interrogacoes:
+        #
+        #     - rodada ? · ? · **?** · sha `None` · agentId `—`
+        #
+        # E' o MESMO bug que este arquivo ja' tinha corrigido para `problemas`,
+        # sobrevivendo dentro do conserto que alegava te-lo generalizado.
+        # [achado do QA de 17/09/2026]
+        faltando = [c for c in ("rodada", "data", "recomendacao") if not item.get(c)]
+        if faltando:
+            erros.append(f"item {i} sem {', '.join(faltando)} — antecedente sem "
+                         f"identificacao vira linha de interrogacoes no .md")
     return erros
 
 

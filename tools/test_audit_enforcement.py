@@ -67,6 +67,59 @@ def caso(nome, codigo_esperado, trecho_esperado, codigo, saida, resultados):
     return ok
 
 
+def conferir_falha_de_subprocess(resultados):
+    """Falha ao EXECUTAR o canario vira `[FALHA]` da capacidade, nao crash do lote.
+
+    O conserto do `TimeoutExpired` nao tinha canario nenhum — `grep Timeout
+    tools/test_*.py` dava ZERO. E o QA provou que `OSError`, da mesma familia,
+    atravessava `modo_provar` inteiro e subia ate `main()` (que nao tem
+    try/except), reproduzindo LITERALMENTE o crash total do lote que a captura
+    do timeout existia para eliminar.
+
+    "O conserto foi provado?" tinha virado "os testes do arquivo estao 34/34?" —
+    e eles nunca tocavam nesse caminho. [achado do QA de 17/09/2026]
+    """
+    sys.path.insert(0, str(RAIZ / "tools"))
+    import audit_enforcement as ae
+
+    registro = json.loads((RAIZ / "capabilities.json").read_text(encoding="utf-8"))
+    registro = registro.get("capabilities", registro)
+    alvo = next((c for c in registro if c.get("mutacao")), None)
+    if alvo is None:
+        print("  [FALHA] nenhuma capacidade com `mutacao` para exercitar")
+        resultados.append(False)
+        return
+
+    original = ae.subprocess.run
+
+    def derruba_o_canario(erro):
+        def run(cmd, *a, **kw):
+            texto = " ".join(str(x) for x in
+                             (cmd if isinstance(cmd, (list, tuple)) else [cmd]))
+            if "utf8" in texto:                    # a execucao do canario
+                raise erro
+            return original(cmd, *a, **kw)
+        return run
+
+    for rotulo, erro in (
+            ("TimeoutExpired", subprocess.TimeoutExpired(cmd="x", timeout=300)),
+            ("OSError", OSError(1450, "recursos insuficientes (simulado)")),
+            ("SubprocessError", subprocess.SubprocessError("generica (simulado)"))):
+        ae.subprocess.run = derruba_o_canario(erro)
+        try:
+            codigo = ae.modo_provar([alvo], alvo["id"], RAIZ)
+            ok = codigo != 0
+            print(f"  [{'PASS' if ok else 'FALHA'}] {rotulo} vira falha da capacidade, "
+                  f"nao crash do lote (codigo {codigo})")
+            resultados.append(ok)
+        except Exception as e:                     # noqa: BLE001 — e' o ponto do teste
+            print(f"  [FALHA] {rotulo} ESCAPOU de modo_provar como "
+                  f"{type(e).__name__} — derruba o lote sem relatorio")
+            resultados.append(False)
+        finally:
+            ae.subprocess.run = original
+
+
 def main():
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -548,6 +601,9 @@ def main():
         print("          O passivo mudou. Migrar capacidade do passivo e' decisao "
               "declarada: atualize BASELINE_N/BASELINE_SHA no mesmo commit, com motivo.")
     resultados.append(ok)
+
+    print("\n  --- falha ao EXECUTAR o canario nao derruba o lote ---")
+    conferir_falha_de_subprocess(resultados)
 
     print(f"\nRESULTADO: {sum(resultados)}/{len(resultados)} verificacoes passaram")
     if not all(resultados):
