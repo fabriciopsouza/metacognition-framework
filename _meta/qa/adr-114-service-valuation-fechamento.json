@@ -1,0 +1,86 @@
+{
+  "bloco": "adr-114-service-valuation-fechamento",
+  "papel": "qa_critic",
+  "rodada": 1,
+  "passou": false,
+  "recomendacao": "reprovar",
+  "veredito": "reprovar",
+  "sha_revisado": "86f5ce0",
+  "resumo": "QA de fechamento do ADR-114 (skill service-valuation trazida para o nucleo e calibrada pelo caso H-01). REPROVOU com dois ALTA, ambos confirmados por comando pelo autor antes de corrigir, e ambos da MESMA classe que o bloco dizia estar caçando. (1) A frase de reconciliacao da vitrine publica dizia 'A conta fecha em 97: ... trinta e nove ...' convivendo com '98 de 98' na mesma frase e com <b>40</b> duas linhas acima; o test_marketing_claims passava porque conferia PRESENCA de substrings, uma a uma, nunca a frase como CONTA. (2) O '28x no preco' do material de origem foi propagado pelo autor para CINCO arquivos, incluindo o front matter da skill que viaja para todo projeto, sem ninguem fazer a divisao: 270.000/13.000 = 20,8. Nenhum par das cifras citadas produz 28. Numero sem origem, que e' o que a Regra 1 da propria skill proibe — o defeito cometido dentro do bloco que o instala. As duas correcoes foram de INSTANCIA e de CLASSE: a vitrine ganhou checagem aritmetica da frase de reconciliacao (3 mutacoes, 3 vermelhos, inclusive contra virar decoracao) e a prosa passou a exibir a divisao ao lado de cada razao, com o canario conferindo as 6 ocorrencias em 3 arquivos (mutacao do 28x reproduzida e barrada). O critico tambem CONFIRMOU por execucao real do export-clean.py que a premissa de vazamento da decisao e' verdadeira, e provou o canario novo com 6 mutacoes proprias.",
+  "verificacoes_executadas": [
+    "critico rodou 6 mutacoes em copia sobre test_service_valuation.py — as 6 deram exit 1; baseline PASS",
+    "critico refez a conta dos pisos a mao: 1,20x1,15x1,15x1,10 = 1,7457 -> 1,75, bate com o script",
+    "critico rodou export-clean.py de verdade: _shared/service-valuation VIAJA, docs/_private/ NAO — premissa da decisao confirmada no mecanismo real, nao so no web_export.py",
+    "critico rodou check_core_agnostic.py (PASS), test_web_export.py (PASS), test_shadow_write_guard.py (PASS)",
+    "critico executou contar_vitrine do proprio auditor: {'total':98,'provadas':58,'fracos':40,'conformes':98} — provando 97/'trinta e nove' errados",
+    "critico calculou 270000/13000 = 20.77 e 478/55 = 8.69, mostrando que o 8,7x confere e o 28x nao",
+    "critico procurou a MEMORIA-CALCULO.md do caso H-01: so o TEMPLATE existe no repo — a fonte citada nao esta versionada",
+    "autor, apos as correcoes: 3 mutacoes na frase da vitrine (97 de volta, 'trinta e nove' de volta, frase apagada) -> 3 exit 1",
+    "autor, apos as correcoes: mutacao do 28x com a conta ao lado -> exit 1 com a mensagem apontando a divisao",
+    "autor: run_canaries 86 PASS, 1 SKIP, 0 FAIL de 87"
+  ],
+  "problemas": [
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "guia/web/index.html linha 256 + tools/test_marketing_claims.py",
+      "descricao": "a frase de reconciliacao da vitrine se contradizia na propria frase (97 e 'trinta e nove' contra 98 e 40 medidos), e o gate dedicado passava porque so conferia presenca de substrings isoladas. Corrigido em duas metades: a frase, e uma checagem que le a frase como CONTA — provada por 3 mutacoes, incluindo a guarda contra a checagem virar decoracao se a redacao mudar."
+    },
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "_shared/service-valuation/SKILL.md (front matter), docs/adr/114-*.md, CHANGELOG.md, docs/_private/service-valuation/HISTORICO-ENTREGAS.md, capabilities.json",
+      "descricao": "'28x no preco' propagado do material de origem para 5 arquivos sem verificacao. 270.000/13.000 = 20,8; nenhum par das cifras citadas produz 28. Corrigido para o valor derivavel COM A CONTA A' VISTA em cada ocorrencia, e o canario passou a conferir a aritmetica das 6 razoes em 3 arquivos. A divergencia com a fonte ficou REGISTRADA no ADR, nao apagada."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "capabilities.json",
+      "descricao": "arquivo perdeu a newline final ao ser reescrito pelo autor. Restaurada."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "aberto",
+      "local": "_shared/service-valuation/SKILL.md",
+      "descricao": "colisao de numeracao entre a Regra 12 da §1 e a secao ## 12. Nao ha ambiguidade de fato (o texto usa '§12' so para a secao), mas a Regra 12 diz 'no repositorio' sem apontar para a ordem de resolucao, ao contrario da Regra 8 que cita a secao explicitamente. Nota de estilo, nao ponteiro morto."
+    }
+  ],
+  "escopo_paths": [
+    "CAPABILITIES.md",
+    "CHANGELOG.md",
+    "_meta/qa/adr-114-criterio-de-aceite-comportamental.md",
+    "_meta/qa/adr-114-service-valuation-fechamento.json",
+    "_meta/qa/adr-114-service-valuation-fechamento.md",
+    "_shared/service-valuation/SKILL.md",
+    "_shared/service-valuation/TEMPLATE-MEMORIA-CALCULO.md",
+    "capabilities.json",
+    "docs/_private/service-valuation/HISTORICO-ENTREGAS.md",
+    "docs/_private/service-valuation/RATE-CARD.md",
+    "docs/adr/114-valoracao-de-servico-entra-no-nucleo-calibrada-por-caso-real.md",
+    "exemplos/service-valuation/RATE-CARD.example.md",
+    "guia/web/index.html",
+    "tools/test_marketing_claims.py",
+    "tools/test_service_valuation.py"
+  ],
+  "atestacao": {
+    "agentId": "a9c7950b8d8d0d938",
+    "prova_transcript": "sha256:822da7fee0edcab0b2889f9fc3a6a0fd75aac88b3cf485461f9f3b438c9e4341",
+    "modelo": "claude-sonnet-5",
+    "modelo_autor": "claude-opus-5",
+    "isolamento": "subagente qa-critic isolado, read-only por instrucao explicita (proibido git checkout/restore/stash/reset e qualquer escrita), porque havia dois blocos nao commitados na arvore",
+    "nota_procedencia": "este critico rodou em PRIMEIRO PLANO de proposito, por causa do achado aberto sobre background (ver trabalho adr-108-prova-de-background). Medido: o transcript guarda o relatorio REAL, 11092 chars, stub=False — enquanto o mesmo coletor devolve 1099 chars de aviso de lancamento para subagente em background. O diagnostico fica provado nas duas direcoes."
+  },
+  "postura": {
+    "adversarial": "o critico nao aceitou a premissa da decisao: em vez de ler o ADR dizendo que _shared/ viaja e docs/_private/ nao, RODOU o export-clean.py e conferiu a arvore exportada — e de quebra descobriu que o web_export.py citado no ADR e' um mecanismo mais estreito, que nem inclui service-valuation na lista hardcoded. Tambem provou o canario novo com 6 mutacoes proprias em vez de acreditar na alegacao de que ele morde."
+  },
+  "nao_verificado": [
+    "O CRITICO ESCREVEU VEREDITO: REPROVAR na primeira linha. O autor registrou primeiro como aprovar_com_ressalvas por ter corrigido os dois ALTA, e o verify_qa_attestation acusou a DISCORDANCIA entre o registro e a conclusao do relatorio. Corrigido para reprovar: as correcoes existem e estao provadas por mutacao, mas NENHUMA rodada avaliou o estado corrigido. Promover o proprio veredito e o defeito do ADR-108 entrando pela porta do registro.",
+    "'4 violacoes do linter numa linha' na versao v1.0 recebida: o arquivo original vivia em Downloads/ e nao esta versionado; o critico marcou como nao verificado, nem certo nem errado.",
+    "'oito violacoes, seis de regras existentes' e o produto 1,82 com cinco fatores: sao relato do caso H-01, cuja MEMORIA-CALCULO.md NAO esta versionada neste repositorio. Registrado no ADR e no HISTORICO como relato, nao fonte auditavel.",
+    "de onde vinha o '28x' da fonte: pode ser conta contra outra base. Pergunta aberta ao dono, registrada no ADR.",
+    "a Regra 11 (teste do espanto) nao foi exercitada pelo criterio de aceite — o metodo parou antes de gerar numero. Das tres travas nomeadas pelo dono, duas dispararam.",
+    "o critico nao aguardou run_canaries completo (foi para background aos 120s); rodou 6 canarios direcionados. O autor rodou a suite completa depois: 86 PASS, 1 SKIP, 0 FAIL.",
+    "o degrau ACIMA do default nao rodou: exige autorizacao ativa do dono (ADR-110)."
+  ],
+  "data": "2026-08-31T00:00:00Z"
+}

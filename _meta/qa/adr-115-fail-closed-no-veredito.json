@@ -1,0 +1,74 @@
+{
+ "bloco": "adr-115-fail-closed-no-veredito",
+ "papel": "qa_critic",
+ "rodada": 1,
+ "passou": false,
+ "recomendacao": "reprovar",
+ "veredito": "reprovar",
+ "data": "2026-09-13T00:00:00Z",
+ "escopo_paths": [
+  "tools/squad_gate.py",
+  "tools/test_squad_gate.py",
+  "docs/adr/115-fail-closed-no-veredito-achado-bloqueante-nao-passa-por-rotulo.md",
+  "CHANGELOG.md",
+  "capabilities.json",
+  "CAPABILITIES.md",
+  "guia/web/index.html"
+ ],
+ "atestacao": {
+  "agentId": "a2cbfa35535c834f5",
+  "modelo": "sonnet",
+  "autor": "opus",
+  "isolamento": "subagente qa-critic em primeiro plano, degrau abaixo do autor (ADR-109/110)"
+ },
+ "resumo": "REPROVOU o ADR-115 com dois CRITICOS. O mecanismo criado para impedir que um veredito aprovativo com achado bloqueante passasse era ele proprio burlavel: o legado era detectado por SCHEMA ('nenhum achado declara estado'), e como o AUTOR controla se o campo existe, bastava OMITI-LO para um achado CRITICO em aberto comprar isencao. O critico reproduziu o bypass PONTA A PONTA contra o binario real (python tools/squad_gate.py -> exit 0 com CRITICO em aberto), numa copia integral do repo, sem tocar no original. O segundo CRITICO e' a mesma raiz com superficie maior: 'problemas' como dict ou como lista de strings tambem caia no ramo de isencao sem crash, porque '\"estado\" in p' faz SUBSTRING quando p e' string. O ALTA e' afirmacao falsa em documento Aceito: o ADR e o CHANGELOG diziam que a divida legada 'fica visivel em vez de perdoada em silencio', mas legados_declarados() nao era chamada por main() nem por nenhum script — visivel so para quem lesse o codigo.",
+ "verificacoes_executadas": [
+  "critico copiou o repositorio INTEIRO para o scratchpad (incl. .git) e rodou as mutacoes na copia; original intacto",
+  "critico rodou 'python tools/squad_gate.py --paths tools/exploit_alvo.py' com veredito PoC sem campo estado -> exit 0 (bypass confirmado end-to-end)",
+  "critico testou grafias exoticas (HIGH, P1, sev1, emoji, 'Critico' com acento): todas bloqueiam corretamente",
+  "critico testou 'aceito_por' so com espaco em branco: corretamente rejeitado",
+  "critico aplicou as 5 mutacoes declaradas numa copia: todas matam o canario por AssertionError real, nenhuma por crash",
+  "critico reproduziu 37 PASS / 0 FAIL no canario e 86 PASS / 1 SKIP / 0 FAIL na suite",
+  "critico reproduziu 20 vereditos legados / 41 achados e 0 quebras em vereditos nao-legados",
+  "critico recalculou a vitrine com contar_vitrine(): {total:99, provadas:59, fc_sem_prova:0, sem_campo:0, fracos:40, conformes:99} — frase fecha aritmeticamente",
+  "critico conferiu 'grep -rn legados_declarados --include=*.py .': so definicao, docstring e teste; main() nao chamava",
+  "critico conferiu regua §0 por 'git diff --stat': squad_gate.py e test_squad_gate.py sao M (modificados), nao A (novos)",
+  "autor, apos corrigir: 6 casos de bypass testados (CRITICO sem estado, problemas dict, problemas lista de str, legado enumerado, legado forjado, caminho feliz) -> todos com o resultado esperado",
+  "autor, apos corrigir: 7 mutacoes, 7 mortas, incluindo a que reintroduz o bypass ('legado volta a ser autodeclarado')",
+  "autor, apos corrigir: 41 PASS / 0 FAIL no canario (14 testes novos) e 86 PASS / 1 SKIP / 0 FAIL na suite"
+ ],
+ "problemas": [
+  {
+   "severidade": "CRITICO",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — veredito_legado(), consumida por achados_bloqueantes_abertos() e _atestacao_valida()",
+   "descricao": "O legado era AUTODECLARADO: detectado por schema ('nenhum achado tem estado'), campo que o proprio autor do veredito controla. Omitir 'estado' comprava isencao para achado CRITICO em aberto. Reproduzido contra o binario real com exit 0. CORRIGIDO: o legado passou a ser NOMINAL e congelado — VEREDITOS_LEGADOS enumera os 20 arquivos, e a identidade vem de '_arquivo', marcado por load_evidence no carregamento. Veredito novo NUNCA e' legado; nome fora da lista nao e' legado; veredito sem origem conhecida nao e' legado. Precedente do ADR-108, que listou nominalmente os 34 vereditos sem procedencia. Provado por mutacao dedicada ('legado volta a ser autodeclarado' -> canario morre) e por 2 canarios novos."
+  },
+  {
+   "severidade": "CRITICO",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — mesmo trecho: '\"estado\" in p' sobre item nao-dict",
+   "descricao": "'problemas' como dict, ou como lista de strings, caia no ramo de isencao SEM crash, porque '\"estado\" in p' faz SUBSTRING quando p e' string. Schema malformado virava passe livre. CORRIGIDO: _problemas_bem_formados() valida que 'problemas' e' lista de objetos; qualquer outra forma devolve um achado sintetico BLOQUEANTE com o motivo escrito, em vez de isentar. Provado por mutacao ('schema malformado volta a isentar' -> canario morre) e por canario dedicado."
+  },
+  {
+   "severidade": "ALTA",
+   "estado": "corrigido",
+   "local": "docs/adr/115-*.md e CHANGELOG.md — afirmacao sobre legados_declarados()",
+   "descricao": "O ADR e o CHANGELOG afirmavam que a divida legada 'fica visivel em vez de perdoada em silencio', mas legados_declarados() nao era chamada por main() nem por nenhum script — a funcao existia sem chamador real, e a visibilidade so valia para quem lesse o codigo. Afirmacao falsa em documento Aceito. CORRIGIDO: main() passou a IMPRIMIR a divida (quantidade de vereditos, total de achados e a lista nominal), e ha canario que quebra se main() deixar de chamar a funcao. Provado por mutacao ('main() para de imprimir a divida' -> canario morre)."
+  },
+  {
+   "severidade": "BAIXA",
+   "estado": "corrigido",
+   "local": "docs/adr/115-*.md",
+   "descricao": "O ADR dizia '8 testes novos'; o diff acrescentava 10 (e, apos as correcoes desta rodada, 14). Numero falso auditavel em documento Aceito. CORRIGIDO para 14, conferido por 'git diff HEAD -- tools/test_squad_gate.py | grep -c \"^+def test_\"'."
+  },
+  {
+   "severidade": "BAIXA",
+   "estado": "corrigido",
+   "local": "docs/adr/115-*.md — aritmetica de '12 de 66'",
+   "descricao": "A ADR somava as grafias bloqueantes como 66; a soma das categorias que ela mesma lista da 67 (o autor esqueceu MEDIA-ALTA(1)). CORRIGIDO para '12 dos 67', reconferido por contagem normalizada sobre o ledger."
+  }
+ ],
+ "recomendacao_do_critico": "corrigir; ha bypass CRITICO reproduzido ponta a ponta contra o binario real, mais afirmacao falsa em documento Aceito",
+ "nota_do_autor": "Os dois CRITICOS sao da mesma classe que o proprio ADR-115 combate, cometidos dentro dele: eu tratei como mecanico um corte que o avaliado controla. Ficam registrados no ADR, secao 'Registro honesto de dois erros do autor'."
+}

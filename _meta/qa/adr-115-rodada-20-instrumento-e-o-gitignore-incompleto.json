@@ -1,0 +1,71 @@
+{
+ "bloco": "adr-115-fail-closed-no-veredito",
+ "papel": "qa_critic",
+ "rodada": 20,
+ "passou": false,
+ "recomendacao": "reprovar",
+ "veredito": "reprovar",
+ "data": "2026-09-15T00:00:00Z",
+ "escopo_paths": [
+  "tools/squad_gate.py",
+  "tools/test_squad_gate.py",
+  "tools/test_mutacao_squad_gate.py",
+  "behaviors/manifest.json",
+  "docs/adr/115-fail-closed-no-veredito-achado-bloqueante-nao-passa-por-rotulo.md",
+  "CHANGELOG.md",
+  "capabilities.json"
+ ],
+ "atestacao": {
+  "agentId": "ae50bcb2197107f91",
+  "modelo": "sonnet",
+  "autor": "opus",
+  "isolamento": "subagente qa-critic em segundo plano, degrau canonico (sonnet, um abaixo do autor opus); proibido de tocar o repositorio, experimentos em copia isolada no scratchpad"
+ },
+ "resumo": "Rodada encarregada de auditar o INSTRUMENTO de prova, nao so' o gate — porque a 19a revelou que uma sabotagem pode casar com o fonte e nao provar nada. Resultado: as 30 mutacoes matam de verdade, e o desenho do harness resiste a crash (ADR-106) — mas o critico achou um PONTO CEGO DO CONJUNTO e tres defeitos. ALTA: a correcao da 19a para `.gitignore` usou `exact`, que cobre SO' a raiz; o repositorio tem `tools/.gitignore`, na MESMA pasta do gate, e ele continuava sem exigir papel. Repetir 'corrigido' sobre um buraco ainda aberto e' a exata falha de honestidade que este ADR persegue. MEDIA: DECIMA assimetria entre irmaos — `classify()` casefolda para decidir se `architect` e' EXIGIDO, e a linha de `evaluate()` que decide se ele foi SATISFEITO comparava cru; um ADR salvo como `Docs/ADR/x.md` seria classificado e nunca poderia satisfazer o papel. MEDIA: `test_main_IMPRIME_a_divida_legada` LIA O TEXTO-FONTE em vez de executar — prova textual dentro do canario de um ADR que existe para cacar isso; o critico provou o ponto cego desligando o `if _leg:` e o teste continuou verde. BAIXA: o bloco de checagem de alvo desalinhado estava colado SETE vezes no arquivo de mutacao.",
+ "verificacoes_executadas": [
+  "critico rodou a prova por mutacao de ponta a ponta e confirmou 29/29 mortas com baseline zero no momento da revisao",
+  "critico auditou o desenho do harness e confirmou que a checagem `n_mut > n_base` resiste a crash: o runner captura BaseException por teste e o harness recusa contar processo sem RESULTADO como morte (ADR-106) — respondeu a pergunta da tarefa em vez de repeti-la",
+  "critico PROVOU o ponto cego do teste textual: mutou `if _leg:` para `if False:` mantendo a chamada intacta, e o teste filtrado passou com a impressao permanentemente morta",
+  "critico mediu `git ls-files | grep -i gitignore` e achou DOIS arquivos rastreados, com `tools/.gitignore` fora da matriz",
+  "critico reproduziu a decima assimetria: evaluate(['docs/adr/999-x.md']) -> architect True; evaluate(['Docs/ADR/999-x.md']) -> architect False",
+  "critico contou por grep as 7 copias do bloco duplicado e observou que isso e' evidencia de arquivo entregue sem releitura linha a linha",
+  "critico verificou que a correcao da 19a em `_listado_explicitamente` normaliza os DOIS lados e nao repete a sabotagem vacua que a 19a confessou",
+  "critico declarou explicitamente o que NAO reabre e por que, em vez de so' listar achados",
+  "autor, apos corrigir: tools/.gitignore -> ['qa_critic']; architect satisfeito nas duas grafias; 30/30 mutacoes; 78 PASS / 0 FAIL",
+  "autor: a duplicacao 7x era resultado de rodar o script de sincronizacao sete vezes, cada execucao reinserindo o bloco — removida para 1 copia"
+ ],
+ "problemas": [
+  {
+   "severidade": "ALTA",
+   "estado": "corrigido",
+   "local": "behaviors/manifest.json — entrada do .gitignore",
+   "descricao": "A 19a rodada fechou o buraco com `exact: '.gitignore'`, que compara PATH INTEIRO e portanto cobria so' o da raiz. O repositorio tem `tools/.gitignore`, na mesma pasta do proprio gate: um padrao adicionado ali torna arquivos NOVOS de `tools/` invisiveis ao git e ao gate, em silencio. CORRIGIDO trocando para `suffix: '.gitignore'`, que e' a forma ja usada para `.py` e cobre qualquer .gitignore da arvore. LICAO: correcao por `exact` fecha UM arquivo; a classe pedia sufixo."
+  },
+  {
+   "severidade": "MEDIA",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — evaluate(), ramo do papel architect",
+   "descricao": "DECIMA assimetria entre irmaos. `classify()` casefolda o path para decidir se `architect` e' EXIGIDO; a linha que decide se ele foi SATISFEITO comparava `startswith('docs/adr/')` cru. Um ADR salvo como `Docs/ADR/199-foo.md` era classificado como exigindo architect e NUNCA poderia satisfaze-lo. Direcao fail-closed, igual a nona: nao deixa passar nada, recusa cobertura legitima e empurra para `--no-verify`. CORRIGIDO com casefold."
+  },
+  {
+   "severidade": "MEDIA",
+   "estado": "corrigido",
+   "local": "tools/test_squad_gate.py — test_main_IMPRIME_a_divida_legada",
+   "descricao": "O teste LIA O TEXTO-FONTE de `main()` e procurava a string `legados_declarados()`. Prova TEXTUAL dentro do canario de um ADR que existe para cacar prova textual. O critico demonstrou o ponto cego desligando a CONDICAO (`if _leg:` -> `if False:`) e mantendo a chamada: o teste seguiu verde com a impressao morta. CORRIGIDO: o teste agora EXECUTA `main()`, captura stdout e exige a linha da divida. Mutacao dedicada, gerada com repr() e PROVADA em memoria antes de gravar."
+  },
+  {
+   "severidade": "MEDIA",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — main(), posicao do print da divida legada",
+   "descricao": "ACHADO DO AUTOR, provocado pelo baseline vermelho da prova por mutacao. Trocar o teste textual por um EXECUTAVEL o fez falhar dentro da arvore temporaria — onde o gate bloqueia — e a causa era real: a divida legada so' era impressa no caminho de SUCESSO, logo antes do `return 0`. O ADR afirma que ela 'fica visivel em vez de perdoada em silencio', e imprimir so' quando o gate passa torna isso meia-verdade NA METADE ERRADA: quem esta bloqueado e' quem mais precisa ver o passivo. CORRIGIDO subindo o bloco para antes da decisao; verificado que sai nos dois caminhos. Vale o registro de metodo: trocar prova textual por prova executavel achou um defeito real em minutos, num ponto que vinte rodadas nao tocaram."
+  },
+  {
+   "severidade": "BAIXA",
+   "estado": "corrigido",
+   "local": "tools/test_mutacao_squad_gate.py — bloco de checagem de alvo desalinhado",
+   "descricao": "O bloco estava colado SETE vezes, identico. Causa: o script de sincronizacao de numeros que eu rodo ao fim de cada rodada reinseria o bloco a cada execucao, e eu o rodei sete vezes sem reler o arquivo. Inofensivo hoje (idempotente), mas e' exatamente a evidencia que o critico apontou: arquivo entregue sem releitura linha a linha. CORRIGIDO para uma copia."
+  }
+ ],
+ "recomendacao_do_critico": "reprovar; a ALTA e' uma correcao anterior declarada como pronta e ainda aberta, e o ponto cego do teste textual compromete uma garantia do ADR",
+ "nota_do_autor": "Vigesima rodada, e a primeira dedicada ao INSTRUMENTO em vez do gate. Rendeu o melhor resultado de metodo do bloco inteiro: ao trocar um teste que GREPAVA por um que EXECUTA, o baseline da prova por mutacao ficou vermelho e expos que a divida legada so' aparecia quando o gate passava. Nenhuma das vinte rodadas tinha olhado para isso. Registro tambem dois defeitos meus: declarei o `.gitignore` como corrigido cobrindo so' a raiz, e deixei um bloco duplicado sete vezes por rodar um script sem reler o resultado."
+}

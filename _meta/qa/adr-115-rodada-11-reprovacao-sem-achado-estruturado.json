@@ -1,0 +1,71 @@
+{
+ "bloco": "adr-115-fail-closed-no-veredito",
+ "papel": "qa_critic",
+ "rodada": 11,
+ "passou": false,
+ "recomendacao": "reprovar",
+ "veredito": "reprovar",
+ "data": "2026-09-14T00:00:00Z",
+ "escopo_paths": [
+  "tools/squad_gate.py",
+  "tools/test_squad_gate.py",
+  "tools/test_mutacao_squad_gate.py",
+  "docs/adr/115-fail-closed-no-veredito-achado-bloqueante-nao-passa-por-rotulo.md",
+  "CHANGELOG.md",
+  "capabilities.json"
+ ],
+ "atestacao": {
+  "agentId": "a2922e02fa778151e",
+  "modelo": "sonnet",
+  "autor": "opus",
+  "isolamento": "subagente qa-critic em segundo plano, degrau abaixo do autor (ADR-109/110); proibido de tocar o repositorio, experimentos no scratchpad"
+ },
+ "resumo": "REPROVOU com um CRITICO, um ALTA, duas MEDIAS e uma BAIXA. O CRITICO e' este ADR AO CONTRARIO: dez rodadas cacaram o aprovativo que ESCONDE achado, e sobrou a reprovacao que nao MOSTRA achado nenhum. `_reprovacao_tratada` perguntava so `achados_bloqueantes_abertos(r)`, entao uma reprovacao com `problemas` vazio ou ausente — critico que escreveu o motivo em `resumo` e nao populou o campo — caia no ramo de 'ja tratada' e nao vetava nada. O ALTA e' a continuacao direta do achado da 10a rodada sobre retratacao parcial: `capabilities.json`, o arquivo que o CLAUDE.md manda ler ANTES de afirmar que algo falta, carregava numeros deste ADR congelados na 1a rodada ('5 mutacoes, 5 mortas'; '12 de 66') — quinto arquivo, nunca varrido. As MEDIAS: (a) o numero '12 dos 67' do proprio ADR envelheceu e o ledger cresceu POR CAUSA das rodadas deste bloco (18 dos 23 CRITICO do ledger vem dos vereditos do ADR-115); (b) reprovacao nao exige atestacao enquanto aprovacao exige — assimetria real, nao declarada.",
+ "verificacoes_executadas": [
+  "critico reproduziu o CRITICO contra o binario real: reprovacao com problemas:[] e mesmo sha/escopo -> _reprovacao_vigente devolve False",
+  "critico verificou que o caso `problemas: []` so tinha teste para recomendacao aprovativa, nunca para reprovativa, e que nenhuma das 20 mutacoes cobria o cenario",
+  "critico recontou o ledger ao vivo: 15 grafias (bate), 89 achados bloqueantes, ALTA=14, CRITICO=23, dos quais 18 vem de arquivos adr-115-*.json",
+  "critico rodou a prova por mutacao de ponta a ponta e confirmou 20/20 sem ALVO SUMIU no momento da revisao",
+  "critico confirmou por grep no repo inteiro que a retratacao da 9a rodada esta agora completa: nenhuma ocorrencia viva da alegacao falsa",
+  "critico testou _eh_sha_hex/_sha_pleno: maiusculo resolve igual, sha inexistente falha fechado, git ausente degrada para comparacao de string (nao fail-open) — sem achado",
+  "critico declarou como HIPOTESE NAO TESTADA a colisao de sha curto de 7 hex (inviavel construir no orcamento) — honestidade sobre o limite da propria revisao",
+  "autor mediu o raio de explosao ANTES de fechar o CRITICO: das 13 reprovacoes do ledger, ZERO deixam de declarar `problemas` — nenhum trabalho legitimo passa a ser barrado",
+  "autor, apos corrigir: reprovacao vazia veta -> True (nas duas formas, campo ausente e lista vazia); reprovacao tratada segue liberando -> True; mesmo comportamento no irmao do release",
+  "autor: 69 PASS / 0 FAIL no canario; 21/21 mutacoes mortas com baseline ZERO; sha256 do squad_gate identico antes e depois",
+  "autor: varredura do repo inteiro por numero defasado deste ADR; so' CHANGELOG e capabilities.json eram alegacao viva — o resto sao registros historicos congelados de outros releases, que nao se reescreve"
+ ],
+ "problemas": [
+  {
+   "severidade": "CRITICO",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — _reprovacao_vigente() e _reprovacao_de_release_vigente()",
+   "descricao": "Reprovacao com `problemas` vazio ou ausente caia no ramo de 'ja tratada' e nao vetava o aprovativo. Este ADR ao contrario: dez rodadas perseguiram o aprovativo que esconde achado, e sobrou a reprovacao que nao mostra achado nenhum. CORRIGIDO com o predicado `_reprovacao_tratada()`, que separa RESOLVIDA de MUDA: so' esta tratada quem DECLAROU achados e nao deixou nenhum bloqueante aberto; sem achado declarado nao ha' como concluir que foi tratada, e concluir isso e' fail-open. O predicado nasceu COMPARTILHADO pelos dois irmaos na mesma edicao — este ADR ja registrou tres vezes a correcao aplicada num irmao e esquecida no outro, e na quarta o desenho impede a assimetria em vez de depender de eu lembrar. Provado por mutacao e canario que cobre as duas formas e os dois papeis."
+  },
+  {
+   "severidade": "ALTA",
+   "estado": "corrigido",
+   "local": "capabilities.json — registro veredito-fail-closed",
+   "descricao": "Carregava numeros deste ADR congelados na 1a rodada: '5 mutacoes, 5 mortas' e '12 de 66 achados graves'. O '12 de 66' ja tinha sido corrigido em quatro arquivos durante as rodadas 1-3 e nunca chegou aqui — quinto arquivo. Agrava que `capabilities.json` e' justamente o indice anti-reinvencao que o CLAUDE.md manda ler ANTES de afirmar que algo falta, e que `test_capabilities.py` nao valida esses campos numericamente. CORRIGIDO e sincronizado por medicao junto com ADR e CHANGELOG. E' a terceira aparicao da mesma licao: retratacao ou correcao numerica que nao varre o REPOSITORIO INTEIRO deixa a versao errada viva em algum lugar."
+  },
+  {
+   "severidade": "MEDIA",
+   "estado": "corrigido",
+   "local": "docs/adr/115-*.md — secao Contexto, e CHANGELOG.md",
+   "descricao": "O numero '12 dos 67 achados bloqueantes' estava em tempo presente, sem ancora de data, funcionando como fato permanente — e ja nao era: hoje sao 14 de 89. O detalhe que importa: o ledger cresceu POR CAUSA desta ADR — dos 23 achados CRITICO que ele tem, 18 vieram das rodadas de QA deste proprio bloco. O texto media um denominador que as proprias medicoes alimentavam. CORRIGIDO com valor remedido, ANCORA DE DATA explicita e um paragrafo dizendo por que o numero leva data. Numero vivo precisa de ancora ou de quem o recalcule; sem um dos dois, so' envelhece."
+  },
+  {
+   "severidade": "MEDIA",
+   "estado": "documentado",
+   "local": "tools/squad_gate.py — assimetria de atestacao entre aprovar e reprovar",
+   "descricao": "Para LIBERAR, o veredito precisa de `agentId` e modelo diferente do autor; para BLOQUEAR, nao precisa de nada. O critico registrou a assimetria como limite nao declarado. ACEITA E DECLARADA no ADR, em 'O que continua aberto', com o trade-off explicito: exigir atestacao na reprovacao faria uma reprovacao legitima mal-preenchida ser IGNORADA, que e' o defeito inverso e pior; o preco e' que um .json reprovativo plantado trava commits do escopo, o que num repositorio escrito so' pelo dono e pelos agentes dele e' ruido recuperavel (apagar o arquivo), nao ataque. NAO FOI SUBMETIDO AO DONO. A primeira versao deste campo, escrita minutos atras, trazia `aceito_por: 'Fabricio Souza'` sob o argumento de que a decisao dele de 14/09/2026 (o gate nao audita prosa) cobriria tambem esta assimetria. NAO cobre: e' outra questao, e esticar uma decisao explicita de UM risco para um risco DIFERENTE e' a terceira variacao do mesmo erro que este ADR ja registra duas vezes — primeiro consentimento fabricado, depois 'siga' lido como aceite, agora decisao vizinha lida como abrangente. O limite fica DECLARADO no ADR, nao aceito: o efeito dele e' barrar MAIS e nao menos, entao nada afrouxa enquanto o dono nao decidir; se ele quiser mudar, e' decisao dele."
+  },
+  {
+   "severidade": "BAIXA",
+   "estado": "corrigido",
+   "local": "tools/test_mutacao_squad_gate.py — comentario do filtro",
+   "descricao": "O comentario dizia '63 testes x 16 execucoes', numeros de duas rodadas atras. CORRIGIDO tirando o numero do comentario em vez de re-digita-lo: comentario nao tem quem o recalcule, entao numero em comentario e' divida garantida. Na mesma passagem, a checagem de alvo desalinhado subiu para ANTES do laco — ja aconteceu TRES vezes neste bloco eu refatorar a funcao e esquecer o alvo da mutacao, e agora a prova falha em 1 segundo com o nome do que realinhar, em vez de depois de 21 execucoes do canario."
+  }
+ ],
+ "recomendacao_do_critico": "reprovar; um CRITICO reproduzido no codigo novo e divida de prosa em arquivo que nenhuma varredura anterior tocou",
+ "nota_do_autor": "Decima primeira rodada. O CRITICO desta vez foi o espelho do ADR inteiro, e eu nao tinha olhado para esse lado nenhuma vez em dez rodadas: passei o bloco inteiro perguntando 'este aprovativo esconde achado?' e nunca 'esta reprovacao mostra algum?'. Anotei tambem a honestidade do critico ao marcar a colisao de sha curto como hipotese NAO testada em vez de inflar o relatorio. Registro de mais um erro meu, pego por mim mesmo ao reler o que tinha acabado de gravar: assinei no lugar do dono pela terceira vez neste bloco, agora na forma mais sutil — tratando uma decisao vizinha como se abrangesse esta. Revertido para 'documentado'."
+}

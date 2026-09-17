@@ -33,6 +33,16 @@ import subprocess
 import sys
 import tempfile
 
+try:
+    # [ACHADO ALTA DO QA DA FRONTEIRA 21/08/2026] um canario que imprimia um glifo
+    # fora do cp1252 derrubou ESTE runner com UnicodeEncodeError, e com ele os 68
+    # canarios que vinham depois — sem RESULTADO, sem lista de quem falhou. Canario
+    # que emite byte estranho tem de virar FAIL daquele canario, nunca queda da suite.
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+except Exception:                                    # pragma: no cover
+    pass
+
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TOOLS = os.path.join(ROOT, "tools")
 SELF = os.path.basename(__file__)

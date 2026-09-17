@@ -1,0 +1,57 @@
+{
+ "bloco": "adr-115-fail-closed-no-veredito",
+ "papel": "qa_critic",
+ "rodada": 6,
+ "passou": false,
+ "recomendacao": "reprovar",
+ "veredito": "reprovar",
+ "data": "2026-09-14T00:00:00Z",
+ "escopo_paths": [
+  "tools/squad_gate.py",
+  "tools/test_squad_gate.py",
+  "tools/test_mutacao_squad_gate.py",
+  "docs/adr/115-fail-closed-no-veredito-achado-bloqueante-nao-passa-por-rotulo.md",
+  "CHANGELOG.md"
+ ],
+ "atestacao": {
+  "agentId": "aea5e7d82e99de2a4",
+  "modelo": "sonnet",
+  "autor": "opus",
+  "isolamento": "subagente qa-critic em primeiro plano, degrau abaixo do autor (ADR-109/110)"
+ },
+ "resumo": "REPROVOU com um CRITICO e um ALTO. O CRITICO: exigir a chave canonica nao bastava, porque o atacante TAMBEM a declara. Um veredito com `problemas: []` limpo — que passa em todos os canarios — e um achado CRITICO/aberto escondido sob `problemаs` com 'a' CIRILICO saia com _atestacao_valida = True. A chave cirilica e' visualmente identica e nao colide com nada em ASCII, entao escapava de CHAVES_ACHADOS. O critico reproduziu contra o binario real, sem editar nada, e observou que o proprio comentario do codigo previa a escalada ('depois de I/l vem O/0, depois cirilico, depois zero-width') enquanto o ADR afirmava que a classe estava fechada. O ALTO: str.strip() nao remove zero-width space, entao `aceito_por = '\\u200b'` contava como assinatura e um CRITICO ficava 'aceito' assinado por ninguem — tambem previsto no comentario e nao coberto por teste.",
+ "verificacoes_executadas": [
+  "critico reproduziu o bypass cirilico contra o binario real: achados_bloqueantes_abertos -> [] e _atestacao_valida -> True, com sha256 do squad_gate identico antes e depois (nao e' sabotagem de arquivo, e' o mecanismo como estava)",
+  "critico reproduziu aceito_por = zero-width -> _atestacao_valida True; com espacos ASCII bloqueava corretamente",
+  "critico testou problemas como 0, False, '', {}, [{}]: todos bloqueiam",
+  "critico testou duas chaves reconhecidas (ACHADOS ao lado de problemas): bloqueia por ambiguidade",
+  "critico testou _arquivo/_sha256 forjados: load_evidence sobrescreve com valor do disco, nao forjaveis",
+  "critico rodou test_mutacao_squad_gate.py: 10/10 mortas, sha256 identico antes/depois",
+  "critico mediu 66 vereditos no ledger (o comentario dizia 64) — drift de numero, registrado como BAIXA",
+  "autor, apos corrigir: 5 casos testados (cirilica ao lado, zero-width, assinatura real, veredito limpo, campo inventado) -> todos com o resultado esperado",
+  "autor, apos corrigir: os 66 vereditos do ledger seguem validos (zero com campo desconhecido)",
+  "autor, apos corrigir: 55 PASS / 0 FAIL no canario, com 4 canarios novos para os dois vetores"
+ ],
+ "problemas": [
+  {
+   "severidade": "CRITICO",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — _problemas_bem_formados(), leitura das chaves de topo",
+   "descricao": "Chave homoglifa Unicode CONVIVENDO com a canonica: `problemas: []` limpa mais `problemаs` (a cirilico) escondendo um CRITICO/aberto. Exigir a chave nao fecha, porque o atacante tambem a declara. CORRIGIDO mudando a natureza da defesa pela terceira vez, e agora na direcao certa: ALLOWLIST dos campos de topo (CAMPOS_CONHECIDOS, levantada dos 66 vereditos do ledger). Qualquer chave que o gate nao conheca bloqueia e pede declaracao — nao ha grafia inventavel que passe por um conjunto FECHADO. Efeito colateral bom: a allowlist ABSORVEU CHAVES_ACHADOS e _chave_norm, que viraram codigo morto e foram REMOVIDOS (950 caracteres a menos). Quem denunciou a morte foi a propria prova por mutacao — sabotagem em ramo inalcancavel nunca morre."
+  },
+  {
+   "severidade": "ALTO",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — achados_bloqueantes_abertos(), checagem de aceito_por",
+   "descricao": "str.strip() nao remove zero-width space (U+200B), entao uma 'assinatura' invisivel encerrava um achado bloqueante: CRITICO aceito, assinado por ninguem. CORRIGIDO com texto_visivel(), que remove tambem U+200B/200C/200D/2060/FEFF/00AD antes de avaliar. Canario cobre 4 formas de invisivel mais o caso positivo."
+  },
+  {
+   "severidade": "BAIXA",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — comentarios com a contagem do ledger",
+   "descricao": "O comentario afirmava '64 vereditos do ledger' quando ja eram 66 (os proprios vereditos deste bloco entraram no meio). CORRIGIDO removendo o numero do comentario: contagem que envelhece sozinha vira afirmacao falsa, e o que importa e' a propriedade (todos declaram `problemas`), nao o total."
+  }
+ ],
+ "recomendacao_do_critico": "corrigir; bypass CRITICO por chave homoglifa Unicode reproduzido contra o binario real",
+ "nota_do_autor": "Sexta rodada, quinto bypass, e o padrao ficou explicito: enumerar a forma ERRADA nunca fecha; so enumerar a forma CERTA fecha. Cada correcao minha era mais uma blocklist, e cada blocklist tinha uma grafia a mais do lado de fora. A allowlist encerra a classe e ainda deixa o codigo menor."
+}

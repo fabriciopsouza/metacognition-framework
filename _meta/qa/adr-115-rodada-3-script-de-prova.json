@@ -1,0 +1,58 @@
+{
+ "bloco": "adr-115-fail-closed-no-veredito",
+ "papel": "qa_critic",
+ "rodada": 3,
+ "passou": false,
+ "recomendacao": "reprovar",
+ "veredito": "reprovar",
+ "data": "2026-09-13T00:00:00Z",
+ "escopo_paths": [
+  "tools/squad_gate.py",
+  "tools/test_squad_gate.py",
+  "tools/test_mutacao_squad_gate.py",
+  "docs/adr/115-fail-closed-no-veredito-achado-bloqueante-nao-passa-por-rotulo.md",
+  "CHANGELOG.md",
+  "capabilities.json",
+  "CAPABILITIES.md",
+  "guia/web/index.html"
+ ],
+ "atestacao": {
+  "agentId": "a00874634b6c85b7c",
+  "modelo": "sonnet",
+  "autor": "opus",
+  "isolamento": "subagente qa-critic em primeiro plano, degrau abaixo do autor (ADR-109/110)"
+ },
+ "resumo": "REPROVOU o SCRIPT DE PROVA, nao o gate. A 3a versao do legado (nome + sha256) resistiu a todos os ataques: o critico nao conseguiu forjar `_sha256`, nem ler de outro diretorio, nem promover nao-legado a legado. Mas o arquivo criado na rodada 2 para tornar a prova reproduzivel, 'tools/test_mutacao_squad_gate.py', mutava 'tools/squad_gate.py' NO REPOSITORIO e so restaurava no `finally`. Morto de fora — timeout de CI, taskkill, disco cheio — o `finally` nao roda e o gate fica SABOTADO em disco, em estado fail-OPEN, sem aviso e sem log. O critico reproduziu AO VIVO: rodou 'run_canaries.py' numa copia integral, matou por timeout de 2min, e o squad_gate.py ficou permanentemente com a mutacao 'severidade desconhecida vira LEVE' aplicada; com esse arquivo em disco, um veredito com CRITICO em aberto passa o gate com exit 0. Agravante: 'run_canaries.py' e' o gate real do repositorio, e 'squad_gate.py' estava modificado e nao commitado — restaurar exigiria 'git checkout', que apagaria o trabalho do proprio ADR-115. O mecanismo criado para provar que o gate e' fail-closed podia deixa-lo fail-open. A docstring alegava seguir o padrao de 'test_mutacao_controle.py', que usa TemporaryDirectory — alegacao falsa: o padrao nao estava sendo seguido.",
+ "verificacoes_executadas": [
+  "critico copiou o repositorio integral para o scratchpad e rodou 'timeout 300 python tools/run_canaries.py'; morto pelo timeout, o squad_gate.py da copia ficou com a mutacao #2 aplicada (diff mostrado no relatorio)",
+  "critico rodou 'python tools/squad_gate.py --paths ...' contra o arquivo corrompido: exit 0 com veredito CRITICO em aberto",
+  "critico tentou forjar `_sha256` e `_arquivo`: so load_evidence/legados_declarados escrevem esses campos, sempre do hash real do disco, sobrescrevendo chave homonima do JSON — sem bypass",
+  "critico conferiu por grep que nao ha parser alternativo de veredito no CLI (unico caminho: load_evidence -> main)",
+  "critico julgou o hash truncado em 16 hex (64 bits) inviavel de colidir no modelo de ameaca declarado — achado teorico, nao pontuado",
+  "critico confirmou que sha_do_veredito devolvendo '' nao promove nao-legado a legado (VEREDITOS_LEGADOS.get(nome) retorna None e bool(None) barra antes)",
+  "critico alterou 1 byte de um legado numa copia: test_hash_dos_legados_BATE_com_o_disco e test_nenhum_veredito_do_ledger_quebra falharam corretamente (42 PASS/2 FAIL)",
+  "critico rodou test_squad_gate.py (44 PASS/0 FAIL), test_capabilities.py (PASS), test_marketing_claims.py (PASS) em copia integra",
+  "critico conferiu os numeros: 8 mutacoes mortas, 17 testes novos, 88 canarios, 20 vereditos/41 achados — todos batem; '12 dos 67' estava errado no CHANGELOG",
+  "critico auditou os vereditos das rodadas 1 e 2 e nao encontrou afirmacao inflada",
+  "critico julgou o registry_waiver razoavel para fins de capabilities.json, mas observou que waiver nao dispensa o script de ser SEGURO",
+  "autor, apos corrigir: rodou o script e conferiu por sha256 que tools/squad_gate.py real ficou INTACTO antes e depois (5bf09804136263f5)",
+  "autor, apos corrigir: 8/8 mutacoes mortas na copia temporaria, com regua por ACRESCIMO de falhas sobre o baseline",
+  "autor, apos corrigir: suite completa verde em DUAS passadas consecutivas (87 PASS / 1 SKIP / 0 FAIL de 88)"
+ ],
+ "problemas": [
+  {
+   "severidade": "CRITICO",
+   "estado": "corrigido",
+   "local": "tools/test_mutacao_squad_gate.py — main(), mutacao aplicada sobre ALVO = RAIZ/tools/squad_gate.py",
+   "descricao": "O script de prova mutava o arquivo REAL do gate e so restaurava no `finally`, que nao roda quando o processo e' morto de fora. Como 'run_canaries.py' e' o gate real e executa este script, um timeout de CI deixava 'tools/squad_gate.py' sabotado em disco, fail-OPEN, sem aviso. Reproduzido ao vivo pelo critico. CORRIGIDO: o script monta uma arvore temporaria (tools/ do gate + o ledger que ele le), muta a COPIA e roda o canario contra ela; nada e' escrito dentro do repositorio, e o pior caso sob interrupcao passa a ser um diretorio temporario orfao. Como a copia nao tem .git, alguns testes falham por AMBIENTE — por isso a regua deixou de ser 'baseline zero falhas' e passou a ser 'a mutacao ACRESCENTA falhas'. Provado por sha256 do arquivo real antes e depois da execucao."
+  },
+  {
+   "severidade": "BAIXA",
+   "estado": "corrigido",
+   "local": "CHANGELOG.md e tools/test_squad_gate.py (docstring)",
+   "descricao": "'12 de 66' havia sido corrigido para '12 dos 67' no ADR e no comentario do squad_gate, mas sobreviveu no CHANGELOG e — o critico nao chegou a ver — numa docstring do proprio canario. Quarta ocorrencia do mesmo numero. CORRIGIDO nos dois; grep confirma zero ocorrencias restantes."
+  }
+ ],
+ "recomendacao_do_critico": "corrigir; o script de prova pode deixar o gate fail-open sob interrupcao — reproduzido ao vivo",
+ "nota_do_autor": "A 3a versao do legado (hash) resistiu ao ataque. O que caiu foi o mecanismo de PROVA, que eu escrevi alegando seguir um padrao que nao segui. Fica registrado no ADR, secao 'O mecanismo de prova quase virou o defeito'."
+}

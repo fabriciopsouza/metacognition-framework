@@ -1,0 +1,53 @@
+{
+ "bloco": "adr-115-fail-closed-no-veredito",
+ "papel": "qa_critic",
+ "rodada": 14,
+ "passou": false,
+ "recomendacao": "reprovar",
+ "veredito": "reprovar",
+ "data": "2026-09-14T00:00:00Z",
+ "escopo_paths": [
+  "tools/squad_gate.py",
+  "tools/test_squad_gate.py",
+  "tools/test_mutacao_squad_gate.py",
+  "docs/adr/115-fail-closed-no-veredito-achado-bloqueante-nao-passa-por-rotulo.md",
+  "CHANGELOG.md",
+  "capabilities.json"
+ ],
+ "atestacao": {
+  "agentId": "ab697b843c1ddb16c",
+  "modelo": "sonnet",
+  "autor": "opus",
+  "isolamento": "subagente qa-critic em segundo plano, degrau abaixo do autor (ADR-109/110); proibido de tocar o repositorio, experimentos no scratchpad"
+ },
+ "resumo": "REPROVOU com dois CRITICOS, e o primeiro e' o mais grave das quatorze rodadas porque atinge o MECANISMO DE PRODUCAO, nao um caminho hipotetico. (1) `main()` lia `r.stdout` do `git diff --cached --name-only` SEM olhar `r.returncode`: git que falha devolve stdout vazio, entao 'nao consegui perguntar' virava 'nada esta staged', nenhum papel era exigido, e o gate imprimia OK e saia 0. O agravante esta no consumidor — `tools/install_git_hooks.py` instala exatamente essa invocacao como pre-commit e so' inspeciona a mensagem quando o codigo e' != 0; com 0 ele libera direto. O commit passava sem nenhuma evidencia avaliada e SEM AVISO. E nao e' laboratorio: `fatal: detected dubious ownership in repository` (git pos-CVE-2022-24765) ocorre em drive de rede, container, CI e em qualquer checkout cujo dono nao bate com quem roda. O helper `_git()` do MESMO arquivo sempre conferiu returncode — o padrao certo estava a 400 linhas de distancia. (2) `modelo != autor`, o coracao da defesa anti-teatro, era comparacao de string CRUA: `Claude-Sonnet-5` != `claude-sonnet-5`, entao autoatestacao passava por caixa, espaco duplo ou zero-width space, sem precisar sequer de homoglifo. A vizinha `assinatura_valida`, no mesmo arquivo, ja normalizava contra exatamente isso.",
+ "verificacoes_executadas": [
+  "critico reproduziu o CRITICO 1 chamando `main()` de verdade, simulando so' a resposta do processo git (returncode=128, stderr de dubious ownership): saida '0 path(s) staged -> papeis exigidos: nenhum', 'OK', exit 0",
+  "critico confirmou que o padrao de retorno (stdout vazio + returncode != 0, sem excecao) e' o comportamento real do git, reproduzindo uma falha real com flag invalida",
+  "critico rastreou o consumidor real: install_git_hooks.py linha 59-64 instala a invocacao sem argumentos e nao le a mensagem quando o codigo e' 0",
+  "critico cruzou com o cabecalho do arquivo (linhas 6-7, 'fail-closed NA PROPRIA LOGICA') e com o ADR-092 ('GATE deterministico, fail-closed, disparo por git-hook') — ambos falsos neste caminho",
+  "critico confirmou por busca que nenhum teste forcava returncode != 0 no git: caminho nunca exercitado em quatorze rodadas",
+  "critico reproduziu o CRITICO 2 contra _atestacao_valida real em tres disfarces (caixa, zero-width space, espaco duplo interno), todos devolvendo True",
+  "critico mediu o raio de explosao do CRITICO 2 no ledger: dos 16 vereditos atestados, ZERO dependem de caixa/espaco/invisivel para se distinguir — todos usam pares legitimos em minuscula consistente",
+  "critico apresentou, para cada achado, o argumento que sustentaria APROVAR, e refutou os dois com fato verificavel em vez de opiniao",
+  "autor, apos corrigir: os tres disfarces devolvem False; par legitimo sonnet/opus devolve True; main() com git quebrado devolve rc != 0 e imprime o motivo e a correcao sugerida",
+  "autor: 72 PASS / 0 FAIL no canario; 24/24 mutacoes mortas com baseline ZERO; sha256 do squad_gate identico antes e depois",
+  "autor: o canario do git NAO usa mock de biblioteca — troca `sg.subprocess.run` por uma funcao que so' intercepta o `git diff --cached` e delega o resto ao real, e chama `sg.main([])`, o mesmo ponto de entrada do gancho"
+ ],
+ "problemas": [
+  {
+   "severidade": "CRITICO",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — main(), invocacao de git diff --cached",
+   "descricao": "Falha do git era lida como 'nada staged' e liberava o commit com exit 0, silenciosamente, no caminho que o pre-commit instalado usa. CORRIGIDO: returncode != 0 agora BLOQUEIA, imprime o que o git disse e sugere a correcao (`git config --global --add safe.directory <repo>`). Provado por mutacao que reintroduz o silencio e por canario que chama `main([])` com o git interceptado. E' a quinta assimetria entre irmaos deste bloco: `_git()` sempre conferiu o returncode; a invocacao direta em `main()` nunca recebeu a mesma checagem. LICAO: o helper certo existir no arquivo nao protege o caminho que nao o usa."
+  },
+  {
+   "severidade": "CRITICO",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — _atestacao_valida(), comparacao modelo != autor",
+   "descricao": "Comparacao de string crua no coracao da defesa anti-teatro: caixa diferente, espaco duplo interno, separador diferente ou zero-width space faziam o MESMO modelo contar como dois. Autoatestacao passava sem precisar de homoglifo — a tecnica mais cara, que as rodadas 4 a 7 precisaram. CORRIGIDO com `_norm_modelo()`: NFKC, remocao de categorias Cf (invisiveis) e Mn (acentos combinantes), separadores viram espaco, casefold e colapso de espaco. Sexta assimetria entre irmaos: `assinatura_valida` ja fazia tudo isso, no mesmo arquivo, contra os mesmos truques. Raio medido: zero vereditos do ledger dependem dessas diferencas. Provado por mutacao e canario com 5 disfarces e 3 pares legitimos."
+  }
+ ],
+ "recomendacao_do_critico": "reprovar; dois bypasses reproduzidos, um deles no mecanismo de producao instalado como pre-commit",
+ "nota_do_autor": "Decima quarta rodada, e o achado do git e' o que mais me preocupa das quatorze: nao e' um caminho que so' um adversario alcanca — e' o caminho que TODO commit percorre, quebrando numa condicao que acontece sozinha (dubious ownership em drive de rede ou container). Nas treze rodadas anteriores eu revisei o que o gate DECIDE e nunca o que ele usa para saber SOBRE O QUE decidir. As duas correcoes desta rodada sao a quinta e a sexta assimetria entre irmaos do mesmo arquivo: o padrao certo ja estava escrito ao lado, nos dois casos."
+}

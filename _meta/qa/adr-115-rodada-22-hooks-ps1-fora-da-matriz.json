@@ -1,0 +1,54 @@
+{
+ "bloco": "adr-115-fail-closed-no-veredito",
+ "papel": "qa_critic",
+ "rodada": 22,
+ "passou": false,
+ "recomendacao": "reprovar",
+ "veredito": "reprovar",
+ "data": "2026-09-15T00:00:00Z",
+ "escopo_paths": [
+  "tools/squad_gate.py",
+  "tools/test_squad_gate.py",
+  "tools/test_mutacao_squad_gate.py",
+  "behaviors/manifest.json",
+  "docs/adr/115-fail-closed-no-veredito-achado-bloqueante-nao-passa-por-rotulo.md",
+  "CHANGELOG.md",
+  "capabilities.json"
+ ],
+ "atestacao": {
+  "agentId": "a65bbdb76c7900462",
+  "modelo": "sonnet",
+  "autor": "opus",
+  "isolamento": "subagente qa-critic em segundo plano, degrau canonico (sonnet, um abaixo do autor opus); proibido de tocar o repositorio, sabotagens so' em copia/memoria no scratchpad"
+ },
+ "resumo": "Uma ALTA e uma BAIXA, e — pela primeira vez — o critico VERIFICOU EXAUSTIVAMENTE as correcoes anteriores e declarou que sustentaram, em vez de so' procurar o proximo defeito. ALTA: os hooks `.ps1` nao exigiam papel nenhum, e nao sao acessorio — `route-gate.ps1` e' a UNICA implementacao do ADR-027 (nao existe equivalente .py), e `effect-gate.ps1`/`mission-gate.ps1`/`overwrite-guard.ps1` sao o FALLBACK que roda quando o Python e' vetado, isto e', o MODO NON-ADMIN que o CLAUDE.md documenta como real e que a memoria do dono confirma ja ter acontecido nesta maquina. Reescrever `effect-gate.ps1` para sair 0 desarma o bloqueio de acao destrutiva, e o gate classificava isso como 'papeis exigidos: nenhum'. Terceira instancia da classe 'interruptor fora da matriz' (16a e 18a foram as outras), e a unica com correcao mecanica barata que nao tinha sido feita nem declarada. BAIXA: os numeros de raio de explosao nos comentarios do codigo ('dos 16 vereditos atestados', 'das 13 reprovacoes') envelheceram entre 1,5x e 5x em um dia — a conclusao segue valendo, mas o custo declarado ao dono estava subestimado.",
+ "verificacoes_executadas": [
+  "critico varreu os 78 docstrings atras de promessas verificaveis e testou as que prometem cobertura — NENHUMA outra se mostrou falsa, diferente do achado da 21a",
+  "critico sabotou os 10 interruptores enumerados, um a um, e confirmou 10/10 deteccoes — o canario da classe nao e' carimbo",
+  "critico alterou um byte de um veredito legado numa copia e confirmou que o canario de hash pega a divergencia",
+  "critico rodou as 31 mutacoes e confirmou que as DUAS novas da 21a matam exatamente 1 teste cada — nao sao vacuas como a que a 19a pegou",
+  "critico auditou o monkeypatch de `sg.evaluate` da 21a: substitui o nome global que `main()` resolve em tempo de chamada (nao um wrapper interno), restaura no `finally` DENTRO da funcao auxiliar, logo nao vaza estado entre testes em nenhuma ordem",
+  "critico verificou que `test_main_IMPRIME_a_divida_legada` nao esta mascarado pela guarda de saida antecipada: `legados_declarados()` devolve 20 itens hoje",
+  "critico confirmou que os 13 hooks .ps1 sao RASTREADOS pelo git e portanto aparecem em `git diff --cached` — nao e' o caso circular do `_meta/qa/` nem o gitignored do `settings.local.json`, os dois limites ja declarados",
+  "critico leu `.claude/settings.json` e comprovou que os .ps1 sao invocados como implementacao real e como fallback (`python X.py || powershell Y.ps1`), em vez de supor",
+  "critico recontou quatro numeros de raio nos comentarios contra o ledger vivo e mostrou a defasagem de 1,5x a 5x",
+  "autor mediu antes de corrigir: 15 arquivos .ps1 rastreados, os 15 sem papel, NENHUM staged — raio de explosao zero no commit atual",
+  "autor, apos corrigir: os 15 .ps1 exigem qa_critic; 78 PASS / 0 FAIL; 31/31 mutacoes mortas; sha256 do squad_gate identico antes e depois"
+ ],
+ "problemas": [
+  {
+   "severidade": "ALTA",
+   "estado": "corrigido",
+   "local": "behaviors/manifest.json — ausencia de cobertura para .ps1",
+   "descricao": "Os 15 hooks .ps1 rastreados nao exigiam papel nenhum, incluindo `route-gate.ps1` (unica implementacao do ADR-027) e `effect-gate.ps1`/`overwrite-guard.ps1` (fallback ativo no MODO NON-ADMIN). Desarmar um deles nao pedia revisao e nao deixava rastro. CORRIGIDO com `suffix: '.ps1'` — sufixo e nao prefixo, para cobrir tambem `bootstrap.ps1` e qualquer hook futuro fora das duas pastas, na mesma forma ja usada para `.py`. O canario da classe ganhou dois casos concretos. LICAO: e' a TERCEIRA instancia de 'interruptor fora da matriz' e a primeira em que a lacuna estava numa LINGUAGEM que a matriz nao enxergava — proteger `.py` e esquecer `.ps1` protege a implementacao preferida e deixa aberto o caminho que roda quando a preferida falha."
+  },
+  {
+   "severidade": "BAIXA",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — numeros de raio de explosao nos comentarios",
+   "descricao": "Quatro comentarios citavam populacao do ledger com data ('dos 16 vereditos atestados', 'das 13 reprovacoes', '10 sem sha', '243 achados') e envelheceram de 1,5x a 5x em um dia, porque o proprio ciclo de QA alimenta o denominador. A conclusao de cada um ('raio nulo') segue valendo, mas o custo declarado ao dono num deles ficava subestimado. CORRIGIDO aplicando a licao da 12a rodada, que nao tinha sido generalizada: o numero absoluto SAI do comentario e a afirmacao fica QUALITATIVA e ancorada ('NENHUM veredito atestado deixava de declarar autor'), com o comando de recalculo no ADR. As tres datas que sobraram sao exatamente desse tipo — ZERO, 7 chaves — que nao envelhecem."
+  }
+ ],
+ "recomendacao_do_critico": "reprovar; lacuna de cobertura real e nao declarada num caminho que roda quando o principal falha",
+ "nota_do_autor": "Vigesima segunda rodada. Duas coisas a registrar. A primeira: o achado e' a terceira repeticao de 'interruptor fora da matriz', e a mais instrutiva, porque a lacuna nao era um arquivo esquecido — era uma LINGUAGEM inteira. Eu protegi `.py` e deixei aberto justamente o caminho que existe para rodar quando o `.py` e' vetado. A segunda: esta foi a primeira rodada em que o critico gastou a maior parte do esforco VERIFICANDO o que ja estava corrigido — 10/10 sabotagens de interruptor, as duas mutacoes novas, o monkeypatch da 21a — e disse com todas as letras que sustentaram. Isso vale tanto quanto achar defeito."
+}

@@ -1,0 +1,58 @@
+{
+ "bloco": "adr-115-fail-closed-no-veredito",
+ "papel": "qa_critic",
+ "rodada": 9,
+ "passou": false,
+ "recomendacao": "reprovar",
+ "veredito": "reprovar",
+ "data": "2026-09-14T00:00:00Z",
+ "escopo_paths": [
+  "tools/squad_gate.py",
+  "tools/test_squad_gate.py",
+  "tools/test_mutacao_squad_gate.py",
+  "docs/adr/115-fail-closed-no-veredito-achado-bloqueante-nao-passa-por-rotulo.md",
+  "CHANGELOG.md",
+  "_meta/qa/adr-115-rodada-8-reprovacao-vigente.json"
+ ],
+ "atestacao": {
+  "agentId": "a56ed36458b7df6b2",
+  "modelo": "sonnet",
+  "autor": "opus",
+  "isolamento": "subagente qa-critic em segundo plano, degrau abaixo do autor (ADR-109/110); instruido a nao tocar o repositorio (53 arquivos nao commitados) e a experimentar so no scratchpad"
+ },
+ "resumo": "REPROVOU com tres CRITICOS, todos reproduzidos contra o binario real, e os dois primeiros atingem exatamente a defesa que era o climax da 8a rodada — sem exigir malicia, apenas praticas JA DOMINANTES no ledger. (1) `escopo_paths` e' campo OPCIONAL e `_reprovacao_vigente` fazia `if escopo_r and ...`: reprovacao que nao declarava escopo nunca invalidava aprovativo nenhum. (2) O `sha_revisado` era comparado como string crua, enquanto 27 dos 29 vereditos do ledger gravam a forma de 7 caracteres e `rev-parse HEAD` devolve 40 — mesmo commit, grafias diferentes, deteccao perdida; `_recente_o_bastante` JA normalizava e esta funcao nao recebeu a mesma correcao. (3) O CRITICO mais grave nao e' de codigo, e' de PROCEDENCIA NARRATIVA: o ADR e o docstring afirmavam que o mecanismo de reprovacao vigente 'ja existia para o papel juncao_release'. FALSO. Nunca existiu; o autor inferiu a defesa pelo NOME de um teste (test_juncao_release_REPROVACAO_POSTERIOR_invalida_o_PC) que cobre outro caso — reprovacao SOZINHA, sem aprovativo — e entregou a inferencia como fato verificado, no documento E no codigo.",
+ "verificacoes_executadas": [
+  "critico importou squad_gate e chamou as MESMAS funcoes que evaluate()/main() chamam; scripts de exploit persistidos no scratchpad, nenhum comando tocou o repositorio",
+  "critico mediu no ledger real: 27 dos 29 vereditos com `sha_revisado` usam a forma curta de 7 chars",
+  "critico verificou que os canarios existentes so exercitavam reprovacao COM escopo identico ao alvo, e que nenhuma das 15 mutacoes cobria o ramo do escopo ausente",
+  "critico leu o CORPO de test_juncao_release_REPROVACAO_POSTERIOR_invalida_o_PC e mostrou que ele nao cobre o caso que o nome sugere",
+  "autor, apos corrigir: reprovacao sem escopo_paths invalida -> True; escopo vazio idem",
+  "autor, apos corrigir: sha curto x longo detectado nos dois sentidos -> True",
+  "autor, apos corrigir: release com reprovacao aberta do mesmo release nao fecha -> False; release limpo fecha -> True; reprovacao com achado RESOLVIDO nao trava -> True",
+  "autor, nao-regressao: aprovativo sozinho continua liberando -> True",
+  "autor: 69 PASS / 0 FAIL no canario do gate; 18/18 mutacoes mortas com baseline ZERO; sha256 do squad_gate identico antes e depois da prova",
+  "autor: remediu o numero do achado contestado, que tinha deixado de ser reproduzivel (o ledger cresceu durante a sessao). Medido agora: 36 de 69 (52%) pelo criterio estrito, 60 de 69 (87%) contando todo campo de prosa. A alegacao '38 de 67 (57%)' foi substituida nos 3 arquivos onde aparecia."
+ ],
+ "problemas": [
+  {
+   "severidade": "CRITICO",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — _reprovacao_vigente(), tratamento de escopo_paths",
+   "descricao": "`escopo_paths` e' opcional (qa_evidence.py nao o exige) e o codigo fazia `if escopo_r and any(_cobre(...))`: reprovacao sem escopo declarado nao 'cobria' nada e nunca invalidava o aprovativo. CORRIGIDO invertendo a leitura do silencio: `if not escopo_r or any(...)` — reprovacao que nao delimita o que revisou passa a COBRIR TUDO. Fail-closed e' a leitura certa aqui: quem nao declarou escopo esta dizendo mais, nao menos. Provado por mutacao dedicada e 1 canario com os dois casos (campo ausente e lista vazia)."
+  },
+  {
+   "severidade": "CRITICO",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — _reprovacao_vigente(), comparacao de sha_revisado",
+   "descricao": "Comparava `sha_revisado` como string crua enquanto 27 dos 29 vereditos do ledger gravam 7 caracteres e `rev-parse HEAD` devolve 40. Mesmo commit escrito de duas formas deixava de casar. `_recente_o_bastante` JA resolvia isso e a funcao nova nao recebeu a mesma correcao — a MESMA classe de falha do achado 3, num arquivo so. CORRIGIDO com `_sha_pleno()`, aplicado aos dois lados; sem git, ou sha inexistente, devolve a string normalizada, para que grafias iguais ainda casem e a falta de ferramenta nao vire fail-open. Provado por mutacao e canario nos dois sentidos."
+  },
+  {
+   "severidade": "CRITICO",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — _release_verdict_approving(); docs/adr/115-*.md; CHANGELOG.md",
+   "descricao": "PROCEDENCIA NARRATIVA FALSA, e e' o achado mais importante desta ADR. O autor afirmou no ADR, no CHANGELOG e no docstring do proprio codigo que o mecanismo de reprovacao vigente 'ja existia para o papel juncao_release e nunca havia sido estendido ao qa_critic'. Nunca existiu: `_release_verdict_approving` devolvia True no PRIMEIRO aprovativo que declarasse o release, sem olhar reprovacao coexistente — o papel que porteia RELEASES INTEIROS tinha o mesmo buraco da 8a rodada, intacto. A alegacao nasceu de ler o NOME de um teste em vez do corpo dele. CORRIGIDO em duas frentes: (a) codigo — `_declara_release()` extraida e `_reprovacao_de_release_vigente()` passa a barrar o fechamento quando ha achado bloqueante aberto no mesmo release, provado por mutacao e canario com 3 casos; (b) documento — RETRATACAO explicita no ADR, no CHANGELOG, no docstring e no veredito da 8a rodada, em vez de correcao silenciosa. LICAO REGISTRADA: a alegacao atravessou OITO rodadas de critica adversarial porque estava em PROSA, e prosa e' o que nenhum canario deste repositorio le — o autor exemplificou, contra si mesmo e no mesmo documento, o achado que estava contestando."
+  }
+ ],
+ "recomendacao_do_critico": "reprovar; tres bypasses reproduzidos, um deles revelando alegacao falsa no ADR e no codigo",
+ "nota_do_autor": "Nona rodada. O fix veio do proprio critico e sem mecanismo novo (regua §0): tratar escopo ausente como cobertura total, reusar a normalizacao de sha que ja existia ao lado, e chamar a defesa tambem no papel irmao. O que me custa registrar e' o terceiro achado: eu escrevi, com confianca, que uma defesa existia em outro lugar, baseado no NOME de um teste. Oito criticos adversariais leram essa frase e nenhum a checou — nem eu. Ela so caiu quando um critico foi ler o corpo do teste. Nao ha canario neste repositorio capaz de pegar isso, e e' exatamente o limite que o dono acabou de aceitar de forma explicita."
+}

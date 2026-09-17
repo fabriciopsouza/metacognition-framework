@@ -54,3 +54,4 @@ aivi-method-fixes
 \bdados_mestre\b
 \b2026_VAR_INT_CSV\b
 \bVAR_INT\b
+\bmigracao-sac\b

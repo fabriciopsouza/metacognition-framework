@@ -1,0 +1,47 @@
+{
+ "bloco": "adr-115-fail-closed-no-veredito",
+ "papel": "qa_critic",
+ "rodada": 21,
+ "passou": false,
+ "recomendacao": "reprovar",
+ "veredito": "reprovar",
+ "data": "2026-09-15T00:00:00Z",
+ "escopo_paths": [
+  "tools/squad_gate.py",
+  "tools/test_squad_gate.py",
+  "tools/test_mutacao_squad_gate.py",
+  "behaviors/manifest.json",
+  "docs/adr/115-fail-closed-no-veredito-achado-bloqueante-nao-passa-por-rotulo.md",
+  "CHANGELOG.md",
+  "capabilities.json"
+ ],
+ "atestacao": {
+  "agentId": "ae91fa1d839b4fe79",
+  "modelo": "sonnet",
+  "autor": "opus",
+  "isolamento": "subagente qa-critic em segundo plano, degrau canonico (sonnet, um abaixo do autor opus); proibido de tocar o repositorio, copias sabotadas so' no scratchpad"
+ },
+ "resumo": "UM achado MEDIA, e ele fecha o circulo da 20a rodada de um jeito que eu nao tinha visto. A 20a trocou um teste que GREPAVA por um que EXECUTA, e isso achou um defeito real (a divida legada so' era impressa no caminho de sucesso). Mas o DOCSTRING que eu escrevi para o teste novo afirmava: 'se a linha da divida sumir, por qualquer motivo, isto fica vermelho'. FALSO. A chamada `main(['--paths','tools/squad_gate.py'])` cai, contra o ledger REAL, no caminho de SUCESSO — exatamente onde o bug antigo TAMBEM imprimia. O teste nunca forcava o bloqueio, entao nao distinguia 'sempre imprime' de 'imprime quando da certo'. O critico provou revertendo SO' A POSICAO do bloco numa copia isolada e rodando contra o ledger real: teste verde, bug inteiro de volta. E foi alem: mostrou que a deteccao EXISTIA, mas por ACIDENTE — o baseline do harness de mutacao roda numa arvore temporaria onde nada resolve como ancestral, logo cai no bloqueio. Depender disso e' fragil por tres motivos que ele enumerou: a mensagem de erro diagnostica ambiente quebrado em vez de regressao; nenhuma das 30 mutacoes atacava a posicao deliberadamente; e se a divida legada zerar ou o harness for filtrado, a regressao volta a ser silenciosa.",
+ "verificacoes_executadas": [
+  "critico leu squad_gate.py:962-978 e CONFIRMOU que a correcao de posicao da 20a rodada esta correta no codigo — separou o que estava certo do que estava mal provado",
+  "critico rodou a chamada do teste contra o repo real e mostrou RC=0 no caminho de SUCESSO, que e' a premissa do ponto cego",
+  "critico reverteu SO' A POSICAO do bloco numa copia em scratchpad e rodou contra o ledger real: divida presente, teste verde, bug reintroduzido",
+  "critico rodou `tools/test_squad_gate.py` completo com o defeito presente: 78 PASS / 0 FAIL — o canario dedicado a esta regressao nao a pega quando executado como sempre e' executado",
+  "critico substituiu o squad_gate dentro da arvore temporaria do harness de mutacao e provou que a deteccao real vem de la, pelo baseline, e nao da assercao que alega prova-la",
+  "critico enumerou tres condicoes concretas sob as quais essa deteccao acidental desaparece, em vez de so' chamar de fragil",
+  "critico atacou as tres correcoes da 20a rodada e declarou que nao achou quebra em nenhuma, dizendo por que em cada caso",
+  "autor, apos corrigir: o teste forca os DOIS caminhos, com o bloqueio forcado por substituicao de `evaluate` (deterministico) em vez de depender de um path que por acaso nao tenha cobertura hoje",
+  "autor PROVOU que o teste agora pega a regressao SOZINHO: copia sabotada com o bug de posicao numa arvore temporaria, rodando SO' este teste -> 0 PASS / 1 FAIL",
+  "autor: 78 PASS / 0 FAIL no canario; 31/31 mutacoes mortas, agora com uma DEDICADA a posicao; sha256 do squad_gate identico antes e depois"
+ ],
+ "problemas": [
+  {
+   "severidade": "MEDIA",
+   "estado": "corrigido",
+   "local": "tools/test_squad_gate.py — test_main_IMPRIME_a_divida_legada, docstring e corpo",
+   "descricao": "O docstring afirmava 'se a linha da divida sumir, por qualquer motivo, isto fica vermelho', e o corpo nao sustentava a afirmacao: a chamada caia no caminho de SUCESSO contra o ledger real, onde o bug corrigido pela 20a rodada tambem imprimia a divida. O teste nao distinguia 'sempre imprime' de 'imprime quando da certo'. CORRIGIDO: o teste passa a exercitar os DOIS caminhos, e o de bloqueio e' forcado por substituicao de `evaluate` — deterministico — em vez de depender de um path que por acaso nao tenha cobertura hoje, o que faria o teste mudar de significado quando o ledger mudasse. Restaura `evaluate` no `finally`. Somada uma mutacao DEDICADA a posicao (`_leg = [] if faltam else ...`), que era justamente a que faltava para a deteccao deixar de ser acidental. PROVADO: copia sabotada com o bug de posicao, rodando SO' este teste, da 0 PASS / 1 FAIL."
+  }
+ ],
+ "recomendacao_do_critico": "reprovar; alegacao falsa no docstring do teste que este ADR existe para fiscalizar, com reproducao completa",
+ "nota_do_autor": "Vigesima primeira rodada, e o achado e' recursivo de um jeito que vale registrar: a 20a me ensinou que prova textual nao e' prova, eu troquei por prova executavel — e escrevi, no docstring da prova nova, uma alegacao que a propria prova nao sustentava. A licao nao e' 'execute em vez de grepar'; e' que a ALEGACAO sobre o que um teste garante precisa ser tao verificada quanto o codigo. Sexta vez que prosa minha afirma mais do que o mecanismo entrega, e a primeira dentro de um teste."
+}
