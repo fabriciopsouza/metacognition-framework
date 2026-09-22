@@ -19,6 +19,10 @@ shared_refs:
 
 # DocOps — Documentação como Código (flexível)
 
+> **Formato da entrega:** obedece `_shared/output-format/SKILL.md`, inclusive a secao A.0 —
+> o texto se sustenta sozinho, e a referencia entra como apoio a verificacao, nunca no lugar
+> da explicacao. Vale para arquivo E para resposta de conversa.
+
 ## Carregar de `_shared/`
 `metacognition-core` (compaction + structured note-taking) · `traceability` ·
 **`project-docs`** (padrão do CONJUNTO documental de projeto — carregar quando o bloco cria,

@@ -1,0 +1,76 @@
+{
+  "bloco": "vitrine-sem-jargao-e-correcoes-do-qa-final",
+  "papel": "qa_critic",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "veredito": "aprovar",
+  "sha_revisado": "96ed49d",
+  "resumo": "Revisao da vitrine (jargao traduzido antes do primeiro uso, 'o que nos surpreendeu' com caso real do proprio dia, 'passivo do registro' em linguagem plana) mais tres correcoes vindas do QA final da sessao. RODADA 1 achou UM ALTA e ele e' o defeito mais grave desta sessao inteira: o autor INVENTOU um caso concreto — uma extracao de dados com tres nomes de campo inexistentes — e o pos numa PAGINA PUBLICA em tempo verbal de fato consumado. O critico varreu history.md, todo docs/adr, todo docs/_private e o git log e nao achou lastro nenhum. E' violacao direta da regra inviolavel 4 (NAO SEI direto, nunca inventar), cometida na vitrine que existe para dizer que o framework nao faz isso. NENHUM CANARIO PODERIA TER PEGO: o lexico de overclaim caca promessa absoluta ('nunca alucina', 'garante 100%'), e caso inventado e' o oposto disso — modesto, plausivel, especifico. Ironia registrada: o proprio lexico tem como frase PROIBIDA 'O framework jamais inventa nomes de campo', e a fabricacao foi um caso SOBRE nomes de campo inventados. CORRECAO: o paragrafo foi REMOVIDO, nao reescrito — o segundo analogo que ele pretendia dar ja existe na pagina e e' verificavel. RODADA 2 confirmou a remocao, provou por `git log --all -S` que o texto inventado NUNCA chegou a um commit, e varreu a pagina inteira: as 7 afirmacoes de caso remanescentes tem lastro rastreavel (arquivo, ADR ou canario), listadas uma a uma.",
+  "verificacoes_executadas": [
+    "r1: buscou lastro do caso alegado em history.md, docs/adr, docs/_private e git log --follow — zero",
+    "r1: comparou o paragrafo 'o que nos surpreendeu' frase a frase com o ledger de QA do bloco anterior",
+    "r1: conferiu balanceamento de tags (p 42/42, div 131/131, section 12/12) e ancoras 00..11",
+    "r1: bateu as 4 causas citadas no aviso da branch contra o commit fundador bde8976",
+    "r2: `git log --all -S` provou que o texto inventado nunca foi commitado",
+    "r2: varredura integral da pagina por tempo verbal de fato consumado, com verificacao de fonte item a item",
+    "r2: reauditou CHANGELOG e model-policy.json, que haviam mudado desde a r1",
+    "canarios: test_marketing_claims PASS (6 numeros da vitrine batendo), test_overclaim_lexicon PASS (20/20 veneno, 10/10 honestas)",
+    "suite completa: 80 PASS, 1 SKIP, 0 FAIL de 81"
+  ],
+  "problemas": [
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "guia/web/index.html secao 00",
+      "descricao": "caso INVENTADO apresentado como fato consumado em pagina publica, sem lastro em lugar nenhum do repositorio. Removido por inteiro. Nunca chegou a um commit."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "guia/web/index.html secao 00",
+      "descricao": "o mesmo paragrafo duplicava o bullet 'Alucina nomes de campo' duas linhas acima. A remocao fecha os dois achados."
+    },
+    {
+      "severidade": "INFORMATIVO",
+      "estado": "no_change_needed",
+      "local": "CHANGELOG.md + tools/model-policy.json",
+      "descricao": "aviso da lacuna da branch e registro do model_ids conferidos contra bde8976 e git log -S; ambos factualmente corretos, sem amenizacao."
+    }
+  ],
+  "escopo_paths": [
+    "CHANGELOG.md",
+    "_meta/qa/vitrine-sem-jargao-e-correcoes-do-qa-final.json",
+    "_meta/qa/vitrine-sem-jargao-e-correcoes-do-qa-final.md",
+    "guia/web/index.html",
+    "tools/model-policy.json"
+  ],
+  "atestacao": {
+    "agentId": "aea2d6f87db7371bb",
+    "prova_transcript": "sha256:f041dd43f9929644fe69eb44b567959bc6ab3a0ca859c9964a6d6b38ed4138fc",
+    "modelo": "claude-sonnet-5",
+    "modelo_autor": "claude-opus-5",
+    "isolamento": "subagente qa-critic isolado, read-only por instrucao explicita; arvore protegida por snapshot dangling antes de cada rodada",
+    "provas": [
+      {
+        "agentId": "a391a69e4726b7215",
+        "prova_transcript": "sha256:5c0e754234dda55a39962ebc5211e4cb394d0c8c305afe3ddaaa192a9fba8516",
+        "rodada": 1
+      },
+      {
+        "agentId": "aea2d6f87db7371bb",
+        "prova_transcript": "sha256:f041dd43f9929644fe69eb44b567959bc6ab3a0ca859c9964a6d6b38ed4138fc",
+        "rodada": 2
+      }
+    ]
+  },
+  "postura": {
+    "adversarial": "o critico foi instruido a duvidar da veracidade de anedota, nao so de numero — e foi assim que o ALTA apareceu. Nenhum canario cobre essa classe; foi leitura humana-equivalente, e o gap virou item de trabalho declarado pelo dono."
+  },
+  "nao_verificado": [
+    "o degrau ACIMA do default (2o QA final) NAO rodou: exige autorizacao ativa do dono (ADR-110) e ela nao foi dada.",
+    "PROCEDENCIA DE AFIRMACAO NARRATIVA nao tem mecanismo hoje: os canarios da vitrine cobrem lexico de overclaim e numeros, nao veracidade de caso relatado. Gap declarado pelo dono como proximo bloco; ate la, a garantia e' leitura adversarial, nao codigo.",
+    "os dois arquivos deste veredito estao em escopo_paths por serem o artefato do ledger, produzidos PELO QA e nao revisados POR ele."
+  ],
+  "data": "2026-08-19T00:00:00Z"
+}

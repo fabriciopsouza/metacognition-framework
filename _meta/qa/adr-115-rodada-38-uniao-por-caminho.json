@@ -1,0 +1,76 @@
+{
+  "bloco": "adr-115-rodada-38-uniao-por-caminho",
+  "papel": "qa_critic",
+  "rodada": 38,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "data": "2026-09-21T00:00:00Z",
+  "escopo_paths": [
+    "tools/squad_gate.py",
+    "tools/test_squad_gate.py",
+    "tools/test_mutacao_squad_gate.py",
+    "CHANGELOG.md",
+    "_meta/qa/adr-113-114-115-fechamento-do-bloco-staged-completo.json",
+    "_meta/qa/adr-115-rodada-38-uniao-por-caminho.json",
+    "_meta/qa/adr-115-rodada-38-uniao-por-caminho.md"
+  ],
+  "atestacao": {
+    "agentId": "a18dc77617b71de85",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic em primeiro plano, degrau canonico sonnet um abaixo do autor opus; READ-ONLY no repositorio, com proibicao explicita de git checkout/restore/reset/stash/clean e rm. Cenarios e mutantes rodados em copias no scratchpad com ROOT redirecionado, nunca contra os 95 caminhos staged."
+  },
+  "resumo": "Rodada sobre a mudanca de SEMANTICA do gate: `_qa_critic_attested` passou a aceitar a UNIAO dos escopos por caminho, em vez de exigir um unico veredito cobrindo tudo. A pergunta central que dei ao critico foi uma so' — isto afrouxa o gate, e onde? Ele atacou os tres cenarios que eu pedi (reprovacao avaliada por caminho x por conjunto; escopo por prefixo; composicao de vereditos de SHAs diferentes), reproduziu os tres contra o binario real, e a resposta e' que NAO ha' bypass no ponto de chamada real: o caminho reprovado continua falhando o proprio teste e o `all()` continua exigindo todos os caminhos staged. Mas ele pegou uma imprecisao minha na PROSA que vale mais que um bug: eu escrevi que a avaliacao por caminho e' 'mais estrita' que a do conjunto, e e' falso numa dimensao que ele mediu — `_reprovacao_vigente` usa `any()` sobre o alvo, entao por caminho ela deixa de desqualificar um veredito por reprovacao que cai sobre OUTRO caminho do mesmo escopo amplo. O veto fica mais CIRURGICO, nao mais estrito. Corrigi a prosa, nao o codigo. Mais dois achados BAIXA (vacuidade logica com alvo vazio; ausencia de mutacao formal para os mecanismos novos) e um informativo sobre o CHANGELOG, todos corrigidos.",
+  "verificacoes_executadas": [
+    "critico reproduziu contra o binario real, com veredito de escopo amplo ('tools/') e reprovacao CRITICO sobre um so' caminho: `_um_veredito_cobre` com o conjunto devolve False; por caminho devolve True para o nao-reprovado e False para o reprovado; e `_qa_critic_attested` com os dois juntos devolve False — mesmo resultado da regra antiga, logo sem bypass",
+    "critico reproduziu a composicao de vereditos de SHAs diferentes cobrindo metades distintas: a uniao aceita, e o commit pode ser atestado sobre um estado que nunca existiu inteiro num snapshot revisado. Confirmado como risco real e ja' declarado ABERTO no artefato da 36a",
+    "critico provou por MUTACAO que os 4 canarios negativos nao sao decorativos: copiou o modulo e o canario para baseline/ e mutant/, trocou `all` por `any`, e mediu baseline 96 PASS / 0 FAIL contra mutante 92 PASS / 4 FAIL — os 4 que morrem sao exatamente os 4 negativos declarados",
+    "critico rodou test_squad_gate.py (96 PASS/0 FAIL), test_mutacao_squad_gate.py (34/34 na epoca), test_qa_evidence.py (PASS) e squad_gate.py (exit 0, com os 60 vereditos sem blobs impressos): todos os numeros que eu declarei conferem",
+    "critico reproduziu a vacuidade logica: `_qa_critic_attested(artifacts, None)` e com lista vazia devolviam True sempre que houvesse QUALQUER veredito valido, por `all(... for p in [])` ser verdade por vacuidade",
+    "critico confirmou por grep que test_mutacao_squad_gate.py nao tinha mutacao nenhuma tocando `_um_veredito_cobre` nem `blobs_revisados`",
+    "critico leu `_recente_o_bastante` e verificou que ela ja' e' um AND por caminho, logo NAO tem a assimetria do achado 1 — tentou construir contraexemplo e nao conseguiu",
+    "autor, APOS as correcoes: test_squad_gate.py 96 PASS / 0 FAIL; test_mutacao_squad_gate.py 37/37 mutacoes mortas (as 3 novas cobrem all->any, o desligamento da checagem de conteudo, e o alargamento da excecao do auto-carimbo); squad_gate.py exit 0",
+    "autor mediu que as 3 mutacoes novas SOBREVIVERAM na primeira tentativa, e a causa nao era o mecanismo estar desprotegido: a suite de mutacao roda so' os testes nomeados em TESTES_DO_BLOCO, e os 13 canarios novos nao estavam na lista. Ligados, as 3 morrem."
+  ],
+  "problemas": [
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/squad_gate.py::_qa_critic_attested - o comentario da uniao, e a nota de fechamento no ledger",
+      "descricao": "Entrada: ler a afirmacao 'avaliadas uma a uma, que e' mais estrito que avaliar o conjunto de uma vez'. Observado: falso numa dimensao especifica e reproduzivel — `_reprovacao_vigente` usa `any()` sobre o alvo, entao avaliada com um caminho so' ela ignora reprovacoes que caem sobre OUTROS caminhos do mesmo escopo amplo, coisa que o modo conjunto nao ignorava. NAO vira bypass no ponto de chamada real (o caminho reprovado falha o proprio teste e o `all()` exige todos os staged), mas a frase esta' errada. CORRIGIDO na prosa, nao no codigo: o veto ficou mais CIRURGICO — nao contamina vizinhos —, e isso e' defensavel como propriedade, sem ser 'mais estrito'."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "tools/squad_gate.py::_um_veredito_cobre - alvo vazio",
+      "descricao": "Entrada: `_qa_critic_attested(artifacts, None)` ou com lista vazia. Observado: devolvia True sempre que houvesse QUALQUER veredito valido no ledger, com QUALQUER escopo, porque `all(... for p in [])` e' verdade por vacuidade. Nao exploravel hoje — o unico chamador real passa o que esta' staged, e classify() nunca exige qa_critic para lista vazia — e ANTERIOR a uniao, herdado intacto na extracao. CORRIGIDO com `if not alvo: return False` no topo: vacuidade logica num gate e' divida que so' cobra juros quando alguem acrescentar o segundo chamador."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "tools/test_mutacao_squad_gate.py - ausencia de mutacao para os mecanismos novos",
+      "descricao": "Entrada: grep por `_um_veredito_cobre` e `blobs_revisados` na suite de mutacao. Observado: zero ocorrencias — as 34 mutacoes nao tocavam nenhum dos dois mecanismos novos, e as provas de mutacao deles tinham sido feitas a mao pelo autor, valendo como evidencia daquela vez e nao como gate continuo. CORRIGIDO com 3 mutacoes formais. Achado adicional do autor ao aplicar: as 3 SOBREVIVERAM na primeira tentativa, porque a suite roda so' os testes de TESTES_DO_BLOCO e os 13 canarios novos nao estavam na lista — o instrumento media uma coisa e o rotulo dizia outra, a mesma familia que este bloco vem catalogando. Ligados, 37/37 morrem."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "CHANGELOG.md - paridade narrativa",
+      "descricao": "O arquivo narra o ADR-115 rodada a rodada ate por volta da 24a e para — as rodadas 36 a 38, que sao justamente as que mais mudaram a semantica do gate, nao apareciam. Nao e' quebra de regra escrita (o gate de doc-sync so' exige o ADR presente), e' quebra do padrao proprio do arquivo. CORRIGIDO com secao dedicada."
+    }
+  ],
+  "nao_verificado": [
+    "A extracao de `_um_veredito_cobre` nao foi conferida por diff textual contra a versao anterior: o arquivo inteiro esta' staged sobre um HEAD muito mais antigo, entao nao ha' commit intermediario para comparar. O critico validou por TESTE COMPORTAMENTAL (o modo conjunto continua dando os mesmos resultados) e classificou esta parte como INFERIDO por comportamento, nao CONFIRMADO por diff. Fica declarado.",
+    "A composicao de vereditos de SHAs diferentes cobrindo metades distintas do commit: aceita pelo gate, e portanto o commit pode nao corresponder a nenhum snapshot unico integralmente revisado. Registrado como risco ABERTO e nao consertado — o critico concordou que e' aceitavel por ora, porque o requisito antigo de 'um veredito cobrindo tudo' ja' era majoritariamente teatro e cada metade continua exigindo recencia real. Conserta-lo custa um ADR.",
+    "Os demais ~88 caminhos staged: este veredito cobre os 7 listados em `escopo_paths`. A cobertura do restante vem de vereditos anteriores, cada um com o seu escopo — a uniao e' do gate, nao deste artefato."
+  ],
+  "recomendacao_do_critico": "aprovar_com_ressalvas; nao encontrou caso em que a uniao faca o gate passar o que a regra antiga bloquearia, e os 4 canarios negativos foram provados por mutacao. As ressalvas sao a imprecisao da prosa (corrigida), a vacuidade logica (corrigida) e a ausencia de mutacao formal (corrigida).",
+  "nota_do_autor": "Terceira rodada seguida em que o achado principal e' sobre a PROSA e nao sobre o codigo: na 37a foi um comentario afirmando um criterio de aceite falso sobre o proprio arquivo; aqui foi eu chamar de 'mais estrito' o que e' 'mais cirurgico'. As duas passariam por qualquer canario, porque nenhum canario le prosa. Vale como padrao do bloco: onde o mecanismo esta' bem coberto, o defeito migra para o texto que o descreve.",
+  "sha_revisado": "d24c9d031e4f6410d808ab493ef388ff9989ccee",
+  "blobs_revisados": {
+    "tools/squad_gate.py": "e86584ffd0bfd580dbe0815a951c054f6ae82b6c",
+    "tools/test_squad_gate.py": "3433286de3a3674118561dbcfb59575affec41a9",
+    "tools/test_mutacao_squad_gate.py": "be2d32686fe099fe6778279f7ec2f0a6d87b5fca",
+    "CHANGELOG.md": "3f05c9f9e22ba2ec63e7ddd0c0179c6c3b19c5df",
+    "_meta/qa/adr-113-114-115-fechamento-do-bloco-staged-completo.json": "7f69494c869d35546d32444e9362367100179eb1"
+  }
+}

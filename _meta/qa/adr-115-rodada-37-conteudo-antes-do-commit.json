@@ -1,0 +1,173 @@
+{
+  "bloco": "adr-115-rodada-37-conteudo-antes-do-commit",
+  "papel": "qa_critic",
+  "rodada": 37,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "data": "2026-09-21T00:00:00Z",
+  "escopo_paths": [
+    "tools/squad_gate.py",
+    "tools/qa_evidence.py",
+    "tools/test_squad_gate.py",
+    "tools/test_qa_evidence.py",
+    "tools/run_canaries.py",
+    "tools/projeto_docs.py",
+    ".gitignore",
+    "docs/projeto/STATUS-REPORT.md",
+    "docs/projeto/backlog.csv",
+    "docs/projeto/cronograma.csv",
+    ".repo-identity.json",
+    "_meta/qa/adr-113-114-115-fechamento-do-bloco-staged-completo.json",
+    "_meta/qa/adr-115-rodada-37-conteudo-antes-do-commit.json",
+    "_meta/qa/adr-115-rodada-37-conteudo-antes-do-commit.md"
+  ],
+  "atestacao": {
+    "agentId": "a523cd3b6a1dbcef3",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic em primeiro plano, degrau canonico sonnet um abaixo do autor opus; instruido READ-ONLY no repositorio, com proibicao explicita de git checkout/restore/reset/stash/clean e rm. Sabotagens e mutantes rodados apenas em copias no scratchpad e num mini-repositorio git criado do zero fora da arvore, nunca contra os 92 caminhos staged."
+  },
+  "resumo": "Rodada sobre o conserto do ALTA da 36a rodada — a checagem de recencia que media ancestralidade de COMMIT e, por isso, ficava inerte no pre-commit, quando por definicao todo arquivo do bloco esta' fora do HEAD. O critico devolveu `corrigir` com 1 CRITICO, 2 ALTA e 3 MEDIA, TODOS reproduzidos contra os modulos reais e nao alegados. Todos foram corrigidos e reverificados; este artefato registra o estado APOS as correcoes. O achado CRITICO e' o mais instrutivo do bloco inteiro e vale guardar pela CLASSE: ao otimizar o caminho novo eu pulei a validacao de `sha_revisado`, raciocinando que o hash de conteudo e' mais forte que a ancestralidade — e era verdade para ESTA funcao e falso para o sistema, porque `sha_revisado` tambem e' a CHAVE que `_reprovacao_vigente` usa para achar a reprovacao irma do mesmo estado do codigo. Um campo raramente tem um consumidor so': pular a validacao dele num caminho quebrou, em silencio, outro caminho — e nenhum teste do caminho otimizado podia ver o dano, porque ele estava em outra funcao. Era a reabertura do defeito que as rodadas 8, 9 e 10 levaram tres tentativas para fechar.",
+  "verificacoes_executadas": [
+    "critico reproduziu o BUG ORIGINAL de forma independente: sem `blobs_revisados`, `_recente_o_bastante` devolve True para tools/projeto_docs.py (arquivo com edicao NAO commitada, sha_revisado=HEAD); com o campo e hash divergente, devolve False",
+    "critico reproduziu o BYPASS CRITICO: aprovativo com `blobs_revisados` corretos e `sha_revisado` = 'HEAD' (e tambem 'deadbeef') convivendo com uma reprovacao legitima de CRITICO aberto, mesmo escopo, sha valido -> `_reprovacao_vigente` devolveu False e `_qa_critic_attested` devolveu True, quando deveriam ser True e False",
+    "critico montou mini-repositorio git do zero no scratchpad para simular estado MM (staged != disco): com barra normal as duas implementacoes de _blob_indexado devolvem o hash do INDICE (correto); com barra invertida caiam no fallback e devolviam o hash do DISCO (nao revisado)",
+    "critico varreu os 502 valores de escopo_paths de todo _meta/qa/*.json: ZERO usam barra invertida hoje — o raio de explosao do achado e' prospectivo, nao passado",
+    "critico provou por mutacao que o canario `test_blobs_conteudo_IGUAL_ao_revisado_cobre` era fixture autorreferente: trocando `_blob_indexado` por uma funcao que devolve hash fixo, o teste seguia PASS porque os dois lados da comparacao chamavam a funcao quebrada e concordavam entre si",
+    "critico testou ao pe da letra o criterio de aceite escrito no comentario dos canarios e o REFUTOU: removendo o bloco `blobs`, o teste 1 continuava verde (a regra antiga tambem o cobria com sha=HEAD); so' o teste 2 discriminava",
+    "critico confirmou por grep que test_qa_evidence.py nao tinha uma referencia sequer a blobs_revisados ou _blob_indexado: o lado que ESCREVE o carimbo estava sem cobertura",
+    "critico comparou as duas implementacoes de _blob_indexado lado a lado em caminho com espaco, com acento, arquivo staged-deletado, untracked, diretorio, path inexistente e path fora do repo: concordam byte a byte em todos, e ambas devolvem None nos casos negativos",
+    "critico rodou python tools/test_squad_gate.py (85 PASS/0 FAIL na epoca), test_qa_evidence.py (PASS) e test_mutacao_squad_gate.py (34/34 mortas), e registrou que NENHUMA das 34 mutacoes tocava o mecanismo novo",
+    "autor, APOS as correcoes: test_squad_gate.py 87 PASS / 0 FAIL; test_mutacao_squad_gate.py 34/34 mortas; test_qa_evidence.py PASS",
+    "autor provou por mutacao que os DOIS canarios centrais agora discriminam: removendo o bloco `blobs` de uma copia do modulo, o teste de conteudo IGUAL vira False (vermelho) e o de conteudo DIFERENTE vira True (vermelho). Antes da correcao o primeiro passava com e sem o mecanismo."
+  ],
+  "problemas": [
+    {
+      "severidade": "CRITICO",
+      "estado": "corrigido",
+      "local": "tools/squad_gate.py::_recente_o_bastante - o early-return do ramo `blobs`",
+      "descricao": "Entrada: veredito aprovativo com `blobs_revisados` corretos e `sha_revisado` invalido ('HEAD', 'main', 'deadbeef' ou vazio), convivendo no ledger com uma reprovacao legitima de CRITICO aberto, mesmo escopo, sha valido. Comportamento errado observado: o `return True` acontecia ANTES de `_eh_sha_hex` e do `cat-file -e`, entao o aprovativo passava com identidade podre; e como `sha_revisado` e' a chave que `_reprovacao_vigente` usa para casar a reprovacao irma, `_sha_pleno` devolvia string vazia e a comparacao nunca casava — a reprovacao deixava de ser vigente. `_qa_critic_attested` devolveu True onde deveria devolver False: o gate liberaria o commit com um CRITICO aberto ao lado. E' a reabertura do defeito das rodadas 8, 9 e 10. PROVADO pelo critico chamando as quatro funcoes diretamente contra copia do modulo com ROOT apontado para o repo real. CORRIGIDO: piso de `_eh_sha_hex(sha)` + `cat-file -e` movido para ANTES do ramo `blobs` — o atalho pode dispensar a ANCESTRALIDADE, nunca a IDENTIDADE do commit revisado. Canario proprio: test_blobs_NAO_dispensam_sha_revisado_valido, com quatro grafias de sha podre."
+    },
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "_blob_indexado - nas duas implementacoes (squad_gate.py e qa_evidence.py)",
+      "descricao": "Entrada: o mesmo caminho escrito com barra invertida (forma NATIVA no Windows, onde este repo roda), sobre arquivo em estado MM. Comportamento errado observado: `git rev-parse :tools\\x.py` nao resolve contra o indice, a funcao caia no fallback `git hash-object`, que le o DISCO — devolvendo o conteudo NAO revisado. Do lado da ESCRITA seria pior: carimbar uma coisa e commitar outra, em silencio. Do lado da LEITURA o efeito e' inverso e tambem ruim: os paths chegam normalizados, entao uma chave gravada com barra invertida nunca seria encontrada e o veredito bloquearia para sempre, empurrando para --no-verify. PROVADO em mini-repositorio git isolado, com v1 commitada, v2 staged e v3 no disco. CORRIGIDO: normalizacao do separador nas duas implementacoes e tambem na CHAVE gravada por write_artifact. Canario: test_blobs_path_com_barra_invertida_resolve_no_INDICE."
+    },
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "tools/test_squad_gate.py - o canario de conteudo IGUAL e o comentario de criterio de aceite",
+      "descricao": "Duas falhas na propria PROVA. (1) O teste derivava o hash esperado chamando `sg._blob_indexado`, a mesma funcao sob teste: o critico provou por mutacao que, com `_blob_indexado` devolvendo hash fixo, o teste seguia verde porque os dois lados concordavam no erro — a fixture que le a propria constante, terceira ocorrencia da classe neste bloco (rodadas 20 e 21). (2) O comentario prometia que remover o bloco `blobs` deixaria os dois primeiros testes vermelhos, e era FALSO para o primeiro: com sha_revisado=HEAD a regra antiga tambem o cobria. Afirmacao verificavel que o arquivo fazia sobre si mesmo, hoje falsa. CORRIGIDO: hash obtido por subprocess git independente, `sha_revisado` apontando para um commit ANTIGO que a ancestralidade NAO cobre, assercao explicita de que sem o campo o caso TEM de reprovar (senao a montagem nao discrimina), e o comentario reescrito com o que foi medido."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/squad_gate.py::divida_sem_blobs",
+      "descricao": "O comentario dizia 'ilegivel NAO some daqui em silencio' sobre um `except: continue` que fazia exatamente isso — rotulo divergindo de conteudo, e a decima vez que a assimetria entre funcoes irmas vira achado neste bloco (a irma `legados_declarados()` denuncia por nome). Em main() o sumico ficava mascarado porque a irma denuncia o mesmo arquivo por perto, mas isso e' acidente de ordem de chamada, nao contrato. CORRIGIDO: denuncia por nome, sem bloquear."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/test_qa_evidence.py - cobertura zero do lado que ESCREVE",
+      "descricao": "Nenhuma referencia a blobs_revisados ou _blob_indexado (confirmado por grep). O auto-carimbo em write_artifact, que e' justamente o lado exposto ao achado da barra invertida porque recebe escopo_paths cru, nao tinha teste de regressao nenhum. CORRIGIDO: `conferir_carimbo_de_blobs()` verifica que o carimbo e' gravado, que bate com o hash do INDICE, e que o mesmo caminho em barra invertida produz o mesmo hash e chave normalizada."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "_meta/qa/adr-113-114-115-fechamento-do-bloco-staged-completo.json - o rotulo do ALTA fechado",
+      "descricao": "Fechar como 'corrigido' escondia nuance que o critico mediu: (a) os ~90 vereditos legados seguem sob a regra antiga (por desenho, nao-retroativo), e (b) aquele proprio veredito nao carrega `blobs_revisados`, tendo sido escrito antes do campo existir, e portanto atesta a si mesmo pela regra antiga. CORRIGIDO: os tres limites ficaram escritos na `descricao`, no mesmo lugar onde se le 'corrigido'. O item (b) deixa de valer para ESTE veredito da 37a, que foi registrado pela ferramenta e ja' carrega o campo."
+    }
+  ],
+  "nao_verificado": [
+    "Os demais ~80 caminhos staged do bloco: este veredito cobre apenas os 12 listados em `escopo_paths`, que foram os efetivamente auditados. A cobertura do restante vem de vereditos anteriores, cada um com o seu escopo — a uniao e' do gate, nao deste artefato.",
+    "A suite de mutacao (test_mutacao_squad_gate.py) nao foi ESTENDIDA para o mecanismo novo: ela mata 34/34 das mutacoes que ja' cobria, e nenhuma delas toca `blobs_revisados`. A prova de mutacao do mecanismo novo foi feita a mao pelo autor e esta' descrita em `verificacoes_executadas`, mas nao e' gate continuo. Fica declarado como debito.",
+    "Se o hash do blob INDEXADO e' a granularidade certa quando um mesmo commit mistura arquivos revisados e nao revisados: o campo prova conteudo por caminho, nao a coerencia do conjunto."
+  ],
+  "recomendacao_do_critico": "corrigir na entrega original (1 CRITICO, 2 ALTA, 3 MEDIA, todos reproduzidos contra os modulos reais); este artefato registra o estado APOS as correcoes, verificado por nova execucao dos canarios e por prova de mutacao dos dois canarios centrais.",
+  "nota_do_autor": "O CRITICO desta rodada e' contra mim e e' o melhor achado do bloco. Eu otimizei um caminho pulando a validacao de um campo, raciocinando corretamente sobre a funcao que estava editando e ignorando que o campo tinha OUTRO consumidor. O dano apareceu numa funcao que eu nao toquei, e nenhum teste do caminho otimizado podia ve-lo. Vale como regra geral, e nao so' aqui: antes de pular a validacao de um campo, procurar quem MAIS o le. || CORRECAO DE REGISTRO (21/09): a cadeia `substitui` deste artefato contem gravacoes anteriores da MESMA rodada, e nenhuma delas e' uma rodada distinta. A primeira nao listava os proprios artefatos em `escopo_paths`; a segunda saiu com o numero de rodada inflado em 100 por um script do autor que somava um deslocamento para evitar colisao — numero falso no ledger, ainda que sem efeito sobre o gate; a terceira teve a propria nota mutilada pelo shell, que interpretou a crase como substituicao de comando e comeu a palavra. Corrigido aqui. Fica registrado em vez de apagado porque a cadeia existe exatamente para isso: quem le ve todas e sabe o que aconteceu. E vale como achado de processo, nao so' de digitacao — tres tentativas para gravar um registro honesto, num bloco cujo tema E' a honestidade do registro.",
+  "sha_revisado": "d24c9d031e4f6410d808ab493ef388ff9989ccee",
+  "blobs_revisados": {
+    "tools/squad_gate.py": "40b53c415c2029517702adf8a9f7df74237617e1",
+    "tools/qa_evidence.py": "477c73b1431aa035ec8b81046c9f7a366c774b3f",
+    "tools/test_squad_gate.py": "3433286de3a3674118561dbcfb59575affec41a9",
+    "tools/test_qa_evidence.py": "3327c5d12ff49c88de866405763a04575d5ed35c",
+    "tools/run_canaries.py": "b8ec02ee8643dc17c454a4551b4a999687aad880",
+    "tools/projeto_docs.py": "9260ba223856e24d6f219a5fe9e35cd8954c8b61",
+    ".gitignore": "84661306e9fc7d3253a7d7a2a65f75081a633ba4",
+    "docs/projeto/STATUS-REPORT.md": "f76d50c586d32d5ca2c7326996bfeb9bafd5f87e",
+    "docs/projeto/backlog.csv": "95a4617a00b84944656e43440ff063928f08f94f",
+    "docs/projeto/cronograma.csv": "83bd6fc0bbb1104653ce312df4547f6874369847",
+    ".repo-identity.json": "33a59538bb4fc937769212a6d83ec478c72b4ea0",
+    "_meta/qa/adr-113-114-115-fechamento-do-bloco-staged-completo.json": "7f69494c869d35546d32444e9362367100179eb1"
+  },
+  "substitui": [
+    {
+      "rodada": 37,
+      "data": "2026-09-21T00:00:00Z",
+      "recomendacao": "aprovar_com_ressalvas",
+      "sha_revisado": "d24c9d031e4f6410d808ab493ef388ff9989ccee",
+      "agentId": "a523cd3b6a1dbcef3",
+      "escopo_paths": [
+        "tools/squad_gate.py",
+        "tools/qa_evidence.py",
+        "tools/test_squad_gate.py",
+        "tools/test_qa_evidence.py",
+        "tools/run_canaries.py",
+        "tools/projeto_docs.py",
+        ".gitignore",
+        "docs/projeto/STATUS-REPORT.md",
+        "docs/projeto/backlog.csv",
+        "docs/projeto/cronograma.csv",
+        ".repo-identity.json",
+        "_meta/qa/adr-113-114-115-fechamento-do-bloco-staged-completo.json"
+      ]
+    },
+    {
+      "rodada": 137,
+      "data": "2026-09-21T00:00:00Z",
+      "recomendacao": "aprovar_com_ressalvas",
+      "sha_revisado": "d24c9d031e4f6410d808ab493ef388ff9989ccee",
+      "agentId": "a523cd3b6a1dbcef3",
+      "escopo_paths": [
+        "tools/squad_gate.py",
+        "tools/qa_evidence.py",
+        "tools/test_squad_gate.py",
+        "tools/test_qa_evidence.py",
+        "tools/run_canaries.py",
+        "tools/projeto_docs.py",
+        ".gitignore",
+        "docs/projeto/STATUS-REPORT.md",
+        "docs/projeto/backlog.csv",
+        "docs/projeto/cronograma.csv",
+        ".repo-identity.json",
+        "_meta/qa/adr-113-114-115-fechamento-do-bloco-staged-completo.json",
+        "_meta/qa/adr-115-rodada-37-conteudo-antes-do-commit.json",
+        "_meta/qa/adr-115-rodada-37-conteudo-antes-do-commit.md"
+      ]
+    },
+    {
+      "rodada": 37,
+      "data": "2026-09-21T00:00:00Z",
+      "recomendacao": "aprovar_com_ressalvas",
+      "sha_revisado": "d24c9d031e4f6410d808ab493ef388ff9989ccee",
+      "agentId": "a523cd3b6a1dbcef3",
+      "escopo_paths": [
+        "tools/squad_gate.py",
+        "tools/qa_evidence.py",
+        "tools/test_squad_gate.py",
+        "tools/test_qa_evidence.py",
+        "tools/run_canaries.py",
+        "tools/projeto_docs.py",
+        ".gitignore",
+        "docs/projeto/STATUS-REPORT.md",
+        "docs/projeto/backlog.csv",
+        "docs/projeto/cronograma.csv",
+        ".repo-identity.json",
+        "_meta/qa/adr-113-114-115-fechamento-do-bloco-staged-completo.json",
+        "_meta/qa/adr-115-rodada-37-conteudo-antes-do-commit.json",
+        "_meta/qa/adr-115-rodada-37-conteudo-antes-do-commit.md"
+      ]
+    }
+  ]
+}

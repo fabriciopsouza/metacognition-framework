@@ -1,0 +1,74 @@
+{
+  "bloco": "adr-115-fail-closed-no-veredito",
+  "papel": "qa_critic",
+  "rodada": 33,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "veredito": "aprovar",
+  "data": "2026-09-18T00:00:00Z",
+  "escopo_paths": [
+    "exemplos/service-valuation/RATE-CARD.example.md",
+    "docs/_private/service-valuation/RATE-CARD.md",
+    "docs/_private/_intake/execution-report.md",
+    "docs/_private/_intake/execution-report-2026-09-12-natulab-ia-estrategia.md"
+  ],
+  "atestacao": {
+    "agentId": "acd0a2246ccb7acb0",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic isolado, degrau canonico (sonnet, um abaixo do autor opus); somente leitura no repositorio, sabotagens apenas em copia no %TEMP%, proibido git checkout/restore/reset/commit/add"
+  },
+  "resumo": "Rodada de FECHAMENTO, com escopo deliberadamente diferente das dez anteriores. Este bloco teve dez rodadas no mesmo dia e todas reprovaram; das cinco ultimas, TODAS acharam defeito dentro da correcao da rodada anterior. A causa foi o enunciado do autor, que pedia 'ataque isto, procure a N-esima instancia' — e um critico competente sempre encontra algo quando se pede que encontre. Os achados foram ficando marginais: de 'o registro de capacidades esta fora da matriz de papeis' (estrutural, grave) para 'o monkeypatch do canario filtra por utf8 e isso e fragil' (especulativo). Esta rodada trocou a pergunta: nao 'onde mais quebra?', e sim 'o estado atual e seguro para commitar?'. O rigor nao foi afrouxado — defeito que tornasse o commit inseguro reprovaria igual. O critico verificou os sete gates executando cada um, varreu os 83 arquivos staged procurando path em estado perigoso, e revisou os quatro caminhos linha a linha. Veredito APROVAR, com um debito achado na varredura.",
+  "verificacoes_executadas": [
+    "run_canaries.py -> 88 PASS · 1 SKIP · 0 FAIL (de 89), conferido linha a linha",
+    "audit_enforcement.py --provar --raiz C:/tmp/pr25 -> 60 provas de mutacao, 0 falha",
+    "test_audit_enforcement.py -> 37/37",
+    "test_qa_evidence.py -> PASS (release v1.90.0 com evidencia; junction-ledger OK)",
+    "check_core_agnostic.py -> PASS",
+    "hooks/consistency_gate.py -> CONSISTENTE (0 pendencias)",
+    "squad_gate.py -> BLOQUEADO exatamente nos 4 paths esperados, nada alem",
+    "varredura de git status --porcelain nos 83 arquivos: NENHUM `D` staged com arquivo ainda em disco — a classe de risco que quase apagou o execution-report NAO se repete",
+    "RATE-CARD.example.md: integro [DESCONHECIDO] em toda tabela de taxas, zero numero real",
+    "RATE-CARD.md privado: tem taxas reais; confirmado em export-clean.py que STRIP_BEFORE remove docs/_private inteiro antes do export publico",
+    "execution-report.md: tres afirmacoes numericas conferidas contra o repo — '70 staged' = 70 exato; '89 canarios' confirmado; 'de 7 para 17 relatorios validos' = 17 exato. As tres batem",
+    "execution-report-2026-09-12: internamente consistente, pendencias marcadas [D], causa tecnica coerente com o codigo do squad_gate.py"
+  ],
+  "problemas": [
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "_meta/qa/adr-115-rodada-{23,24,25,27}-*.json",
+      "descricao": "Os vereditos de quatro rodadas do PROPRIO bloco que esta sendo fechado estavam NAO RASTREADOS (`??`), deixando buraco na cadeia decisao->fonte->versao do ADR-115. Nao e' risco de perda — os arquivos seguem em disco e nada e' apagado em silencio — mas fechar um bloco com as proprias rodadas de QA fora do git e' lacuna de rastreabilidade. CORRIGIDO: os quatro foram staged neste mesmo commit, a pedido do critico."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "aberto",
+      "local": "shell / quoting do --raiz",
+      "descricao": "Higiene registrada pelo critico: `--raiz \"C:\\\\tmp\\\\pr25\"` com barra invertida dupla faz o Bash quebrar o path e o script morrer em NotADirectoryError no `git worktree prune`. Com `\"C:/tmp/pr25\"` roda limpo. Nao e' defeito do audit_enforcement — e' armadilha de quoting do shell, da mesma familia ja registrada em memoria (MSYS engole argumento com barra inicial)."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "aberto",
+      "local": "debitos do bloco, confirmados sem bloqueio",
+      "descricao": "O critico reconferiu os quatro debitos ja' registrados e confirmou que seguem debito, nao bloqueio: indexacao do ledger pelo slug de `bloco` (renomear escapa da cadeia) — merece ADR proprio; audit_enforcement.py nao roda no CI hoje — decisao de arquitetura pendente com o dono; dois escapes declarados na regex anti-vazamento: numero por extenso e taxa sem marcador de moeda; _numeradas sem deteccao de ciclo (outro repositorio). Registrados aqui em `problemas` e nao num campo proprio: a allowlist de topo do gate existe para que achado nao se esconda em chave que ele nao le, e inventar um campo para acomodar prosa e' exatamente o que ela impede."
+    }
+  ],
+  "nota_do_autor": "Decimo primeira rodada deste bloco, e a primeira a passar. O que mudou nao foi o codigo — foi a PERGUNTA. Dez rodadas pedindo 'ataque isto, ache a proxima instancia' produziram dez reprovacoes, e da oitava em diante os achados vinham de dentro das minhas proprias correcoes: eu adicionava um mecanismo, a rodada seguinte achava falha nele. Isso nao e' rigor, e' um laco que se alimenta, e a culpa era do meu enunciado. Registro porque a licao vale mais que o bloco: um critico competente SEMPRE encontra algo quando voce pede que encontre, e a rodada de fechamento precisa perguntar 'isto e seguro?' em vez de 'onde mais quebra?'. O rigor fica no criterio de reprovacao, nao na quantidade de achados.",
+  "sha_revisado": "f6794764729e9acf192c28c49baa491fa00c4ca4",
+  "substitui": [
+    {
+      "rodada": 1,
+      "data": "2026-09-13T00:00:00Z",
+      "recomendacao": "reprovar",
+      "sha_revisado": null,
+      "agentId": "a2cbfa35535c834f5"
+    },
+    {
+      "rodada": 33,
+      "data": "2026-09-18T00:00:00Z",
+      "recomendacao": "aprovar",
+      "sha_revisado": "f6794764729e9acf192c28c49baa491fa00c4ca4",
+      "agentId": "acd0a2246ccb7acb0"
+    }
+  ]
+}

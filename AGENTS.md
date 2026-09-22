@@ -8,6 +8,10 @@ Papéis: .agent/skills/ (pmo · discovery · architect · developer · qa-critic
 _template) · Regras: .agent/rules/ · Workflows: .agent/workflows/.
 
 ## Regras sempre ativas
+
+> **Confirmação interativa de bloco é o default** — plano antes, execução depois
+> (`.agent/rules/06-confirmacao-interativa.md`, ADR-111). O QA obrigatório do degrau
+> abaixo NÃO passa por esse gate: ele é automático (ADR-110).
 Ver .agent/rules/ (todas referenciam _shared/).
 
 ## Primeira ação obrigatória
@@ -47,7 +51,7 @@ Ver .agent/rules/ (todas referenciam _shared/).
 
 ## Índice de capacidades
 **Antes de afirmar que falta algo, LEIA `CAPABILITIES.md`** (ADR-072/073). Feature nova → registro
-em `capabilities.json`. Write-isolation ADR-070.
+em `capabilities.json`. Cada repositorio escreve apenas em si mesmo: o que precisa mudar noutro projeto entra como dependencia externa, nunca como edicao remota (ADR-070).
 
 ## Aplicações
 Domínios (BI, regulado, etc.) NÃO ficam no núcleo — clonar `.agent/skills/_template` e viver FORA.

@@ -1,0 +1,64 @@
+{
+ "bloco": "adr-115-fail-closed-no-veredito",
+ "papel": "qa_critic",
+ "rodada": 10,
+ "passou": false,
+ "recomendacao": "reprovar",
+ "veredito": "reprovar",
+ "data": "2026-09-14T00:00:00Z",
+ "escopo_paths": [
+  "tools/squad_gate.py",
+  "tools/test_squad_gate.py",
+  "tools/test_mutacao_squad_gate.py",
+  "docs/adr/115-fail-closed-no-veredito-achado-bloqueante-nao-passa-por-rotulo.md",
+  "CHANGELOG.md"
+ ],
+ "atestacao": {
+  "agentId": "ad0c949ab7ca3f131",
+  "modelo": "sonnet",
+  "autor": "opus",
+  "isolamento": "subagente qa-critic em segundo plano, degrau abaixo do autor (ADR-109/110); instruido a nao tocar o repositorio e a experimentar so no scratchpad, com os scripts de reproducao persistidos la"
+ },
+ "resumo": "REPROVOU com dois CRITICOS, um ALTA e um BAIXA, todos reproduzidos contra o binario real, e a rodada foi pedida em DUAS frentes: atacar o codigo novo da 9a rodada E auditar a prosa deliberadamente, porque a 9a rodada tinha acabado de mostrar que uma alegacao falsa sobrevive a oito rodadas quando esta escrita em texto. As duas frentes acharam. CODIGO: (1) `_reprovacao_vigente` nao chamava `achados_bloqueantes_abertos`, ao contrario do irmao escrito na MESMA rodada tres funcoes abaixo — reprovacao inteiramente corrigida vetava o aprovativo para sempre; o critico reproduziu com dado REAL do ledger (adr-114-service-valuation-fechamento.json). (2) `_sha_pleno` e a guarda de `_recente_o_bastante` resolviam REFERENCIA SIMBOLICA: `rev-parse --verify HEAD^{commit}` aceita `HEAD`, `main`, tag — e ref SE MOVE, entao `sha_revisado: 'HEAD'` nunca envelhece e reabre o B2/B2-r2 pela porta do FORMATO. PROSA: (3) a retratacao da 9a rodada ficou pela metade — a alegacao falsa sobre `juncao_release` seguia viva, sem retratacao, no docstring de um teste. (4) os numeros do bloco 'Prova' estavam defasados em tres lugares.",
+ "verificacoes_executadas": [
+  "critico reproduziu o CRITICO 1 com dado REAL do ledger, nao sintetico: _reprovacao_vigente(real + aprovativo, aprovativo, ['CHANGELOG.md']) -> True com todos os achados ja corrigidos",
+  "critico reproduziu o CRITICO 2 ponta a ponta: sha_pleno('HEAD') -> hash real; _recente_o_bastante({sha_revisado:'HEAD'}) -> True; _qa_critic_attested -> True",
+  "critico varreu _meta/qa/*.json e confirmou que hoje NENHUM veredito real usa sha nao-hexadecimal: o buraco estava latente, nao explorado",
+  "critico conferiu por leitura que o teste que provaria a ausencia do CRITICO 1 so existia para o papel irmao (test_juncao_de_RELEASE_... testa 'achado RESOLVIDO nao pode travar'; o equivalente de qa_critic nao existia)",
+  "critico conferiu o numero do legado por execucao real de legados_declarados(): 20 vereditos, 41 achados — BATE",
+  "AUTOR, de forma independente e ANTES do veredito chegar: achou o mesmo CRITICO 1 sozinho, ao notar que _reprovacao_vigente travaria o proprio bloco ADR-115; a confirmacao do critico e' convergencia, nao descoberta unica",
+  "autor mediu o ledger antes de decidir o limite do sha: 10 reprovacoes sem sha_revisado; 2 com achado bloqueante aberto; 1 delas sem escopo (bloquearia o repositorio inteiro)",
+  "autor, apos corrigir: reprovacao REAL do ledger com achados tratados nao trava mais CHANGELOG.md -> False; _sha_pleno('HEAD') -> ''",
+  "autor, apos corrigir: 7 formas simbolicas recusadas (HEAD, main, origin/main, HEAD~1, tag, @, refs/heads/main) e o hash real aceito curto e longo",
+  "autor: 68 PASS / 0 FAIL no canario; 20/20 mutacoes mortas com baseline ZERO; sha256 do squad_gate identico antes e depois",
+  "autor: numeros da prosa passaram a ser INJETADOS por medicao (script le MUTACOES e roda o canario) em vez de digitados — foi digitando que o erro apareceu duas vezes"
+ ],
+ "problemas": [
+  {
+   "severidade": "CRITICO",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — _reprovacao_vigente()",
+   "descricao": "Nao chamava achados_bloqueantes_abertos(r): contava a reprovacao pelo ROTULO, que e' precisamente o defeito que este ADR existe para corrigir, cometido pelo autor no codigo da correcao. O irmao _reprovacao_de_release_vigente, escrito na MESMA rodada tres funcoes abaixo, ja chamava — 3a assimetria entre irmaos deste ADR, desta vez dentro do mesmo commit. Consequencia no fluxo real: a correcao acontece na ARVORE DE TRABALHO, entao reprovacao e aprovativo compartilham o sha, e um bloco que corrigiu tudo travaria para sempre; fail-closed viraria travado. CORRIGIDO; provado por mutacao dedicada e canario que cobre os dois lados (tratada nao trava, aberta trava). NOTA DE PROCEDENCIA: o autor achou este defeito por conta propria antes do veredito chegar — o critico confirmou de forma independente, e com dado real do ledger em vez de sintetico."
+  },
+  {
+   "severidade": "CRITICO",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — _sha_pleno() e a guarda de _recente_o_bastante()",
+   "descricao": "`rev-parse --verify <x>^{commit}` resolve QUALQUER referencia valida, e referencia SE MOVE. Um veredito com `sha_revisado: 'HEAD'` — erro de digitacao plausivel, sem malicia — nunca envelheceria: a cada execucao do gate, 'HEAD' vira o HEAD daquele momento, reabrindo a classe B2/B2-r2 ('revisado uma vez = liberado para sempre') pela porta do FORMATO em vez da ausencia. CORRIGIDO com _eh_sha_hex(), aplicando pela enesima vez a licao do ADR: nao enumerar as refs proibidas, enumerar a forma certa (hexadecimal, 7 a 40). Provado por mutacao e canario com 7 formas simbolicas."
+  },
+  {
+   "severidade": "ALTA",
+   "estado": "corrigido",
+   "local": "tools/test_squad_gate.py — docstring de test_REPROVACAO_vigente_invalida_aprovativo_do_mesmo_escopo",
+   "descricao": "A alegacao falsa que a 9a rodada retratou ('o mecanismo ja existia para juncao_release') seguia VIVA, sem retratacao, num terceiro arquivo. Eu retratei no ADR, no CHANGELOG, no docstring de squad_gate.py e no veredito da 8a rodada, e nao varri o repositorio inteiro. Retratacao que nao varre todos os arquivos e' meia retratacao — e a alegacao falsa continua verdadeira para quem ler o arquivo esquecido. CORRIGIDO com a retratacao completa no local. Reforca o achado aceito como limite declarado: prosa nao tem gate, e por isso exige varredura deliberada, nao boa intencao."
+  },
+  {
+   "severidade": "BAIXA",
+   "estado": "corrigido",
+   "local": "docs/adr/115-*.md (bloco Prova) e CHANGELOG.md",
+   "descricao": "O bloco 'Prova' do ADR ainda dizia 15 mutacoes/63 PASS e o CHANGELOG dizia 69 PASS, quando o medido era 20 e 68. O '69' fui EU que escrevi, sem medir, depois de acrescentar testes — a forma mais simples do erro n.1 registrado neste proprio ADR. CORRIGIDO, e corrigido de um jeito que resiste: os numeros passaram a ser INJETADOS por um script que le MUTACOES e roda o canario de verdade, em vez de digitados. LACUNA DECLARADA: o ADR-115 nao tem canario de numeros proprio; `tools/test_numeros_controle.py` cobre so o pacote de controle, com recorte por secao. Estender aquele canario a este bloco e' o candidato obvio de proximo bloco, e nao foi feito aqui para nao mexer, sem QA, num canario que hoje guarda outro pacote."
+  }
+ ],
+ "recomendacao_do_critico": "reprovar; dois CRITICOS reproduzidos no codigo novo, mais retratacao incompleta e numeros defasados",
+ "nota_do_autor": "Decima rodada. Pela primeira vez o critico e eu chegamos ao MESMO achado por caminhos diferentes — eu por raciocinio sobre o fluxo (o gate travaria o proprio bloco), ele por experimento com dado real do ledger. O achado ALTA e' o que mais ensina: a 9a rodada me mostrou que alegacao falsa sobrevive em prosa, eu retratei em quatro lugares, e a alegacao continuou viva num quinto. Nao ha canario que pegue isso; ha varredura deliberada, e ela precisa ser do repositorio inteiro."
+}

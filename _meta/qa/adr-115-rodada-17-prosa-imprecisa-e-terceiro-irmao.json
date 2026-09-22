@@ -1,0 +1,52 @@
+{
+ "bloco": "adr-115-fail-closed-no-veredito",
+ "papel": "qa_critic",
+ "rodada": 17,
+ "passou": false,
+ "recomendacao": "corrigir",
+ "veredito": "corrigir",
+ "data": "2026-09-14T00:00:00Z",
+ "escopo_paths": [
+  "tools/squad_gate.py",
+  "tools/test_squad_gate.py",
+  "tools/test_mutacao_squad_gate.py",
+  "behaviors/manifest.json",
+  "docs/adr/115-fail-closed-no-veredito-achado-bloqueante-nao-passa-por-rotulo.md",
+  "CHANGELOG.md",
+  "capabilities.json"
+ ],
+ "atestacao": {
+  "agentId": "af3d1eb93c953a4b5",
+  "modelo": "haiku",
+  "autor": "opus",
+  "isolamento": "subagente qa-critic em segundo plano, contexto proprio, modelo abaixo do autor. NOTA DE PROCEDENCIA: a rodada 17 foi PRIMEIRO tentada em sonnet (o degrau canonico, ADR-109/110) e MORREU no limite de sessao antes de produzir qualquer saida — nao houve veredito, e a falha nao foi tratada como aprovacao. Relancada em haiku, que e' um degrau ABAIXO do canonico. Isso ENFRAQUECE a evidencia desta rodada em relacao as dezesseis anteriores, e fica declarado."
+ },
+ "resumo": "Primeira rodada sem CRITICO nem ALTA em dezessete. O critico foi encarregado, de proposito, de VERIFICAR as cinco afirmacoes mecanicas que o autor tinha acabado de registrar — porque tres rodadas ja haviam pego prosa do autor afirmando mais do que o codigo entrega. CONFIRMOU quatro delas contra o binario real (canario dos interruptores nao e' carimbo; as entradas novas nao travam trabalho staged; `_norm_modelo` nao colide modelos reais; 27/27 mutacoes e suite verde) e marcou UMA como imprecisa. Dois achados MEDIA: (1) a prosa do autor sobre `../` e caminho absoluto dizia 'nao normaliza', o que e' verdade e e' ENGANOSO — o casamento por SUFIXO sobrevive ao `../` (o `.py` continua no fim da string) e so' o casamento por PREFIXO e EXACT escapa; dizer so' 'nao normaliza' sugere que tudo escapa. (2) `.agent/workflows/` fora da matriz: a matriz protegia `.agent/skills/` e `.agent/rules/` e esquecia o TERCEIRO irmao, que orquestra a sequencia do proprio squad (start-session, handoff, checkpoint) — omitir um passo ali altera todas as sessoes futuras sem tocar em codigo.",
+ "verificacoes_executadas": [
+  "critico REPRODUZIU a afirmacao 1 do autor: removendo entrada da matriz, o canario dos interruptores falha — nao e' carimbo",
+  "critico confirmou a afirmacao 2: nenhuma das 4 entradas novas esta staged",
+  "critico REFUTOU PARCIALMENTE a afirmacao 3 e essa e' a contribuicao principal da rodada: `../tools/squad_gate.py` -> ['qa_critic'] e `../_shared/foo.md` -> nenhum. A prosa estava tecnicamente certa e praticamente enganosa",
+  "critico confirmou a afirmacao 4 contra o roster real de modelos: sem colisao",
+  "critico confirmou a afirmacao 5 rodando de verdade: 27/27 mutacoes mortas, 87 PASS / 1 SKIP na suite",
+  "critico VALIDOU o argumento de circularidade do `_meta/qa/` como formalmente correto, em vez de aceita-lo por autoridade",
+  "critico varreu defaults permissivos e declarou NENHUM encontrado: escopo_paths ausente, sha_revisado vazio e recomendacao com typo todos bloqueiam",
+  "critico verificou que o fallback `modelo_autor` nao abre escape",
+  "autor, apos corrigir: `.agent/workflows/start-session.md` -> ['qa_critic']; nenhum arquivo staged afetado; 76 PASS / 0 FAIL"
+ ],
+ "problemas": [
+  {
+   "severidade": "MEDIA",
+   "estado": "corrigido",
+   "local": "docs/adr/115-*.md — secao sobre normalizacao de path",
+   "descricao": "A prosa dizia que `classify()` 'nao resolve `../` nem caminho absoluto', o que e' literalmente verdadeiro e induz a conclusao errada: o casamento por SUFIXO sobrevive a essas formas (`.py` continua no fim da string), e so' o casamento por PREFIXO e EXACT escapa. CORRIGIDO com uma tabela mostrando as duas metades, e o canario passou a GUARDAR a assimetria — duas assercoes que quebram se o comportamento mudar, para a prosa nao envelhecer sozinha. E' o quarto achado de imprecisao em prosa do autor neste bloco, e o mais sutil: os tres anteriores eram falsos, este era verdadeiro e enganoso."
+  },
+  {
+   "severidade": "MEDIA",
+   "estado": "corrigido",
+   "local": "behaviors/manifest.json — matriz, ausencia de .agent/workflows/",
+   "descricao": "A matriz protegia `.agent/skills/` e `.agent/rules/` e esquecia `.agent/workflows/`, que contem start-session, handoff, checkpoint, implement — a sequencia de operacao do proprio squad. Enquanto `.github/workflows/` executa codigo no CI, estes orquestram COMPORTAMENTO: omitir um passo (sync, reconciliacao de WIP, boot-check) altera todas as sessoes futuras sem tocar em codigo nenhum. CORRIGIDO, e o canario dos interruptores passou a cobri-lo. Terceiro irmao esquecido da mesma familia: a 16a rodada achou dois, o autor achou mais dois seguindo o metodo, e o critico achou o quinto."
+  }
+ ],
+ "recomendacao_do_critico": "corrigir; dois achados MEDIA, nenhum bypassa o mecanismo, ambos reduzem a vigilancia declarada",
+ "nota_do_autor": "Decima setima rodada, e a primeira sem CRITICO nem ALTA. O achado da prosa e' o mais fino do bloco: eu escrevi uma frase VERDADEIRA que levava a conclusao ERRADA, e as tres imprecisoes anteriores eram simplesmente falsas. Guardei a correcao num canario em vez de so' corrigir o texto, porque texto nao tem quem o recalcule — foi a licao da 12a rodada. DECLARO A FRAQUEZA DESTA RODADA: ela rodou em haiku, nao em sonnet, porque a tentativa em sonnet morreu no limite de sessao. E' um degrau abaixo do canonico, entao esta evidencia vale MENOS que as dezesseis anteriores, e o bloco ainda nao tem veredito aprovativo de um critico no degrau certo."
+}

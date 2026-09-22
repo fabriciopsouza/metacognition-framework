@@ -72,6 +72,30 @@ def render_md(v):
         L.append(f"- **Discovery:** {p.get('discovery', '—')}")
         L.append(f"- **RRC:** {p.get('rrc', '—')}")
         L.append(f"- **Metodo-senior:** {p.get('metodo_senior', '—')}")
+    # A CADEIA TEM DE APARECER NO QUE O HUMANO LE.
+    #
+    # O `.md` e' o artefato que gente abre — e ele nao mostrava nada de
+    # `substitui`/`substitui_reprovacao`. Consertar a cadeia so' no JSON deixava
+    # a informacao existindo para a maquina e invisivel para quem decide: um
+    # veredito aprovativo que APAGOU uma reprovacao parecia um aprovativo
+    # comum. [achado ALTA do QA de 17/09/2026]
+    antecedentes = v.get("substitui") or []
+    if antecedentes:
+        L += ["", "## Substitui vereditos anteriores deste bloco", ""]
+        if v.get("substitui_reprovacao"):
+            L.append("> **ATENCAO: este veredito substitui uma REPROVACAO.** "
+                     "Leia os antecedentes antes de tratar o bloco como aprovado.")
+            L.append("")
+        for a in antecedentes:
+            L.append(f"- rodada {a.get('rodada', '?')} · {a.get('data', '?')} · "
+                     f"**{a.get('recomendacao') or a.get('veredito') or '?'}** · "
+                     f"sha `{str(a.get('sha_revisado'))[:12]}` · "
+                     f"agentId `{a.get('agentId') or '—'}`")
+            cobria = a.get("escopo_paths")
+            if cobria is not None:
+                L.append(f"  - cobria {len(cobria)} caminho(s)"
+                         + (f": {', '.join(cobria[:4])}" if cobria else " (nenhum)")
+                         + (" …" if len(cobria) > 4 else ""))
     if v.get("steelman"):
         L += ["", "## Steelman", v["steelman"]]
     L += ["", "## Problemas", ""]
@@ -147,6 +171,79 @@ def _head_sha():
     return r.stdout.strip() if r.returncode == 0 else None
 
 
+def validate_substitui(valor):
+    """(erros). Mesma disciplina que `validate_problemas`, e pela mesma razao.
+
+    `list(anterior.get("substitui") or [])` aceita uma STRING e a fragmenta em
+    caracteres, sem erro naquela linha. O crash so' aparece depois, em
+    `render_md` — e a essa altura o `json.dump` JA' GRAVOU o JSON corrompido,
+    porque ele roda antes. A cada nova tentativa a lista de fragmentos cresce e
+    nunca converge; o `.md` fica permanentemente desatualizado.
+
+    Este arquivo ja' tinha aprendido isso com `problemas` (item fora do schema
+    passava e o `.md` saia com celulas vazias, sem erro). A licao nao foi
+    generalizada para `substitui`, que a correcao anterior acabou de tornar o
+    campo central da cadeia. [achado do QA de 17/09/2026]
+    """
+    if valor is None:
+        return []
+    if not isinstance(valor, list):
+        return [f"precisa ser lista, veio {type(valor).__name__}"]
+    erros = []
+    for i, item in enumerate(valor):
+        if not isinstance(item, dict):
+            erros.append(f"item {i} precisa ser objeto, veio "
+                         f"{type(item).__name__}: {str(item)[:40]!r}")
+            continue
+        # AS CHAVES, e nao so' o tipo do container.
+        #
+        # A 1a versao checava apenas `isinstance(item, dict)` — e o docstring
+        # dizia "mesma disciplina que `validate_problemas`", o que era FALSO:
+        # aquele exige as chaves e recusa vazio. Entao `{}` e `{"foo": "bar"}`
+        # passavam, e o `.md` saia com uma linha de interrogacoes:
+        #
+        #     - rodada ? · ? · **?** · sha `None` · agentId `—`
+        #
+        # E' o MESMO bug que este arquivo ja' tinha corrigido para `problemas`,
+        # sobrevivendo dentro do conserto que alegava te-lo generalizado.
+        # [achado do QA de 17/09/2026]
+        faltando = [c for c in ("rodada", "data", "recomendacao") if not item.get(c)]
+        if "escopo_paths" not in item:
+            faltando.append("escopo_paths")
+        if faltando:
+            erros.append(f"item {i} sem {', '.join(faltando)} — antecedente sem "
+                         f"identificacao vira linha de interrogacoes no .md")
+    return erros
+
+
+def _blob_indexado(p):
+    """Hash do blob de `p` como esta' no INDICE (estagio 0), ou None.
+
+    Indice e nao disco: o indice e' o que sera' commitado, e portanto o que o veredito
+    precisa descrever. Cai para o disco quando o caminho nao esta' indexado, porque ai'
+    tambem ha' conteudo real. None quando o git nao responde — o chamador simplesmente
+    nao carimba aquele caminho, e o gate trata a ausencia como fail-closed.
+
+    NORMALIZA O SEPARADOR, pela mesma razao que o gemeo em `squad_gate.py` (achado ALTA da
+    37a rodada): `git rev-parse :tools\\foo.py` nao resolve contra o indice, a funcao caia no
+    fallback que le o DISCO, e num arquivo `MM` o carimbo gravado seria o do conteudo NAO
+    revisado. Aqui o estrago seria pior que no gemeo — carimbar uma coisa e commitar outra,
+    em silencio, do lado de quem ESCREVE a prova.
+    """
+    import subprocess
+    p = str(p).replace("\\", "/")
+    for args in (["rev-parse", ":" + p], ["hash-object", p]):
+        try:
+            r = subprocess.run(["git", "-C", ROOT] + args, capture_output=True, text=True,
+                               encoding="utf-8", errors="replace", stdin=subprocess.DEVNULL)
+        except (OSError, ValueError):
+            return None
+        saida = (r.stdout or "").strip()
+        if r.returncode == 0 and len(saida) == 40 and all(c in "0123456789abcdef" for c in saida):
+            return saida
+    return None
+
+
 def write_artifact(verdict, when=None):
     missing = [k for k in REQUIRED if k not in verdict]
     if missing:
@@ -154,6 +251,9 @@ def write_artifact(verdict, when=None):
     pe = validate_problemas(verdict.get("problemas"))
     if pe:
         raise ValueError("veredito invalido — itens de 'problemas' fora do schema: " + "; ".join(pe))
+    se = validate_substitui(verdict.get("substitui"))
+    if se:
+        raise ValueError("veredito invalido — `substitui` fora do schema: " + "; ".join(se))
     # ADR-074 emenda 3 (posture-gate): veredito que FECHA release exige bloco de postura valido.
     if verdict.get("release"):
         pp = validate_postura(verdict.get("postura"), for_release=True)
@@ -166,10 +266,127 @@ def write_artifact(verdict, when=None):
     # O campo ja existia no schema e nao era escrito por ninguem: decoracao.
     if not str(verdict.get("sha_revisado", "") or "").strip():
         verdict["sha_revisado"] = _head_sha() or ""
+    # O CONTEUDO QUE O CRITICO VIU, e nao so' o commit em que ele olhou (ALTA da 36a rodada).
+    # `sha_revisado` e' um commit, e commit nenhum descreve conteudo ainda nao commitado — no
+    # pre-commit de um bloco, TODO arquivo esta' fora do HEAD, entao a recencia por
+    # ancestralidade ficava inerte para o proprio bloco que entra. Carimbar o hash do blob
+    # INDEXADO de cada caminho de `escopo_paths` e' o que permite ao gate dizer "isto ainda e'
+    # byte a byte o que foi revisado". Escrito aqui, nunca digitado por um critico.
+    if not verdict.get("blobs_revisados"):
+        blobs = {}
+        # Os DOIS arquivos deste proprio veredito nunca sao carimbados: o .json/.md ainda
+        # nao existem quando este codigo roda, e numa REgravacao o que se carimbaria e' o
+        # conteudo ANTERIOR — obsoleto no mesmo segundo em que o `json.dump` abaixo grava.
+        # Auto-carimbo e' sempre stale por construcao e nao prova nada; deixar de grava-lo
+        # e' mais honesto que gravar um hash que o gate teria de aprender a ignorar.
+        _meu = "_meta/qa/" + _slug(verdict["bloco"])
+        _proprios = {_meu + ".json", _meu + ".md"}
+        for p in (verdict.get("escopo_paths") or []):
+            if str(p).replace("\\", "/") in _proprios:
+                continue
+            h = _blob_indexado(p)
+            if h:
+                # CHAVE normalizada tambem, nao so' a consulta: o leitor
+                # (`squad_gate._recente_o_bastante`) recebe os paths ja' com barra normal,
+                # entao uma chave gravada com barra invertida NUNCA seria encontrada — o
+                # veredito bloquearia para sempre e empurraria para `--no-verify`, que este
+                # repo trata como pior que o buraco que fecha. [ALTA da 37a rodada]
+                blobs[str(p).replace("\\", "/")] = h
+        if blobs:
+            verdict["blobs_revisados"] = blobs
     os.makedirs(QA_DIR, exist_ok=True)
     slug = _slug(verdict["bloco"])
     jpath = os.path.join(QA_DIR, slug + ".json")
     mpath = os.path.join(QA_DIR, slug + ".md")
+    # NAO SOBRESCREVE VEREDITO ATESTADO EM SILENCIO.
+    #
+    # `open(jpath, "w")` cru apagava o veredito anterior do MESMO bloco sem
+    # checar existencia nem encadear: um segundo registro com o mesmo `bloco`
+    # triturava a reprovacao que veio antes, e o ledger passava a contar uma
+    # historia em que ela nunca existiu. Achado CRITICO do QA adversarial
+    # (bloco adr-115, artefato `adr-115-rodada-27-o-escritor-do-ledger-e-o-
+    # triturador.json`), reaberto e confirmado em 17/09/2026: a linha ainda era
+    # `open(jpath, "w", ...)`.
+    #
+    # O ledger e' a memoria de quem reprovou o que. Ferramenta que o reescreve
+    # sem deixar rastro derruba a cadeia inteira que o ADR-115 existe para
+    # proteger — e nao adianta o gate ser fail-closed se o registro que ele le
+    # pode ser trocado por baixo.
+    if os.path.isfile(jpath):
+        try:
+            anterior = json.load(open(jpath, encoding="utf-8"))
+        except (ValueError, OSError):
+            anterior = None
+        if anterior:
+            # FUNDE O HISTORICO DO ANTERIOR, nao so' o do veredito que entra.
+            #
+            # `verdict.get("substitui")` e' quase sempre VAZIO: quem escreve o
+            # JSON e' o qa-critic, que nao carrega historico nenhum. Ler dali e
+            # anexar so' o antecedente imediato deixava a cadeia presa em
+            # profundidade 1 PARA SEMPRE — na 3a gravacao do mesmo bloco, a
+            # rodada 1 sumia do artefato, porque o arquivo inteiro e' reescrito.
+            #
+            # Num bloco com 30 rodadas registradas, o artefato final mostraria
+            # um unico elo. A pergunta e' "a historia INTEIRA persiste atraves de
+            # N regravacoes?", e a versao anterior media "existe UM antecedente
+            # nesta gravacao?" — proxy que passa mesmo com a historia funda ja'
+            # descartada. [achado CRITICO do QA de 17/09/2026]
+            # O que esta' NO DISCO tambem passa: artefato de versao antiga,
+            # editado a mao, ou escrito por ferramenta que nao passe por aqui.
+            # Recusar ANTES de gravar — `json.dump` vem antes de `render_md`,
+            # entao "crashar no render" ja' deixou o ledger corrompido no disco.
+            no_disco = validate_substitui(anterior.get("substitui"))
+            if no_disco:
+                raise ValueError(
+                    f"o veredito ja' gravado em {jpath} tem `substitui` fora do schema "
+                    f"({'; '.join(no_disco)}) — conserte o arquivo antes de regravar; "
+                    f"mesclar por cima corromperia a cadeia")
+            historico = list(anterior.get("substitui") or [])
+            for antigo in (verdict.get("substitui") or []):
+                if antigo not in historico:
+                    historico.append(antigo)
+            # `recomendacao` e' o campo OBRIGATORIO do schema (REQUIRED) e e' o
+            # que o `squad_gate` le. `veredito` e' chave paralela OPCIONAL que
+            # esta ferramenta nunca escreve — 30 dos 87 artefatos reais nao a
+            # tem. Perguntar por ela era perguntar ao campo errado, e o campo
+            # errado responde `None` quase sempre: a guarda contra apagar uma
+            # reprovacao NUNCA disparava. [achado CRITICO do QA de 17/09/2026]
+            decisao_anterior = anterior.get("recomendacao") or anterior.get("veredito")
+            # O `escopo_paths` ENTRA na assinatura. Escopo e' FONTE, nao metadado.
+            #
+            # A 1a versao guardava rodada, data, recomendacao, sha e agentId — a
+            # IDENTIDADE do veredito anterior — e perdia exatamente o dado que
+            # decide se substitui-lo e' seguro: O QUE ELE COBRIA. Quem ler a
+            # cadeia depois nao tem como saber se a substituicao ESTREITOU a
+            # cobertura do bloco.
+            #
+            # Aqui nao houve dano (o anterior era reprovacao, que nunca conta
+            # como cobertura, entao nao havia o que estreitar). Mas na proxima
+            # vez que um APROVATIVO de escopo amplo for substituido por um de
+            # escopo menor, a cadeia registra a troca como limpa e so' o
+            # `squad_gate` denuncia depois — quando ja' e' tarde para saber que o
+            # encolhimento foi silencioso.
+            #
+            # Mesma Regra 4 de rastreabilidade: decisao -> FONTE -> versao.
+            # [achado ALTA do QA de 18/09/2026, levantado pelo autor e confirmado
+            #  pelo critico]
+            assinatura = {
+                "rodada": anterior.get("rodada"),
+                "data": anterior.get("data"),
+                "recomendacao": decisao_anterior,
+                "sha_revisado": anterior.get("sha_revisado"),
+                "agentId": (anterior.get("atestacao") or {}).get("agentId"),
+                "escopo_paths": list(anterior.get("escopo_paths") or []),
+            }
+            if assinatura not in historico:
+                historico.append(assinatura)
+            verdict["substitui"] = historico
+            # Reprovacao nao se apaga por regravacao: ela vira ANTECEDENTE
+            # explicito do veredito novo, e quem ler sabe que houve.
+            if str(decisao_anterior).lower() in ("reprovar", "corrigir") and \
+                    not verdict.get("substitui_reprovacao"):
+                verdict["substitui_reprovacao"] = True
+
     json.dump(verdict, open(jpath, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
     open(mpath, "w", encoding="utf-8").write(render_md(verdict))
     return jpath, mpath

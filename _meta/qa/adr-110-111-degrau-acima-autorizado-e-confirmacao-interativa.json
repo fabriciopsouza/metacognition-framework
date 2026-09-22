@@ -1,0 +1,116 @@
+{
+  "bloco": "adr-110-111-degrau-acima-autorizado-e-confirmacao-interativa",
+  "papel": "qa_critic",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "sha_revisado": "bde8976",
+  "resumo": "Duas rodadas de critico Sonnet isolado contra autor Opus, com o transcript do harness como procedencia. RODADA 1 REPROVOU com 5 achados (2 ALTA, 2 MEDIA, 1 BAIXA). O ALTA de maior valor FALSIFICOU POR EXECUCAO uma afirmacao categorica do ADR-110: o autor escreveu que o conserto do casador de papel fazia 'a classe de bug sumir para todo papel futuro', e o critico mostrou `developer docops` -> haiku, papel autoral dois degraus abaixo do default. O conserto cobria UM PAR de chaves em contencao; chaves independentes seguiam quebradas porque a regra mecanica vinha antes da autoral no arquivo. O outro ALTA achou o proprio model-policy.json se contradizendo no mesmo commit (excecao_declarada dizia que cross-ai seguia PENDENTE em max, enquanto roles ja estava em baseline) — reincidencia do mesmo campo. RODADA 2, sobre as correcoes, devolveu APROVADO_COM_RESSALVAS e achou UM DEFEITO NOVO INTRODUZIDO PELA CORRECAO: o teste de produto cartesiano derivava as chaves autorais de uma LISTA ESCRITA A MAO (developer/author/autor), deixando architect e discovery de fora, embora ambos estejam em author_roles — a mesma classe de erro do achado original, uma camada acima. Corrigido derivando o conjunto do proprio arquivo (toda regra tier=baseline). Todas as correcoes foram verificadas por TESTE DE MUTACAO, nao por leitura: reordenar developer acusa 112 composicoes, reordenar architect acusa 96, remover a supressao de blocos de codigo acusa falso positivo. Nao existe veredito de aprovacao limpa.",
+  "verificacoes_executadas": [
+    "r1: executou handoff.suggest_model com papeis compostos e provou developer/author/implement/produz/autor + gatilho mecanico -> haiku",
+    "r1: conferiu roles[cross-ai].tier contra o texto de excecao_declarada no mesmo arquivo",
+    "r1: conferiu numeracao 00..11 e todos os href ancora do site apos a troca de secoes",
+    "r1: bateu '54 de 92' e '81 canarios' da vitrine contra capabilities.json e run_canaries",
+    "r2: atacou o casador com composicoes de 3 tokens, ordem invertida, caixa, acento e pontuacao",
+    "r2: enumerou os 8 papeis mecanicos puros e confirmou que nenhum subiu de tier apos a reordenacao",
+    "r2: reproduziu a mutacao do canario cartesiano e conferiu a contagem 112 citada no ADR",
+    "r2: testou ponteiro morto dentro e fora de bloco de codigo na guarda do linter",
+    "autor: mutacao de architect apos a mecanica -> 96 composicoes acusadas (furo da r2 fechado)",
+    "autor: mutacao removendo re.sub de blocos ``` -> fixture acusa falso positivo",
+    "suite completa: 80 PASS, 1 SKIP, 0 FAIL de 81 canarios"
+  ],
+  "problemas": [
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "descricao": "handoff.py: papeis compostos (autoral + mecanico) resolviam abaixo do baseline; a ordem de roles E' precedencia e a regra autoral estava DEPOIS da mecanica. Reordenado + canario de produto cartesiano.",
+      "local": "tools/handoff.py:suggest_model + tools/model-policy.json:roles"
+    },
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "descricao": "model-policy.json: qa_final_duplo.excecao_declarada afirmava cross-ai em max e PENDENTE, contradizendo roles no mesmo commit. Reescrito.",
+      "local": "tools/model-policy.json:qa_final_duplo.excecao_declarada"
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "descricao": "history.md: criterio de aceite exigia o degrau acima incondicionalmente, impossivel de fechar sem violar o ADR-110. Emendado com 'quando autorizado' + ausencia declarada.",
+      "local": "history.md (criterio de aceite da pendencia prioritaria)"
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "descricao": "ADR-110 citava numeros de sessao sem artefato no repo. Substituidos por referencia a assercao executavel.",
+      "local": "docs/adr/110-autorizacao-ativa-do-degrau-acima-e-autor-sempre-default.md"
+    },
+    {
+      "severidade": "MEDIA-ALTA",
+      "estado": "corrigido",
+      "descricao": "[introduzido pela correcao, achado na r2] o teste cartesiano derivava chaves autorais de lista escrita a mao, deixando architect/discovery fora do espaco. Passou a derivar de tier=baseline.",
+      "local": "tools/test_handoff.py (produto cartesiano autoral x mecanico)"
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "descricao": "guarda de ponteiro morto varria texto cru; blocos de codigo dariam falso positivo. Passou a suprimir ``` e ganhou fixture que prova os dois lados.",
+      "local": "tools/check_rules_parity.py + tools/test_rules_parity.py"
+    }
+  ],
+  "escopo_paths": [
+    ".agent/rules/06-confirmacao-interativa.md",
+    ".agent/skills/discovery/SKILL.md",
+    ".agent/skills/docops/SKILL.md",
+    ".agent/skills/explorer/SKILL.md",
+    "AGENT-FRAMEWORK.md",
+    "AGENTS.md",
+    "CAPABILITIES.md",
+    "CHANGELOG.md",
+    "CLAUDE.md",
+    "_meta/qa/adr-110-111-degrau-acima-autorizado-e-confirmacao-interativa.json",
+    "_meta/qa/adr-110-111-degrau-acima-autorizado-e-confirmacao-interativa.md",
+    "capabilities.json",
+    "docs/_private/reports/pesquisa-divulgacao-ia-automacao-2026-08-19.md",
+    "docs/adr/109-escada-relativa-de-qa-e-norma-de-escrita-com-canario.md",
+    "docs/adr/110-autorizacao-ativa-do-degrau-acima-e-autor-sempre-default.md",
+    "docs/adr/111-confirmacao-interativa-de-bloco-e-o-default.md",
+    "guia/web/index.html",
+    "history.md",
+    "tools/check_rules_parity.py",
+    "tools/handoff.py",
+    "tools/model-policy.json",
+    "tools/test_escrita_padrao.py",
+    "tools/test_handoff.py",
+    "tools/test_rules_parity.py"
+  ],
+  "atestacao": {
+    "agentId": "ae4953dbdc34fd42f",
+    "prova_transcript": "sha256:3e2b8bacda38fb26aa4e8884eb939fd387acdf3007d344a45488109ff5c08335",
+    "modelo": "claude-sonnet-5",
+    "modelo_autor": "claude-opus-5",
+    "isolamento": "subagente qa-critic isolado, read-only por instrucao explicita; a arvore tinha 22 arquivos nao-commitados em stage e foi protegida por snapshot dangling (git stash create) antes de cada rodada",
+    "provas": [
+      {
+        "agentId": "aa556412422c89267",
+        "prova_transcript": "sha256:b859d8c842a8904ccac56054cb9efe4316c64c68f4d1d7970ccaab499c0440b5",
+        "rodada": 1
+      },
+      {
+        "agentId": "ae4953dbdc34fd42f",
+        "prova_transcript": "sha256:3e2b8bacda38fb26aa4e8884eb939fd387acdf3007d344a45488109ff5c08335",
+        "rodada": 2
+      }
+    ]
+  },
+  "postura": {
+    "adversarial": "hipotese default de que existe bug; o critico foi instruido a construir contraexemplos executaveis e a dizer o que tentou quebrar e nao conseguiu, em vez de inventar achado fraco. Nas duas rodadas ele produziu contraexemplo executado, nao suspeita."
+  },
+  "nao_verificado": [
+    "o degrau ACIMA do default (2o QA final) NAO rodou: ele exige autorizacao ativa do dono (ADR-110) e ela nao foi dada. A classe de defeito que so ele pega segue nao coberta, e isto esta DECLARADO, nao omitido.",
+    "o QA final sobre a SESSAO (eficiencia, eficacia, efetividade do trabalho) ainda nao rodou nesta data; este veredito cobre as juncoes.",
+    "os dois arquivos deste proprio veredito estao em escopo_paths por serem o ARTEFATO DO LEDGER — produzidos PELO QA, nao revisados POR ele. Alegar revisao seria auto-referencia; fica declarado em vez de fingido. O que o critico revisou foram os 22 paths de codigo e documento.",
+    "sha_revisado declara a ponta da branch no momento da revisao (bde8976), nao um snapshot: os arquivos novos deste bloco ainda nao tinham historico no git, e o gate ancora a atualidade do veredito na ponta corrente. LIMITE herdado do proprio gate e aqui repetido: edicao de arquivo novo DEPOIS do veredito e ANTES do commit nao e' detectavel por ancestralidade."
+  ],
+  "data": "2026-08-19T00:00:00Z"
+}

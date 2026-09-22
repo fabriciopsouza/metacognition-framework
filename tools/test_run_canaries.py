@@ -122,6 +122,46 @@ def main():
     caso("o runner purga bytecode antes de comecar",
          "purgar_bytecode(ROOT)" in fonte)
 
+    # ── o ESCRITOR do carimbo: `open("w")` truncava antes de escrever ──
+    #
+    # [ACHADO ALTA, 35a rodada] `open(destino, "w")` zera o arquivo no momento do
+    # `open`. Qualquer falha depois disso — processo morto, disco cheio, antivirus
+    # segurando o arquivo — deixava o carimbo com ZERO bytes, e o `except OSError:
+    # pass` engolia. Um "88 PASS" medido de verdade virava "ilegivel" no quadro,
+    # por falha que nada tem a ver com o resultado dos testes.
+    #
+    # O padrao atomico ja' existia em `controle_base.py:158`, com o comentario
+    # "[ACHADO ALTA DO QA RODADA 12]" — o MESMO defeito, e este codigo novo nao o
+    # reaproveitou. A prova aqui e' pelo FONTE, nao por execucao: `_gravar_carimbo`
+    # escreve num caminho fixo dentro do repo, e faze-lo rodar de verdade sujaria
+    # a arvore de trabalho durante a suite.
+    fonte_carimbo = fonte[fonte.find("def _gravar_carimbo"):]
+    corte = fonte_carimbo.find("\ndef ", 1)
+    fonte_carimbo = fonte_carimbo[:corte] if corte > 0 else fonte_carimbo
+    # SO' O CODIGO, sem comentario: o comentario que EXPLICA o conserto cita a
+    # chamada de escrita truncante como o defeito que ele matou, e a 1a versao
+    # desta verificacao reprovava por causa da propria prosa que descreve a
+    # correcao. Prosa e codigo sao indistinguiveis para quem compara texto cru —
+    # mesma classe do teste que contava duas ocorrencias porque a linha `def`
+    # continha o termo procurado.
+    codigo = "\n".join(l for l in fonte_carimbo.splitlines()
+                       if not l.lstrip().startswith("#"))
+    caso("o carimbo e' gravado por troca ATOMICA, nao por escrita truncante",
+         "os.replace(" in codigo
+         and "NamedTemporaryFile" in codigo
+         and 'open(destino, "w"' not in codigo)
+    caso("e o temporario nao fica orfao sujando a arvore se a troca falhar",
+         "finally:" in fonte_carimbo and "os.unlink(tmp)" in fonte_carimbo)
+    caso("o carimbo registra se a arvore estava suja na medicao",
+         '"arvore_suja"' in fonte_carimbo)
+    # `codigo`, nao `fonte_carimbo` — pelo MESMO motivo da checagem tres acima, e
+    # eu consertei aquela e deixei esta. O comentario que EXPLICA a escrita
+    # atomica cita `except OSError:` como o que engolia o erro, entao apagar os
+    # handlers REAIS deixava este canario verde: ele protegia o nome, nao o
+    # comportamento. Reproduzido pelo QA. [achado ALTA, 36a rodada]
+    caso("falhar ao gravar nao derruba a suite",
+         "except OSError:" in codigo)
+
     print("-" * 50)
     ruins = [n for n, ok, _ in resultados if not ok]
     if ruins:

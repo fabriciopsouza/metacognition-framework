@@ -169,7 +169,7 @@ Disparar ao fim de bloco aprovado, ao mudar de direção, ou a cada ≥20 turnos
 
 ## 5. PRIMEIRA AÇÃO
 
-1. Classificar em §1 (contexto + complexidade).
+1. Classificar a tarefa pelo cruzamento de contexto e complexidade, conforme a tabela de rotas deste documento.
 2. Operar no modo correto sem anunciar mecânica interna.
 3. Ambiguidade crítica → UMA pergunta direta (não checklist).
 4. Sem boas-vindas formal nem onboarding ritual.

@@ -1,0 +1,58 @@
+{
+ "bloco": "adr-115-fail-closed-no-veredito",
+ "papel": "qa_critic",
+ "rodada": 19,
+ "passou": false,
+ "recomendacao": "reprovar",
+ "veredito": "reprovar",
+ "data": "2026-09-15T00:00:00Z",
+ "escopo_paths": [
+  "tools/squad_gate.py",
+  "tools/test_squad_gate.py",
+  "tools/test_mutacao_squad_gate.py",
+  "behaviors/manifest.json",
+  "docs/adr/115-fail-closed-no-veredito-achado-bloqueante-nao-passa-por-rotulo.md",
+  "CHANGELOG.md",
+  "capabilities.json"
+ ],
+ "atestacao": {
+  "agentId": "a090c0416e87c49f5",
+  "modelo": "sonnet",
+  "autor": "opus",
+  "isolamento": "subagente qa-critic em segundo plano, degrau canonico (sonnet, um abaixo do autor opus); proibido de tocar o repositorio, experimentos no scratchpad"
+ },
+ "resumo": "REPROVOU com uma ALTA e uma MEDIA, depois de CONFIRMAR as tres afirmacoes do autor sobre a correcao da 18a rodada — inclusive a mais arriscada delas, a de que o casefold em `_cobre` nao funde arquivos genuinamente diferentes. ALTA: `.gitignore` estava fora da matriz de interruptores, e ele e' o arquivo que decide O QUE O GIT VE — logo, o que este gate, que le `git diff --cached`, consegue avaliar. Um curinga a mais torna um caminho inteiro invisivel ao gate sem tocar no gate, e `git status` nao acusa. Nao e' hipotese neste projeto: a memoria do dono registra um padrao `*credential*` que engoliu `credentials.py` por 12 commits, em silencio. MEDIA: `_listado_explicitamente()` comparava path cru enquanto a irma `_cobre()` recebeu casefold na 18a — NONA assimetria entre irmaos deste bloco, e a PRIMEIRA da serie cuja direcao e' puramente fail-closed: ela nao deixa passar nada, ela RECUSA cobertura legitima e empurra o operador para `--no-verify`, que a propria emenda do arquivo chama de 'pior que o buraco que ela fecha'.",
+ "verificacoes_executadas": [
+  "critico verificou, contra os 716 arquivos rastreados, que NAO existe par que colida so' por caixa; confirmou ausencia de submodulo (.gitmodules ausente) e que o casefold e' comparacao de string em Python, independente do SO — risco zero na dimensao mais arriscada da correcao da 18a",
+  "critico varreu todo _meta/qa/*.json comparando escopo_paths contra o filesystem real e nao achou nenhuma entrada que dependa de diferenca de caixa — a alegacao 'ZERO paths mudam de cobertura' se sustenta",
+  "critico verificou que `_paths_sem_cobertura` DELEGA a `_cobre` e portanto herda o casefold (sem gap), e que `legados_declarados`/`veredito_legado` comparam nome vindo de os.listdir contra chaves fixas, onde nao ha path digitado por humano",
+  "critico reproduziu o caso do `_listado_explicitamente` de forma HERMETICA, com git stubado, sem tocar o repositorio real",
+  "critico verificou que bootstrap.py e install_git_hooks.py JA estao cobertos pela regra generica de sufixo .py, e que behaviors/ nao tem outro arquivo — ou seja, recusou-se a inflar a lista de candidatos com falsos positivos",
+  "critico ancorou a ALTA num precedente REAL do proprio projeto, citando a memoria do dono sobre o incidente do `*credential*`",
+  "critico apresentou o argumento pela aprovacao de forma honesta — 'dezoito rodadas sem aprovacao ja e' sinal de possivel prudencia performatica' — antes de explicar por que nao o adota",
+  "autor, apos corrigir: `.gitignore` -> ['qa_critic']; `_listado_explicitamente` reconhece o par em caixa diferente e continua recusando prefixo de diretorio como mencao nominal",
+  "autor: 78 PASS / 0 FAIL no canario; 29/29 mutacoes mortas com baseline ZERO; sha256 do squad_gate identico antes e depois"
+ ],
+ "problemas": [
+  {
+   "severidade": "ALTA",
+   "estado": "corrigido",
+   "local": "behaviors/manifest.json — ausencia de .gitignore",
+   "descricao": "`.gitignore` decide o que o git ve, e portanto o que este gate consegue avaliar. Editar um curinga ali torna um caminho inteiro invisivel sem tocar no gate e sem que `git status` acuse nada. Diferente do limite ja declarado para `settings.local.json` (proteger o CONTEUDO de um arquivo ignorado e' mecanicamente impossivel), proteger o `.gitignore` EM SI e' identico aos outros interruptores ja fechados. CORRIGIDO, e coberto pelo canario da classe. PRECEDENTE REAL neste projeto, citado pelo critico: um padrao `*credential*` excluiu `credentials.py` do git por 12 commits, em silencio."
+  },
+  {
+   "severidade": "MEDIA",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — _listado_explicitamente()",
+   "descricao": "Comparava path cru enquanto a irma `_cobre()` recebeu casefold na 18a rodada. NONA assimetria entre irmaos, e a PRIMEIRA da serie puramente FAIL-CLOSED: nao deixa passar nada, RECUSA cobertura legitima. Um critico que revisa arquivo novo e grava `escopo_paths: ['Tools/Foo.py']` tem o veredito rejeitado, e a unica saida e' `--no-verify` — que a emenda de 18/08/2026, poucas linhas acima no mesmo arquivo, chama de 'pior que o buraco que ela fecha'. Gate que empurra o operador para a escapatoria esta se desarmando sozinho, com mais passos. CORRIGIDO espelhando `_cobre`."
+  },
+  {
+   "severidade": "MEDIA",
+   "estado": "corrigido",
+   "local": "tools/test_mutacao_squad_gate.py — sabotagem da 19a rodada",
+   "descricao": "ACHADO DO AUTOR, sobre o proprio instrumento de prova. A primeira versao da sabotagem removia `.casefold()` so' do lado ESQUERDO da comparacao — e como o path de teste ja vem minusculo, quem fazia o trabalho era o casefold do lado do ESCOPO. A sabotagem nao mudava comportamento nenhum e 'sobrevivia' sem provar nada: MUTACAO VACUA, o mesmo defeito que a 7a rodada pegou. A checagem de ALVO SUMIU (11a rodada) nao pega isso, porque o alvo EXISTE — o que falha e' o DESENHO da sabotagem. CORRIGIDO: o realinhamento agora carrega o modulo real e o sabotado em memoria e PROVA que o real reconhece o par e o sabotado nao, ANTES de gravar; e a entrada e' gerada com `repr()` do texto lido do arquivo, em vez de eu contar barras invertidas — tres tentativas se perderam nisso."
+  }
+ ],
+ "recomendacao_do_critico": "reprovar; um interruptor com precedente real fora da matriz, e a nona repeticao de uma classe ja nomeada oito vezes no proprio ADR",
+ "nota_do_autor": "Decima nona rodada. O achado do `.gitignore` e' o melhor da serie de interruptores porque nao e' teorico: este projeto ja perdeu um arquivo-fonte do git por 12 commits por causa de um curinga, e o incidente esta registrado. O da `_listado_explicitamente` inverte a polaridade da serie — oito assimetrias abriam o gate, esta o TRAVA, e travar indevidamente empurra para `--no-verify`, que desarma tudo. Registro tambem um defeito MEU no instrumento: escrevi uma sabotagem vacua e so' percebi porque ela sobreviveu; a prova agora se valida em memoria antes de ser gravada."
+}

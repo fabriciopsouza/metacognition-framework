@@ -1,0 +1,58 @@
+{
+ "bloco": "adr-115-fail-closed-no-veredito",
+ "papel": "qa_critic",
+ "rodada": 5,
+ "passou": false,
+ "recomendacao": "reprovar",
+ "veredito": "reprovar",
+ "data": "2026-09-13T00:00:00Z",
+ "escopo_paths": [
+  "tools/squad_gate.py",
+  "tools/test_squad_gate.py",
+  "tools/test_mutacao_squad_gate.py",
+  "docs/adr/115-fail-closed-no-veredito-achado-bloqueante-nao-passa-por-rotulo.md",
+  "CHANGELOG.md",
+  "_meta/qa/adr-115-rodada-4-chave-do-container.json"
+ ],
+ "atestacao": {
+  "agentId": "a634eb4038e2b1b18",
+  "modelo": "sonnet",
+  "autor": "opus",
+  "isolamento": "subagente qa-critic em primeiro plano, degrau abaixo do autor (ADR-109/110)"
+ },
+ "resumo": "REPROVOU com um CRITICO e um GRAVE. O CRITICO: a defesa da chave criada na 4a rodada reconhecia grafias equivalentes por `_chave_norm`, que faz `.upper()` — e `probIemas`, com I maiusculo no lugar do l minusculo, NAO colide com PROBLEMAS. A chave escapava da lista de conhecidas e caia no ramo permissivo 'nada declarado, nada a cobrar'. O critico reproduziu ponta a ponta contra o binario real: veredito aprovativo com CRITICO/aberto escondido sob `probIemas`, e o gate imprimiu OK com exit 0. Ele confirmou que e' bypass ESPECIFICO da homoglifia testando `Problemas`, `PROBLEMAS`, `problemas ` (espaco) e `PROBlEMAS`, que bloqueiam corretamente. O GRAVE: o ledger nao tinha veredito para a 4a rodada, e o ADR/CHANGELOG afirmavam 'tres rodadas', '8 mutacoes', '44 PASS' quando o codigo ja media 5 rodadas, 10 mutacoes e 48 PASS — numero em prosa que nao bate com a medicao, a classe que o ADR-108 proibe.",
+ "verificacoes_executadas": [
+  "critico reproduziu o bypass numa copia isolada: achados_bloqueantes_abertos -> [] e _atestacao_valida -> True com a chave probIemas",
+  "critico rodou 'python tools/squad_gate.py --paths tools/evil.py' na copia: exit 0 com CRITICO/aberto escondido",
+  "critico testou Problemas, PROBLEMAS, 'problemas ' e PROBlEMAS: todas bloqueiam com a mensagem de grafia nao-reconhecida — o furo era so o par I/l",
+  "critico testou severidade None/0/lista/dict, estado e aceito_por None/lista/dict/branco, homoglifo cirilico em 'corrigido', chave duplicada, achados so em 'findings': todos fail-closed corretamente",
+  "critico rodou test_mutacao_squad_gate.py e confirmou por sha256 que tools/squad_gate.py fica identico antes e depois",
+  "critico apontou que TESTES_DO_BLOCO nao incluia os 4 testes da chave — justamente os unicos que matam as duas mutacoes de chave",
+  "critico mediu 48 PASS e 10 mutacoes contra os '44 PASS' e '8 mutacoes' escritos no ADR e no CHANGELOG",
+  "autor, apos corrigir: 5 casos testados (probIemas, chave ausente, Problemas, problemas vazio declarado, ALTA corrigido) -> todos com o resultado esperado",
+  "autor, apos corrigir: 10/10 mutacoes mortas, incluindo uma que desliga a obrigatoriedade da chave; squad_gate.py real intacto por sha256",
+  "autor, apos corrigir: 51 PASS / 0 FAIL no canario e 87 PASS / 1 SKIP / 0 FAIL na suite (88 canarios)"
+ ],
+ "problemas": [
+  {
+   "severidade": "CRITICO",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — _chave_norm / _problemas_bem_formados",
+   "descricao": "Homoglifo na chave do container: `probIemas` (I maiusculo no lugar do l) escapava de CHAVES_ACHADOS porque `_chave_norm` faz .upper(), e caia no ramo 'nada declarado'. CRITICO em aberto passava com exit 0. CORRIGIDO mudando a NATUREZA da defesa: em vez de reconhecer grafia errada — corrida perdida, depois de I/l vem O/0, cirilico, zero-width — a chave canonica `problemas` passou a ser OBRIGATORIA. Nenhuma grafia inventada substitui um campo exigido. Medido: os 64 vereditos do ledger ja a declaram, zero quebram. Efeito colateral tratado: o ramo 'a unica chave nao e' a canonica' virou INALCANCAVEL e foi removido — mutacao em codigo morto nunca morre, e foi ela que denunciou a duplicidade."
+  },
+  {
+   "severidade": "GRAVE",
+   "estado": "corrigido",
+   "local": "_meta/qa/ (ausencia do veredito da rodada 4) e docs/adr/115-*.md + CHANGELOG.md (numeros)",
+   "descricao": "Correcao aplicada no codigo sem veredito no ledger, e documentos afirmando 'tres rodadas', '8 mutacoes', '44 PASS' contra o que o codigo media. CORRIGIDO: veredito da rodada 4 gravado com a LACUNA DE PROCEDENCIA declarada e agentId vazio (fabricar identificador seria o teatro que o ADR-108 combate); ADR e CHANGELOG atualizados para 5 rodadas, 10 mutacoes, 51 PASS, 24 testes novos; a divergencia de numeracao entre o rotulo da mutacao e a tabela do ADR tambem corrigida."
+  },
+  {
+   "severidade": "MEDIA",
+   "estado": "corrigido",
+   "local": "tools/test_mutacao_squad_gate.py — TESTES_DO_BLOCO",
+   "descricao": "A lista que ASSERTA quais testes precisam estar vivos no baseline nao incluia os 4 testes da chave — os unicos que matam as duas mutacoes de chave. A asserção prometia cobertura que nao tinha. CORRIGIDO: os 7 testes de chave entraram na lista."
+  }
+ ],
+ "recomendacao_do_critico": "corrigir; bypass CRITICO por homoglifo reproduzido contra o binario real, mais divida de procedencia no ledger",
+ "nota_do_autor": "Quinta rodada, quinto bypass, e a licao ficou mais nitida a cada uma: enquanto a identidade de algo — legado, achado, chave — for produzivel pelo avaliado, a defesa e' autodeclarada. A saida nunca foi enumerar melhor a forma errada; foi exigir a forma certa."
+}

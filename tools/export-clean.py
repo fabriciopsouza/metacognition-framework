@@ -110,6 +110,45 @@ def strip_pycache(root):
                 dirnames.remove(d)
 
 
+def copiar_rastreados(src: str, out: str) -> bool:
+    """Copia SO' o que o git rastreia. Devolve False se nao der para saber.
+
+    A versao anterior copiava a arvore de trabalho com `ignore_patterns`, e
+    `ignore_patterns` e' uma lista que alguem precisa lembrar de manter. Ela
+    tinha `.git`, `__pycache__`, `.venv` e `.pytest_cache` — e deixava passar
+    `.agent/brain/session-files.json`, 54 KB com os caminhos de trabalho do
+    dono, que o verificador anti-vazamento PODA por design.
+
+    Regra sem excecao a esquecer: o que nao esta' versionado nao pertence a uma
+    distribuicao do repositorio. Fail-closed — se `git ls-files` nao responder,
+    NAO cai para copiar tudo: para, e diz por que. Copiar demais e' justamente
+    o defeito.
+    """
+    try:
+        saida = subprocess.run(["git", "-C", src, "ls-files", "-z"],
+                               capture_output=True, check=True)
+    except (OSError, subprocess.CalledProcessError) as erro:
+        print(f"nao consegui listar os arquivos rastreados ({erro}). Parei: "
+              f"copiar a arvore inteira e' o defeito que isto conserta.",
+              file=sys.stderr)
+        return False
+
+    caminhos = [c for c in saida.stdout.decode("utf-8").split("\0") if c]
+    if not caminhos:
+        print("git ls-files nao devolveu nada — arvore vazia ou nao e' um "
+              "repositorio. Parei.", file=sys.stderr)
+        return False
+
+    for rel in caminhos:
+        origem = os.path.join(src, *rel.split("/"))
+        if not os.path.isfile(origem):        # submodulo, link quebrado
+            continue
+        destino = os.path.join(out, *rel.split("/"))
+        os.makedirs(os.path.dirname(destino), exist_ok=True)
+        shutil.copy2(origem, destino)
+    return True
+
+
 def _rm(path):
     if os.path.isdir(path):
         shutil.rmtree(path)
@@ -177,7 +216,17 @@ def main(argv):
         shutil.rmtree(out)
 
     # 1. copia
-    shutil.copytree(SRC_ROOT, out, ignore=shutil.ignore_patterns(".git", "__pycache__"))
+    # `.venv` fica DE FORA: e' ambiente local, nao fonte. Enquanto entrava, o gate de
+    # vazamento do passo 4 acusava DEPENDENCIA DE TERCEIRO — medido: um nome de variavel
+    # interno do Pillow (site-packages/PIL/Image.py, linha ~4029) casava com uma regex da
+    # denylist sensivel e derrubava o export inteiro. Gate que morre por falso-positivo de
+    # biblioteca e' gate que alguem acaba desligando.
+    #
+    # O identificador nao e' citado aqui de proposito: a primeira redacao deste comentario
+    # o escreveu por extenso para explicar o caso, e o COMENTARIO virou o unico vazamento
+    # que o gate acusou na rodada seguinte.
+    if not copiar_rastreados(SRC_ROOT, out):
+        return 1
     strip_pycache(out)
     # 2. strip cofre/história
     for rel in STRIP_BEFORE:
@@ -203,7 +252,12 @@ def main(argv):
     if run([py, "tools/build_limits.py", "--check"], cwd=out) != 0:
         print("\nGATE FALHOU: LIMITS.md fora de sync na arvore publica. Regenere (build_limits.py --out LIMITS.md).", file=sys.stderr)
         return 1
-    if run([py, "tools/test_marketing_claims.py"], cwd=out) != 0:
+    # `--corrigir` tambem AQUI: a pagina foi copiada do dev e traz a contagem do
+    # dev (89), enquanto esta arvore ja' tem outra (87). Sem gerar, o gate morre
+    # neste ponto e o passo 8-bis nunca roda — que era exatamente o motivo de
+    # NENHUM pacote publico poder ser gerado em 16/09/2026. Esta arvore ainda vai
+    # encolher no passo 6b; quem escreve o numero definitivo e' o 8-bis.
+    if run([py, "tools/test_marketing_claims.py", "--corrigir"], cwd=out) != 0:
         print("\nGATE FALHOU: claim de marketing orfao / LIMITS desync no pacote publico.", file=sys.stderr)
         return 1
 
@@ -238,7 +292,26 @@ def main(argv):
         rewrite_repo_urls(out, "metacognition-framework-public-nonadmin")
         print("VARIANTE: NON-ADMIN (settings.json sem hooks; gates anunciados pelo agente — ADR-047).")
 
-    # 8. TRAVA FISICA de identidade (ADR-070): a arvore exportada se auto-declara SOMBRA.
+    # 8-bis. CONTAGEM DE CANARIOS da vitrine, medida na arvore FINAL.
+    #
+    # Ela NAO pode sair do passo 6: o passo 6b (tier, ADR-049) remove a camada
+    # premium DEPOIS do gate, e `test_gen_exec_doc.py` e `test_delivery_floor.py`
+    # saem ali. Medido em 16/09/2026: 89 na arvore canonica, 87 no momento do
+    # gate, 85 no pacote que de fato viaja. Escrever no passo 6 publicava 87 num
+    # pacote de 85 — numero errado por medir arvore que ainda ia encolher, que e'
+    # a mesma classe do defeito do medidor de slide desta semana: medir a caixa
+    # antes de ela ser a caixa final.
+    #
+    # Sao dois numeros legitimos para duas plateias: a arvore de desenvolvimento
+    # tem canarios que NAO viajam (testam a propria maquinaria de export). Por
+    # isso a correcao nao e' escolher um numero — e' GERAR em cada arvore, como o
+    # `build_limits.py` ja' faz para o LIMITS.md.
+    if run([py, "tools/test_marketing_claims.py", "--corrigir"], cwd=out) != 0:
+        print("\nGATE FALHOU: a vitrine nao fecha na arvore FINAL do pacote.",
+              file=sys.stderr)
+        return 1
+
+    # 9. TRAVA FISICA de identidade (ADR-070): a arvore exportada se auto-declara SOMBRA.
     stamp_shadow_identity(out)
     print("IDENTITY: .repo-identity.json carimbado role=shadow (ADR-070).")
 

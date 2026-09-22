@@ -1,0 +1,37 @@
+{
+ "bloco": "adr-115-fail-closed-no-veredito",
+ "papel": "qa_critic",
+ "rodada": 4,
+ "passou": false,
+ "recomendacao": "reprovar",
+ "veredito": "reprovar",
+ "data": "2026-09-13T00:00:00Z",
+ "escopo_paths": [
+  "tools/squad_gate.py",
+  "tools/test_squad_gate.py",
+  "tools/test_mutacao_squad_gate.py"
+ ],
+ "atestacao": {
+  "agentId": "",
+  "modelo": "sonnet",
+  "autor": "opus",
+  "isolamento": "subagente qa-critic em primeiro plano, degrau abaixo do autor (ADR-109/110)"
+ },
+ "LACUNA_DE_PROCEDENCIA": "Este veredito e' RECONSTRUIDO, nao transcrito. O relatorio original do critico saiu do contexto da sessao por compactacao, e o `agentId` esta VAZIO de proposito — fabricar um identificador para fechar o campo seria exatamente o teatro que o ADR-108 combate. O que sustenta este registro e' evidencia MECANICA, nao memoria: o codigo tem o mecanismo (`CHAVES_ACHADOS`, `_chave_norm`), o canario tem 4 testes dedicados a ele, e a prova por mutacao tem uma sabotagem que o alveja e morre. A 5a rodada, cujo relatorio existe, tambem constatou a ausencia deste veredito e a registrou como achado GRAVE.",
+ "resumo": "As rodadas 1-3 validaram o que estava DENTRO de `problemas` — schema do item, severidade, estado, hash do legado — e nunca a PROPRIA CHAVE. `v.get('problemas')` e' sensivel a maiuscula, e chave ausente era lida como 'nao ha achado a cobrar'. Um CRITICO em aberto sob a chave `Problemas` saia com exit 0, com o controle em minuscula dando exit 1. Ausencia de dado e dado ILEGIVEL colapsavam no mesmo ramo permissivo.",
+ "verificacoes_executadas": [
+  "medido no ledger: os 64 vereditos usam a grafia `problemas`, zero usam outra — a regra fecha a porta sem reescrever o passado",
+  "mutacao dedicada 'chave dos achados volta a ser lida EXATA' foi acrescentada a tools/test_mutacao_squad_gate.py e MORRE",
+  "4 canarios dedicados acrescentados a tools/test_squad_gate.py (maiuscula, ambiguidade, ausencia declarada, ledger real)"
+ ],
+ "problemas": [
+  {
+   "severidade": "CRITICO",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — _problemas_bem_formados(), leitura de v.get('problemas')",
+   "descricao": "A chave do container de achados era lida de forma exata e sensivel a caixa: `Problemas` escondia o achado inteiro, e o veredito saia como 'nada a cobrar'. CORRIGIDO na epoca introduzindo CHAVES_ACHADOS + _chave_norm, que reconheciam grafias equivalentes e BLOQUEAVAM a nao-canonica pedindo renomeacao. ATENCAO: essa correcao foi por sua vez derrubada na 5a rodada (homoglifo `probIemas` escapava da lista), e a defesa definitiva passou a ser exigir a chave canonica — ver o veredito da rodada 5."
+  }
+ ],
+ "recomendacao_do_critico": "corrigir; a chave do container era um bypass tao eficaz quanto o conteudo",
+ "nota_do_autor": "Registro tardio, com a lacuna declarada acima. A licao operacional tambem fica: veredito nao gravado NA HORA vira divida de procedencia, e foi a rodada seguinte que cobrou."
+}

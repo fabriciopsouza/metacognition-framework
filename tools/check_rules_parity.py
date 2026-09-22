@@ -104,6 +104,27 @@ def audit(root=ROOT):
     except Exception as e:
         issues.append(f"AGENTS.md ilegivel: {e}")
 
+    # (4) [ADR-111] GUARDA DE PONTEIRO MORTO. Regra citada por nome num arquivo de autoridade tem
+    # de existir em `.agent/rules/`. Nao exigimos que TODA regra seja nomeada — o ponteiro generico
+    # para o diretorio e' o desenho deste repo (so `00-glossario` era nomeada antes desta versao) —
+    # mas quem e' nomeada fica presa: apagar o arquivo e deixar o ponteiro, ou renomear o arquivo e
+    # esquecer o ponteiro, passa a reprovar. E' o que faz uma regra VIAJAR para projeto novo em vez
+    # de virar link quebrado no README de outra pessoa.
+    citados = set()
+    for nome in ("CLAUDE.md", "AGENTS.md", "AGENT-FRAMEWORK.md"):
+        try:
+            # [QA de juncao 19/08/2026, achado BAIXA] ponteiro citado DENTRO de bloco de
+            # codigo e ilustracao, nao promessa — nao pode gerar falso positivo.
+            _txt = re.sub(r"```.*?```", "", _read(nome, root), flags=re.S)
+            for m in re.finditer(r"\.agent/rules/([A-Za-z0-9._-]+\.md)", _txt):
+                citados.add((nome, m.group(1)))
+        except Exception:
+            pass
+    for origem, arq in sorted(citados):
+        if not os.path.isfile(os.path.join(root, ".agent", "rules", arq)):
+            issues.append(f"{origem} aponta para `.agent/rules/{arq}`, que NAO existe — ponteiro morto: "
+                          f"a regra nao viaja, e quem clonar o projeto le uma promessa vazia")
+
     return issues
 
 
