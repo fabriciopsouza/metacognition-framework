@@ -1,0 +1,79 @@
+{
+  "bloco": "adr-113-114-paths-sem-veredito-rodada-14",
+  "papel": "qa_critic",
+  "rodada": 14,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "sha_revisado": "86f5ce0",
+  "escopo_paths": [
+    "_shared/controle-projeto/SKILL.md",
+    ".claude/commands/controle-projeto.md",
+    ".claude/commands/controle-sharepoint.md",
+    "_shared/service-valuation/SKILL.md",
+    "_shared/service-valuation/TEMPLATE-MEMORIA-CALCULO.md",
+    "docs/_private/service-valuation/HISTORICO-ENTREGAS.md",
+    "docs/_private/_intake/execution-report-2026-08-24-cross-ai-referencia-vs-hipotese.md",
+    "docs/_private/_intake/execution-report-2026-09-12-excel-para-pdf.md",
+    "docs/_private/cross-ai/outbox/2026-08-22__from-claude-master__to-gemini-master__padrao-de-explicacao-caminho-e-nao-so-destino.md",
+    "docs/_private/_intake/censo-vm-2026-08-20.json",
+    "docs/adr/113-politica-de-lancamento-de-projeto-como-pacote-resolvido.md",
+    "tools/controle_sharepoint.py"
+  ],
+  "resumo": "Primeira rodada a cobrir os 12 paths que NENHUMA das 13 rodadas anteriores tinha revisado, e primeiro veredito aprovativo do ciclo. O critico nao achou bug funcional: os 3 canarios do pacote de controle (164/141/68 verificacoes), a prova de mutacao (34/34) e a aritmetica do caso H-01 (478/55=8,7x e 270.000/13.000=20,8x) batem exatamente com o que a prosa afirma; o nucleo segue agnostico e o cofre docs/_private/ e' de fato removido pelo export-clean.py (STRIP_BEFORE), verificado por leitura do mecanismo real e nao por confianca no ADR. Os dois achados sao de PROCEDENCIA e de COMPLETUDE DE PROSA, nao de execucao. (1) ALTA: o hash f6a334d era citado em DOIS documentos canonicos como se fosse conferivel por comando, e nao resolve neste repositorio; o proprio canario test_numeros_controle.py:362 admite por escrito que nao cobre contagem de diff. (2) MEDIA: .claude/commands/controle-sharepoint.md mandava relatar TRES listas do ensaio quando o codigo produz QUATRO \u2014 faltava `recusados`, justamente a categoria que carrega a tese do modulo (converte ou recusa, nunca grava o que nao sabe ler), e cuja omissao faz o dono sair da reuniao achando que um prazo mudou quando ele foi descartado por formato.",
+  "verificacoes_executadas": [
+    "critico rodou run_canaries.py completo: 86 PASS, 1 SKIP (test_parity.py), 0 FAIL de 87",
+    "critico rodou check_core_agnostic.py: PASS, 58 arquivos varridos, incluindo as 2 skills novas",
+    "critico rodou test_marketing_claims.py: PASS, sem trecho alegando caso sem apontar fonte",
+    "critico rodou test_controle_base/projeto/sharepoint: 164/141/68 verificacoes, batendo com a prosa",
+    "critico rodou test_mutacao_controle.py: 34/34 mutacoes detectadas, batendo com '34 defeitos por mutacao'",
+    "critico contou 'sabotagem detectada' em runtime: 11, batendo com '11 por sabotagem'",
+    "critico rodou `git cat-file -t f6a334d` neste repo: 'fatal: Not a valid object name' \u2014 a citacao esta morta aqui",
+    "critico leu export-clean.py e confirmou STRIP_BEFORE = ['docs/_private', '.git'], e que publish-clean.yml so publica por ele",
+    "autor, apos os achados: localizou o commit f6a334d no repo migracao-sac e conferiu '8 files changed, 207 insertions(+), 490 deletions(-)' \u2014 os numeros da prosa estao CORRETOS, o defeito era a citacao sem endereco",
+    "autor: descobriu que migracao-sac NAO tem remoto ('git remote get-url origin' -> erro), agravante que o critico nao tinha como ver; registrado na correcao",
+    "autor, apos as correcoes: check_core_agnostic PASS e run_canaries 86 PASS, 1 SKIP, 0 FAIL"
+  ],
+  "problemas": [
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "_shared/controle-projeto/SKILL.md:123 e docs/adr/113-politica-de-lancamento-de-projeto-como-pacote-resolvido.md:103",
+      "descricao": "citacao morta: 'git show --stat f6a334d' apresentado como prova conferivel em dois documentos canonicos, sendo que o hash nao existe neste repositorio e nenhum dos dois dizia onde existiria. Quem tentasse conferir recebia 'fatal', nao prova. Corrigido nomeando o repositorio (migracao-sac), citando a saida real conferida (8 files changed, 207 insertions, 490 deletions) e DECLARANDO o limite que o autor descobriu ao verificar: aquele repositorio e' local e sem remoto, entao o numero e' auditavel nesta maquina e nao por terceiro \u2014 [INFERIDO] verificado, nao fonte publica."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": ".claude/commands/controle-sharepoint.md:32-36 contra tools/controle_sharepoint.py:349",
+      "descricao": "o comando mandava relatar 'as tres listas que o ensaio produz' quando o codigo produz quatro: mudancas, ignorados, desconhecidos E recusados. A categoria omitida e' a que carrega a tese do modulo. Cenario real: 2 prazos recusados por formato nao entram no estado, o comando nao manda relatar, e o dono sai achando que o prazo mudou. Corrigido para quatro bullets, com o motivo escrito."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "aceito",
+      "local": "docs/_private/_intake/censo-vm-2026-08-20.json",
+      "descricao": "expoe hostname (9TRP7H4), fabricante e modelo da maquina. Risco baixo e aceito: repo PRIVATE, docs/_private/ removido de todo export, nenhum dado de cliente ou credencial. O autor ja o havia movido da RAIZ para docs/_private/_intake/ nesta mesma sessao, antes da revisao."
+    }
+  ],
+  "atestacao": {
+    "prova_transcript": "sha256:f60467325ae9d0e43772573884c97223125ec3da51eb42b8905f74f0a552b778",
+    "relatorio_chars": 8476,
+    "modelo": "claude-sonnet-5",
+    "modelo_autor": "claude-opus-5",
+    "isolamento": "subagente qa-critic isolado, read-only por instrucao explicita: proibido git checkout/restore/stash/reset, porque havia 35 arquivos em stage nao commitados na arvore e um checkout apagaria trabalho real. Instrucao de HIGIENE DE RECURSO incluida no prompt (contar e encerrar o que criar).",
+    "nota_procedencia": "rodou em PRIMEIRO PLANO de proposito, pelo achado aberto sobre background (trabalho adr-108-prova-de-background). Medido: o transcript guarda o relatorio REAL, 8476 chars, contra os 1099 chars de 'Async agent launched successfully' que o mesmo coletor devolve para subagente em background \u2014 o diagnostico do ADR-108 se confirma de novo, nas duas direcoes.",
+    "agentId": "ab737b0b3533ccdab"
+  },
+  "postura": {
+    "adversarial": "o critico nao aceitou a prosa: rodou 'git cat-file -t' no hash citado em vez de acreditar na citacao, e foi ler o export-clean.py real para confirmar que docs/_private/ nao vaza, em vez de aceitar a afirmacao do ADR. Tambem cruzou CADA numero afirmado nas skills com a saida em runtime dos canarios (164/141/68, 34/34, 11) em vez de conferir so a presenca das substrings.",
+    "higiene_de_recurso": "pedida explicitamente no prompt e cumprida: o critico reportou que run_canaries.py deixou uma pasta orfa em %TEMP%/proj_8z1row24 e a removeu, confirmando que nao sobrou padrao proj_* no TEMP e que o 'git status --short' seguia identico (35 entradas, nenhuma tocada). A clausula nasceu de um orfao real deixado numa rodada anterior desta mesma sessao."
+  },
+  "nao_verificado": [
+    "O CRITICO ESCREVEU 'APROVAR_COM_RESSALVAS' e disse textualmente que os achados ALTA e MEDIA nao sao aceitaveis sem correcao antes do fechamento. O autor corrigiu os dois DEPOIS do relatorio. NENHUMA rodada avaliou o estado corrigido \u2014 as correcoes sao edicoes de texto, sem caminho de execucao, e estao descritas acima, mas isto fica DECLARADO e nao maquiado. Promover o proprio veredito seria o defeito do ADR-108 entrando pela porta do registro.",
+    "A soma de linhas citada na prosa ('perdeu 352 + 133, ganhou 124') nao fecha exatamente com -490/+207 porque o mesmo diff toca projeto.json, .gitignore, CRONOGRAMA.xlsx e outros. O proprio texto ja admitia isso; o critico apontou a aritmetica e o autor confirmou no 'git show --stat' real.",
+    "O repositorio migracao-sac nao tem remoto: enquanto nao tiver, o numero -490/+207/-283 e' verificavel apenas nesta maquina. Registrado na correcao, nao resolvido.",
+    "test_parity.py continua SKIP (1 de 87) \u2014 pre-existente, fora do escopo desta rodada.",
+    "o degrau ACIMA do default nao rodou: exige autorizacao ativa do dono (ADR-110).",
+    "verify_qa_attestation deu PASS COM RESSALVA: a PROCEDENCIA esta provada (hash confere para o agentId ab737b0b3533ccdab), mas a CONCORDANCIA nao foi verificada porque o detector nao reconheceu a forma em que o critico escreveu a conclusao ('## Veredito: **APROVAR_COM_RESSALVAS**', em negrito markdown na ultima secao). Nao e' ausencia de conclusao nem parafrase do autor \u2014 a frase esta no relatorio cujo sha256 esta acima e pode ser conferida nele. Limitacao do parser, declarada aqui em vez de contornada."
+  ],
+  "data": "2026-09-12T00:00:00Z"
+}

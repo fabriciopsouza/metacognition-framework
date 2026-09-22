@@ -33,6 +33,16 @@ import subprocess
 import sys
 import tempfile
 
+try:
+    # [ACHADO ALTA DO QA DA FRONTEIRA 21/08/2026] um canario que imprimia um glifo
+    # fora do cp1252 derrubou ESTE runner com UnicodeEncodeError, e com ele os 68
+    # canarios que vinham depois — sem RESULTADO, sem lista de quem falhou. Canario
+    # que emite byte estranho tem de virar FAIL daquele canario, nunca queda da suite.
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+except Exception:                                    # pragma: no cover
+    pass
+
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TOOLS = os.path.join(ROOT, "tools")
 SELF = os.path.basename(__file__)
@@ -223,7 +233,98 @@ def main(argv):
           f"(de {len(canaries)} canários)")
     if failed:
         print("FALHARAM: " + ", ".join(failed))
+    _gravar_carimbo(len(passed), len(skipped), failed, len(canaries))
     return len(failed)
+
+
+def _gravar_carimbo(n_pass, n_skip, falharam, total):
+    """Grava o resultado DESTA execucao em `_meta/canarios-ultimo.json`.
+
+    Existe porque quem PUBLICA o numero nao pode obte-lo rodando a suite. O
+    `projeto_docs.py` chamava este arquivo num subprocess com teto fixo — 120s no
+    comeco, 600s depois — e a suite cresceu ate ultrapassar o teto: o quadro de
+    projeto passou a publicar "nao consegui executar". Teto fixo contra suite que
+    cresce e' uma corrida que o teto perde sempre, e perde em silencio.
+
+    A inversao: quem MEDE grava, quem PUBLICA le — e le junto a DATA da medicao,
+    para que numero velho apareca como velho em vez de aparecer como atual.
+    [achado MEDIA da 34a rodada, ADR-115]
+
+    Nunca derruba a suite: falhar ao gravar o carimbo nao invalida a medicao.
+    """
+    import datetime
+    import json
+    import subprocess
+    import tempfile
+
+    raiz = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    def _git(*args):
+        try:
+            return subprocess.run(["git", "-C", raiz] + list(args),
+                                  capture_output=True, text=True, encoding="utf-8",
+                                  errors="replace", stdin=subprocess.DEVNULL).stdout.strip()
+        except (OSError, ValueError):
+            return ""
+
+    sha = _git("rev-parse", "--short", "HEAD")
+    # A ARVORE ESTAVA SUJA? Rodar a suite ANTES de commitar e' o fluxo normal, nao
+    # a excecao — entao o `commit` do carimbo tipicamente descreve o commit PAI do
+    # que foi de fato medido. Gravar so' o sha afirma uma precisao que o carimbo
+    # nao tem. [ressalva do QA, 35a rodada]
+    sujo = bool(_git("status", "--porcelain"))
+    carimbo = {
+        "resultado": (f"{n_pass} PASS · {n_skip} SKIP · {len(falharam)} FAIL "
+                      f"(de {total} canários)"),
+        "pass": n_pass,
+        "skip": n_skip,
+        "fail": len(falharam),
+        "falharam": list(falharam),
+        # PRECISAO CHEIA: `timespec="seconds"` TRUNCA (nao arredonda) os
+        # microssegundos, entao o instante real podia estar ate 0,999s depois do
+        # valor gravado — e quem le tinha de compensar isso com uma tolerancia
+        # magica. Matar a truncagem na raiz e' mais barato que compensa-la.
+        # [ressalva do QA, 36a rodada]
+        "medido_em": datetime.datetime.now().astimezone().isoformat(),
+        "commit": sha,
+        "arvore_suja": sujo,
+    }
+    # ESCRITA ATOMICA, e nao `open(destino, "w")`.
+    #
+    # `open("w")` TRUNCA no momento do open, antes de escrever um byte: qualquer
+    # falha no meio — processo morto, disco cheio, antivirus segurando o arquivo
+    # por um instante — deixava o carimbo com ZERO bytes, e o `except OSError:
+    # pass` engolia o erro. O leitor entao publicava "carimbo ilegivel" no lugar
+    # de um "88 PASS" que fora medido de verdade: informacao BOA perdida por
+    # falha que nada tem a ver com o resultado dos testes. [achado ALTA, 35a rodada]
+    #
+    # O padrao certo ja' existia neste repositorio, em `controle_base.py:158`,
+    # com o comentario "[ACHADO ALTA DO QA RODADA 12]" — o MESMO defeito, ja'
+    # corrigido uma vez, e este codigo novo nao o reaproveitou. Correcao num
+    # fluxo tem de propagar aos irmaos na mesma iteracao.
+    tmp = None
+    try:
+        destino = os.path.join(raiz, "_meta", "canarios-ultimo.json")
+        os.makedirs(os.path.dirname(destino), exist_ok=True)
+        with tempfile.NamedTemporaryFile("w", encoding="utf-8", delete=False,
+                                         dir=os.path.dirname(destino),
+                                         prefix=".canarios-ultimo.",
+                                         suffix=".parcial") as fh:
+            tmp = fh.name
+            json.dump(carimbo, fh, indent=2, ensure_ascii=False)
+            fh.write("\n")
+            fh.flush()
+            os.fsync(fh.fileno())
+        os.replace(tmp, destino)
+        tmp = None
+    except OSError:
+        pass                      # falhar ao gravar nao invalida a medicao
+    finally:
+        if tmp:
+            try:
+                os.unlink(tmp)    # sem deixar `.parcial` orfao sujando a arvore
+            except OSError:
+                pass
 
 
 if __name__ == "__main__":

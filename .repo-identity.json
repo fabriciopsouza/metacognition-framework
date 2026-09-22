@@ -9,5 +9,5 @@
   "write_policy": "owner-only",
   "cross_ai_id": "claude-master",
   "purpose": "Mae Claude: nucleo agnostico + dev do framework. So o Claude escreve; leitura livre. Cross-IA: deposita no hub, le do hub. Nunca escreve em metacognition-gemini.",
-  "note": "Dica corroborante (ADR-070). A AUTORIDADE e a ancestralidade git; em conflito, git vence. Um export/clone que copie este arquivo NAO vira master — o classificador checa origin + merge-base/ahead-behind."
+  "note": "Dica corroborante (ADR-070). A AUTORIDADE e a ancestralidade git; em conflito, git vence. COPIAR este arquivo nao faz um clone virar master — o classificador checa origin + merge-base/ahead-behind. MAS EDITA-LO, SIM: `canonical_remote`, `canonical_branch` e `stale_behind_threshold` sao os parametros que o proprio classificador usa, entao trocar `canonical_remote` pelo origin local produz veredito MASTER-CANONICO com writable_master. Por isso este arquivo exige `qa_critic` na matriz de `behaviors/manifest.json` (QA adversarial de 17/09/2026) — a redacao anterior desta nota afirmava uma protecao mais forte do que o codigo entrega."
 }

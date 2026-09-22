@@ -1,0 +1,49 @@
+{
+ "bloco": "adr-115-fail-closed-no-veredito",
+ "papel": "qa_critic",
+ "rodada": 23,
+ "passou": false,
+ "recomendacao": "reprovar",
+ "veredito": "reprovar",
+ "data": "2026-09-16T00:00:00Z",
+ "escopo_paths": [
+  "tools/squad_gate.py",
+  "tools/test_squad_gate.py",
+  "tools/test_mutacao_squad_gate.py",
+  "behaviors/manifest.json",
+  "docs/adr/115-fail-closed-no-veredito-achado-bloqueante-nao-passa-por-rotulo.md",
+  "CHANGELOG.md",
+  "capabilities.json"
+ ],
+ "atestacao": {
+  "agentId": "a2aaa1c1c5180de77",
+  "modelo": "sonnet",
+  "autor": "opus",
+  "isolamento": "subagente qa-critic em segundo plano, degrau canonico (sonnet, um abaixo do autor opus); proibido de tocar o repositorio, experimentos so' no scratchpad"
+ },
+ "resumo": "UMA MEDIA, e a rodada e' notavel pela CALIBRAGEM da severidade, nao pelo achado. A 22a protegeu `.ps1`; a 23a achou a irma POSIX: os 8 arquivos `.sh` rastreados — `effect-gate.sh`, `mission-gate.sh`, `route-gate.sh`, `overwrite-guard.sh`, `bootstrap.sh` — implementam A MESMA POLITICA dos `.ps1` para host nao-Windows (paridade declarada nos ADR-039/040) e nao exigiam papel nenhum. O critico poderia ter chamado de ALTA por analogia com a 22a, e NAO chamou: mediu se ha wiring vivo e mostrou que nao ha — `.claude/settings.json` invoca so' `.py || .ps1` (ADR-027), e o proprio `bootstrap.sh` imprime que o hook global fica inativo 'ate o port .sh chegar'. Raio de explosao HOJE: zero. Mesmo assim reprovou, com o argumento certo: e' mina dormente. No dia em que o port for ligado, o arquivo estara 'pronto' ha meses sem nunca ter passado por qa_critic, e o unico lugar que o exercita (`test_parity.py` em runner ubuntu/macos) cai exatamente no canal que a memoria do dono ja registra como nao-confiavel (`github-actions-not-the-gate`).",
+ "verificacoes_executadas": [
+  "critico reproduziu contra o binario real: os 7 hooks .sh testados devolvem classify() vazio",
+  "critico rastreou a paridade nos ADR-039 e ADR-040, citando linha, em vez de supor que .sh e' equivalente",
+  "critico LEU `.claude/settings.json` inteiro e confirmou que nenhum `command` invoca bash/.sh — foi isso que rebaixou o achado de ALTA para MEDIA",
+  "critico citou `bootstrap.sh:142`, onde o proprio script admite que o hook global fica inativo ate o port .sh chegar",
+  "critico verificou que `test_parity.py` so' exercita .sh em runner ubuntu/macos e cruzou com a memoria do dono sobre a CI nao ser o gate real",
+  "critico confirmou que `classify()` casefolda: `EFFECT-GATE.PS1` maiusculo casa igual",
+  "critico recontou AO VIVO as duas afirmacoes qualitativas que eu tinha reescrito na 22a, contra 52 vereditos atestados: nenhum sem `autor`, nenhum par que dependa de caixa/separador — ambas continuam verdadeiras",
+  "critico rodou e conferiu os numeros vivos: 78 PASS / 0 FAIL e 31/31 mutacoes, e declarou NENHUMA alegacao numerica estale em squad_gate.py, test_squad_gate.py, ADR, CHANGELOG ou capabilities.json",
+  "critico confirmou que a alegacao sobre o canario orfao nao-rastreado de outra sessao continua verdadeira",
+  "critico considerou e DESCARTOU `.claude/skills/` como achado, por conter so' README hoje — registrou como observacao, nao inflou",
+  "autor mediu antes de corrigir: 8 arquivos .sh rastreados, os 8 sem papel, NENHUM staged — raio zero no commit atual",
+  "autor, apos corrigir: effect-gate.sh e bootstrap.sh -> ['qa_critic']; 78 PASS / 0 FAIL; 31/31 mutacoes; sha256 identico"
+ ],
+ "problemas": [
+  {
+   "severidade": "MEDIA",
+   "estado": "corrigido",
+   "local": "behaviors/manifest.json — ausencia de cobertura para .sh",
+   "descricao": "Os 8 arquivos `.sh` rastreados sao a implementacao POSIX dos mesmos gates protegidos na 22a rodada, e nao exigiam papel. CORRIGIDO com `suffix: '.sh'`, e o canario da classe ganhou `tools/hooks/effect-gate.sh`. A razao de ser MEDIA e nao ALTA esta no achado e fica registrada: nao ha wiring vivo hoje. A razao de ainda assim entrar tambem: mina dormente e' pior que buraco aberto, porque no dia em que o port for ligado o arquivo ja tera' a aparencia de revisado. Quarta instancia da classe 'interruptor fora da matriz' (16a, 18a/19a, 22a foram as outras)."
+  }
+ ],
+ "recomendacao_do_critico": "reprovar; mina dormente com correcao de uma linha, na mesma classe que quatro rodadas ja trataram",
+ "nota_do_autor": "Vigesima terceira rodada, e o que ela ensina nao e' o achado — e' a CALIBRAGEM. O critico tinha um caminho facil para inflar: chamar de ALTA por analogia direta com a 22a, que era ALTA. Ele foi ler o `settings.json`, viu que nenhum hook invoca `.sh`, e rebaixou para MEDIA explicando a diferenca. Depois reprovou mesmo assim, com um argumento melhor que o de severidade: mina dormente engana pela aparencia de revisado. Severidade calibrada vale mais que severidade alta, e este ADR ja registrou o defeito oposto ('amaciamento de severidade escapa') como limite aberto."
+}

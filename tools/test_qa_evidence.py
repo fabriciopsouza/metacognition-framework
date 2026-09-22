@@ -112,7 +112,183 @@ def _test_junction_ledger():
     return not fails
 
 
+def conferir_cadeia():
+    """A cadeia do ledger acumula atraves de VARIAS regravacoes? (falhas).
+
+    POR QUE TRES E NAO DUAS: com duas gravacoes o defeito NAO aparece — uma
+    cadeia de profundidade 1 parece correta. Ele so' se revela na terceira,
+    quando o elo mais antigo deveria continuar la'. Foi exatamente por testar
+    com duas que o autor afirmou "testado ponta a ponta" sobre um mecanismo
+    quebrado, e foi o QA adversarial de 17/09/2026 que mediu a terceira.
+
+    O defeito: `historico = list(verdict.get("substitui") or [])` lia o campo do
+    veredito que ENTRA — sempre vazio, porque o qa-critic nao carrega historico
+    — em vez do campo do ANTERIOR, onde o elo antigo mora. Como o arquivo e'
+    reescrito inteiro, a rodada 1 desaparecia na 3a gravacao. Num bloco com 30
+    rodadas, o artefato final mostraria um unico elo.
+    """
+    import json
+    import tempfile
+    import qa_evidence
+
+    falhas = []
+    antes = qa_evidence.QA_DIR
+    qa_evidence.QA_DIR = tempfile.mkdtemp(prefix="cadeia-")
+    try:
+        base = dict(bloco="bloco-da-cadeia", papel="qa_critic", passou=False,
+                    data="2026-09-17T00:00:00Z", escopo_paths=["a.py"],
+                    problemas=[], verificacoes_executadas=["rodou"],
+                    atestacao={"agentId": "a1", "modelo": "sonnet",
+                               "autor": "opus", "isolamento": "subagente"})
+        caminho = None
+        for rodada, decisao in ((1, "reprovar"), (2, "reprovar"), (3, "aprovar")):
+            caminho, _md = qa_evidence.write_artifact(
+                dict(base, rodada=rodada, recomendacao=decisao,
+                     resumo=f"rodada {rodada}", passou=(decisao == "aprovar")))
+
+        final = json.load(open(caminho, encoding="utf-8"))
+        cadeia = final.get("substitui") or []
+        rodadas = [a.get("rodada") for a in cadeia]
+        if rodadas != [1, 2]:
+            falhas.append(f"a cadeia perdeu historico: esperava [1, 2], veio {rodadas}")
+        if not all(a.get("recomendacao") for a in cadeia):
+            falhas.append("antecedente sem `recomendacao` — o campo obrigatorio do schema")
+        if final.get("substitui_reprovacao") is not True:
+            falhas.append("aprovativo que substitui REPROVACAO nao se declarou")
+
+        md = open(caminho[:-5] + ".md", encoding="utf-8").read()
+        if "Substitui vereditos anteriores" not in md:
+            falhas.append("a cadeia existe no JSON e some no .md, que e' o que humano le")
+        elif "REPROVACAO" not in md:
+            falhas.append("o .md nao destaca que houve reprovacao substituida")
+    finally:
+        qa_evidence.QA_DIR = antes
+    return falhas
+
+
+def conferir_substitui_malformado():
+    """JSON ja' gravado com `substitui` fora do schema tem de RECUSAR, nao mesclar.
+
+    O fail-open: `list(anterior.get("substitui") or [])` aceita uma STRING e a
+    fragmenta em caracteres, sem erro naquela linha. O crash so' aparecia depois,
+    em `render_md` — e a essa altura o `json.dump` JA' TINHA GRAVADO a corrupcao,
+    porque ele roda antes. Cada regravacao fazia a lista de fragmentos crescer, e
+    o `.md` ficava permanentemente desatualizado.
+
+    Este arquivo ja' tinha aprendido a licao com `problemas`; ela nao foi
+    generalizada para `substitui`. [achado do QA de 17/09/2026]
+    """
+    import json
+    import os
+    import tempfile
+    import qa_evidence
+
+    falhas = []
+    antes = qa_evidence.QA_DIR
+    qa_evidence.QA_DIR = tempfile.mkdtemp(prefix="malformado-")
+    try:
+        base = dict(bloco="bloco-corrompido", papel="qa_critic", passou=False,
+                    data="2026-09-17T00:00:00Z", escopo_paths=["a.py"], problemas=[],
+                    verificacoes_executadas=["rodou"], recomendacao="reprovar",
+                    resumo="r1", rodada=1,
+                    atestacao={"agentId": "a1", "modelo": "sonnet",
+                               "autor": "opus", "isolamento": "subagente"})
+        caminho, _ = qa_evidence.write_artifact(dict(base))
+
+        for rotulo, veneno in (("string", "nao sou lista"),
+                               ("lista de nao-dicts", ["x", 3])):
+            disco = json.load(open(caminho, encoding="utf-8"))
+            disco["substitui"] = veneno
+            json.dump(disco, open(caminho, "w", encoding="utf-8"), ensure_ascii=False)
+            antes_bytes = os.path.getsize(caminho)
+            try:
+                qa_evidence.write_artifact(dict(base, rodada=2, recomendacao="aprovar",
+                                                passou=True, resumo="r2"))
+                falhas.append(f"`substitui` como {rotulo} foi ACEITO — deveria recusar")
+            except ValueError as erro:
+                if "substitui" not in str(erro):
+                    falhas.append(f"recusou {rotulo}, mas sem dizer o campo: {erro}")
+            except Exception as erro:
+                falhas.append(f"{rotulo} quebrou com {type(erro).__name__}, nao com ValueError")
+            if os.path.getsize(caminho) != antes_bytes:
+                falhas.append(f"o ledger foi ESCRITO mesmo com {rotulo} invalido — "
+                              f"recusar depois de gravar nao adianta")
+
+        # e o veredito que ENTRA com `substitui` torto tambem e' recusado
+        try:
+            qa_evidence.write_artifact(dict(base, bloco="outro", substitui="torto"))
+            falhas.append("`substitui` invalido no veredito que ENTRA foi aceito")
+        except ValueError:
+            pass
+    finally:
+        qa_evidence.QA_DIR = antes
+    return falhas
+
+
+def conferir_carimbo_de_blobs():
+    """`write_artifact` carimba `blobs_revisados`, e normaliza o separador do caminho.
+
+    Duas garantias, e a segunda e' a que quase escapou (ALTA da 37a rodada): `git rev-parse
+    :tools\\x.py` nao resolve contra o indice, e a funcao caia no fallback que le o DISCO.
+    Num arquivo com staged diferente do disco, o carimbo gravado seria o do conteudo NAO
+    revisado — carimbar uma coisa e commitar outra, em silencio, do lado de quem escreve a
+    prova.
+    """
+    import json
+    import tempfile
+    import qa_evidence
+
+    falhas = []
+    alvo = "tools/squad_gate.py"
+    esperado = qa_evidence._blob_indexado(alvo)
+    if not esperado:
+        return falhas                      # sem git utilizavel; nao inventa resultado
+
+    antes = qa_evidence.QA_DIR
+    qa_evidence.QA_DIR = tempfile.mkdtemp(prefix="carimbo-")
+    try:
+        base = dict(bloco="bloco-do-carimbo", papel="qa_critic", passou=True,
+                    recomendacao="aprovar", problemas=[], verificacoes_executadas=["rodou"],
+                    resumo="r1", rodada=1,
+                    atestacao={"agentId": "a1", "modelo": "sonnet",
+                               "autor": "opus", "isolamento": "subagente"})
+
+        caminho, _ = qa_evidence.write_artifact(dict(base, escopo_paths=[alvo]))
+        d = json.load(open(caminho, encoding="utf-8"))
+        b = d.get("blobs_revisados")
+        if not isinstance(b, dict) or not b:
+            falhas.append("write_artifact nao carimbou `blobs_revisados`")
+        elif b.get(alvo) != esperado:
+            falhas.append(f"carimbou {b.get(alvo)!r}, esperado {esperado!r} (hash do INDICE)")
+
+        # o MESMO caminho escrito com barra invertida tem de produzir o MESMO carimbo,
+        # e a CHAVE tem de sair normalizada — senao o leitor nunca a encontra e o veredito
+        # bloqueia para sempre, empurrando para --no-verify.
+        invertida = alvo.replace("/", chr(92))
+        caminho2, _ = qa_evidence.write_artifact(
+            dict(base, bloco="bloco-do-carimbo-2", escopo_paths=[invertida]))
+        d2 = json.load(open(caminho2, encoding="utf-8"))
+        b2 = d2.get("blobs_revisados") or {}
+        if alvo not in b2:
+            falhas.append(f"chave nao foi normalizada: {sorted(b2)} (esperava {alvo!r})")
+        elif b2.get(alvo) != esperado:
+            falhas.append("barra invertida carimbou hash diferente da barra normal — "
+                          "o fallback leu o DISCO em vez do indice")
+    finally:
+        qa_evidence.QA_DIR = antes
+    return falhas
+
+
 def main():
+    falhas_cadeia = (conferir_cadeia() + conferir_substitui_malformado()
+                     + conferir_carimbo_de_blobs())
+    for f in falhas_cadeia:
+        print(f"  FAIL cadeia do ledger: {f}")
+    if falhas_cadeia:
+        print("RESULTADO: FAIL (a cadeia de vereditos nao preserva a historia)")
+        return 1
+    print("  ok   a cadeia do ledger acumula por 3 gravacoes e aparece no .md")
+
     shadow, why = _is_genuine_shadow()
     if shadow:
         print(f"{why}. PASS (shadow — nao cobra artefato qa-critic).")

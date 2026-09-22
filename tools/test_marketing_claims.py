@@ -28,12 +28,54 @@ except Exception:
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
+import argparse  # noqa: E402
+import io  # noqa: E402
 from build_limits import CLAIMS, build, INTERNAL_ONLY  # noqa: E402
 import web_export  # noqa: E402  (import-safe: main() só roda sob __main__)
 from overclaim_lexicon import find_overclaims  # noqa: E402
 
 VITRINE = os.path.join(ROOT, "guia", "web", "index.html")
 WEB_PROMPT_RE = re.compile(r"PROMPT-CHAT-WEB-v.*\.md$")
+
+
+UNIDADES = ("zero", "um", "dois", "tres", "quatro", "cinco", "seis", "sete",
+            "oito", "nove", "dez", "onze", "doze", "treze", "quatorze", "quinze",
+            "dezesseis", "dezessete", "dezoito", "dezenove")
+DEZENAS = ("", "", "vinte", "trinta", "quarenta", "cinquenta", "sessenta",
+           "setenta", "oitenta", "noventa")
+
+
+def por_extenso(n: int, zero: str = "nenhuma") -> str:
+    """O numero como ele aparece na frase de reconciliacao da vitrine.
+
+    Existe para que a frase e o gate que a confere saiam da MESMA fonte. Antes,
+    a frase era escrita a mao e o gate trazia um dicionario fixo de grafias:
+    duas listas para manter em sincronia, e em 16/09/2026 a frase publicava
+    'cinquenta e nove' numa arvore onde o numero medido era 57.
+
+    `zero` e' parametro porque a frase diz "nenhuma declarada sem prova", nao
+    "zero declaradas".
+    """
+    if n == 0:
+        return zero
+    if n < 20:
+        return UNIDADES[n]
+    if n < 100:
+        dez, resto = divmod(n, 10)
+        return DEZENAS[dez] + (f" e {UNIDADES[resto]}" if resto else "")
+    if n == 100:
+        return "cem"
+    centos, resto = divmod(n, 100)
+    cabeca = "cento" if centos == 1 else f"{UNIDADES[centos]}centos"
+    return cabeca + (f" e {por_extenso(resto, zero)}" if resto else "")
+
+
+def frase_de_reconciliacao(total, provadas, fc_sem_prova, fracos, sem_campo) -> str:
+    """A frase publicada. UMA fonte para o texto e para a conferencia."""
+    return (f"A conta fecha em <b>{total}</b>: {por_extenso(provadas)} provadas, "
+            f"{por_extenso(fc_sem_prova)} declarada sem prova, "
+            f"{por_extenso(fracos)} com proteção mais fraca, "
+            f"{por_extenso(sem_campo)} sem declaração.")
 
 
 def contar_vitrine(caps):
@@ -209,7 +251,18 @@ def autoteste_procedencia():
     return fails
 
 
-def main():
+def main(argv=None):
+    """`--corrigir` grava na vitrine os numeros MEDIDOS, em vez de reprovar.
+
+    Sem a bandeira o comportamento e' o de sempre: so' verifica. A gravacao e'
+    para quem acabou de mexer na arvore (autor, ou o `export-clean.py` sobre a
+    copia exportada) — nunca automatica dentro de um gate.
+    """
+    args = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    args.add_argument("--corrigir", action="store_true",
+                      help="grava na vitrine a contagem medida nesta arvore")
+    corrigir = args.parse_args(
+        (argv if argv is not None else sys.argv[1:])).corrigir
     fails = 0
 
     def gate(ok, desc):
@@ -313,6 +366,41 @@ def main():
             for _f in autoteste_contagem():
                 gate(False, f"auto-teste da contagem da vitrine: {_f}")
             canarios = len(glob.glob(os.path.join(ROOT, "tools", "test_*.py")))
+            # O numero de canarios e' um denominador que o PROPRIO ciclo
+            # alimenta: todo bloco novo acrescenta `tools/test_*.py`. Mantido a
+            # mao, ele envelhece a cada commit e o gate fica vermelho por
+            # desatualizacao, nao por defeito — foi o que aconteceu em
+            # 16/09/2026 (pagina 88, arvore 89, pacote publico 87).
+            #
+            # E sao DOIS numeros legitimos, para duas plateias: a arvore de
+            # desenvolvimento tem canarios que NAO viajam para o pacote
+            # (`test_core_agnostic.py`, `test_premium_tier.py` testam a propria
+            # maquinaria de export). Por isso a correcao nao e' escolher um
+            # numero: e' GERAR, em cada arvore, como o `build_limits.py` ja'
+            # faz para o LIMITS.md — mesma medicao, dois resultados corretos.
+            if corrigir:
+                trocas = (
+                    (r"<b>\d+ de \d+</b> capacidades",
+                     f"<b>{provadas} de {total}</b> capacidades"),
+                    (r"\d+ canários", f"{canarios} canários"),
+                    (r"<b>\d+</b> ainda não", f"<b>{sem_campo}</b> ainda não"),
+                    (r"<b>\d+</b> declaram", f"<b>{fracos}</b> declaram"),
+                    (r"A conta fecha em <b>\d+</b>:.{0,220}?\.",
+                     frase_de_reconciliacao(total, provadas, fc_sem_prova,
+                                            fracos, sem_campo)),
+                    (r"<b>\d+ de \d+</b> de", f"<b>{conformes} de {total}</b> de"),
+                )
+                novo = vtext
+                for padrao, troca in trocas:
+                    novo = re.sub(padrao, troca.replace("\\", "\\\\"), novo,
+                                  count=1, flags=re.S)
+                if novo != vtext:
+                    io.open(VITRINE, "w", encoding="utf-8",
+                            newline="\n").write(novo)
+                    print(f"     vitrine: {provadas}/{total} provadas · "
+                          f"{canarios} canários · {fracos} fracas · "
+                          f"{conformes}/{total} conformes")
+                    vtext = novo
         except Exception as e:
             gate(False, f"nao consegui derivar os numeros da vitrine: {e}")
         else:
@@ -329,6 +417,44 @@ def main():
                 gate(valor in secao,
                      f"a secao #provas nao afirma '{valor}' ({oquee}) — numero da pagina divergiu "
                      f"do repo, ou saiu da secao; atualize guia/web/index.html")
+
+            # [ACHADO ALTA DO QA DO ADR-114] as checagens acima conferem PRESENCA de cada
+            # substring, uma por uma. Elas passavam com a pagina se contradizendo DENTRO da mesma
+            # frase: "A conta fecha em 97: ... trinta e nove ..." convivia com "98 de 98" logo ao
+            # lado, porque as duas substrings certas existiam em OUTRO ponto da secao. Presenca nao
+            # e' coerencia. A frase de reconciliacao e' uma CONTA, e passa a ser conferida como tal.
+            # Derivado de `por_extenso`, nao digitado: um dicionario fixo de
+            # grafias e' uma segunda lista para manter em sincronia, e listas
+            # paralelas derivam. A checagem continua valendo — ela confere se o
+            # numero ESCRITO e' um dos MEDIDOS, e isso independe de quem grafou.
+            POR_EXTENSO = {por_extenso(n): n for n in range(0, 200)}
+            mrec = re.search(r"A conta fecha em <b>(\d+)</b>:(.{0,220}?)\.", secao, re.S)
+            gate(mrec is not None,
+                 "a frase 'A conta fecha em <b>N</b>: ...' sumiu da secao #provas — sem ela esta "
+                 "checagem vira decoracao; reancore o padrao ou remova a checagem")
+            if mrec:
+                gate(int(mrec.group(1)) == total,
+                     f"a frase de reconciliacao diz que a conta fecha em {mrec.group(1)}, mas o "
+                     f"registro tem {total} capacidades")
+                corpo = mrec.group(2)
+                # Por PALAVRA INTEIRA e pelo casamento MAIS LONGO. `n in corpo`
+                # era comparacao por substring: "cinquenta e nove" contem
+                # "cinquenta" e contem "nove", e a frase passava a ser acusada
+                # de citar 50 e 9. O mapa escrito a mao nao expunha isso porque
+                # so' trazia grafias longas — o defeito estava na comparacao, e
+                # so' apareceu quando o mapa deixou de ser curado a mao.
+                alternativas = "|".join(re.escape(n) for n in
+                                        sorted(POR_EXTENSO, key=len, reverse=True))
+                achados = {m2.group(1): POR_EXTENSO[m2.group(1)] for m2 in
+                           re.finditer(rf"\b({alternativas})\b", corpo)}
+                gate(bool(achados),
+                     "a frase de reconciliacao nao tem numero por extenso reconhecivel — se a "
+                     "redacao mudou, atualize POR_EXTENSO; senao esta checagem nao mede nada")
+                for nome, valor in achados.items():
+                    gate(valor in (provadas, fracos, fc_sem_prova, sem_campo),
+                         f"a frase de reconciliacao diz '{nome}' ({valor}), que nao e' nenhum dos "
+                         f"numeros medidos (provadas={provadas}, fracos={fracos}, "
+                         f"fc_sem_prova={fc_sem_prova}, sem_campo={sem_campo})")
 
     # (i) procedencia de afirmacao NARRATIVA na prosa publica (vitrine + prompt web)
     for _f in autoteste_procedencia():

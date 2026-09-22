@@ -67,6 +67,7 @@ alguem automatizar a leitura deste comando.
 NAO usa IA.
 """
 import argparse
+import ast
 import atexit
 import json
 import os
@@ -141,6 +142,148 @@ def carregar_caps(p: Path):
     return list(d.get("capabilities", d) if isinstance(d, dict) else d)
 
 
+def quebrou_sintaxe(caminho: str, texto: str):
+    """O texto sabotado ainda e' um arquivo VALIDO deste tipo? (motivo | None).
+
+    Devolve `None` quando NAO da' para saber (tipo sem parser aqui).
+
+    POR QUE ISTO EXISTE, e por que substituiu duas tentativas anteriores:
+    a recusa de "prova por crash" era inferida da SAIDA do canario — primeiro
+    procurando marcas como `SyntaxError`/`Traceback`, depois exigindo que a
+    mensagem esperada saisse no stdout. As duas caem contra um canario que
+    CAPTURA a propria excecao:
+
+        try:  checar()
+        except Exception as e:  print(f"FAIL regra-violada: {e}"); return 1
+
+    `str(excecao)` em Python NUNCA inclui o nome da classe — isso so' aparece
+    quando o INTERPRETADOR formata um traceback nao-capturado. Um canario
+    defensivo apaga o sinal e ainda escreve no stdout, entao nenhuma heuristica
+    sobre o texto de saida podia funcionar. Nao era ordem de checagem: era a
+    fonte da informacao. [achado CRITICO do QA adversarial de 17/09/2026 — canario defensivo apaga o sinal de crash]
+
+    Quebra de sintaxe e' fato DO ARQUIVO, conhecivel sem executar coisa alguma.
+    """
+    baixo = caminho.lower()
+    if baixo.endswith(".py"):
+        try:
+            ast.parse(texto)
+        except SyntaxError as erro:
+            return f"{type(erro).__name__}: {erro.msg} (linha {erro.lineno})"
+        return None
+    if baixo.endswith(".json"):
+        try:
+            json.loads(texto)
+        except ValueError as erro:
+            return f"JSON invalido: {erro}"
+        return None
+    return None
+
+
+def nao_carrega(raiz, arquivo: str):
+    """O modulo sabotado, JA' NO LUGAR DELE, chega a carregar? (motivo | None).
+
+    PARSEAR NAO E' CARREGAR: `VALOR = 10` seguido de `import modulo_inexistente`
+    passa no `ast.parse` e mata o canario no import — mesma fraude por uma porta
+    que o parser nao ve.
+
+    E o teste TEM de rodar onde o modulo vive. A 1a versao copiava o arquivo para
+    um diretorio temporario e executava la': qualquer modulo que importe um irmao
+    (`controle_base`, `web_export`) falhava com `ModuleNotFoundError` — nao pela
+    sabotagem, mas porque eu o tinha tirado do lugar. Cinco falsos positivos
+    numa rodada, todos acusando o vizinho ausente em vez do defeito.
+    """
+    if not str(arquivo).lower().endswith(".py"):
+        return None
+    caminho = os.path.join(str(raiz), *str(arquivo).split("/"))
+    pasta = os.path.dirname(caminho)
+    r = subprocess.run(
+        [sys.executable, "-c",
+         "import importlib.util,sys;"
+         "sys.path.insert(0, sys.argv[2]);"
+         "s=importlib.util.spec_from_file_location('_sob_teste', sys.argv[1]);"
+         "m=importlib.util.module_from_spec(s); s.loader.exec_module(m)",
+         caminho, pasta],
+        cwd=str(raiz), capture_output=True, text=True, encoding="utf-8",
+        # `stdin` FECHADO: varios mecanismos reais (`compaction_gate.py`,
+        # `effect_gate.py`, `overwrite_guard.py`) fazem `sys.stdin.read()` em
+        # NIVEL DE MODULO, sem guarda de `__main__`. Herdar o stdin do pai
+        # travava a leitura ate o timeout num terminal interativo, e o
+        # `TimeoutExpired` derrubava o `--provar` inteiro sem relatorio.
+        errors="replace", env=ENV_SEM_BYTECODE, timeout=60,
+        stdin=subprocess.DEVNULL)
+    if r.returncode == 0:
+        return None
+    linhas = [l for l in (r.stderr or "").strip().splitlines() if l.strip()]
+    return f"nao CARREGA: {linhas[-1][:120] if linhas else 'erro no import'}"
+
+
+def canario_defensivo(fonte: str) -> bool:
+    """O canario ENGOLE qualquer excecao e reformata a mensagem?
+
+    `except Exception` / `except:` amplo em volta do uso do mecanismo apaga o
+    unico sinal que distingue "detectou" de "morreu": a mensagem que sai e' a
+    mesma nos dois casos. Para mecanismo `.py`/`.json` isso nao importa, porque
+    a pre-condicao responde pelo ARQUIVO. Para `.ps1`, `.md`, `.yml` e afins nao
+    ha' parser aqui — e ai a combinacao vira indecidivel.
+
+    Indecidivel se declara, nao se adivinha.
+    """
+    try:
+        arvore = ast.parse(fonte)
+    except SyntaxError:
+        return False
+    for no in ast.walk(arvore):
+        if not isinstance(no, ast.ExceptHandler):
+            continue
+        if no.type is None:                                  # `except:` puro
+            amplo = True
+        else:
+            nomes = {x.id for x in ast.walk(no.type) if isinstance(x, ast.Name)}
+            amplo = bool(nomes & {"Exception", "BaseException"})
+        if not amplo:
+            continue
+        # O DEFAULT E' "MASCARA", e a excecao e' estreita.
+        #
+        # A versao anterior fazia o contrario: so' marcava se houvesse `print`
+        # DENTRO do proprio handler. O QA derrubou isso de ponta a ponta com o
+        # idioma mais comum de captura defensiva em Python — mais comum que o
+        # print no handler:
+        #
+        #     ok = True
+        #     try:    roda_o_mecanismo()
+        #     except Exception:  ok = False
+        #     if not ok:  print("FAIL regra-violada"); sys.exit(1)
+        #
+        # Nada e' impresso no handler, entao a regra dizia "nao e' defensivo" — e
+        # uma mutacao que so' quebrava a SINTAXE do mecanismo saia [PROVADO].
+        # Gravar em arquivo em vez de imprimir tinha o mesmo efeito.
+        #
+        # Nao da' para enumerar as formas de emitir a mensagem depois. Da' para
+        # enumerar as formas de NAO emitir nada: um handler cujo corpo e' inerte
+        # (`pass`, `...`, `continue`, `break`, `raise` puro) nao produz mensagem
+        # que se confunda com deteccao, e e' justamente o preambulo de encoding
+        # (`except Exception: pass` em volta de `sys.stdout.reconfigure`) que
+        # aparece em metade dos canarios deste repo.
+        #
+        # Lista curta e fechada de coisas inertes; tudo o mais e' candidato.
+        if all(_inerte(linha) for linha in no.body):
+            continue
+        return True
+    return False
+
+
+def _inerte(no) -> bool:
+    """A instrucao nao produz efeito observavel fora do handler."""
+    if isinstance(no, (ast.Pass, ast.Continue, ast.Break)):
+        return True
+    if isinstance(no, ast.Raise) and no.exc is None:      # re-lanca
+        return True
+    if isinstance(no, ast.Expr) and isinstance(no.value, ast.Constant):
+        return True                                       # `...` ou docstring
+    return False
+
+
 def valida_mutacao(m, cap=None):
     """(ok, motivo). Mutacao precisa ser aplicavel por maquina, nao descricao.
 
@@ -160,6 +303,13 @@ def valida_mutacao(m, cap=None):
         return False, (f"`mutacao.espera` ({esp!r}) tem {len(esp)} caractere(s) — minimo "
                        f"{ESPERA_MIN}. Sinal curto casa por acidente: 'Error' aparece no texto "
                        f"de quase toda excecao, e a prova volta a nao provar nada")
+    # `espera` contido no texto SABOTADO e' a mesma fraude por outra porta: o
+    # interpretador ecoa a linha quebrada, e o marcador plantado nela apareceria.
+    # O filtro por stream ja' barra; isto recusa a DECLARACAO, antes de rodar.
+    if esp and esp in (m.get("para") or ""):
+        return False, (f"`mutacao.espera` ({esp!r}) e' um pedaco do proprio texto sabotado "
+                       f"— o interpretador ecoa a linha quebrada e a prova viraria crash "
+                       f"disfarcado de deteccao")
     colide = [mk for mk in MARCAS_DE_CRASH if mk.lower() in esp.lower()]
     if colide:
         return False, (f"`mutacao.espera` contem sinal de CRASH ({colide[0]!r}) — prova por crash "
@@ -324,10 +474,32 @@ def modo_provar(caps, alvo, raiz=RAIZ):
                                         f"— mutacao esta obsoleta"))
                     continue
                 # 1) o canario passa ANTES da mutacao?
-                antes = subprocess.run([sys.executable, "-X", "utf8", str(canario)],
-                                       capture_output=True, text=True, cwd=str(wt),
-                                       encoding="utf-8", errors="replace",
-                                       env=ENV_SEM_BYTECODE)
+                try:
+                    antes = subprocess.run(
+                        [sys.executable, "-X", "utf8", str(canario)],
+                        capture_output=True, text=True, cwd=str(wt),
+                        stdin=subprocess.DEVNULL, timeout=300,
+                        encoding="utf-8", errors="replace", env=ENV_SEM_BYTECODE)
+                except (subprocess.TimeoutExpired, OSError,
+                        subprocess.SubprocessError) as erro_exec:
+                    # A FAMILIA INTEIRA, nao so' o timeout. `OSError` e
+                    # `SubprocessError` atravessavam `modo_provar` e subiam ate
+                    # `main()` — que nao tem try/except — reproduzindo LITERALMENTE
+                    # o crash total do lote que a captura do timeout foi escrita
+                    # para eliminar. O padrao `except (OSError, SubprocessError)`
+                    # ja' existe QUATRO vezes neste repo em volta de outros
+                    # `subprocess.run`; so' nao tinha sido replicado aqui.
+                    # [achado do QA de 17/09/2026]
+                    # O `timeout` que eu acrescentei para impedir travamento criou um
+                    # jeito novo de perder TUDO: `TimeoutExpired` nao era capturado em
+                    # lugar nenhum — nem no laco, nem em `main()` — entao um canario
+                    # acima de 300s derrubava o `--provar` inteiro, sem relatorio para
+                    # NENHUMA capacidade, nem as ja' provadas antes dela no laco.
+                    # Infinito virou 300s, e o silencio total continuou.
+                    # [achado do QA de 17/09/2026]
+                    falhas.append((cid, f"canario `{m['canario']}` nao rodou ANTES da mutacao "
+                                        f"({type(erro_exec).__name__}) — prova impossivel"))
+                    continue
                 saida_antes = (antes.stdout or "") + (antes.stderr or "")
                 if antes.returncode != 0:
                     falhas.append((cid, "canario ja estava VERMELHO antes da mutacao "
@@ -340,14 +512,97 @@ def modo_provar(caps, alvo, raiz=RAIZ):
                                         f"da mutacao — nao distingue detectado de rotina"))
                     continue
                 # 2) sabota e exige vermelho PELO MOTIVO DECLARADO
-                alvo_f.write_text(original.replace(m["de"], m["para"], 1), encoding="utf-8")
+                sabotado = original.replace(m["de"], m["para"], 1)
+                # PRE-CONDICAO: o mecanismo sabotado ainda e' valido? Se a mutacao
+                # quebrou a sintaxe, ela nao prova nada — e isso se sabe ANTES de
+                # rodar o canario, sem depender do que ele escolhe imprimir.
+                # INDECIDIVEL, e por isso recusado: mecanismo cujo tipo nao tem
+                # parser aqui (`.ps1`, `.md`, `.yml`) + canario que engole
+                # qualquer excecao. Nesse par, "detectou" e "morreu" produzem a
+                # MESMA mensagem, e nao ha' fato nenhum que os separe — nem no
+                # arquivo (sem parser), nem na saida (o `except` amplo apaga o
+                # sinal). Medido: mecanismo `.ps1` corrompido fazia o canario
+                # estourar `AttributeError` num `re.search(...).group(1)` e o
+                # `except Exception` imprimia a mensagem declarada, sem nunca ter
+                # conferido valor nenhum. Saia [PROVADO].
+                #
+                # Nao da' para adivinhar qual dos dois foi. Entao se declara.
+                if quebrou_sintaxe(m["arquivo"], sabotado) is None \
+                        and not m["arquivo"].lower().endswith((".py", ".json")):
+                    fonte_canario = (raiz / m["canario"])
+                    if fonte_canario.is_file() and canario_defensivo(
+                            fonte_canario.read_text(encoding="utf-8", errors="replace")):
+                        alvo_f.write_text(original, encoding="utf-8")
+                        falhas.append((cid, f"INDECIDIVEL: `{m['arquivo']}` nao tem parser aqui "
+                                            f"e `{m['canario']}` engole qualquer excecao "
+                                            f"(`except Exception`) — 'detectou' e 'morreu' dao a "
+                                            f"MESMA mensagem. Capture a excecao ESPECIFICA, ou "
+                                            f"cite `type(e).__name__` na saida"))
+                        continue
+
+                quebrou = quebrou_sintaxe(m["arquivo"], sabotado)
+                if quebrou:
+                    alvo_f.write_text(original, encoding="utf-8")
+                    falhas.append((cid, f"a mutacao QUEBROU a sintaxe de `{m['arquivo']}` "
+                                        f"({quebrou}) — vermelho por crash nao prova deteccao; "
+                                        f"sabote a LOGICA"))
+                    continue
+                alvo_f.write_text(sabotado, encoding="utf-8")
+                morreu = nao_carrega(wt, m["arquivo"])
+                if morreu:
+                    alvo_f.write_text(original, encoding="utf-8")
+                    falhas.append((cid, f"a mutacao impediu `{m['arquivo']}` de CARREGAR "
+                                        f"({morreu}) — vermelho por crash nao prova deteccao; "
+                                        f"sabote a LOGICA"))
+                    continue
                 _purgar_bytecode(wt)
-                dep = subprocess.run([sys.executable, "-X", "utf8", str(canario)],
-                                     capture_output=True, text=True, cwd=str(wt),
-                                     encoding="utf-8", errors="replace",
-                                     env=ENV_SEM_BYTECODE)
+                # `stdin` fechado e `timeout` explicito nas DUAS execucoes do
+                # canario — nao so' na carga do modulo. Mecanismo que le
+                # `sys.stdin` em nivel de modulo travaria ate o pai fechar, e o
+                # `--provar` inteiro morreria sem relatorio por capacidade. Hoje
+                # nenhum canario depende do stdin herdado, mas isso e' convencao
+                # incidental, nao contrato. [QA de 17/09/2026]
+                try:
+                    dep = subprocess.run(
+                        [sys.executable, "-X", "utf8", str(canario)],
+                        capture_output=True, text=True, cwd=str(wt),
+                        encoding="utf-8", errors="replace", env=ENV_SEM_BYTECODE,
+                        stdin=subprocess.DEVNULL, timeout=300)
+                except (subprocess.TimeoutExpired, OSError,
+                        subprocess.SubprocessError) as erro_exec:
+                    # A FAMILIA INTEIRA, nao so' o timeout. `OSError` e
+                    # `SubprocessError` atravessavam `modo_provar` e subiam ate
+                    # `main()` — que nao tem try/except — reproduzindo LITERALMENTE
+                    # o crash total do lote que a captura do timeout foi escrita
+                    # para eliminar. O padrao `except (OSError, SubprocessError)`
+                    # ja' existe QUATRO vezes neste repo em volta de outros
+                    # `subprocess.run`; so' nao tinha sido replicado aqui.
+                    # [achado do QA de 17/09/2026]
+                    # O `timeout` que eu acrescentei para impedir travamento criou um
+                    # jeito novo de perder TUDO: `TimeoutExpired` nao era capturado em
+                    # lugar nenhum — nem no laco, nem em `main()` — entao um canario
+                    # acima de 300s derrubava o `--provar` inteiro, sem relatorio para
+                    # NENHUMA capacidade, nem as ja' provadas antes dela no laco.
+                    # Infinito virou 300s, e o silencio total continuou.
+                    # [achado do QA de 17/09/2026]
+                    alvo_f.write_text(original, encoding="utf-8")
+                    falhas.append((cid, f"canario `{m['canario']}` nao completou com "
+                                        f"`{m['arquivo']}` sabotado "
+                                        f"({type(erro_exec).__name__}) — nao prova deteccao"))
+                    continue
                 alvo_f.write_text(original, encoding="utf-8")
                 saida_dep = (dep.stdout or "") + (dep.stderr or "")
+                # `espera` so' conta no STDOUT — o canario que RELATA escreve no
+                # proprio stdout; o que MORRE tem o eco da linha quebrada
+                # despejado pelo interpretador no stderr.
+                # `espera` volta a valer em stdout E stderr. Restringir ao stdout
+                # criava o falso-negativo simetrico: canario que reporta com
+                # `print(..., file=sys.stderr)` — idioma padrao de diagnostico —
+                # era acusado de "nao provou nada" por causa do CANAL, nao da
+                # logica. Isso ensina a reescrever canario correto para agradar a
+                # ferramenta, ou a desconfiar de `[FALHA]` legitimo.
+                # Seguro agora porque o crash virou pre-condicao, acima.
+                relato_dep = saida_dep
                 # Deteccao por DELTA, nao por nome de arquivo: marca de crash que NAO existia
                 # antes da mutacao e passou a existir depois. Nao depende de o traceback citar
                 # o arquivo — que era a escapatoria dos mecanismos `.json`/`.md`.
@@ -355,18 +610,45 @@ def modo_provar(caps, alvo, raiz=RAIZ):
                 if dep.returncode == 0:
                     falhas.append((cid, f"canario `{m['canario']}` continuou VERDE com "
                                         f"`{m['arquivo']}` sabotado — nao prova nada"))
-                elif novas:
+                elif m["espera"] in relato_dep:
+                    # DETECTOU — e a ORDEM aqui e' o conserto.
+                    #
+                    # A versao anterior checava a marca de crash ANTES, e reprovava todo canario
+                    # que relata falha de assercao IMPRIMINDO O TRACEBACK. `test_squad_gate.py`
+                    # faz exatamente isso: por causa dele, `veredito-fail-closed` saia como
+                    # "canario MORREU" quando na verdade acusava 16 testes com nome e codigo 1.
+                    # [achado do QA adversarial de 17/09/2026 — prova por crash disfarcada]
+                    #
+                    # "Apareceu marca de crash" NAO distingue "o canario morreu" de "o canario
+                    # relatou por traceback". O que distingue e' ter chegado a imprimir o achado
+                    # DECLARADO: quem morre carregando o arquivo para antes disso.
+                    #
+                    # FURO QUE ISTO FECHA (26a rodada, reproduzido): a 1a versao deste
+                    # conserto olhava stdout+stderr juntos, e bastava plantar um marcador
+                    # DENTRO do texto sabotado (`para`) — o Python ECOA a linha quebrada na
+                    # mensagem de SyntaxError, entao o marcador aparecia e a prova por crash
+                    # voltava a passar. A prova por POSICAO ("a marca vem antes do rotulo do
+                    # erro") tambem NAO fecha: o eco da linha vem ANTES de `SyntaxError:`.
+                    #
+                    # O que fecha e' o STREAM. Nao e' heuristica de texto, e' de quem
+                    # escreveu: canario que relata usa o proprio stdout; canario que morre
+                    # nem chega a imprimir, e o eco sai no stderr do interpretador.
+                    # Medido nos dois sentidos antes de escrever esta linha.
+                    print(f"  [PROVADO] {cid}: mutacao em {m['arquivo']} deixou "
+                          f"{m['canario']} vermelho (codigo {dep.returncode}) "
+                          f"pelo motivo declarado ({m['espera']!r})")
+                elif novas and quebrou_sintaxe(m["arquivo"], sabotado) is None \
+                        and not m["arquivo"].lower().endswith((".py", ".json")):
+                    # So' para tipo sem parser aqui (.md, .txt, .ps1): nesses a
+                    # pre-condicao nao sabe responder, e a marca de crash e' o
+                    # unico sinal que resta.
                     falhas.append((cid, f"canario MORREU processando `{m['arquivo']}` sabotado "
                                         f"({novas[0]} apareceu so depois da mutacao): crash, nao "
                                         f"deteccao — quebrar o arquivo nao prova que o gate "
                                         f"detecta; sabote a LOGICA, nao a sintaxe"))
-                elif m["espera"] not in saida_dep:
+                else:
                     falhas.append((cid, f"canario ficou vermelho, mas NAO pelo motivo declarado: "
                                         f"`espera` ({m['espera']!r}) ausente da saida"))
-                else:
-                    print(f"  [PROVADO] {cid}: mutacao em {m['arquivo']} deixou "
-                          f"{m['canario']} vermelho (codigo {dep.returncode}) "
-                          f"pelo motivo declarado ({m['espera']!r})")
             if falhas:
                 print(f"\n[FALHA] {len(falhas)} prova(s) de mutacao invalida(s):")
                 for cid, motivo in falhas:

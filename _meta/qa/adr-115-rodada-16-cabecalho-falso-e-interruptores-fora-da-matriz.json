@@ -1,0 +1,67 @@
+{
+ "bloco": "adr-115-fail-closed-no-veredito",
+ "papel": "qa_critic",
+ "rodada": 16,
+ "passou": false,
+ "recomendacao": "reprovar",
+ "veredito": "reprovar",
+ "data": "2026-09-14T00:00:00Z",
+ "escopo_paths": [
+  "tools/squad_gate.py",
+  "tools/test_squad_gate.py",
+  "tools/test_mutacao_squad_gate.py",
+  "behaviors/manifest.json",
+  "docs/adr/115-fail-closed-no-veredito-achado-bloqueante-nao-passa-por-rotulo.md",
+  "CHANGELOG.md",
+  "capabilities.json"
+ ],
+ "atestacao": {
+  "agentId": "adc8a610f8fd96231",
+  "modelo": "sonnet",
+  "autor": "opus",
+  "isolamento": "subagente qa-critic em segundo plano, degrau abaixo do autor (ADR-109/110); proibido de tocar o repositorio, experimentos no scratchpad"
+ },
+ "resumo": "REPROVOU com tres ALTAS e uma BAIXA, e NENHUM CRITICO — as correcoes da 15a rodada resistiram ao ataque direto. (1) O cabecalho de `squad_gate.py` afirmava que 'o git-hook local nao existe nesta maquina (.git/hooks vazio) e nunca foi trava'. FALSO: o hook existe, e' executavel, e' byte-identico ao template de install_git_hooks.py e roda o gate a cada commit. A linha foi escrita em 13/08/2026, TRES DIAS antes de o gancho ser instalado, e quinze rodadas de QA reeditaram este arquivo passando por cima dela. E' a instancia viva da classe que o proprio cabecalho denuncia dois paragrafos acima ('mecanismo tambem mente quando o comentario envelhece'). (2) e (3) A matriz do `behaviors/manifest.json` protegia o codigo e esquecia quem LIGA E DESLIGA o gate: `.github/workflows/` — onde `continue-on-error` decide se o squad-gate e' advisory ou bloqueante (ADR-104) — e `.claude/agents/` — onde mora a definicao do PROPRIO qa-critic, que declara 'contexto isolado' e 'hipotese default: existe bug'. Editar qualquer um dos dois exigia ZERO papel. (4) BAIXA: `./` no inicio do path nao era normalizado.",
+ "verificacoes_executadas": [
+  "critico verificou o cabecalho FILE-FIRST, nao por leitura: rodou install_git_hooks.py --verificar, listou .git/hooks/pre-commit (1572 bytes, executavel) e comparou com o template CORPO",
+  "critico datou o defeito com git blame -L 24,24: linha escrita em 30ab9574 (13/08/2026), gancho instalado em 16/08, arquivo reeditado em 15 rodadas ate 14/09 sem ninguem parar nela",
+  "critico reproduziu as duas lacunas da matriz: classify(['.github/workflows/ci.yml']) -> [] e classify(['.claude/agents/qa-critic.md']) -> []",
+  "critico confirmou por grep que nem os testes nem o ADR nem os vereditos mencionavam workflows ou .claude/agents — lacuna NAO examinada, nao risco declarado",
+  "critico testou _norm_modelo contra o roster REAL de tools/model-policy.json (claude-opus-5, claude-sonnet-5, claude-fable-5, claude-haiku-4-5-20251001) e o ID aposentado claude-opus-4-8: ZERO colisoes entre modelos distintos",
+  "critico testou evaluate() com papel nao mapeado / typo no manifesto: cai em _research_atestada, que e' fail-closed — erro de digitacao no manifesto ENDURECE, nao afrouxa",
+  "critico confirmou que a escapatoria `git commit --no-verify` esta declarada no proprio texto do bloqueio do hook",
+  "critico classificou o './' como BAIXA explicando POR QUE: os dois pontos de invocacao reais (git diff --cached e o --paths-from do CI) nunca emitem esse prefixo",
+  "critico construiu o argumento pela aprovacao (gate ja e' advisory por ADR-104; repo escrito so' pelo dono) e o recusou pela distincao que a propria ADR faz: nenhum dos tres estava DECLARADO em lugar nenhum — lacuna nao examinada nao e' risco aceito",
+  "autor verificou a afirmacao do critico de forma independente antes de corrigir: ls -la .git/hooks/pre-commit confirma que o arquivo existe",
+  "autor, apos corrigir: os cinco interruptores exigem papel e nao passam com ledger vazio; './_shared/x.md' classifica igual a '_shared/x.md'",
+  "autor: 76 PASS / 0 FAIL no canario; 27/27 mutacoes mortas com baseline ZERO; sha256 do squad_gate identico antes e depois; suite completa 87 PASS / 1 SKIP / 0 FAIL"
+ ],
+ "problemas": [
+  {
+   "severidade": "ALTA",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — cabecalho, secao 'Onde ele roda'",
+   "descricao": "Afirmava que o git-hook local nao existe e nunca foi trava. Falso: existe, e' executavel, e' o gancho real. Escrito tres dias ANTES da instalacao do gancho e nunca revisto, sobrevivendo a quinze rodadas de QA que reeditaram o arquivo. CORRIGIDO com o fato verificado por inspecao (nao por memoria) e com a escapatoria `--no-verify` declarada junto. NOTA: este e' o terceiro achado de PROSA FALSA neste bloco (9a rodada: 'ja existia para juncao_release'; 10a: retratacao incompleta; agora o cabecalho), e os tres tem a mesma causa — texto que descreve a INTENCAO e envelhece sem que nada o recalcule. Nao ha canario que pegue isso; ha releitura deliberada."
+  },
+  {
+   "severidade": "ALTA",
+   "estado": "corrigido",
+   "local": "behaviors/manifest.json — matriz, ausencia de .github/workflows/",
+   "descricao": "O workflow do CI e' o INTERRUPTOR do proprio gate: `continue-on-error` decide se o squad-gate e' advisory ou bloqueante (ADR-104). Editar esse arquivo — religar o advisory, remover o step, mudar o `if:` — nao exigia papel nenhum. CORRIGIDO com entrada exigindo architect + qa_critic."
+  },
+  {
+   "severidade": "ALTA",
+   "estado": "corrigido",
+   "local": "behaviors/manifest.json — matriz, ausencia de .claude/agents/",
+   "descricao": "E' onde mora a definicao dos subagentes reais, inclusive a do proprio qa-critic, que declara 'contexto isolado' e 'hipotese default: existe bug'. A matriz ja protegia `.agent/skills/` e `.agent/rules/` e esquecia o irmao que de fato RODA. `_atestacao_valida` confere agentId e modelo, e nao tem como saber se o criterio do critico foi reescrito em silencio. CORRIGIDO com entrada exigindo qa_critic. Os dois achados ganharam um canario que guarda a CLASSE e nao os dois casos: `test_matriz_cobre_os_INTERRUPTORES_do_proprio_mecanismo` verifica que todo arquivo que controla o comportamento do gate exige alguem — se a matriz perder qualquer um, fica vermelho."
+  },
+  {
+   "severidade": "BAIXA",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — classify(), prefixo './'",
+   "descricao": "`./_shared/x.md` nao casava com o prefixo `_shared/`. Baixa reprodutibilidade, como o critico corretamente ponderou: nenhum dos dois pontos de invocacao reais emite esse prefixo. CORRIGIDO em uma linha, com canario e mutacao, porque custa menos que a discussao."
+  }
+ ],
+ "recomendacao_do_critico": "reprovar; nenhum bypass de codigo novo, mas uma afirmacao falsa no cabecalho e dois interruptores do proprio mecanismo fora da matriz",
+ "nota_do_autor": "Decima sexta rodada, e a segunda seguida sem CRITICO de logica — as correcoes da 15a resistiram ao ataque direto. O achado do cabecalho e' o mais instrutivo: a linha falsa estava DENTRO do arquivo que prega, dois paragrafos acima, que 'mecanismo tambem mente quando o comentario envelhece'. E o achado da matriz fecha um circulo que eu nao tinha visto: passei quinze rodadas endurecendo o gate e nunca perguntei quem pode DESLIGA-LO."
+}

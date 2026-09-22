@@ -1,0 +1,82 @@
+{
+  "bloco": "adr-113-rodada-13-reavaliacao",
+  "papel": "qa_critic",
+  "rodada": 13,
+  "passou": false,
+  "recomendacao": "reprovar",
+  "veredito": "reprovar",
+  "sha_revisado": "86f5ce0",
+  "resumo": "A rodada que faltava — a que avalia as correcoes das rodadas anteriores — rodou em 29/08/2026 e REPROVOU, com um unico ALTA. O alvo foi o cabecalho do proprio ADR-113: ele citava, como total atual, o numero de mutacoes de uma rodada anterior, enquanto test_mutacao_controle.py declara 34. Classe 'numero real, so que de outra hora', ja tratada como ALTA nas rodadas 3, 8 e 10 deste mesmo ADR. O que faz o caso valer registro e' por onde ele escapou: test_numeros_controle.py existe inteiro para impedir essa classe e nao pegou, porque a familia de regex exigia a palavra literal 'defeito' e a prosa usou o sinonimo 'correcoes'. O numero furou o gate PELA PALAVRA, nao pelo valor — espelho do achado da rodada 11 ('list' dentro de 'lista'). Corrigido nas duas metades e na ordem que prova: o padrao foi ampliado ANTES de a prosa ser corrigida, e nesse estado o canario sai exit 1 apontando o numero; so entao a prosa foi corrigida e o canario passou a exit 0. Mais seis casos de auto-teste por sinonimo. O crítico tambem confirmou como CORRETO o que mais importava: a classe string-vs-data esta morta (nao so a instancia), as 34 mutacoes sao detectadas nos DOIS interpretadores da maquina (3.12 e 3.14) e sob codepage 850 sem PYTHONIOENCODING, e nenhuma IO crua escapa da fronteira controle_base.py.",
+  "verificacoes_executadas": [
+    "len(MUTACOES) em test_mutacao_controle.py = 34, contra o numero da prosa — divergencia confirmada por comando",
+    "test_mutacao_controle.py rodado sob python 3.12.10 E python3 3.14.4: as 34 mutacoes detectadas nos dois",
+    "suite dos 5 canarios do pacote sob codepage 850 com PYTHONIOENCODING nao definida: PASS",
+    "grep por comparacao de data fora de _data() em controle_projeto.py e controle_sharepoint.py: zero",
+    "grep por read_text/write_text/open(/.resolve()/mkdir( cru fora de controle_base.py: zero valor externo",
+    "recontagem independente de 164/141+11/68 via grep -cE na saida real dos canarios: bate",
+    "autor, com o padrao ampliado e a prosa ainda errada: test_numeros_controle.py exit 1 com 'a prosa diz 9 (mutacoes (medido: 34))'",
+    "autor, apos corrigir a prosa: test_numeros_controle.py exit 0, e run_canaries 85 PASS, 1 SKIP, 0 FAIL"
+  ],
+  "problemas": [
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "docs/adr/113-politica-de-lancamento-de-projeto-como-pacote-resolvido.md (cabecalho) + tools/test_numeros_controle.py (familia de mutacao)",
+      "descricao": "numero estale no resumo executivo, escapando do detector pelo SINONIMO ('correcoes' onde o padrao exigia 'defeito'). Corrigido nas duas metades: prosa passa a dizer 34 e a referenciar a rodada certa; a familia passa a cobrir defeitos|correcoes com concordancia provad\\w+, mais seis auto-testes."
+    },
+    {
+      "severidade": "ALTA",
+      "estado": "aberto",
+      "local": "tools/verify_qa_attestation.py — mecanismo de procedencia do ADR-108",
+      "descricao": "achado do AUTOR durante o registro deste veredito, nao do critico. Subagente lancado em background deixa no transcript o AVISO DE LANCAMENTO (1099 chars), nao o relatorio; um prova_transcript calculado sobre ele casaria e ficaria verde provando nada. Medido: 57 execucoes, 21 stubs; 24 vereditos com agentId+prova, 16 lastreados no relatorio real e 8 no stub (releases 1.80.1 x2, 1.81.0, 1.83.0, 1.84.0, 1.85.0, 1.86.0, 1.87.0). NAO corrigido neste bloco — aguarda decisao do dono."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "docs/adr/113-politica-de-lancamento-de-projeto-como-pacote-resolvido.md (byte 11695)",
+      "descricao": "achado do AUTOR antes de chamar o critico: um byte NUL literal gravado no markdown fazia o grep tratar o ADR inteiro como binario, escondendo todas as suas linhas de qualquer busca. git diff o mostrava como texto normal, entao seria commitado assim. Corrigido para a sequencia de escape literal; grep volta a ler o arquivo."
+    }
+  ],
+  "escopo_paths": [
+    ".claude/commands/controle-projeto.md",
+    ".claude/commands/controle-sharepoint.md",
+    "CAPABILITIES.md",
+    "CHANGELOG.md",
+    "_meta/qa/adr-113-rodada-13-reavaliacao.json",
+    "_meta/qa/adr-113-rodada-13-reavaliacao.md",
+    "_shared/controle-projeto/SKILL.md",
+    "capabilities.json",
+    "docs/_private/_intake/execution-report-2026-08-24-cross-ai-referencia-vs-hipotese.md",
+    "docs/_private/cross-ai/outbox/2026-08-22__from-claude-master__to-gemini-master__padrao-de-explicacao-caminho-e-nao-so-destino.md",
+    "docs/adr/113-politica-de-lancamento-de-projeto-como-pacote-resolvido.md",
+    "guia/web/index.html",
+    "history.md",
+    "tools/controle_base.py",
+    "tools/controle_projeto.py",
+    "tools/controle_sharepoint.py",
+    "tools/run_canaries.py",
+    "tools/test_controle_base.py",
+    "tools/test_controle_projeto.py",
+    "tools/test_controle_sharepoint.py",
+    "tools/test_mutacao_controle.py",
+    "tools/test_numeros_controle.py"
+  ],
+  "atestacao": {
+    "agentId": "a22fa972704d298d9",
+    "modelo": "claude-sonnet-5",
+    "modelo_autor": "claude-opus-5",
+    "isolamento": "subagente qa-critic isolado, read-only por instrucao explicita (proibido git checkout/restore/stash/reset e qualquer escrita), porque havia 20 arquivos nao commitados em risco",
+    "prova_transcript_ausente_porque": "o critico foi lancado em BACKGROUND. Nessa modalidade o tool_result no transcript e' o aviso de lancamento (1099 chars), nao o relatorio devolvido. Declarar o sha256 do que o transcript guarda para este agentId hasharia o aviso e o verificador ficaria verde provando nada — exatamente a classe que o ADR-108 fechou. Entra como LEGADO DECLARADO; o artefato e' _meta/qa/adr-113-rodada-13-reavaliacao.md."
+  },
+  "postura": {
+    "adversarial": "o critico nao se limitou ao codigo: atacou a prosa que resume o codigo, e foi la que achou o defeito. Depois de doze rodadas, o que restava nao estava no mecanismo — estava na frase que o descreve, que e' a parte que nenhum mecanismo mede sozinho."
+  },
+  "nao_verificado": [
+    "nenhuma rodada aprovou este bloco ate aqui: as treze REPROVARAM. A rodada que avalia estas correcoes da rodada 13 nao rodou.",
+    "o critico afirmou que squad_gate seria advisory neste repo; REFUTADO por medicao do autor — ele bloqueou o commit deste bloco com [squad-gate] BLOQUEADO (fail-closed), listando 5 paths sem cobertura.",
+    "falha de disco real na escrita atomica de escrever_texto nao foi provocada; validada por mutacao (os.replace neutralizado) e leitura de codigo.",
+    "macOS/Linux nao testados: o mascaramento de ambiente foi verificado nos dois interpretadores Windows desta maquina.",
+    "o degrau ACIMA do default nao rodou: exige autorizacao ativa do dono (ADR-110)."
+  ],
+  "data": "2026-08-29T00:00:00Z"
+}

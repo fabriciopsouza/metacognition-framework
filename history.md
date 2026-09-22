@@ -625,6 +625,32 @@ Riscos ativos: corte do release feito de `9TRP7H4` (não-kerberus); se kerberus 
 
 ## Em aberto
 
+- **Pedido novo chegando no meio do trabalho deve ir para uma FILA ESCRITA, nao para a memoria do
+  agente** (aberto em 21/08/2026, pelo dono: *"nao pare de fazer o que esta fazendo. adicione os
+  pedidos na fila -> este tb deve ser um comportamento PADRAO do framework ou qualquer ferramenta
+  relacionada"*).
+  **O que falta.** O ADR-112 ja resolve METADE: nao abandonar trabalho em curso. A outra metade nao
+  existe — o pedido que chega no meio precisa ficar REGISTRADO em arquivo no momento em que chega.
+  Hoje ele fica na cabeca do agente ate o fim do bloco, e cabeca de agente e' o unico lugar do
+  sistema sem canario: a sessao compacta, o contexto vira resumo, e o pedido some sem erro e sem
+  aviso. Ja aconteceu nesta sessao — o dono precisou repetir "Um comando NAO anula o outro" e
+  "Qd peco uma coisa, NAO ELIMINA o que pedi antes".
+  **Escopo:** comportamento padrao do framework, nao de um projeto. Gravar na chegada, sem
+  interromper; devolver a fila ao dono no fecho do bloco; e um canario que prove que pedido
+  registrado nao evapora entre um bloco e o seguinte.
+  **Nao confundir com** o item de enforcement abaixo: aquele e' sobre o squad nao viajar para
+  projeto novo; este e' sobre o pedido do dono nao sobreviver dentro da mesma sessao.
+
+- **REFORÇADO PELO DONO EM 21/08/2026, terceira vez:** *"este deve ser o comportamento em TODOS
+  os projetos. qd eu mandar atualizar ou iniciar nova sessao, ativar a skill/ capacidade projetos
+  agidesk, etc, o repo em trabalho deve atuar exatamente como o framework pede e como as
+  capacidades invocadas pedem"*. **Escopo que isto acrescenta ao item abaixo:** não basta o
+  enforcement (hooks, gates, squad) viajar — a ATIVAÇÃO das capacidades declaradas pelo projeto
+  também tem de ser automática no boot e no "atualizar", em vez de depender de o agente lembrar.
+  Hoje o `projeto.json` de um projeto já declara o que ele usa (`adotado`, `adaptadores`); falta o
+  boot LER essa declaração e se comportar de acordo. Medido em 21/08/2026: `migracao-sac` não tinha
+  `.agent/`, `.claude/`, nem uma menção ao framework — ele foi aplicado por sessão, nunca instalado.
+
 - **PRIORIDADE MÁXIMA DO PRÓXIMO BLOCO — o squad e a crítica adversarial não são determinísticos
   fora do repo do framework** (aberto em 18/08/2026, por reclamação do dono; **não é a primeira vez
   que ele reclama exatamente disto** — o gatilho declarado no ADR-097 item 4 está atingido duas vezes:

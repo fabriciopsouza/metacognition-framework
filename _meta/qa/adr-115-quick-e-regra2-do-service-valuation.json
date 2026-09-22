@@ -1,0 +1,125 @@
+{
+  "bloco": "adr-115-quick-e-regra2-do-service-valuation",
+  "papel": "qa_critic",
+  "rodada": 1,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "data": "2026-09-21T00:00:00Z",
+  "escopo_paths": [
+    ".agent/workflows/feature-plan.md",
+    "docs/_private/service-valuation/RATE-CARD.md",
+    "exemplos/service-valuation/RATE-CARD.example.md",
+    "_meta/qa/adr-115-quick-e-regra2-do-service-valuation.json",
+    "_meta/qa/adr-115-quick-e-regra2-do-service-valuation.md"
+  ],
+  "atestacao": {
+    "agentId": "a596dac9a2f4c6aaf",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic em primeiro plano, degrau canonico sonnet um abaixo do autor opus; instruido READ-ONLY no repositorio, com proibicao explicita de git checkout/restore/reset/stash/clean; reproducoes em sandbox proprio no scratchpad da sessao"
+  },
+  "resumo": "Rodada sobre o grau `--quick` do /feature-plan (pedido do dono: um fluxo simplificado Requerimentos > Design > Tasks) e sobre a classificacao por linha dos dois rate cards. O critico devolveu `corrigir` com 2 CRITICOS, 1 ALTA e 2 MEDIA. TODOS foram corrigidos e estao marcados como tal abaixo; este veredito registra o estado APOS as correcoes, e por isso e' aprovativo com ressalva. As duas ressalvas que permanecem estao em `nao_verificado`. O achado mais importante e' de uma classe que vale guardar: o texto do `--quick` dizia cortar 'o process-critic de J6', conflando duas coisas que o proprio repositorio define como distintas — J6 e' a re-orquestracao do PMO (ADR-045), que roda DEPOIS do process-critic dar APROVADO_LIMPO, e o process-critic e' o QA adversarial final que o ADR-011 torna mandatorio ao fim de todo bloco entregue. Uma feature `--quick` E' um bloco entregue. A conflacao fazia um corte de GATE parecer corte de CERIMONIA — bypass disfarcado, exatamente o que o enunciado pedia para cacar.",
+  "verificacoes_executadas": [
+    "critico leu o diff completo de feature-plan.md (v1.2 -> v1.3, 20 -> 65 linhas confirmado por git show HEAD:... | wc -l contra wc -l atual)",
+    "critico leu docs/adr/011, 045, 110, 111 e _shared/action-safety/SKILL.md, e confirmou por grep em .agent/workflows/handoff.md que J6 e process-critic sao coisas distintas no proprio repo",
+    "critico rodou python tools/test_service_valuation.py -> PASS, e python tools/test_skill_contract.py -> PASS (13 skills validadas)",
+    "critico confirmou por grep que test_skill_contract.py NAO tem uma referencia sequer a workflow, e que nenhum outro canario valida .agent/workflows/*.md estruturalmente",
+    "critico contou os pipes de cada linha das duas tabelas de rate card: 9 em 100% das linhas (cabecalho, separador, 22 e 13 linhas) — tabelas bem formadas",
+    "critico comparou o rate card privado com o exemplo publico linha a linha: nenhum nome de cliente, valor de contrato ou identificador pessoal cruzou para o lado publico",
+    "critico conferiu docs/_private/service-valuation/HISTORICO-ENTREGAS.md e confirmou que nenhuma das 22 linhas T-01..T-22 tem lastro que justificasse [CONFIRMADO]: o default uniforme [INFERIDO]/[MEDIA] e' honesto, nao carimbo indevido",
+    "critico confirmou em export-clean.py que STRIP_BEFORE remove docs/_private inteiro antes de qualquer pacote publico",
+    "autor rodou python tools/test_service_valuation.py e python tools/test_skill_contract.py apos as correcoes: PASS nos dois"
+  ],
+  "problemas": [
+    {
+      "severidade": "CRITICO",
+      "estado": "corrigido",
+      "local": ".agent/workflows/feature-plan.md - secao 'O que --quick corta'",
+      "descricao": "O texto cortava 'o process-critic de J6', conflando o process-critic (ADR-011, QA adversarial mandatorio ao fim de todo BLOCO entregue) com J6 (ADR-045, a decisao de re-orquestracao do PMO, que roda DEPOIS do PC dar APROVADO_LIMPO). Cenario de falha: uma feature --quick e' um bloco entregue pela letra do ADR-011, logo o PC e' mandatorio para ela; mas o criterio de saida do --quick exigia apenas spec.md + 1 veredito de qa-critic (que e' o gate de juncao, equivalente a J4) + aceite verdadeiro. Nao havia PC nenhum no fluxo, e o rotulo 'J6' disfarcava o corte de um gate como corte de cerimonia. Workflow nao revoga ADR Aceito por edicao de arquivo. CORRIGIDO: --quick corta J6 explicitamente, e o process-critic e' FUNDIDO na unica rodada de qa-critic (mesmo subagente isolado, modelo != autor, os dois chapeus declarados em separado no veredito), com limite escrito de que fusao != dispensa e de que exigir rodada separada demandaria ADR proprio."
+    },
+    {
+      "severidade": "CRITICO",
+      "estado": "corrigido",
+      "local": "_meta/qa/adr-115-rodada-27-o-escritor-do-ledger-e-o-triturador.json - achado 1, campo estado",
+      "descricao": "O achado CRITICO da 27a rodada seguia com estado 'aberto' embora o defeito que ele denuncia (qa_evidence.write_artifact sobrescrevendo sem cadeia) tivesse sido corrigido em 17-18/09 pela cadeia `substitui`. Consequencia reproduzida ao vivo pelo critico: `_reprovacao_vigente()` invalidava QUALQUER aprovativo novo por causa de um achado fantasma, e o gate empurraria quem fechasse o bloco para --no-verify, que o proprio codigo do gate chama de pior que o buraco que fecha. CORRIGIDO: os 3 achados ja' corrigidos foram fechados com quem, quando e prova dentro da `descricao` (campo canonico), nao num campo de topo novo."
+    },
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": ".agent/workflows/feature-plan.md - tabela do gatilho --quick, condicao 4",
+      "descricao": "A condicao de reversibilidade dizia 'sem E5/E6 do action-safety'. Conferido contra _shared/action-safety/SKILL.md: os predicados de reversibilidade sao E1 (destroi dado de forma irrecuperavel) e E2 (irreversivel/nao-idempotente); E5 e' alteracao de controle de seguranca e E6 e' comportamento atipico/fora do escopo. Cenario de falha: quem aplicasse a condicao literalmente verificaria a ausencia de E5/E6 e NUNCA checaria E1/E2 — uma mudanca genuinamente destrutiva ou irreversivel, mas dentro do escopo e sem tocar permissao, passaria como 'reversivel'. CORRIGIDO para E1/E2, com a distincao escrita na propria tabela."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "CHANGELOG.md",
+      "descricao": "O bloco que introduz a regra 'CHANGELOG e' nao-negociavel no --quick' nao a cumpria para si mesmo: nem o bump v1.2->v1.3 do feature-plan.md nem a correcao da Regra 2 do RATE-CARD.md apareciam no CHANGELOG. CORRIGIDO com secao [Nao lancado] propria."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "aberto",
+      "local": "tools/ - ausencia de canario para .agent/workflows/*.md",
+      "descricao": "Nenhum canario valida .agent/workflows/*.md estruturalmente. test_skill_contract.py valida as 13 skills e nao tem uma referencia sequer a workflow (confirmado por grep pelo critico), e nenhum outro (test_core_no_vendor, test_project_onboarding, test_shadow_drift, test_squad_gate) o faz. Por isso os dois defeitos acima — a conflacao J6 x process-critic e o E5/E6 — chegaram ate o QA sem barreira automatizada nenhuma. NAO e' defeito introduzido por este bloco, e fica ABERTO de proposito: esta registrado como trabalho `canario-para-workflows`, com criterio de aceite = reintroduzir os dois bugs reais e a suite ficar vermelha."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "exemplos/service-valuation/RATE-CARD.example.md",
+      "descricao": "Linhas com Origem = travessao receberam Confianca [BAIXA]. Defensavel, mas [DESCONHECIDO] na origem ensina melhor a quem copia o molde, porque 'confianca baixa' sugere que existe uma origem fraca em vez de nenhuma. CORRIGIDO nas 13 linhas."
+    }
+  ],
+  "nao_verificado": [
+    "Se o process-critic FUNDIDO na rodada de qa-critic satisfaz a leitura estrita do ADR-011, que descreve o PC como rodada propria. O limite esta' declarado no proprio workflow: se a leitura estrita prevalecer, a fusao vira excecao que exige ADR. Nenhum critico decidiu isso — e' decisao de arquitetura, nao de revisao.",
+    "Se a skill service-valuation REPROVA a v1.0 do caso H-01: exige rodar um modelo, e o proprio canario declara isso como fora de cobertura, por decisao registrada no ADR-114."
+  ],
+  "recomendacao_do_critico": "corrigir na entrega original (2 CRITICOS, 1 ALTA, 2 MEDIA); este artefato registra o estado APOS as correcoes, com a MEDIA do canario de workflows permanecendo aberta e rastreada como trabalho.",
+  "nota_do_autor": "Registro tardio, e o atraso e' o achado de processo: esta rodada rodou e eu nao gravei o veredito na hora, exatamente o defeito que fez a 26a rodada deste bloco desaparecer sem rastro. Rodada sem artefato e', para o gate, rodada que nao aconteceu. Gravado agora pela ferramenta, e por isso carrega `blobs_revisados`. || CORRECAO DE REGISTRO (21/09): a cadeia `substitui` deste artefato contem gravacoes anteriores da MESMA rodada, e nenhuma delas e' uma rodada distinta. A primeira nao listava os proprios artefatos em `escopo_paths`; a segunda saiu com o numero de rodada inflado em 100 por um script do autor que somava um deslocamento para evitar colisao — numero falso no ledger, ainda que sem efeito sobre o gate; a terceira teve a propria nota mutilada pelo shell, que interpretou a crase como substituicao de comando e comeu a palavra. Corrigido aqui. Fica registrado em vez de apagado porque a cadeia existe exatamente para isso: quem le ve todas e sabe o que aconteceu. E vale como achado de processo, nao so' de digitacao — tres tentativas para gravar um registro honesto, num bloco cujo tema E' a honestidade do registro.",
+  "sha_revisado": "d24c9d031e4f6410d808ab493ef388ff9989ccee",
+  "blobs_revisados": {
+    ".agent/workflows/feature-plan.md": "eea15075d5ffb3d60c617e71eb9a7f3d6ccf3987",
+    "docs/_private/service-valuation/RATE-CARD.md": "92b9fd62f973947997e7b54b8ec33ae0035030cd",
+    "exemplos/service-valuation/RATE-CARD.example.md": "4cb3c8370c8bf9a01b7017169f8ac19beb424296"
+  },
+  "substitui": [
+    {
+      "rodada": 1,
+      "data": "2026-09-21T00:00:00Z",
+      "recomendacao": "aprovar_com_ressalvas",
+      "sha_revisado": "d24c9d031e4f6410d808ab493ef388ff9989ccee",
+      "agentId": "a596dac9a2f4c6aaf",
+      "escopo_paths": [
+        ".agent/workflows/feature-plan.md",
+        "docs/_private/service-valuation/RATE-CARD.md",
+        "exemplos/service-valuation/RATE-CARD.example.md"
+      ]
+    },
+    {
+      "rodada": 101,
+      "data": "2026-09-21T00:00:00Z",
+      "recomendacao": "aprovar_com_ressalvas",
+      "sha_revisado": "d24c9d031e4f6410d808ab493ef388ff9989ccee",
+      "agentId": "a596dac9a2f4c6aaf",
+      "escopo_paths": [
+        ".agent/workflows/feature-plan.md",
+        "docs/_private/service-valuation/RATE-CARD.md",
+        "exemplos/service-valuation/RATE-CARD.example.md",
+        "_meta/qa/adr-115-quick-e-regra2-do-service-valuation.json",
+        "_meta/qa/adr-115-quick-e-regra2-do-service-valuation.md"
+      ]
+    },
+    {
+      "rodada": 1,
+      "data": "2026-09-21T00:00:00Z",
+      "recomendacao": "aprovar_com_ressalvas",
+      "sha_revisado": "d24c9d031e4f6410d808ab493ef388ff9989ccee",
+      "agentId": "a596dac9a2f4c6aaf",
+      "escopo_paths": [
+        ".agent/workflows/feature-plan.md",
+        "docs/_private/service-valuation/RATE-CARD.md",
+        "exemplos/service-valuation/RATE-CARD.example.md",
+        "_meta/qa/adr-115-quick-e-regra2-do-service-valuation.json",
+        "_meta/qa/adr-115-quick-e-regra2-do-service-valuation.md"
+      ]
+    }
+  ]
+}

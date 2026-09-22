@@ -3,6 +3,260 @@
 Formato: Keep a Changelog + SemVer. Cada mudança vincula-se à pesquisa que a sustenta.
 Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
+## [Nao lancado] — grau `--quick` no /feature-plan, e a classificacao que faltava por linha
+
+### O fluxo simplificado que o dono pediu, sem virar porta dos fundos
+
+Pedido do dono: um fluxo `quick` de tres passos (Requerimentos > Design > Tasks). A crítica
+file-first mostrou que **ele já existia** — `/feature-plan` + `/implement` já são esses três
+estágios. O que faltava não era o fluxo, era o **custo de entrada**: clonar cinco arquivos de
+spec para uma mudança de dois arquivos. Por isso não nasceu um `/quick` novo (régua §0 rejeita
+adição pura): o `.agent/workflows/feature-plan.md` (v1.2 → v1.3) ganhou um **grau** `--quick`.
+
+- **Funde 5 arquivos de spec em 1** (`spec.md`, três seções) e corta ADR numerado,
+  `context-brief`, `data-dictionary`, `mission`, `readiness-gate` e **J6** (a re-orquestração
+  do PMO, ADR-045).
+- **Não corta gate nenhum.** Critério de aceite binário escrito antes do código, uma rodada de
+  qa-critic no degrau abaixo, e o **process-critic do ADR-011 fundido** nessa mesma rodada
+  (dois chapéis, declarados em separado) — com limite escrito: se a leitura estrita do ADR-011
+  exigir rodada separada, isso precisa de ADR, porque workflow não revoga ADR Aceito.
+- **Gatilho binário de 4 condições** com escalada automática anunciada. O QA adversarial pegou
+  que a condição de reversibilidade apontava para **E5/E6** (segurança e escopo atípico) quando
+  reversibilidade é **E1/E2** — corrigido.
+
+### `service-valuation`: a Regra 2 passa a existir de fato
+
+A Regra 2 da skill exige classificação em duas dimensões **por linha**. O `RATE-CARD.md` privado
+tinha só uma classificação global, prometendo "exceto linhas marcadas como `[CONFIRMADO]`" **sem
+que existisse coluna onde marcar**. Colunas `Origem` e `Confiança` acrescentadas às 22 taxas
+(default `[INFERIDO]`/`[MÉDIA]`, conferido contra `HISTORICO-ENTREGAS.md` — nenhuma linha tem
+lastro para `[CONFIRMADO]`) e às 13 do exemplo público. Achado MÉDIA da 27ª rodada do ADR-115.
+
+### O gate parou de medir o que não muda (rodadas 36 a 38)
+
+Duas mudanças de semântica no `squad_gate`, e as duas nasceram de achados adversariais.
+
+**Recência cega no pré-commit.** `_recente_o_bastante` media ancestralidade de **commit** — e o
+gate roda no pré-commit, quando, por definição, todo arquivo do bloco está fora do HEAD. Medido:
+três vereditos aprovativos de **agosto** seguiam "recentes" para arquivos editados em **setembro**,
+porque as edições nunca viraram commit. O veredito passa a carregar `blobs_revisados`, o hash do
+**blob indexado** de cada caminho — a única coisa que descreve conteúdo ainda não commitado.
+Veredito sem o campo cai na regra antiga e entra em `divida_sem_blobs()`, impressa a cada execução
+(60 hoje): campo novo não é retroativo, e fabricar hash para veredito velho seria inventar a
+procedência que o campo existe para provar. **O QA reabriu, na primeira versão, o defeito que as
+rodadas 8, 9 e 10 haviam fechado** — o atalho pulava a validação de `sha_revisado`, que também é a
+chave usada para achar a reprovação irmã; um aprovativo com `sha_revisado: "HEAD"` fazia uma
+reprovação legítima deixar de ser vigente. A lição é maior que o bug: *antes de pular a validação
+de um campo, procurar quem mais o lê*.
+
+**A regra que fabricava o veredito-cobertor.** `_qa_critic_attested` exigia **um** veredito cujo
+escopo cobrisse **todos** os caminhos, nunca a união. Para fechar um bloco de 91 caminhos era
+preciso declarar os 91 num artefato só — e nenhum crítico sozinho revisou 91 arquivos. A regra
+produzia exatamente a forma enganosa que depois era criticada. Agora o gate tenta o caminho antigo
+e, se não houver, exige que **cada** caminho tenha algum veredito válido. O veto por reprovação
+fica mais *cirúrgico* (não contamina vizinhos) — o crítico corrigiu a primeira redação desta nota,
+que dizia "mais estrito", e ele estava certo.
+
+Prova: 96 canários no `squad_gate` (13 deles novos, a maioria **negativos**) e **37/37 mutações
+mortas** — as três novas cobrem `all`→`any`, o desligamento da checagem de conteúdo, e o
+alargamento da exceção do auto-carimbo.
+
+### Débito declarado
+
+Não existe canário que valide `.agent/workflows/*.md` estruturalmente — `test_skill_contract.py`
+cobre as 13 skills e não tem uma referência sequer a workflow. Os dois defeitos acima (J6×PC e
+E5/E6) chegaram até o QA sem barreira automatizada nenhuma. Registrado como trabalho aberto.
+
+## [Nao lancado] — fail-closed no veredito (ADR-115)
+
+### O gate deixa de acreditar no rotulo do veredito e passa a olhar os achados
+
+O `squad_gate` exigia rotulo aprovativo, atestacao de isolamento e escopo — **nunca olhava os
+achados**. Havia no ledger um veredito real rotulado `aprovar_com_ressalvas`, `passou: true`,
+carregando um **ALTA**. Naquele caso o ALTA estava corrigido, mas nada no mecanismo garantia isso.
+
+- **Severidade normalizada, desconhecido bloqueia.** O ledger tem **15 grafias** (`ALTA`, `ALTO`,
+  `CRITICO`, `BLOQUEANTE`, `GRAVE`...). Regra casando so com `"ALTA"` cobriria 15 dos 91 achados (instantaneo de 14/09/2026, comando no ADR; o denominador cresceu por causa das proprias rodadas deste ADR)
+  graves. Agora a lista enumerada e' a dos LEVES, e tudo fora dela bloqueia.
+- **`aceito` exige assinatura** (`aceito_por`) para encerrar achado bloqueante.
+- **Legado pinado por CONTEUDO (nome + sha256), nunca autodeclarado.** 41 achados em 20 vereditos
+  nao tem o campo `estado` — ele nao existia. `VEREDITOS_LEGADOS` congela nome E hash; sobrescrever
+  um arquivo legado muda o hash e a isencao cai. `main()` **imprime** a divida a cada execucao, e um
+  canario de DERIVA quebra se algum dos 20 mudar desde o congelamento.
+- **Schema de `problemas` validado.** Lista de objetos, ou bloqueia.
+
+A 1a versao foi **REPROVADA** pela revisao adversarial com dois CRITICOS: o legado era detectado
+por SCHEMA, e como o autor controla se o campo `estado` existe, bastava OMITI-LO para um achado
+CRITICO em aberto comprar isencao — bypass reproduzido ponta a ponta contra o binario real, com
+exit 0. O mesmo buraco aceitava `problemas` como dict ou lista de strings, porque `"estado" in p`
+faz substring quando `p` e' string. E um ALTA: o ADR afirmava que a divida legada "fica visivel",
+mas `legados_declarados()` nao tinha chamador real.
+
+A 2a rodada REPROVOU de novo: a lista nominal protegia contra arquivo NOVO, mas nao contra
+SOBRESCREVER um dos 20 — `qa_evidence.write_artifact()` grava sem checar existencia. Bypass
+reproduzido ponta a ponta, exit 0. Corrigido pinando o sha256.
+
+A 8a rodada achou dois furos fora do caminho ja endurecido. `_qa_critic_attested` devolvia True no PRIMEIRO aprovativo do ledger, sem olhar se havia REPROVACAO para o mesmo `sha_revisado` e o mesmo escopo: bastava depositar um aprovativo vazio ao lado. Escrevi entao — aqui, no ADR e no docstring do codigo — que o mecanismo "ja existia para `juncao_release`" e nunca fora estendido ao papel que gate a maioria dos commits. **A 9a rodada provou que isso era FALSO:** nunca existiu em lugar nenhum. Inferi a defesa pelo NOME de um teste (`test_juncao_release_REPROVACAO_POSTERIOR_invalida_o_PC`) que cobre outro caso, e entreguei a inferencia como fato. E `aceito_por: "nao assinado"` passava: a frase que NEGA o consentimento satisfazia o teste de que ha consentimento.
+
+A 7a rodada levou a mesma licao um nivel abaixo: um CRITICO/aberto ANINHADO dentro de um achado
+leve, numa chave arbitraria, escapava — o gate iterava a lista e lia so os campos que conhecia.
+Entrou `CAMPOS_DO_ACHADO`. A assinatura caiu de novo (`U+3164 HANGUL FILLER` TEM categoria `Lo`:
+para o Unicode e' letra, para o olho e' vazio) e a regra virou de SCRIPT — letra LATINA, com o
+limite declarado no codigo. E `atestacao` como lista derrubava o processo com AttributeError:
+um unico .json ruim travava o gate para todo commit, que e' fail-closed por acidente, nao por
+desenho.
+
+A 6a rodada fechou a classe: nem a chave obrigatoria bastava, porque o atacante TAMBEM a
+declara — bastava esconder o achado em `problemаs` com 'a' CIRILICO, ao lado da canonica limpa.
+A defesa virou ALLOWLIST dos campos de topo (`CAMPOS_CONHECIDOS`): chave que o gate nao conhece
+bloqueia. Enumerar a forma errada nunca fecha; so enumerar a forma certa fecha. A mesma rodada
+pegou `aceito_por = "​"` — str.strip() nao remove zero-width, e um CRITICO ficava "aceito"
+assinado por ninguem.
+
+As rodadas 4 e 5 acharam o mesmo padrao na CHAVE do container: `Problemas` com maiuscula, e
+depois `probIemas` (homoglifo I/l), escondiam o achado inteiro. A chave canonica passou a ser
+OBRIGATORIA — perseguir homoglifo e' corrida perdida, exigir o campo mata a classe.
+
+A 3a rodada REPROVOU o SCRIPT DE PROVA: ele mutava `tools/squad_gate.py` no repositorio e so
+restaurava no `finally`; morto por timeout, o gate ficava SABOTADO em disco, fail-OPEN, sem aviso.
+Reproduzido ao vivo. Corrigido para mutar uma copia em diretorio temporario, e provado por hash
+(o arquivo real tem o mesmo sha256 antes e depois).
+
+Prova, apos as correcoes: **33 mutacoes, 33 mortas**, em `tools/test_mutacao_squad_gate.py`
+(script PERSISTIDO no repo, nao prosa — duas delas reintroduzem os bypasses das rodadas 1 e 2) ·
+80 PASS / 0 FAIL no canario do gate (51 deles sao os testes deste bloco) · suite completa em 87 PASS / 1 SKIP / 1 FAIL — e o FAIL NAO e' deste bloco: `test_capabilities.py` acusa canario ORFAO (`tools/test_export_so_rastreados.py`), arquivo nao rastreado criado por sessao paralela em 15/09/2026, fora deste commit.
+Regua §0: `squad_gate.py` e `test_squad_gate.py` **editados**, nenhum arquivo de mecanismo novo.
+
+**A 9a rodada REPROVOU com tres CRITICOS, e o terceiro e' contra o autor, nao contra o codigo.**
+Os dois primeiros quebram a defesa que e' o climax da 8a rodada, e nenhum deles exige malicia — bastam
+praticas JA DOMINANTES no proprio ledger. (1) `escopo_paths` e' campo OPCIONAL, e o codigo fazia
+`if escopo_r and ...`: reprovacao que nao declarava escopo nunca invalidava nada. Agora escopo
+ausente **cobre tudo** — quem nao delimita o que revisou esta dizendo mais, nao menos. (2) O sha era
+comparado como string crua: **27 dos 29** vereditos com `sha_revisado` gravam a forma de 7
+caracteres e `rev-parse HEAD` devolve 40 — mesmo commit, grafias diferentes, deteccao perdida.
+`_recente_o_bastante` ja normalizava; esta funcao nao recebeu a mesma correcao. (3) **`juncao_release`
+nunca teve a defesa que eu afirmei que tinha** — recebeu agora, e um CRITICO aberto do mesmo release
+passa a impedir o fechamento da junção que porteia releases inteiros.
+
+O terceiro achado e' o mais instrutivo do ADR inteiro: a alegacao falsa atravessou **oito rodadas de
+critica adversarial** porque estava escrita em PROSA, e prosa e' exatamente o que nenhum canario deste
+repositorio le. O achado contestado sobre auditar narrativa deixou de ser hipotetico — eu o
+exemplifiquei, contra mim, no mesmo documento em que o contestava. Prova apos as correcoes:
+**33 mutacoes, 33 mortas** · 80 PASS / 0 FAIL no canario do gate.
+
+**A 25a achou que o REMEDIO da 24a abriu um furo do lado oposto.** Eu fechei a chave duplicada
+recusando o arquivo e denunciando por nome — e ANTECIPEI o risco no proprio comentario ("descartar
+calado seria fail-open do lado da reprovacao"). Resolvi pela metade: tornei a recusa barulhenta e
+CONTINUEI descartando, e `print` nao e' bloqueio. Resultado reproduzido fim a fim: uma reprovacao
+LEGITIMA, com CRITICO aberto correto, mesmo sha e mesmo escopo, sumia do julgamento por causa de uma
+chave duplicada num campo IRRELEVANTE (`resumo`), e o aprovativo ao lado passava sozinho — o cenario
+das rodadas 8/9/10, reaberto pelo remedio. Corrigido: o ilegivel entra MARCADO e `evaluate()` trava
+o gate antes de avaliar qualquer papel, porque o arquivo corrompido pode ser justamente a reprovacao
+que derrubaria o aprovativo. O canario da 24a tambem estava errado — exigia `arts == []`, ou seja,
+EXIGIA que o arquivo sumisse; passava por causa do bug.
+
+**A 24a achou o furo mais barato dos vinte e quatro, e a licao esta na PERGUNTA.** Cinco rodadas
+seguidas (19a a 23a) acharam a mesma familia — arquivo ou extensao fora da matriz — que e' escopo do
+ADR-092/027, nao deste. Ao pedir "liste as promessas do ADR-115 e verifique uma a uma, ignorando o
+que ele nao promete", o critico confirmou tres e quebrou a quarta: `json.load` colapsa CHAVE
+DUPLICADA em silencio, ANTES de qualquer validacao. `{"estado":"aberto","estado":"corrigido"}` faz o
+achado CRITICO desaparecer, e `{"problemas":[...],"problemas":[]}` apaga a lista inteira — deixando
+inuteis, de uma vez, CAMPOS_CONHECIDOS, CAMPOS_DO_ACHADO, a chave obrigatoria e toda a defesa contra
+homoglifo das rodadas 4 a 8. E' JSON ASCII valido, sem Unicode e sem ma-fe. Corrigido com
+`object_pairs_hook` nas TRES leituras (veredito, manifesto, legado) — e com a recusa NOMEANDO o
+arquivo, porque descartar em silencio seria fail-open do lado da reprovacao.
+
+**A 21a fechou o circulo da 20a, e o achado e' recursivo.** A 20a me ensinou que prova textual nao e'
+prova; troquei por prova executavel — e escrevi, no docstring da prova NOVA, uma garantia que ela nao
+sustentava ("se a linha da divida sumir, por qualquer motivo, isto fica vermelho"). A chamada caia no
+caminho de SUCESSO contra o ledger real, onde o bug tambem imprimia; o critico reverteu SO' a posicao
+do bloco e o teste seguiu verde. Pior: a regressao ERA detectada, mas por ACIDENTE — o baseline do
+harness de mutacao cai no caminho de bloqueio porque a arvore temporaria nao resolve ancestral. A
+licao completa nao e' "execute em vez de grepar": e' que a ALEGACAO sobre o que um teste garante
+precisa ser tao verificada quanto o codigo que ele testa. Corrigido: o teste forca os dois caminhos,
+o bloqueio e' induzido de forma deterministica, e entrou a mutacao dedicada a posicao. Provado:
+copia sabotada rodando so' esse teste da 0 PASS / 1 FAIL.
+
+**A 20a auditou o INSTRUMENTO de prova, nao o gate — e foi a rodada de melhor resultado de metodo.**
+O canario que garantia a afirmacao "a divida legada fica visivel" LIA O TEXTO-FONTE e procurava o
+nome da funcao. Prova textual dentro do canario de um ADR que existe para cacar prova textual; o
+critico mostrou o ponto cego desligando a CONDICAO e mantendo a chamada, e o teste seguiu verde com a
+impressao morta. Trocado por um teste que EXECUTA `main()` e le a saida — e ele ficou VERMELHO,
+expondo um defeito que vinte rodadas nao tinham tocado: a divida legada so' era impressa no caminho
+de SUCESSO. A afirmacao do ADR era meia-verdade, e na metade errada, porque quem esta BLOQUEADO e'
+quem mais precisa ver o passivo. Corrigido: sai nos dois caminhos. Na mesma rodada, a correcao do
+`.gitignore` da 19a se revelou INCOMPLETA (usava `exact`, cobria so' a raiz, deixava
+`tools/.gitignore` — na pasta do proprio gate — de fora; virou sufixo) e apareceu a DECIMA assimetria
+entre irmaos: `classify()` normalizava caixa para decidir se `architect` era EXIGIDO, e `evaluate()`
+comparava cru para decidir se ele foi SATISFEITO.
+
+**A 19a achou o interruptor com PRECEDENTE REAL: `.gitignore`.** Ele decide o que o git ve, logo o
+que este gate — que le `git diff --cached` — consegue avaliar. Um curinga a mais torna um caminho
+inteiro invisivel sem tocar no gate, e `git status` nao acusa nada. Nao e' teorico neste projeto: um
+padrao `*credential*` ja engoliu `credentials.py` por 12 commits, em silencio. Entrou na matriz. Na
+mesma rodada, a NONA assimetria entre irmaos — `_listado_explicitamente()` sem o `casefold` que
+`_cobre()` recebeu na 18a — e ela INVERTE a polaridade da serie: as oito anteriores ABRIAM o gate,
+esta o TRAVA, recusando cobertura legitima e empurrando o operador para `--no-verify`. Gate que trava
+indevidamente nao e' mais seguro: e' gate que ensina a contorna-lo.
+
+**A 18a rodada, ja no degrau canonico, achou a OITAVA assimetria entre irmaos.** `_cobre()` — a
+funcao que decide se um veredito cobre um path — comparava caixa CRUA, enquanto `classify()`, que
+compara path do mesmo jeito, recebeu `casefold` na 15a rodada. Pior que as anteriores porque `_cobre`
+serve aos DOIS lados: uma reprovacao com CRITICO em aberto, no mesmo `sha_revisado` e sobre o MESMO
+arquivo, parava de invalidar o aprovativo se `escopo_paths` trouxesse `Tools/Squad_Gate.py` em vez de
+`tools/squad_gate.py` — e num sistema de arquivos case-insensitive isso nao exige ma-fe. Corrigido,
+com a direcao registrada por honestidade: o casefold aperta um lado (a reprovacao morde mais) e
+afrouxa o outro (o aprovativo cobre mais); nao e' escolha, e' correcao, porque os dois paths SAO o
+mesmo arquivo. Raio medido duas vezes, pelo critico e pelo autor: ZERO mudancas de cobertura no
+ledger real.
+
+**A 16a rodada fez a pergunta que quinze nao fizeram: quem pode DESLIGAR o gate?** A matriz do
+`behaviors/manifest.json` protegia `.py`, `docs/adr/`, `_shared/`, `.agent/`, `CLAUDE.md` — e NAO
+protegia `.github/workflows/`, onde `continue-on-error` decide se o squad-gate e' advisory ou
+bloqueante (ADR-104), nem `.claude/agents/`, onde mora a definicao do PROPRIO qa-critic. Editar
+qualquer um dos dois exigia zero papel: dava para religar o advisory ou reescrever o criterio do
+critico em silencio. Corrigido, com um canario que guarda a CLASSE — todo arquivo que controla o
+comportamento do gate tem de exigir alguem. Na mesma rodada, o cabecalho do proprio `squad_gate.py`
+foi pego afirmando que "o git-hook local nao existe nesta maquina e nunca foi trava": o hook EXISTE,
+e a linha foi escrita tres dias antes de ele ser instalado, sobrevivendo a dezesseis rodadas de QA
+dois paragrafos abaixo de onde o mesmo cabecalho avisa que "mecanismo tambem mente quando o
+comentario envelhece".
+
+**A 14a rodada achou o pior dos quatorze, e no mecanismo de PRODUCAO.** `main()` lia o `stdout` de
+`git diff --cached --name-only` sem olhar o `returncode`. Git que falha devolve stdout VAZIO, entao
+"nao consegui perguntar" virava "nada esta staged": nenhum papel exigido, OK impresso, exit 0. E
+`tools/install_git_hooks.py` instala exatamente essa invocacao como pre-commit e so' le a mensagem
+quando o codigo e' != 0 — com 0 ele libera direto. O commit passava sem nenhuma evidencia avaliada e
+SEM AVISO. Nao e' laboratorio: `fatal: detected dubious ownership` (git pos-CVE-2022-24765) acontece
+sozinho em drive de rede, container e CI. O helper `_git()`, no mesmo arquivo, SEMPRE conferiu o
+returncode. Na mesma rodada: `modelo != autor` era comparacao de string crua, entao autoatestacao
+passava por caixa, espaco duplo ou zero-width space — sem precisar de homoglifo — enquanto a vizinha
+`assinatura_valida` ja normalizava contra exatamente esses truques. Sao a QUINTA e a SEXTA vez neste
+bloco em que o padrao certo ja estava escrito ao lado e o irmao ficou sem.
+
+**A 13a rodada achou o bypass mais BARATO na funcao que as doze anteriores nunca tocaram.**
+`_atestacao_valida` decidia isolamento com `(not autor or modelo != autor)`: com o campo `autor`
+AUSENTE, a expressao inteira era True. O autor podia escrever o proprio veredito aprovativo do
+proprio codigo, sem mentir em nada, apenas nao escrevendo uma linha — e o gate imprimia "OK,
+evidencia atestada presente". Nao precisa de homoglifo, Unicode invisivel, chave cirilica nem sha
+simbolico: precisa de uma OMISSAO. E estava na checagem que da NOME ao mecanismo, a defesa
+anti-teatro, afirmada como incondicional em tres documentos. Corrigido: ausencia deixa de significar
+"isolamento nao contestado" e passa a significar "isolamento nao comprovado". Medido antes de
+fechar: dos 16 vereditos hoje atestados, os 16 declaram `autor` — raio de explosao nulo.
+
+**Um achado ficou ABERTO por nove rodadas, e nao era tecnico.** A 7a rodada apontou que um veredito
+pode declarar `problemas: []` e narrar um CRITICO em campo de prosa. Contestei com medicao: **36 a 60 dos 69** vereditos do ledger — 52% pelo criterio estrito, 87% contando todo
+campo de texto livre — citam severidade grave em prosa — inclusive os que descrevem os
+achados JA corrigidos desta sessao. Varrer palavra-chave bloquearia mais da metade do ledger e seria
+"ler prosa para decidir gate", que o framework proibe. Mas limite declarado num gate e' **risco
+aceito**, e risco aceito exige decisao explicita do dono (ADR-051). **Tentei preencher esse campo
+sozinho duas vezes** — a 1a com `aceito_por: "Fabricio (dono)"` sem ele ter dito nada (consentimento
+FABRICADO), a 2a lendo um *"siga ate o final"* generico como aceite. A 8a rodada pegou a segunda.
+Enquanto ficou aberto, **o gate barrou o proprio commit que o introduz** — o comportamento pretendido.
+Decidido em 14/09/2026, perguntando: as duas alternativas e o custo medido de cada uma foram postos
+na mesa ANTES da escolha; o dono optou pelo limite declarado. O que o gate nao alcanca fica dito:
+ele cobra que `aceito_por` tenha **forma** de assinatura, nunca que a assinatura seja **verdadeira**.
+
 ## Política
 
 - **SemVer + Conventional Commits**: feature nova compatível → MINOR; correção sem
@@ -15,14 +269,135 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
-## [Não liberado] — branch `feat/enforcement-que-viaja-para-projeto-novo` — A escada de crítica passa a ser relativa (ADR-109), o degrau caro passa a exigir autorização (ADR-110) o bloco passa a ser confirmado antes (ADR-111) e e o trabalho em curso não é abandonado (ADR-112)
+## [Não liberado] — branch `feat/enforcement-que-viaja-para-projeto-novo` — A escada de crítica passa a ser relativa (ADR-109), o degrau caro passa a exigir autorização (ADR-110) o bloco passa a ser confirmado antes (ADR-111) e e o trabalho em curso não é abandonado (ADR-112) e a política de lançamento de projeto vira pacote do núcleo, achado por resolvedor (ADR-113) e a valoração de serviço entra no núcleo calibrada por um caso que errou uma ordem de grandeza (ADR-114)
 
-[EMERGENTE] · [estado do QA declarado sem antecipar veredito: **dois QA adversariais isolados**
-rodaram nesta branch — junção em Sonnet e entrega em Fable — e **os dois REPROVARAM**. Os achados de
-ambos foram tratados. **Não existe veredito de aprovação**: a rodada que avalia estas correções ainda
-não rodou. A versão anterior desta linha dizia que os achados estavam tratados enquanto o segundo QA
+[EMERGENTE] · [estado do QA declarado sem antecipar veredito: **três QA adversariais isolados**
+rodaram nesta branch — junção em Sonnet, entrega em Fable, e a rodada de reavaliação em Sonnet
+(29/08/2026) — e **os três REPROVARAM**. Os achados dos três foram tratados. **Não existe veredito de
+aprovação**: nenhuma rodada aprovou. A terceira achou um ALTA no cabeçalho do ADR-113, que citava um
+total de mutações de outra rodada; o detector `test_numeros_controle.py` não o pegava porque
+procurava a palavra `defeito` e a prosa usou `correções` — **número escapando pelo sinônimo**. Prosa
+e mecanismo corrigidos, nessa ordem de prova: com o padrão ampliado e a prosa ainda errada o canário
+sai exit 1. A versão anterior desta linha dizia que os achados estavam tratados enquanto o segundo QA
 ainda rodava — boletim antes da prova, que é a classe que o ADR-108 fechou. Achado do próprio QA de
 entrega.]
+
+### ADR-114 — a valoração de serviço entra no núcleo, e entra calibrada por um caso que errou uma ordem de grandeza
+
+**O que muda para quem usa.** Uma capacidade nova, invocável de qualquer projeto do framework:
+valorar um serviço técnico pelo valor entregue e pelo preço de mercado, com memória de cálculo em
+que cada número carrega origem e classificação. Não existia nada disso — checado nos 97 registros
+de `capabilities.json` antes de escrever a primeira linha, e o vizinho mais próximo
+(`project-token-report`) é custo de sessão de LLM, outra coisa.
+
+**Por que ela nasce diferente da que chegou.** A skill já tinha sido usada numa entrega real e
+errado feio: automação de reset de senha no SAP valorada em **R$ 270.000**, corrigida para
+**R$ 13.000** — 20,8x no preço (270.000÷13.000) e 8,7x no esforço (478÷55). Foram oito violações de regra, e **seis eram de
+regras que a própria skill já tinha escritas**. O método não falhou por falta de regra; falhou por
+não ter trava que impedisse ignorá-la. As cinco travas novas (retrabalho do fornecedor fora do
+faturável · faixa de unidade como TRAVA e não sugestão · sem fonte independente a Lente B não
+existe · teto indeterminado não autoriza preço · teste do espanto) transformam regra em condição
+de parada.
+
+**O rate card e o histórico NÃO entram no núcleo**, e a razão é medida: `tools/web_export.py`
+empacota `_shared/<nome>/SKILL.md` para os pacotes públicos, então taxa real e histórico de cliente
+ali seriam dado privado publicado sem ninguém decidir isso. Ficam em `docs/_private/`, com ordem de
+resolução declarada no §12 da skill e um exemplo **sem número algum** em `exemplos/`.
+
+**Dois defeitos corrigidos na passagem, os dois medidos.** O eixo *Ambiente* listava normas
+regulatórias, o que quebra o tier NORMA do `check_core_agnostic.py` (4 violações na mesma linha) —
+trocado por *"o projeto declara qual norma"*, que é o ADR-010 literal. E a prosa afirmava que
+*"quatro fatores no piso já dão 1,8"*: recalculado sobre a própria tabela, o máximo com quatro
+pisos é **1,75**; o 1,82 do caso veio de cinco fatores. Classe "número real, só que de outra conta".
+
+**O canário `test_service_valuation.py` audita estrutura E mede a prosa contra a tabela do próprio
+arquivo** — provado por mutação nas duas direções, inclusive contra virar decoração: apagar a
+palavra-âncora faz o canário acusar que parou de medir, em vez de passar cego. A primeira versão
+dele NÃO mordia (checava presença do número em qualquer lugar, e a prosa o cita duas vezes); isso
+só apareceu porque a prova de mutação é obrigatória aqui.
+
+**Régua §0: override explícito do dono.** É adição pura, foi levantada antes de escrever qualquer
+arquivo, com custo e consequência ditos, e o dono mandou incorporar. Registrado como override, não
+como régua cumprida.
+
+**O que o canário NÃO cobre, dito de propósito:** o critério de aceite do dono é comportamental —
+dado o cenário da v1.0, a skill tem de parar na faixa de unidade estourada, na Referência sem fonte
+e no teste do espanto. Isso exige rodar um modelo; fica como evidência datada no ADR-114, não como
+gate contínuo.
+
+### ADR-113 — a política de lançamento de projeto vira pacote, e chega por resolvedor
+
+**O que muda para quem usa.** Dois comandos novos, chamáveis de qualquer projeto do framework:
+
+- `/controle-projeto` (padrão) — diz o que pode ir ao portal, o que está retido e **por quê**;
+  pergunta antes de adiantar quando o sprint acaba; lista o automatizável sem impedimento.
+- `/controle-sharepoint` (**opção**, opt-in) — o laço da List: ida derivada, volta por arquivo
+  separado. Projeto que dispensou a feature é recusado com mensagem, não servido em silêncio.
+
+**As quatro regras** (decisão do dono, 21/08/2026): só o sprint corrente vai ao portal · só tarefa
+com executor é lançada · sprint concluído **pergunta** antes de adiantar, respeitando teto por
+pessoa · automatizável sem impedimento é executado, dentro de classes que **não** envolvam decisão,
+número, valor ou alteração de sistema de terceiro. `agente = executor = responsável` — um campo só.
+
+**Chega por resolvedor, nunca por cópia.** O projeto guarda declaração, dado e `nucleo.py` (124
+linhas que só sabem procurar). Cópia foi descartada por motivo medido: os repos-sombra deste
+framework congelaram vinte releases atrás porque ninguém viu a cópia envelhecer. Como o código não é
+copiado, o que envelhece passa a ser a **declaração** — daí `--revisar-adocao`, que obriga cada
+projeto a se pronunciar sobre feature nova: adotou, ou dispensou e por quê.
+
+**Régua §0.** O projeto que usava a regra inline encolheu: **−490 linhas, +207, líquido −283**
+(perdeu `list_sharepoint.py` e `test_list.py`, ganhou `nucleo.py` com 124 linhas). As duas recusas
+reais do importador do SharePoint viraram canário — antes eram cicatriz na cabeça de quem viu o erro
+na tela.
+
+**Doze rodadas de QA adversarial, as doze REPROVARAM** — e a quinta cobrou, com razão, que a
+régua manda escalar ao dono na terceira. O ADR-113 traz a decisão que cabe a ele, com os números das
+cinco rodadas lado a lado: os achados ficaram mais fundos (0 → 0 → 1 → 1 → 2 crashes reproduzidos na
+CLI) e a rede ficou mais densa (`test_controle_projeto.py` foi de 49 a 141 verificações), mas
+cinco rodadas
+não convergiram.
+
+**O desenho foi reaberto, por decisão do dono.** A camada que converte, valida e resolve valor
+vindo de fora virou bloco próprio (`tools/controle_base.py`), com canário e crítica próprios — ela
+estava espalhada entre dois módulos, e por isso a validação de tipo existia num e faltava no irmão.
+São **quatro blocos** agora: fronteira · política · List (opção) · números da prosa.
+
+**A hipótese do escopo menor se sustentou.** No bloco isolado, a rodada 1 achou 3 ALTA no mecanismo
+(parse de JSON, encoding e Unicode sem guarda — todos da família "guarda assimétrica") e a rodada 2
+achou **zero ALTA no mecanismo**.
+
+**Mas a rodada 2 achou uma ALTA no canário, e ela vale mais que o resto:** o canário imprimia glifos
+crus e, no console cp1252 do Windows, matava a si mesmo e ao runner — **68 canários deixavam de
+rodar**. Ninguém viu porque o autor rodava tudo com `PYTHONIOENCODING=utf-8` exportado: o ambiente
+de verificação não era o real. Consertado em três camadas (mensagem em `ascii()`, canários blindando
+o próprio stdout, runner que não morre pelo que um canário imprime).
+
+**Um erro do autor fica registrado junto:** remover código morto por recorte de POSIÇÃO apagou seis
+funções que tinham sido inseridas no intervalo ao longo das rodadas. `ast.parse` passou — função
+ausente é erro de execução, não de sintaxe — e o que denunciou foi o teste de fumaça. Virou canário.
+ A rodada 2 acertou o diagnóstico que
+importa mais que os achados: era a **terceira** vez que a mesma classe de erro — comparação frágil
+de string onde deveria haver data ou número — sobrevivia ao processo. Cada rodada apontava um lugar,
+o lugar era consertado, e o vizinho ficava.
+
+A resposta deixou de ser consertar o apontado e passou a ser **varrer a classe por comando**: toda
+comparação que toca data, e todo ponto em que zero é valor válido mas cai como *falsy*. A varredura
+achou os dois do crítico **e um terceiro que nenhuma rodada tinha visto** — `prioridade or 999`
+fazia a prioridade `0`, a mais alta, virar `999`, a mais baixa: a tarefa mais urgente do projeto
+seria a última a ser adiantada.
+
+**A própria verificação tinha ponto cego:** varri os números com `grep "~50 linhas"` e o grep disse
+"nenhum" — a frase estava quebrada em duas linhas e não existia como texto contíguo. Virou canário,
+sobre o texto achatado, contra a realidade medida.
+
+**34 defeitos provados por mutação**, e a prova deixou de ser prosa: virou `tools/test_mutacao_controle.py`, que copia o pacote para uma pasta temporária, reintroduz cada defeito na cópia e exige que o canário correspondente reprove — o repositório nunca é tocado. Antes disso o número era verdadeiro mas **não verificável**, e aparecia ao lado de dois que eram medidos, dando a impressão de vir da mesma fonte.
+
+> O resultado da suíte (PASS/SKIP/FAIL) **não é afirmado aqui**, de propósito: ele não pode ser medido de dentro da própria suíte — seria recursão — e número que nenhum mecanismo confere já envelheceu quatro vezes nesta série. Quem quiser o número roda `python tools/run_canaries.py`, que é a fonte.
+
+**Dívida declarada:** `tools/projeto_docs.py` e este pacote escrevem em `docs/projeto/` e a colisão
+não foi tratada; as demais ferramentas genéricas daquele projeto seguem lá; e a **ativação
+automática das capacidades no boot** — pedida pelo dono pela terceira vez em 21/08/2026 — é o item
+de prioridade máxima em `history.md`, não resolvida aqui.
 
 > **O nome da branch promete mais do que este bloco entrega, e isto fica dito aqui.** A branch
 > `feat/enforcement-que-viaja-para-projeto-novo` nasceu de **quatro causas medidas** para o

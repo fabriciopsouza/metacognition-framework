@@ -1,0 +1,62 @@
+{
+ "bloco": "adr-115-fail-closed-no-veredito",
+ "papel": "qa_critic",
+ "rodada": 2,
+ "passou": false,
+ "recomendacao": "reprovar",
+ "veredito": "reprovar",
+ "data": "2026-09-13T00:00:00Z",
+ "escopo_paths": [
+  "tools/squad_gate.py",
+  "tools/test_squad_gate.py",
+  "tools/test_mutacao_squad_gate.py",
+  "docs/adr/115-fail-closed-no-veredito-achado-bloqueante-nao-passa-por-rotulo.md",
+  "CHANGELOG.md",
+  "capabilities.json",
+  "CAPABILITIES.md",
+  "guia/web/index.html"
+ ],
+ "atestacao": {
+  "agentId": "a26505aa652b30622",
+  "modelo": "sonnet",
+  "autor": "opus",
+  "isolamento": "subagente qa-critic em primeiro plano, degrau abaixo do autor (ADR-109/110)"
+ },
+ "resumo": "REPROVOU de novo. A correcao da rodada 1 fechou o bypass por SCHEMA trocando-o por uma lista NOMINAL de 20 arquivos — mas quem grava evidencia tambem controla o NOME do arquivo, e 'qa_evidence.write_artifact()' faz json.dump sobre open(jpath,'w') SEM checar se o arquivo ja existe. Bastava SOBRESCREVER um dos 20 congelados com conteudo novo para herdar a isencao. O critico reproduziu ponta a ponta numa copia integral do repo: sobrescreveu 'v1.54.0-release.json' com um veredito novo carregando um CRITICO sem campo 'estado', rodou 'python tools/squad_gate.py --paths tools/exploit_alvo4.py' e obteve exit 0 — com o banner de 'divida legada' ainda exibindo a contagem antiga, mascarando a fraude. E' a MESMA classe um nivel abaixo: a identidade do legado continuava sendo algo que o avaliado consegue produzir.",
+ "verificacoes_executadas": [
+  "critico copiou o repositorio inteiro (incl. .git) para o scratchpad e trabalhou so na copia; original intacto",
+  "critico sobrescreveu _meta/qa/v1.54.0-release.json na copia e rodou o binario real -> exit 0 com CRITICO em aberto",
+  "critico reproduziu o PoC da rodada 1 (CRITICO sem estado, arquivo novo) -> exit 1, corretamente bloqueado",
+  "critico testou 6 formas de 'problemas' malformado (dict, lista de str, lista de num, mista, string, None, [], [{}]) -> 6/6 corretos",
+  "critico confirmou que main() CHAMA legados_declarados() (linha 537) e que a saida e' legivel",
+  "critico conferiu '14 testes novos' por git diff e '12 dos 67' no ADR",
+  "critico rodou test_squad_gate.py (41 PASS/0 FAIL) e run_canaries.py (86 PASS/1 SKIP/0 FAIL)",
+  "critico refez 2 mutacoes em copia e apontou que uma reencarnacao possivel matava por AttributeError, nao por assercao",
+  "critico conferiu escopo_paths do veredito da rodada 1 contra git status --short",
+  "autor, apos corrigir: 4 casos testados (legado genuino, legado sobrescrito, sem hash, nome inventado) -> todos com o resultado esperado",
+  "autor, apos corrigir: 8 mutacoes, 8 mortas, agora em SCRIPT PERSISTIDO (tools/test_mutacao_squad_gate.py), duas delas reintroduzindo os bypasses das rodadas 1 e 2",
+  "autor, apos corrigir: 44 PASS / 0 FAIL no canario do gate e 87 PASS / 1 SKIP / 0 FAIL na suite (88 canarios)"
+ ],
+ "problemas": [
+  {
+   "severidade": "CRITICO",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — VEREDITOS_LEGADOS / veredito_legado(); superficie de escrita em tools/qa_evidence.py write_artifact()",
+   "descricao": "A lista NOMINAL protegia contra arquivo NOVO, mas nao contra SOBRESCREVER um dos 20 congelados. 'write_artifact()' grava sem checar existencia, e nada comparava o conteudo atual com o que existia no congelamento (sem hash, sem pin de commit). Reproduzido contra o binario real com exit 0. CORRIGIDO: VEREDITOS_LEGADOS passou a mapear nome -> sha256 do conteudo; load_evidence marca '_sha256' junto com '_arquivo'; veredito_legado exige que o hash bata. Sobrescrever muda o hash e a isencao cai. Acrescentado tambem um canario de DERIVA que recalcula os 20 hashes contra o disco e quebra se algum mudou desde o congelamento. Provado por mutacao dedicada ('legado volta a valer so por NOME, ignorando o hash' -> canario morre) e por 3 canarios novos."
+  },
+  {
+   "severidade": "BAIXA",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — comentario da secao de severidade",
+   "descricao": "O ADR foi corrigido de '12 de 66' para '12 dos 67', mas a mesma afirmacao, duplicada verbatim como comentario no codigo, ficou com o numero velho. CORRIGIDO."
+  },
+  {
+   "severidade": "BAIXA",
+   "estado": "corrigido",
+   "local": "prova por mutacao — ausencia de artefato no repositorio",
+   "descricao": "As '7 mutacoes, 7 mortas' nao eram reproduzieis a partir do repositorio: o script vivia so no scratchpad, e a alegacao so existia na prosa do relatorio — a classe que o ADR-106 proibe. CORRIGIDO: a prova virou 'tools/test_mutacao_squad_gate.py', canario de primeira classe na suite (88 agora), seguindo o padrao de test_mutacao_controle.py. Registrado em registry_waivers como prova do MESMO mecanismo, nao capacidade nova (regua §0), com o precedente de test_effect_gate_push.py."
+  }
+ ],
+ "recomendacao_do_critico": "corrigir; ha bypass CRITICO reproduzido ponta a ponta pela sobrescrita de arquivo legado",
+ "nota_do_autor": "Terceira encarnacao da mesma classe, um nivel abaixo a cada rodada: schema -> nome -> conteudo. A licao so apareceu na terceira volta e esta escrita no ADR: enquanto a identidade do legado for algo que o avaliado consegue PRODUZIR, a isencao continua autodeclarada."
+}
