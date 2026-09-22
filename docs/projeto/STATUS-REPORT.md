@@ -15,11 +15,11 @@
 
 ## Estado agora
 
-- Branch **feat/enforcement-que-viaja-para-projeto-novo**, commit `d24c9d0 docs(intake): execution-report runbooks linkedin-diagnostico — gate por regex precisa de oraculo dos dois lados`
+- Branch **main**, commit `5305ae2 feat(adr-113/114/115): o bloco represado sai, e o gate parou de medir o que nao muda (#139)`
 - Última tag: **v1.90.0**
 - Commits não enviados: **0**
 - Árvore de trabalho: **com alterações não commitadas**
-- Canários: **86 PASS · 1 SKIP · 2 FAIL (de 89 canários) — medido em 2026-09-21T10:06, commit `d24c9d0` (árvore suja na medição) — **DESATUALIZADO: 3 arquivo(s) rastreado(s) mudaram depois da medição — rode `python tools/run_canaries.py`****
+- Canários: **88 PASS · 1 SKIP · 0 FAIL (de 89 canários) — medido em 2026-09-22T15:33, commit `5305ae2` (árvore suja na medição)**
 
 ## O que falta
 

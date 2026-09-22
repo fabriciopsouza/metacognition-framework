@@ -13,6 +13,50 @@
 > **Poda de contexto (ADR-107):** este arquivo quente mantem os ultimos **10** checkpoints + `## Em aberto` + `## Aprendizado`. **56** checkpoints mais antigos estao em [`docs/history/history-archive.md`](docs/history/history-archive.md) (nada deletado — so realocado). Rotacao: `python tools/rotate_history.py`.
 <!-- history-archive-pointer -->
 
+## 2026-09-22 — O bloco represado sai, e o gate para de medir o que não muda (ADR-113/114/115)
+
+Três ADRs que não commitavam havia semanas entraram na `main` pelo [PR #139](https://github.com/fabriciopsouza/metacognition-framework/pull/139):
+137 arquivos, 22.649 inserções, `ed087b5..5305ae2`. Não commitavam porque o `squad_gate` —
+corretamente — não tinha evidência que os cobrisse. Foram 39 rodadas adversariais no total, três
+delas nesta sessão, e o bloco saiu **sem override**.
+
+**O que destravou não foi uma exceção, foi um conserto.** O `_recente_o_bastante` media
+ancestralidade de *commit*, e o gate roda no pré-commit — quando, por definição, todo arquivo do
+bloco está fora do HEAD. Medido: três vereditos aprovativos de **agosto** seguiam "recentes" para
+arquivos editados em **setembro**. O veredito passou a carregar `blobs_revisados`, o hash do blob
+indexado, que é a única coisa que descreve conteúdo ainda não commitado.
+
+**E a regra que fabricava o artefato que ela mesma criticava.** `_qa_critic_attested` exigia UM
+veredito cobrindo TODOS os caminhos: para fechar um bloco de 91 era preciso declarar os 91 num
+artefato só, e nenhum crítico sozinho revisou 91 arquivos. Medido: **57 dos 91** dependiam desse
+veredito-cobertor. Agora vale a união por caminho.
+
+**O achado que vale mais que os dois consertos** veio contra mim, na 37ª: ao otimizar o caminho
+novo eu pulei a validação de `sha_revisado`, raciocinando que o hash de conteúdo é mais forte que
+a ancestralidade. Verdade para *aquela função* e falso para o sistema — `sha_revisado` também é a
+chave que `_reprovacao_vigente` usa para achar a reprovação irmã, e um aprovativo com sha podre
+fazia uma reprovação legítima deixar de ser vigente. Era a reabertura do defeito que as rodadas 8,
+9 e 10 fecharam. *Antes de pular a validação de um campo, procurar quem mais o lê.*
+
+**A cegueira que a CI expôs, e que nenhuma das 38 rodadas anteriores podia ver:** o gate roda numa
+plataforma só. Os 20 pinos de hash foram calculados de bytes CRLF e o repo guarda LF — o canário
+de integridade só podia passar no Windows. E um canário montava barreira de escrita com semântica
+NTFS, reprovando no POSIX uma garantia que existe. O trade-off "1 OS" do ADR-088 segue defensável;
+o que faltava era medir o custo dele em vez de citá-lo.
+
+**Padrão da sessão:** três rodadas seguidas tiveram o achado principal na **prosa**, não no código
+— um comentário afirmando critério de aceite falso sobre o próprio arquivo, a palavra "mais
+estrito" onde cabia "mais cirúrgico", e o gancho do índice de memória que envelheceu enquanto o
+corpo era atualizado. Nenhum canário lê prosa.
+
+**Seis sessões escreveram nesta árvore durante o bloco.** O HEAD andou quatro vezes. Duas sessões
+atribuíram commits uma à outra, e nenhuma das duas era responsável. O que impediu estrago não foi
+gate — foi releitura antes de editar, e uma sessão ter parado para perguntar antes de commitar.
+
+**Próximo passo:** decidir o desenho para a composição de vereditos de SHAs diferentes (três vias
+na mesa, custa um ADR) e fechar o canário de `.agent/workflows/*.md`, que é o buraco com mais
+reincidência medida.
+
 ## 2026-08-18 — Release v1.90.0 (MINOR): o boletim deixa de ser escrito só pelo avaliado (ADR-108)
 
 O dono fez a pergunta que faltava: depois de zerar o passivo, dá para dizer que é determinístico
