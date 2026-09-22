@@ -101,35 +101,51 @@ def _bloqueante(problema) -> bool:
 # Enquanto a identidade do legado for algo que o avaliado consegue PRODUZIR, a isencao continua
 # autodeclarada. Hash e' a primeira forma que ele nao consegue forjar sem mudar o conteudo.
 VEREDITOS_LEGADOS = {
-    "adr-100-registro-de-trabalhos-handoff-persistente.json": "c9c321923a328548",
-    "adr-102-padrao-do-conjunto-documental-de-projeto.json": "21841b419e0405e6",
-    "adr-108-procedencia-do-veredito.json": "566aebec86de24f9",
-    "emenda-squad-gate-arquivo-novo.json": "bf5bfc8a4cf87280",
-    "passivo-lote-4-registro-sem-enforcement.json": "2357a2117cdf4828",
-    "release-1.80.0-prova-de-mutacao-adr-106.json": "f4fa5c8ced40ed2e",
-    "release-1.81.0-rotacao-do-history.json": "f59914811b0515fe",
-    "release-1.82.0-instalador-do-gancho-do-squad-gate.json": "3f43861fe8e17b20",
-    "release-1.84.0-conformance-de-topologia.json": "393a58c892d71ce4",
-    "release-1.85.0-quadro-de-gestao-e-canarios-que-mentiam.json": "bbe8fc22e3f563cf",
-    "release-1.86.0-vitrine-com-numeros-verificados.json": "8f578bc262d77415",
-    "release-1.87.0-alarme-de-deriva-das-distribuicoes.json": "68238a0153201a4b",
-    "release-1.89.0-passivo-do-registro-acabou.json": "f7842fa896842730",
-    "release-1.90.0-procedencia-do-veredito.json": "135484a36f4dc9a1",
-    "v1.54.0-release.json": "076641d483f9f458",
-    "v1.57.0-adr-078.json": "e8bf0421bfc8c1c0",
-    "v1.58.0-adr-079-080.json": "29817c65268ec9df",
-    "v1.58.1-boot-barato.json": "e47663fe64243a7f",
-    "v1.74.0-hitl-corte-score-6.json": "64ff18fc17a39562",
-    "v1.75.0-path-resolve-no-destinatario.json": "9059f831c6a9a463",
+    "adr-100-registro-de-trabalhos-handoff-persistente.json": "e051f3c6fa64d064",
+    "adr-102-padrao-do-conjunto-documental-de-projeto.json": "a4cb65c6c47e93a1",
+    "adr-108-procedencia-do-veredito.json": "e6b0eca74e4b4573",
+    "emenda-squad-gate-arquivo-novo.json": "99fb6d31cfb45ff7",
+    "passivo-lote-4-registro-sem-enforcement.json": "2174fa40b9da21d2",
+    "release-1.80.0-prova-de-mutacao-adr-106.json": "968dc486a57a94f9",
+    "release-1.81.0-rotacao-do-history.json": "5dd5686f6c7c655a",
+    "release-1.82.0-instalador-do-gancho-do-squad-gate.json": "22d28fa86a67fe1d",
+    "release-1.84.0-conformance-de-topologia.json": "8b722861ece4c827",
+    "release-1.85.0-quadro-de-gestao-e-canarios-que-mentiam.json": "7754c3745f8bf265",
+    "release-1.86.0-vitrine-com-numeros-verificados.json": "0314dc0493ce9a36",
+    "release-1.87.0-alarme-de-deriva-das-distribuicoes.json": "c3308b01946c417b",
+    "release-1.89.0-passivo-do-registro-acabou.json": "331ef0d1e5e78368",
+    "release-1.90.0-procedencia-do-veredito.json": "c1e814271ee81ebc",
+    "v1.54.0-release.json": "c9e15bbe16cd3be2",
+    "v1.57.0-adr-078.json": "0a67ca693e49f30c",
+    "v1.58.0-adr-079-080.json": "239305b94429fc62",
+    "v1.58.1-boot-barato.json": "a62a875b9e5df3f6",
+    "v1.74.0-hitl-corte-score-6.json": "32f6effa3c70bcd1",
+    "v1.75.0-path-resolve-no-destinatario.json": "47f272359c9d9b96",
 }
 
 
 def sha_do_veredito(caminho) -> str:
-    """sha256 (16 primeiros hex) do arquivo. Vazio se nao der para ler."""
+    """sha256 (16 primeiros hex) do CONTEUDO do arquivo, com fim de linha normalizado.
+
+    NORMALIZA CRLF->LF ANTES DE HASHEAR (achado da CI em 22/09/2026, e o primeiro defeito
+    deste bloco que so' aparecia FORA do Windows).
+
+    Os 20 pinos foram calculados numa maquina Windows, a partir dos bytes com CRLF que o
+    `core.autocrlf` entrega no checkout. O repositorio guarda LF. Consequencia: no Windows o
+    checkout converte de volta e o pino bate; no macOS e no Linux o arquivo fica LF e o hash
+    NUNCA bate. O canario dos vereditos legados so' podia passar numa plataforma — e ninguem
+    percebeu porque estes arquivos entraram no repositorio agora, entao esta foi a primeira
+    vez que a CI multiplataforma os viu.
+
+    A correcao e' o que o pino sempre quis medir: o CONTEUDO. Fim de linha e' convencao de
+    checkout, nao bytes do veredito — dois arquivos que so' diferem nisso dizem a mesma coisa,
+    e um mecanismo de integridade que os chama de diferentes esta' medindo o sistema de
+    arquivos, nao a evidencia.
+    """
     import hashlib
     try:
         with open(caminho, "rb") as fh:
-            return hashlib.sha256(fh.read()).hexdigest()[:16]
+            return hashlib.sha256(fh.read().replace(b"\r\n", b"\n")).hexdigest()[:16]
     except Exception:
         return ""
 

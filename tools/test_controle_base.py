@@ -278,18 +278,55 @@ def main() -> int:
         checar("cria a pasta que falta e grava", r == "gravou" and alvo.is_file(), f"-> {r}")
         checar("o conteudo sai intacto", alvo.read_text(encoding="utf-8") == "conteudo\n")
 
-        _os.chmod(alvo, _st.S_IREAD)
-        try:
-            CB.escrever_texto(alvo, "outro", "o arquivo de teste")
-            r2 = "gravou"
-        except CB.ProjetoInvalido:
-            r2 = "recusado com mensagem"
-        except Exception as ex:
-            r2 = f"CRUA:{type(ex).__name__}"
-        finally:
-            _os.chmod(alvo, _st.S_IWRITE)
-        checar("somente-leitura -> mensagem, nao traceback", r2 == "recusado com mensagem",
-               f"-> {r2}; era PermissionError cru no comando que PERSISTE mudanca")
+        # A BARREIRA E' DIFERENTE EM CADA PLATAFORMA — achado da CI do macOS, 22/09/2026, na
+        # primeira vez que este pacote rodou fora do Windows.
+        #
+        # `escrever_texto` e' ATOMICO: grava um temporario ao lado e troca com `os.replace`.
+        # No POSIX, trocar um arquivo depende da permissao do DIRETORIO, nao da do arquivo —
+        # entao deixar o ARQUIVO somente-leitura nao barra nada, e o teste reprovava uma
+        # garantia que existe. No Windows e' o contrario: `chmod` num diretorio nao faz efeito,
+        # e quem barra e' o atributo do arquivo.
+        #
+        # Supor uma das duas semanticas e' o mesmo erro que esta serie persegue: a verificacao
+        # olhando um fato que nao discrimina o que ela afirma discriminar.
+        # E COMO ROOT NAO BARRA NADA [ressalva MEDIA do qa-critic, 22/09/2026]. O kernel POSIX
+        # ignora a permissao do diretorio para o UID 0: a gravacao SUCEDERIA e este caso voltaria
+        # a reprovar uma garantia que existe — agora tambem no Linux, que e' pior que o defeito
+        # original, porque ninguem esperaria por ele ali. Hoje nao acontece (a CI roda em runner
+        # nao-root, conferido em .github/workflows/ci.yml, sem `container:`), mas trocar
+        # `runs-on` por um job containerizado reabriria a classe EM SILENCIO. Entao a condicao
+        # e' declarada em vez de suposta: sob root, este caso se declara nao-exercitado.
+        _posix = _os.name != "nt"
+        _root = _posix and hasattr(_os, "geteuid") and _os.geteuid() == 0
+        _pasta = alvo.parent
+        if _root:
+            # NAO simula um PASS: declara que a condicao nao pode ser montada aqui. Um teste que
+            # se diz verde sem ter exercitado nada e' o carimbo que este repo passa o tempo todo
+            # desmontando — entao o caso se anuncia, alto, como nao-exercitado.
+            print("  ---  somente-leitura -> mensagem, nao traceback: NAO EXERCITADO "
+                  "(rodando como root; o UID 0 ignora a permissao do diretorio)")
+        else:
+            if _posix:
+                _os.chmod(_pasta, 0o500)      # r-x: nao da' para criar o temporario
+            else:
+                _os.chmod(alvo, _st.S_IREAD)
+            try:
+                CB.escrever_texto(alvo, "outro", "o arquivo de teste")
+                r2 = "gravou"
+            except CB.ProjetoInvalido:
+                r2 = "recusado com mensagem"
+            except Exception as ex:
+                r2 = f"CRUA:{type(ex).__name__}"
+            finally:
+                # `stat.S_IWRITE` e' 0o200 — write-only, SEM leitura. No POSIX isso tirava a
+                # permissao de LER e o `read_text` da checagem seguinte estourava de verdade.
+                if _posix:
+                    _os.chmod(_pasta, 0o700)
+                    _os.chmod(alvo, 0o644)
+                else:
+                    _os.chmod(alvo, _st.S_IWRITE)
+            checar("somente-leitura -> mensagem, nao traceback", r2 == "recusado com mensagem",
+                   f"-> {r2}; era PermissionError cru no comando que PERSISTE mudanca")
         checar("e o conteudo antigo nao foi destruido",
                alvo.read_text(encoding="utf-8") == "conteudo\n",
                "-> escrita que falha nao pode deixar o arquivo pela metade")
