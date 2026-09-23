@@ -63,7 +63,8 @@ Depois: implementar → **qa-critic adversarial, 1 rodada, modelo um degrau abai
 
 **O que `--quick` corta:** ADR numerado em `docs/adr/` (vira a seção 2), `context-brief.md`,
 `data-dictionary.md`, `mission.md`, `readiness-gate`, e **J6** — a decisão de re-orquestração
-do PMO (ADR-045), que é outra coisa: J6 roda *depois* do process-critic dar `APROVADO_LIMPO`.
+do PMO (ADR-045), que é outra coisa: J6 roda *depois* do process-critic (ADR-011) dar
+`APROVADO_LIMPO`.
 
 > **Limite declarado.** Se a leitura estrita do ADR-011 exigir o process-critic como rodada
 > **separada** da de J4, então a fusão acima é uma exceção que precisa de **ADR próprio** —
