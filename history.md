@@ -13,6 +13,92 @@
 > **Poda de contexto (ADR-107):** este arquivo quente mantem os ultimos **10** checkpoints + `## Em aberto` + `## Aprendizado`. **56** checkpoints mais antigos estao em [`docs/history/history-archive.md`](docs/history/history-archive.md) (nada deletado — so realocado). Rotacao: `python tools/rotate_history.py`.
 <!-- history-archive-pointer -->
 
+## 2026-09-23 — v1.91.0: cinco sessões viram uma, e o site público era servido pela fonte privada
+
+O release fechou **36 dias** de trabalho que não lançava: três seções não lançadas empilhadas com
+títulos inconsistentes (`[Nao lancado]` duas vezes, `[Não liberado]` uma), 475 linhas, cobrindo
+ADR-010, 011, 045, 051, 092, 104 e 108 a 115. Consolidadas numa versão só: **3.034 → 3.066 linhas**,
+`+35 / -3` no diff. As 3 remoções são os 3 cabeçalhos antigos, cada um substituído 1:1 por um `###`;
+nenhum bloco de conteúdo saiu. *(Eu havia escrito "3.034 → 3.064, +30" — errado por 2, porque medi
+antes das correções da própria revisão. O QA pegou na 3ª rodada.)*
+
+**Três PRs entraram:** [#142](https://github.com/fabriciopsouza/metacognition-framework/pull/142)
+(execution-report represado desde 21/09), [#143](https://github.com/fabriciopsouza/metacognition-framework/pull/143)
+(canário de workflows + §3.2 RUNBOOK) e [#144](https://github.com/fabriciopsouza/metacognition-framework/pull/144)
+(a fixture da união), mergeado como `f64cbd4`.
+
+**A unificação das sessões foi o trabalho, não o preâmbulo.** Havia **5 sessões vivas na mesma
+árvore**, três escrevendo. O dono precisou cobrar **duas vezes** — e a segunda com razão, porque
+nós estávamos *coordenando* ordem de PR quando ele havia pedido *unificação*. Coordenação não é
+unificação. Duas eram de domínio (CAPA, budget-ti) e saíram do escopo por régua dele: unificar quem
+**melhora** o framework, não quem o **usa**. As duas de núcleo entregaram e pararam.
+
+**O custo real da árvore compartilhada, medido:** um `reset --hard origin/main` de alguma sessão
+destruiu as 47 linhas da §3.2 RUNBOOK de outra, na mesma manhã. O `git reflog` registra o evento
+(`reset: moving to origin/main`, 2026-09-22 17:13:35 — **cito a data, não o índice, porque índice de
+reflog desliza a cada commit**), mas ele **não prova a perda de conteúdo**: o próprio commit que
+restaurou a seção diz que conteúdo nunca commitado não tem reflog, nem stash, nem fsck. A prova da
+perda é o relato da sessão autora, que ainda tinha o diff em contexto — e é por isso que ela é uma
+prova frágil, não uma prova mecânica. A
+recuperação só foi possível porque a sessão autora ainda tinha o diff em contexto — reflog não
+alcança o que nunca virou commit. O que preservou o resto foi `git commit -- <caminho>`, que monta
+índice temporário só daquele path.
+
+**Três sessões afirmaram três coisas diferentes sobre o mesmo `trabalhos.py --force`, e nenhuma
+acertou inteira.** Uma testou e disse "preserva"; outra sofreu a perda e disse "reescreve tudo"; eu
+li o código e disse "preserva". A medição final: seção `##` não-canônica **sem** passar a flag
+sobrevive; **com** a flag é destruída; conteúdo antes do primeiro título canônico é destruído; e
+chave de frontmatter fora das 6 de `CAMPOS` é destruída. A causa é uma só — **`_escrever` não é
+simétrico a `_ler`**: o leitor aceita mais do que o escritor sabe regravar, e a diferença some com
+exit 0.
+
+**O achado do gate, que se resolveu sozinho no meio do caminho.** No sha `4584462` o CI deu
+`ubuntu 36/37` com a mutação `união vira any` **sobrevivendo**, enquanto Windows e macOS davam
+37/37 — mesmo código, resultado oposto por plataforma. O conserto foi na **fixture**, não na regra
+do ADR-115: ela consultava o git por caminho. Validado nas três plataformas em `f64cbd4`.
+
+**E o incidente que inverteu a pauta.** O repositório-fonte estava **público**, com **36 arquivos
+rastreados** citando Natulab, Vibra, Agidesk e Thanner — **25 deles fora de `docs/_private/`**,
+incluindo `CHANGELOG.md`, `bootstrap.ps1` e vereditos de QA. Entre eles,
+`INCIDENTE-VAZAMENTO-2026-05-31.md`, que se descreve como *"PRIVADO · NÃO DISTRIBUIR"* e *"a chave
+para reverter"* a anonimização. Fechado no mesmo bloco, com `forks=0` — ninguém copiou.
+
+**A arquitetura já estava errada antes disso, e ninguém tinha visto:** o site público era servido
+pelo Pages da **fonte privada**, não do export limpo. Havia duas configurações de site — uma ativa
+servindo conteúdo não filtrado, e uma dormente no `metacognition-framework-public`, desligada.
+
+**E aqui o release quase publicou uma mentira sobre si mesmo.** Eu ativei a dormente com um
+`workflow run` e declarei o incidente fechado, escrevendo que o domínio antigo estava "desativado".
+Não estava. A **3ª rodada do QA testou a URL ao vivo** e trouxe `HTTP 200`, com rebuild do dia
+anterior. A causa: **tornar o repositório privado não desativa o GitHub Pages dele** — a API
+mostrava `public=true` num repo `private=true`, e o site seguia servindo a `guia/web/` da fonte.
+Dimensionando com honestidade: o `pages.yml` publica **só** `guia/web/`, que tem **um** arquivo sem
+nome de cliente nenhum — então não era vazamento de dado, era uma landing page duplicada com 32
+links que passaram a dar 404 quando o repo fechou. O Pages da fonte foi **removido neste bloco**
+(API devolve 404 agora); o `200` residual é cache de CDN. Site em
+`https://fabriciopsouza.github.io/metacognition-framework-public/`, verificado: HTTP 200, 37.584
+bytes e **zero** ocorrências de nome de cliente. Dos 36 links reais da página (fora as 11 âncoras
+internas), 32 vão para `github.com` (o repositório), 1 para `code.claude.com`, 1 é relativo, e **2 apontavam
+para o domínio do site antigo**: os botões de compartilhar do LinkedIn e do Facebook, percent-encodados
+— e é por serem percent-encodados que escapavam da reescrita do exportador, que só casa a forma plana.
+Um terceiro, o botão de copiar link do Instagram, tinha o mesmo defeito num `onclick`, fora da contagem
+de `href`. **Os 3 foram consertados neste release**, na fonte `guia/web/index.html`. O exportador não
+estava errado: o docstring de `rewrite_repo_urls` declara que o site fica em `-public`; a fonte é que
+contrariava a própria doutrina.
+
+**O que o `export-clean.py` provou:** Natulab, Vibra e Thanner dão **zero** nas distribuições
+públicas, embora existam na fonte. Não era suposição — foi medido nos repos-sombra.
+
+**Quatro pendências fechadas** (`adr-113`, `canario-para-workflows`, `uniao-por-caminho`,
+`skill-service-valuation` atualizada e mantida aberta com resíduo). Três delas estavam **entregues
+e ainda marcadas como abertas** — a terceira ocorrência do mesmo defeito no mesmo dia: abrir
+pendência é mecanizado, fechar depende de alguém lembrar.
+
+**O que fica aberto, declarado:** ~35 pendências, sendo ~18 do núcleo. As prioritárias continuam
+sendo `enforcement-que-viaja` (o squad e o QA adversarial não são determinísticos fora deste repo)
+e `escopo-de-repo-da-sessao`.
+
+
 ## 2026-09-22 — O bloco represado sai, e o gate para de medir o que não muda (ADR-113/114/115)
 
 Três ADRs que não commitavam havia semanas entraram na `main` pelo [PR #139](https://github.com/fabriciopsouza/metacognition-framework/pull/139):

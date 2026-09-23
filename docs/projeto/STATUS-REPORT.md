@@ -7,19 +7,19 @@
 
 | release | data | o quê |
 |---|---|---|
+| 1.91.0 | 2026-09-23 | O gate para de medir o que nao muda, e o repo passa a ler os proprios workflows |
 | 1.90.0 | 2026-08-18 | O boletim deixa de ser escrito só pelo avaliado (ADR-108) |
 | 1.89.0 | 2026-08-18 | O passivo do registro acabou (ADR-106 fechado) |
 | 1.88.0 | 2026-08-17 | Nenhuma capacidade declara bloquear sem prova (ADR-106, emenda 5) |
 | 1.87.0 | 2026-08-17 | O silêncio das distribuições vira número (ADR-049) |
-| 1.86.0 | 2026-08-17 | A vitrine promete menos e prova mais, e não pode mais envelhecer mentindo |
 
 ## Estado agora
 
-- Branch **main**, commit `5305ae2 feat(adr-113/114/115): o bloco represado sai, e o gate parou de medir o que nao muda (#139)`
+- Branch **main**, commit `e95ec49 Merge remote-tracking branch 'origin/main'`
 - Última tag: **v1.90.0**
-- Commits não enviados: **0**
+- Commits não enviados: **7**
 - Árvore de trabalho: **com alterações não commitadas**
-- Canários: **88 PASS · 1 SKIP · 0 FAIL (de 89 canários) — medido em 2026-09-22T15:33, commit `5305ae2` (árvore suja na medição)**
+- Canários: **88 PASS · 1 SKIP · 0 FAIL (de 89 canários) — medido em 2026-09-23T17:50, commit `22e2377` — **DESATUALIZADO: 3 arquivo(s) rastreado(s) mudaram depois da medição — rode `python tools/run_canaries.py`****
 
 ## O que falta
 

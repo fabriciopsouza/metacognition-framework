@@ -3,7 +3,39 @@
 Formato: Keep a Changelog + SemVer. Cada mudança vincula-se à pesquisa que a sustenta.
 Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
-## [Nao lancado] — grau `--quick` no /feature-plan, e a classificacao que faltava por linha
+## [1.91.0] — 2026-09-23 — O gate para de medir o que nao muda, e o repo passa a ler os proprios workflows
+
+> Consolida 36 dias e tres secoes nao lancadas (ADR-010, 011, 045, 051, 092, 104, 108 a 115),
+> mais os dois blocos de 23/09. As tres secoes viraram subsecoes: nenhum BLOCO DE CONTEUDO foi
+> removido. As 3 linhas de cabecalho antigas foram substituidas por cabecalhos `###` (3 remocoes,
+> 3 insercoes no diff) — dizer "nenhuma linha removida" seria impreciso, e o QA pegou.
+
+### O canario de workflows e a fixture que parou de medir o ambiente (23/09/2026)
+
+**O repo passa a ler os proprios workflows** (PR #143). Nenhum canario lia `.agent/workflows/*.md`,
+e por isso dois defeitos reais de workflow chegaram ao qa-critic sem barreira: a conflacao
+"process-critic de J6" (coisas de ADRs diferentes, 011 e 045) e o gatilho de reversibilidade
+citando E5/E6 onde e' E1/E2. O canario entrou em `test_skill_contract.py` (regua §0: estender,
+nao criar) e passou a exigir procedencia da sigla e a conferir classe de efeito contra a
+definicao VIVA em `action-safety`. O achado ALTA do QA foi contra o autor: bastava acrescentar a
+palavra "irreversivel" a definicao de E3, de boa-fe, para o canario aceitar E3 como classe de
+reversibilidade com PASS e exit 0 — o gate nao ficava desligado, ficava silenciosamente mais
+permissivo.
+
+**A secao §3.2 RUNBOOK entra no `project-docs`** (PR #143), com as 5 marcas R1-R5 e o teste
+binario "se a conexao cair agora, o arquivo sozinho faz retomar?". Esse conteudo chegou a ser
+destruido por um `reset --hard` numa arvore com 5 sessoes simultaneas, e so' foi recuperado
+porque a sessao autora ainda tinha o diff em contexto.
+
+**A fixture da uniao para de medir o ambiente** (PR #144). A versao anterior usava caminhos
+inexistentes e caia no ramo "sem historico no git": matava a mutacao `uniao vira any` no Windows
+(37/37) e NAO matava no ubuntu (36/37), no mesmo sha. A fixture passou a usar vereditos cujo
+escopo e' o proprio artefato, que a excecao do auto-artefato pula antes de qualquer chamada de
+git por caminho. **Validado nas tres plataformas** no merge `f64cbd4`: ubuntu, macos e windows
+success. A regra em uma frase: *fixture que consulta o ambiente mede o ambiente; para provar
+logica pura, a fixture tem de ser pura.*
+
+### grau `--quick` no /feature-plan, e a classificacao que faltava por linha
 
 ### O fluxo simplificado que o dono pediu, sem virar porta dos fundos
 
@@ -67,7 +99,7 @@ Não existe canário que valide `.agent/workflows/*.md` estruturalmente — `tes
 cobre as 13 skills e não tem uma referência sequer a workflow. Os dois defeitos acima (J6×PC e
 E5/E6) chegaram até o QA sem barreira automatizada nenhuma. Registrado como trabalho aberto.
 
-## [Nao lancado] — fail-closed no veredito (ADR-115)
+### fail-closed no veredito (ADR-115)
 
 ### O gate deixa de acreditar no rotulo do veredito e passa a olhar os achados
 
@@ -269,7 +301,7 @@ ele cobra que `aceito_por` tenha **forma** de assinatura, nunca que a assinatura
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
-## [Não liberado] — branch `feat/enforcement-que-viaja-para-projeto-novo` — A escada de crítica passa a ser relativa (ADR-109), o degrau caro passa a exigir autorização (ADR-110) o bloco passa a ser confirmado antes (ADR-111) e e o trabalho em curso não é abandonado (ADR-112) e a política de lançamento de projeto vira pacote do núcleo, achado por resolvedor (ADR-113) e a valoração de serviço entra no núcleo calibrada por um caso que errou uma ordem de grandeza (ADR-114)
+### branch `feat/enforcement-que-viaja-para-projeto-novo` — A escada de crítica passa a ser relativa (ADR-109), o degrau caro passa a exigir autorização (ADR-110) o bloco passa a ser confirmado antes (ADR-111) e e o trabalho em curso não é abandonado (ADR-112) e a política de lançamento de projeto vira pacote do núcleo, achado por resolvedor (ADR-113) e a valoração de serviço entra no núcleo calibrada por um caso que errou uma ordem de grandeza (ADR-114)
 
 [EMERGENTE] · [estado do QA declarado sem antecipar veredito: **três QA adversariais isolados**
 rodaram nesta branch — junção em Sonnet, entrega em Fable, e a rodada de reavaliação em Sonnet
