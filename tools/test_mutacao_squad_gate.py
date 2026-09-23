@@ -257,10 +257,76 @@ TESTES_DO_BLOCO = (
 
 
 def _nomes_que_falharam(proc):
-    """Nomes dos testes que falharam (o canario imprime 'FAIL <nome>')."""
+    """Nomes dos testes que falharam (o canario imprime 'FAIL <nome>').
+
+    SO NOMES DE TESTE. O canario tem outras duas linhas que comecam com "FAIL ": o aviso do filtro
+    ("FAIL filtro pede teste(s) que nao existem") e a barreira de completude ("FAIL
+    barreira-de-completude: ..."), e a segunda imprime um RESULTADO parseavel. Sem o prefixo
+    `test_`, uma mutacao que desalinhasse a contagem de funcoes apareceria no relatorio como se
+    "barreira-de-completude" fosse o nome do teste que mordeu — reintroduzindo, por um caso de
+    borda, exatamente a ambiguidade que este relatorio existe para acabar. [qa-critic, 23/09/2026]
+    """
     saida = proc.stdout.decode("utf-8", "replace")
-    return {l.split(None, 1)[1].strip()
-            for l in saida.splitlines() if l.startswith("FAIL ") and len(l.split(None, 1)) > 1}
+    nomes = set()
+    for l in saida.splitlines():
+        if not l.startswith("FAIL "):
+            continue
+        partes = l.split(None, 2)
+        if len(partes) > 1 and partes[1].startswith("test_"):
+            nomes.add(partes[1].strip())
+    return nomes
+
+
+def _prova_que_o_cache_nao_cega(env):
+    """O ambiente desta execucao ENXERGA uma mutacao do mesmo tamanho? Prova antes de medir.
+
+    Sem isto, a protecao contra o .pyc velho e' prosa: some no proximo refactor e o canario volta
+    a reportar "SOBREVIVEU (0->0)" para mutacoes que nunca rodaram. E a mutacao mais importante
+    deste arquivo — `all(` -> `any(` — e' justamente do mesmo tamanho.
+
+    COMO ELA FALHA, com precisao (achado BAIXA do qa-critic, 4a rodada): no caminho FELIZ — com
+    `PYTHONDONTWRITEBYTECODE=1` valendo — o primeiro `roda()` nao chega a escrever `__pycache__`,
+    entao o `utime` e o `rmtree` abaixo nao tem com o que colidir e a funcao devolve True porque o
+    fonte novo e' simplesmente lido. Isso nao e' vacuidade: e' o caminho em que nao ha' o que
+    detectar. A funcao existe para o caminho QUEBRADO — env var removida por um refactor, ou
+    interpretador que a ignore — e ai' o primeiro `roda()` gera um .pyc de verdade, o `utime`
+    forca a colisao de mtime, e ela devolve False, abortando a medicao inteira.
+    """
+    with tempfile.TemporaryDirectory(prefix="mut-selfcheck-") as t:
+        mod = os.path.join(t, "m_selfcheck.py")
+        io.open(mod, "w", encoding="utf-8").write("def f(xs):\n    return all(x for x in xs)\n")
+        io.open(os.path.join(t, "t_selfcheck.py"), "w", encoding="utf-8").write(
+            "import m_selfcheck\nprint('VIU', 'any' if m_selfcheck.f([True, False]) else 'all')\n")
+
+        def roda():
+            r = subprocess.run([sys.executable, "t_selfcheck.py"], cwd=t,
+                               capture_output=True, env=env)
+            return r.stdout.decode("utf-8", "replace").strip()
+
+        roda()                                   # gera o .pyc do baseline SE o ambiente o escrever
+        st = os.stat(mod)
+        io.open(mod, "w", encoding="utf-8").write("def f(xs):\n    return any(x for x in xs)\n")
+        os.utime(mod, (st.st_atime, st.st_mtime))       # MESMO tamanho E mesmo mtime
+        shutil.rmtree(os.path.join(t, "__pycache__"), ignore_errors=True)
+        return roda().endswith("any")
+
+
+def _mostrar(proc, limite=12):
+    """As linhas que IMPORTAM da saida do canario (FAIL/RESULTADO), nunca um corte cego.
+
+    Os dois caminhos de `FAIL baseline` usavam `[-900:]`, e o corte por bytes engole justamente o
+    que interessa: medido numa arvore sabotada de proposito, com 4 testes falhando e 2798 chars de
+    saida, os ultimos 900 mostravam so' os DOIS ULTIMOS nomes — os dois primeiros sumiam.
+    E `FAIL baseline` e' o modo de falha PRIMARIO depois desta mudanca (ver o trade-off declarado
+    no CHANGELOG): consertar o diagnostico so' no caminho raro e deixar cego o caminho provavel e'
+    consertar o espelho em vez do defeito. [achado MEDIA do qa-critic, 2a rodada]
+    """
+    saida = proc.stdout.decode("utf-8", "replace")
+    uteis = [l for l in saida.splitlines() if l.startswith("FAIL ") or l.startswith("RESULTADO")]
+    for linha in uteis[:limite] or ["(o canario nao imprimiu FAIL nem RESULTADO)"]:
+        print("   | %s" % linha)
+    if len(uteis) > limite:
+        print("   | ... +%d linha(s)" % (len(uteis) - limite))
 
 
 def _falhas(proc) -> int:
@@ -284,14 +350,40 @@ def main():
         # para o commit da copia. O import resolve para a COPIA porque o script esta em tmp/tools/.
         # roda SO os testes do bloco: o canario inteiro roda uma vez por mutacao, e a prova
         # so precisa saber se as defesas DESTE ADR mordem. Corta a suite em ~4x (regua §0-b).
-        env = dict(os.environ, PYTHONIOENCODING="utf-8",
+        # PYTHONDONTWRITEBYTECODE=1 — E' A CAUSA-RAIZ DO "FLAKE", provada em 23/09/2026.
+        #
+        # O Python invalida `__pycache__` por **mtime + TAMANHO** do fonte. A mutacao
+        # `all(` -> `any(` tem exatamente o MESMO tamanho, e e' escrita milissegundos depois da
+        # restauracao anterior: quando as duas escritas caem no mesmo tique de mtime, o .pyc do
+        # BASELINE e' reaproveitado e a mutacao **nunca chega a rodar**. O canario reporta
+        # "SOBREVIVEU (0->0 falhas)" — e nao sobreviveu nada, nem foi testada.
+        #
+        # Isso explica tudo o que se via e nao se entendia: por que so' ESTA mutacao (as outras
+        # mudam de tamanho e invalidam o cache), por que intermitente (e' corrida de mtime), e por
+        # que mais no ubuntu (granularidade de mtime e velocidade de disco diferentes).
+        #
+        # Reproduzido em laboratorio, fora do repo: modulo com `all`, .pyc gerado, arquivo
+        # reescrito com `any` do mesmo tamanho e `os.utime` devolvendo o mtime antigo -> o
+        # processo seguinte executa `all`. Com esta env var e o cache limpo -> executa `any`.
+        #
+        # O repo ja' tinha o nome do defeito num canario irmao ("mutacao do MESMO tamanho em
+        # modulo importado se prova") e mesmo assim ele mordeu aqui.
+        env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONDONTWRITEBYTECODE="1",
                    SQUAD_GATE_TESTES=",".join(TESTES_DO_BLOCO))
 
+        if not _prova_que_o_cache_nao_cega(env):
+            print("FAIL autoverificacao: neste ambiente uma mutacao do MESMO TAMANHO nao e' vista "
+                  "(bytecode em cache). Toda 'sobrevivencia' medida aqui seria ilusao — foi este "
+                  "exato defeito que travou o PR #140 por dois dias. Ver o CHANGELOG de 23/09.")
+            return 1
+        print("autoverificacao: mutacao do mesmo tamanho E' vista (cache nao cega a prova)")
+
+        shutil.rmtree(os.path.join(tmp, "tools", "__pycache__"), ignore_errors=True)
         base = subprocess.run([sys.executable, canario], cwd=tmp, capture_output=True, env=env)
         n_base = _falhas(base)
         if n_base < 0:
             print("FAIL baseline: o canario nao imprimiu resultado — prova invalida")
-            print(base.stdout.decode("utf-8", "replace")[-900:])
+            _mostrar(base)
             return 1
 
         # Com o filtro, os testes de evidencia/escopo (que dependem de estado de repositorio que
@@ -300,7 +392,7 @@ def main():
         if n_base != 0:
             print("FAIL baseline: %d falha(s) nos testes DO BLOCO sem mutacao — a mutacao "
                   "correspondente nao teria como ser detectada" % n_base)
-            print(base.stdout.decode("utf-8", "replace")[-900:])
+            _mostrar(base)
             return 1
         print("baseline: 0 falhas; os %d testes do fail-closed estao VIVOS" % len(TESTES_DO_BLOCO))
 
@@ -323,17 +415,44 @@ def main():
                 vivos.append(nome)
                 continue
             io.open(alvo, "w", encoding="utf-8").write(orig.replace(de, para, 1))
+            # CINTO E SUSPENSORIO: a env var impede ESCREVER .pyc novo, mas um .pyc deixado por
+            # outra execucao (ou por um Python que ignore a var) ainda seria lido. Apagar o cache
+            # e' barato e fecha o caso sem depender do comportamento do interpretador.
+            shutil.rmtree(os.path.join(tmp, "tools", "__pycache__"), ignore_errors=True)
             r = subprocess.run([sys.executable, canario], cwd=tmp, capture_output=True, env=env)
             n_mut = _falhas(r)
             # -1 = o canario nem imprimiu resultado (crashou). Conta como MORREU? Nao: prova por
             # crash nao vale (ADR-106). Exigimos falha CONTADA, que so acontece por assercao.
             morreu = n_mut > n_base
+            # QUEM mordeu, nao so' QUANTOS morderam. `_nomes_que_falharam` existia desde a 1a
+            # versao deste arquivo e NUNCA foi chamada: o log dizia "0->5 falhas" sem dizer de
+            # quais defesas, e — pior — uma mutacao SOBREVIVENTE nao deixava rastro nenhum de
+            # por que. Foi exatamente o que aconteceu com `all`->`any` num run de CI de
+            # 22/09/2026: "SOBREVIVEU (0->0 falhas)" era tudo o que restava para diagnosticar,
+            # e o mesmo job passou num run irmao. Sem os nomes, a unica saida era reproduzir
+            # o ambiente do runner. [bloco de 22/09/2026]
+            nomes = sorted(_nomes_que_falharam(r))
             print("  %-62s %s (%s)"
                   % (nome, "MORREU" if morreu else "SOBREVIVEU",
                      "%d->%d falhas" % (n_base, n_mut) if n_mut >= 0
                      else "canario CRASHOU — nao conta como morte (ADR-106)"))
+            if nomes:
+                print("      mordeu: %s" % ", ".join(nomes[:6])
+                      + (" (+%d)" % (len(nomes) - 6) if len(nomes) > 6 else ""))
             if not morreu:
                 vivos.append(nome)
+                # AS LINHAS QUE IMPORTAM, nao as ultimas N. A 1a versao despejava as 6 ultimas
+                # linhas, e o critico mediu que isso erra nos dois sentidos: no caso que motivou o
+                # recurso (0->0 falhas) as ultimas linhas sao so' o "RESULTADO: N PASS / 0 FAIL",
+                # que nao acrescenta nada; e no caso em que HAVERIA o que mostrar — mutacao que
+                # troca QUAIS testes falham mantendo a contagem — um unico traceback de
+                # AssertionError ocupa 4-5 linhas e empurra a linha "FAIL <nome>" para fora da
+                # janela. Entao filtra-se por conteudo, e quando nao ha nada diz-se isso.
+                print("      --- o que o canario disse sob a mutacao ---")
+                _mostrar(r, limite=10)
+                if not nomes:
+                    print("      | NENHUM teste falhou: a explicacao NAO esta na saida do canario,")
+                    print("      | esta no ambiente (git/FS do runner). Ver o CHANGELOG de 23/09.")
             io.open(alvo, "w", encoding="utf-8").write(orig)   # restaura a COPIA
 
     # Nada foi escrito no repositorio: se este processo morrer aqui, o pior que acontece e' um

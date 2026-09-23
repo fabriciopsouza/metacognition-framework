@@ -1,0 +1,80 @@
+{
+  "bloco": "prova-de-mutacao-que-passava-pelo-motivo-errado",
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "escopo_paths": [
+    "tools/test_squad_gate.py",
+    "tools/test_mutacao_squad_gate.py",
+    "CHANGELOG.md",
+    "history.md"
+  ],
+  "atestacao": {
+    "agentId": "qa-critic-isolado",
+    "modelo": "claude-sonnet-5",
+    "autor": "claude-opus-5"
+  },
+  "verificacoes_executadas": [
+    "python tools/test_squad_gate.py -> 96 PASS / 0 FAIL",
+    "python tools/test_mutacao_squad_gate.py -> 37/37 mutacoes mortas (~2m52s)",
+    "mutacao all->any reproduzida MANUALMENTE em copia isolada fora do repo (git init fresco em scratchpad)",
+    "logs reais de 9 runs do GitHub Actions (gh run view --log), 21 a 23/09/2026, nas tres plataformas",
+    "parse de _nomes_que_falharam confrontado com o formato real impresso por _rodar_sem_pytest"
+  ],
+  "problemas": [
+    {
+      "severidade": "MEDIA",
+      "local": "tools/test_mutacao_squad_gate.py + tools/test_squad_gate.py (provas da uniao)",
+      "descricao": "A causa-raiz da variancia de ambiente no ubuntu NAO foi identificada, apenas contornada: medido em 9 runs, windows e macos nunca falham a mutacao e o ubuntu falhou em 5 de 7 runs de 22/09. A correcao conserta a PROVA, nao a variancia.",
+      "cenario_de_falha": "A variancia recorre e aparece como 'FAIL baseline' sem que ninguem reconheca ser o mesmo problema; outras mutacoes estao a um teste redundante do mesmo modo de falha silenciosa.",
+      "estado": "corrigido",
+      "fix": "a remediacao que o proprio critico prescreveu era abrir item de acompanhamento, e foi feita: trabalhos.py slug flake-ubuntu-cobertura-src-a, com proximo passo declarado (instrumentar no CI do ubuntu o retorno de git log -1 -- src/a.py dentro da arvore temporaria). A VARIANCIA segue em aberto e esta declarada como tal no CHANGELOG — o que fechou aqui foi o registro, nao a causa"
+    },
+    {
+      "severidade": "MEDIA",
+      "local": "tools/test_squad_gate.py (controle positivo)",
+      "descricao": "O controle positivo aumenta o raio: quando a cobertura cair, o baseline fica vermelho e as 37 mutacoes sao abortadas sem nenhuma ser testada, em vez de uma unica sobreviver em silencio. Trade-off defensavel, mas nao estava declarado em lugar nenhum do diff.",
+      "cenario_de_falha": "Na proxima ocorrencia, 'FAIL baseline' e lido como defeito novo e alguem re-roda o CI sem entender, reintroduzindo o verde instavel um nivel acima.",
+      "estado": "corrigido",
+      "fix": "raio declarado no docstring de test_uniao_NAO_cobre_caminho_que_ninguem_revisou e em bloco proprio no CHANGELOG"
+    },
+    {
+      "severidade": "MEDIA",
+      "local": "tools/test_mutacao_squad_gate.py (dump de sobrevivencia)",
+      "descricao": "O dump das ultimas 6 linhas erra nos dois sentidos: no caso 0->0 falhas so mostra a linha RESULTADO, e no caso em que haveria o que mostrar um unico traceback empurra a linha 'FAIL <nome>' para fora da janela.",
+      "cenario_de_falha": "O recurso de diagnostico protege o cenario sem nada a mostrar e sub-protege o cenario com informacao util.",
+      "estado": "corrigido",
+      "fix": "passou a filtrar por CONTEUDO (linhas FAIL/RESULTADO, ate 10) e a declarar explicitamente quando nenhum teste falhou"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "tools/test_mutacao_squad_gate.py:259-263",
+      "descricao": "_nomes_que_falharam aceitava qualquer linha iniciada por 'FAIL ', inclusive 'FAIL filtro pede teste(s)...' e 'FAIL barreira-de-completude: ...', que nao sao nomes de teste.",
+      "cenario_de_falha": "Uma mutacao que desalinhe a contagem de funcoes faria o relatorio exibir 'barreira-de-completude' como se fosse o teste que mordeu.",
+      "estado": "corrigido",
+      "fix": "passou a exigir o prefixo test_ no token"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "tools/test_squad_gate.py:551-567",
+      "descricao": "test_git_que_FALHA_nao_e_o_mesmo_que_nada_staged monkeypatcha sg.subprocess.run diretamente em vez de usar o helper do proprio arquivo. Seguro hoje (try/finally), pre-existente a esta mudanca.",
+      "cenario_de_falha": "Refactor futuro que remova o finally quebraria silenciosamente todos os testes seguintes do mesmo processo.",
+      "estado": "aberto"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "diagnostico do autor",
+      "descricao": "A explicacao de que a cobertura de src/a.py e o pivo permanece INFERIDO: o critico nao roda ubuntu e nao conseguiu observar a queda de cobertura ao vivo.",
+      "cenario_de_falha": "Se o pivo for outro, o controle positivo continua correto mas nao aponta para a causa.",
+      "estado": "corrigido",
+      "fix": "a incerteza foi DECLARADA em vez de assinada: o CHANGELOG e o `## Em aberto` do history.md marcam a hipotese como INFERIDA, nao confirmada. O dono NAO aceitou este achado — ele nao o viu; declarar o limite e' o que estava ao alcance do autor"
+    }
+  ],
+  "data": "2026-09-23T17:23:46Z",
+  "sha_revisado": "bce81ca1fc1b73d1dc3bd6fe36184400bba2d38b",
+  "blobs_revisados": {
+    "tools/test_squad_gate.py": "e69142e8f5ebf8c06a63762df3e39d665d4b83fb",
+    "tools/test_mutacao_squad_gate.py": "78f97387e4bf07d8f83977d571ccf7b1f7cc454f",
+    "CHANGELOG.md": "943f84e5d5a9e68e81d6417b59e645a75aeebd26",
+    "history.md": "9d62fe2866acbbb4b54b8ff5ac192e211912079e"
+  }
+}

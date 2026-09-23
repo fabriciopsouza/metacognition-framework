@@ -67,6 +67,84 @@ Não existe canário que valide `.agent/workflows/*.md` estruturalmente — `tes
 cobre as 13 skills e não tem uma referência sequer a workflow. Os dois defeitos acima (J6×PC e
 E5/E6) chegaram até o QA sem barreira automatizada nenhuma. Registrado como trabalho aberto.
 
+## [Nao lancado] — a prova de mutacao que passava pelo motivo errado
+
+### Quatro provas negativas passando por vacuidade, e o diagnostico que estava desligado
+
+O PR #140 ficou bloqueado por `test_mutacao_squad_gate.py` reportando **SOBREVIVEU** para a mutacao
+`all()`→`any()` em `squad_gate.py:924`, com baseline limpo (0 falhas, 65 testes vivos). O handoff
+da sessao anterior registrou isso como *"falha so no ubuntu-latest, de forma deterministica"*.
+
+**Medido em multiplos runs de CI entre 21 e 23/09, e a premissa cai pela metade:** ha' pares de
+runs IRMAOS — mesmo commit, minutos de diferenca, mesmo ubuntu — em que um SOBREVIVEU e o outro
+passou; e o rerun posterior passou nos tres SOs. **Nao e' deterministico.** Mas tambem nao e'
+indiferente ao SO, como a primeira redacao deste bloco chegou a afirmar: `windows-latest` e
+`macos-latest` **nunca** falharam nesta mutacao em nenhum run inspecionado. O enunciado correto e'
+**especifico de ubuntu E intermitente**.
+
+*(O numero exato de runs saiu daqui de proposito: a 1a redacao dizia "9 runs" herdando uma contagem
+que o proprio critico depois corrigiu para 8, e um numero que depende de alguem ter contado certo
+nao deve sustentar a afirmacao. O padrao — ubuntu ora falha ora passa no mesmo commit, os outros
+dois nunca falham — nao depende da contagem.)*
+
+### E a causa-raiz apareceu — e nao era o que este bloco supunha
+
+O primeiro diagnostico (a cobertura de `src/a.py` caindo por ambiente) estava **errado**, e so' nao
+virou fato porque foi escrito como **INFERIDO**. O proprio CI o derrubou: no run que falhou, o
+baseline reportou **0 falhas com os 65 testes VIVOS** — o controle positivo passou, `src/a.py`
+ESTAVA coberto, e a mutacao "sobreviveu" assim mesmo. Impossivel, **se a mutacao tiver rodado**.
+
+**Ela nao rodou.** O Python invalida `__pycache__` por **mtime + TAMANHO** do fonte. `all(` ->
+`any(` tem o MESMO tamanho e e' escrito milissegundos depois da restauracao anterior: quando as
+duas escritas caem no mesmo tique de mtime, o `.pyc` do baseline e' reaproveitado. O canario
+reportava "SOBREVIVEU (0->0 falhas)" para uma mutacao **que nunca foi executada**.
+
+Explica o que ninguem entendia: so' ESTA mutacao — **medido: das 37, ela e' a UNICA em que `de` e
+`para` tem o mesmo numero de bytes**; as outras mudam de tamanho e invalidam o cache — e
+intermitente, porque e' corrida de mtime. *(A concentracao no ubuntu e' compativel com diferenca
+de granularidade de mtime e de velocidade de disco, mas isso NAO foi medido: e' hipotese, nao
+conclusao. O resto deste paragrafo e' medicao.)*
+
+- **Provado em laboratorio, fora do repo**, nao deduzido: modulo com `all`, `.pyc` gerado, arquivo
+  reescrito com `any` do mesmo tamanho e `os.utime` devolvendo o mtime antigo -> o processo
+  seguinte executa `all`. Com `PYTHONDONTWRITEBYTECODE=1` e cache limpo -> executa `any`.
+- **Fechado por mecanismo:** env var + limpeza de `__pycache__` a cada execucao, e uma
+  **autoverificacao** que roda ANTES de medir e aborta se, naquele ambiente, uma mutacao do mesmo
+  tamanho nao for vista. Sem ela a protecao sumiria no proximo refactor.
+- **O controle positivo continua valendo**, por outro motivo: ele e' o que transforma o proximo
+  "SOBREVIVEU (0->0)" mudo num `FAIL baseline` que diz o nome.
+
+*O repo ja' tinha o nome do defeito num canario irmao — "mutacao do MESMO tamanho em modulo
+importado se prova" — e mesmo assim ele mordeu aqui.*
+
+> **O que vem abaixo e' a HIPOTESE ORIGINAL, mantida de proposito e REFUTADA pelo bloco acima.**
+> Ela nao foi a causa deste incidente — a mutacao nunca rodou. Continua valendo como razao para o
+> controle positivo existir: ele defende contra ESSA classe de falha (prova negativa passando por
+> vacuidade), que e' real mesmo nao tendo sido o que aconteceu aqui. Lido sem esta ponte, o arquivo
+> parece apresentar duas explicacoes convivendo. [achado MEDIA do qa-critic, 4a rodada]
+
+**A hipotese original: a causa nao seria o gate, e sim a forma dos testes.** As quatro provas da uniao sao NEGATIVAS puras
+(`assert _qa_critic_attested(...) is False`). Sob `any()`, o resultado so continua `False` se
+**nenhum** caminho estiver coberto — entao, se a cobertura de `src/a.py` cai por ambiente, as
+quatro seguem verdes. E o teste POSITIVO da uniao, sob `any()`, passa com **um** caminho coberto.
+Cinco testes passando ao mesmo tempo sem nenhum provar o que enuncia.
+
+- **Controle positivo dentro de cada prova negativa** (`assert ... ["src/a.py"] is True`): ou o
+  caminho esta coberto e a mutacao morre na linha seguinte, ou a cobertura caiu e a propria prova
+  falha **dizendo o nome**. `assert is False` sozinho nao distingue "barrou o caminho certo" de
+  "barrou tudo".
+- **`_nomes_que_falharam()` ligada.** Ela existia desde a 1a versao do arquivo e **nunca foi
+  chamada**: o log dizia "0->5 falhas" sem dizer de quais defesas, e uma mutacao sobrevivente nao
+  deixava rastro nenhum. Agora cada mutacao imprime QUEM mordeu, e a sobrevivente despeja o fim da
+  saida do canario — o diagnostico deixa de exigir reproduzir o runner.
+
+**TRADE-OFF ACEITO, e e' preciso estar escrito** (achado MEDIA do qa-critic sobre esta propria
+mudanca): quando a variancia recorrer, o efeito deixa de ser "1 mutacao sem prova, em silencio" e
+passa a ser **`FAIL baseline`, abortando as 37 antes de testar qualquer uma**. O raio aumenta de
+proposito — falhar alto e' melhor que falhar mudo —, mas quem vir `FAIL baseline` no futuro precisa
+reconhecer que e' o MESMO problema de hoje, e nao um defeito novo. E' para isso que esta linha
+existe.
+
 ## [Nao lancado] — fail-closed no veredito (ADR-115)
 
 ### O gate deixa de acreditar no rotulo do veredito e passa a olhar os achados
