@@ -131,6 +131,11 @@ razão de existir.
 **Três documentos carregam peso desproporcional** — se só três existirem, sejam estes:
 `HANDOFF` (§2.5), `GLOSSARIO` (fonte da verdade dos nomes, com as crenças refutadas) e `provas/`.
 
+**RUNBOOK (§3.2) é condicional à NATUREZA da tarefa, não ao porte.** Ele entra sempre que alguém
+vai **operar com as próprias mãos** — e não entra quando ninguém opera. Por isso não está na tabela
+acima: um projeto mínimo com uma configuração manual precisa de runbook; um projeto completo que
+só produz análise, não.
+
 **Um arquivo diz onde cada tipo de ideia vai** (um `CONTRIBUINDO` de dois minutos). Sem ele, ideia
 boa vira mensagem perdida, e o conjunto cresce por acúmulo em vez de por decisão.
 
@@ -212,6 +217,58 @@ seção por número ou identificador de item. Não tenta julgar se o texto "est�
 O estado é verificável por comando, e ele **reprova antes de gerar**: um quadro gerado a partir de
 estado inconsistente é pior que quadro nenhum, porque parece confiável. O gate precisa ser
 exercitado contra entrada que **deve** reprovar — gate nunca testado é decoração.
+
+---
+
+## §3.2 — RUNBOOK: o documento de quem vai EXECUTAR com as próprias mãos
+
+Quando o resultado depende de alguém **operar** — tela de sistema, terminal, console de
+administração, configuração de credencial — o entregável **não é a explicação**. É o runbook.
+
+**Por que é propriedade do conjunto, e não estilo:** explicação vive em conversa, e conversa não
+sobrevive a queda de conexão, compactação de contexto, troca de sessão nem troca de pessoa. O
+começo é a primeira coisa que se perde, porque é a parte que o autor acha óbvia e o executor não
+tem. *(Caso: operador perdeu a conexão no meio de uma configuração e não sabia voltar à tela; o
+"como chegar" estava numa mensagem rolada para cima.)*
+
+### As 5 marcas de um runbook (as 5 valem, ou é explicação com passos numerados)
+
+| # | Marca | O que evita |
+|---|---|---|
+| **R1** | **Passo 0 = como chegar**: endereço direto **e** caminho de menu **e** o sinal de que chegou ("você chegou quando vê X") | o executor sabe o que fazer e não sabe **onde** |
+| **R2** | **Cada passo declara o resultado esperado** | não dá para saber se funcionou, nem onde retomar |
+| **R3** | **Autossuficiente**: nenhum passo depende do que foi dito em conversa | o runbook morre junto com a sessão |
+| **R4** | **Reversão explícita**, dizendo **o que não apagar** enquanto o novo não funciona | operador destrói o caminho de volta |
+| **R5** | **O que a documentação oficial NÃO cobre**, visto em tela e datado | a mesma descoberta é paga de novo no próximo projeto |
+
+**Teste binário (R3):** *se a conexão cair agora, o arquivo sozinho faz retomar?* Não → não é runbook.
+
+**Régua §0:** runbook que já existe se **reescreve**; não se acrescenta outro ao lado.
+
+### §3.2.1 — Credencial de serviço: o que todo runbook desse tipo tem de dizer
+
+Criar credencial para máquina falar com sistema corporativo repete os mesmos tropeços em qualquer
+produto. O runbook declara os seis:
+
+> **Marca de confiança destes seis: `INFERIDO`.** Vêm de **um** caso real de configuração de
+> credencial de serviço, generalizados por decomposição — **nenhum outro produto os confirmou
+> ainda**. Trate como ponto de partida a ajustar, não como norma medida. *(As marcas R1–R5 acima
+> têm origem diferente: nasceram do caso citado no §3.2, de operador que perdeu a conexão.)*
+
+1. **Qual identidade a credencial carrega** — e que ela herda as permissões de quem a gerou.
+2. **O menor conjunto de permissões que resolve**, com a **linha que separa leitura de escrita**
+   escrita por extenso. Permissão de leitura se acrescenta depois; **escrita concedida por descuido
+   não se desfaz**.
+3. **⚠️ O modo de autenticação** — e que **escolher o errado só falha lá na frente**, não no ato.
+   Se o console oferecer mais de um, o runbook diz **qual** e **por quê**.
+4. **O que é secreto e o que não é.** Identificador de cliente normalmente é público por desenho;
+   o segredo vai para o cofre do sistema operacional e **nunca** para arquivo, chat ou terminal.
+5. **O que só aparece uma vez** na tela de criação — e em que momento copiar.
+6. **Se dá para editar depois.** Campo somente-leitura na edição significa: **errou, apaga e refaz**.
+   Descobrir isso depois custa uma credencial inteira.
+
+> **A ordem importa:** verificar o modo de autenticação **antes** de gravar o segredo no cofre. Ao
+> contrário, perde-se a credencial que funcionava para ganhar uma que talvez não sirva.
 
 ---
 
@@ -307,6 +364,22 @@ aprova o próprio conjunto.
 
 ## §8 — Débito declarado desta skill
 
+- **§3.2 (RUNBOOK) é prosa sem gate, e as 5 marcas não são verificáveis por comando.** R1, R2 e
+  R5 têm forma mecanizável (existe passo 0? cada passo declara resultado? cada item de R5 tem
+  data?); R3 e R4 exigem julgamento. **Nada disso foi construído** — a §3.2 é cobrável em revisão
+  adversarial e não bloqueia release, como o resto desta skill. *Quitação: ao segundo projeto que
+  produzir runbook por este padrão, extrair o verificador das três marcas mecanizáveis — não das
+  cinco, porque gate que adivinha qualidade erra e acaba desligado.*
+  **Evidência de que o débito é real, com âncora:** o primeiro runbook produzido sob esta seção
+  **falhou R5 em 100% dos itens** (nenhum datado) e falhou **R1 em duas das três portas**; a
+  correção dessas falhas **introduziu um erro de sintaxe** no mesmo passo já reprovado. Três
+  rodadas de revisão adversarial, **22–23/09/2026**, sobre um runbook de projeto de domínio (fora
+  deste repositório, por anti-vazamento). **Nenhuma das três falhas seria pega por comando** — é
+  exatamente isso que o débito acima pede.
+
+  **Débito irmão, do mesmo item:** o registro `project-docs-standard` em `capabilities.json` ainda
+  descreve a skill como "7 propriedades + conjunto graduado + 4 gates" — **não cita §3.1 nem
+  §3.2**. Quitação junto com a extração do verificador.
 - O conjunto graduado do §3 vem de **um** caso real bem-sucedido. Os portes "mínimo" e "médio"
   são **INFERIDOS** por decomposição, não medidos em projeto que os tenha adotado. Quitação:
   aplicar em dois projetos de portes diferentes e registrar o que sobrou e o que faltou.
