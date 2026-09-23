@@ -1,10 +1,10 @@
 # Framework Metacognitivo Agêntico — Flexível e Escalável
 
-🌐 **Site (visão geral — UX, evidências e índice de docs):** https://fabriciopsouza.github.io/metacognition-framework/
+🌐 **Site (visão geral — UX, evidências e índice de docs):** https://fabriciopsouza.github.io/metacognition-framework-public/
 
 **Um núcleo adaptável para orquestrar agentes de IA.** Eles classificam o que sabem (e dizem "não sei" em vez de inventar), **lembram entre sessões** (digest + memória), recusam inchar (régua de ganho líquido), passam por **QA adversarial** entre cada etapa, e **culminam em produto** — código, app, notebook ou pipeline conforme o briefing. É **método + estrutura** (papéis, junções binárias, decisões registradas em ADRs, hooks em runtime), não um prompt esperto. Open source (CC BY 4.0), sobre Claude Code, agnóstico de domínio (declarado por projeto).
 
-**Comece:** [Instalar no VS Code](guia/INSTALAR-NO-VSCODE.md) · [Site](https://fabriciopsouza.github.io/metacognition-framework/) · [Releases](https://github.com/fabriciopsouza/metacognition-framework/releases) · [Segurança](SECURITY.md) · [Telemetria (opt-out)](TELEMETRY.md) · [Como foi construído](guia/COMO-FOI-CONSTRUIDO.md)
+**Comece:** [Instalar no VS Code](guia/INSTALAR-NO-VSCODE.md) · [Site](https://fabriciopsouza.github.io/metacognition-framework-public/) · [Releases](https://github.com/fabriciopsouza/metacognition-framework/releases) · [Segurança](SECURITY.md) · [Telemetria (opt-out)](TELEMETRY.md) · [Como foi construído](guia/COMO-FOI-CONSTRUIDO.md)
 
 > **O que entrega hoje (honesto, ancorado em evidência):** ver [`LIMITS.md`](LIMITS.md) — cada capacidade com status ✅ PROVADO / 🟡 PARCIAL / ⏳ EM DESENVOLVIMENTO **derivado do canário que a prova** (gerado por `tools/build_limits.py`; o CI falha se divergir). A seção "o que NÃO fazemos" está lá também — andaime, não certificação (ADR-044).
 
