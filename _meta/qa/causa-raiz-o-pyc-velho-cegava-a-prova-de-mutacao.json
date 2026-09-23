@@ -1,0 +1,63 @@
+{
+  "bloco": "causa-raiz-o-pyc-velho-cegava-a-prova-de-mutacao",
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "escopo_paths": [
+    "tools/test_mutacao_squad_gate.py",
+    "CHANGELOG.md",
+    "history.md"
+  ],
+  "atestacao": {
+    "agentId": "qa-critic-isolado",
+    "modelo": "claude-sonnet-5",
+    "autor": "claude-opus-5"
+  },
+  "verificacoes_executadas": [
+    "o critico REPRODUZIU a causa por conta propria, fora do repo, sem partir da explicacao do autor: modulo com all -> .pyc -> reescrita com any do mesmo tamanho + os.utime -> processo seguinte executa all; com PYTHONDONTWRITEBYTECODE=1 e cache limpo executa any",
+    "suite completa rodada DUAS vezes na rodada: test_squad_gate.py 96/96 e test_mutacao_squad_gate.py 37/37, exit 0, em 2m50s (dentro do intervalo das rodadas anteriores: sem overhead)",
+    "grep confirmando que nenhum teste inspeciona __pycache__/.pyc ou lista tools/ — desligar bytecode nao muda comportamento de teste nenhum",
+    "as 37 entradas de MUTACOES iteradas comparando `de` e `para` por caracteres E por bytes UTF-8",
+    "instrumentacao de _prova_que_o_cache_nao_cega com o env de producao para observar se o .pyc chega a existir"
+  ],
+  "problemas": [
+    {
+      "severidade": "ALTA",
+      "local": "tools/test_mutacao_squad_gate.py (execucao das mutacoes)",
+      "descricao": "O Python invalida __pycache__ por mtime + TAMANHO. A mutacao all->any tem o mesmo tamanho e e' escrita milissegundos depois da restauracao anterior: colidindo o mtime, o .pyc do baseline e' reaproveitado e a mutacao NUNCA e' executada. O canario reportava SOBREVIVEU (0->0) para algo que nao foi testado.",
+      "cenario_de_falha": "O PR #140 ficou dois dias bloqueado por um veredito sobre uma mutacao que nao rodou; e qualquer mutacao futura do mesmo tamanho teria o mesmo destino, em silencio.",
+      "estado": "corrigido",
+      "fix": "PYTHONDONTWRITEBYTECODE=1 + rmtree do __pycache__ antes do baseline e de cada mutacao, mais autoverificacao que aborta a medicao se o ambiente nao enxergar uma mutacao do mesmo tamanho"
+    },
+    {
+      "severidade": "MEDIA",
+      "local": "CHANGELOG.md (bloco da prova de mutacao)",
+      "descricao": "A hipotese ORIGINAL (cobertura de src/a.py caindo por ambiente) ficou no arquivo logo abaixo da retratacao, sem ponte: lido de cima para baixo, o texto parecia apresentar duas explicacoes convivendo, quando uma refuta a outra.",
+      "cenario_de_falha": "Quem ler o CHANGELOG no futuro acredita que a causa do incidente foi a forma dos testes, e procura no lugar errado quando o defeito reaparecer.",
+      "estado": "corrigido",
+      "fix": "bloco de citacao antes do paragrafo antigo, dizendo que e' a hipotese original REFUTADA e por que ela permanece util; e a clausula 'mais no ubuntu' passou a estar marcada como hipotese nao medida"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "tools/test_mutacao_squad_gate.py (_prova_que_o_cache_nao_cega)",
+      "descricao": "No caminho feliz, com a env var valendo, o primeiro roda() nao escreve __pycache__ — entao o utime e o rmtree nao tem com o que colidir, e a funcao devolve True porque o fonte novo e' lido direto. O docstring prometia testar a colisao de mtime, que naquele caminho nao acontece.",
+      "cenario_de_falha": "Quem ler a funcao acredita que ela exercita a colisao sempre, e pode remove-la achando que e' redundante.",
+      "estado": "corrigido",
+      "fix": "docstring passou a descrever os DOIS caminhos, e a dizer que a funcao existe para o caminho quebrado (env var removida por refactor ou interpretador que a ignore)"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "diagnostico anterior deste mesmo bloco",
+      "descricao": "A explicacao anterior (as quatro provas negativas passando por vacuidade quando a cobertura de src/a.py cai) NAO foi a causa deste incidente. Ela estava registrada como INFERIDA, e foi isso que impediu que virasse fato.",
+      "cenario_de_falha": "Se estivesse registrada como confirmada, a causa real nunca teria sido procurada.",
+      "estado": "corrigido",
+      "fix": "superada e marcada como tal no history.md e no CHANGELOG; o controle positivo permanece, declaradamente por outro motivo"
+    }
+  ],
+  "data": "2026-09-23T18:03:25Z",
+  "sha_revisado": "e2dc511d159ecd20ee6d66059b5ca8558d99daa2",
+  "blobs_revisados": {
+    "tools/test_mutacao_squad_gate.py": "82f6e8c88c955d4cd11f198a820a86cb975b3983",
+    "CHANGELOG.md": "1d639c3c1d574badc8826ae7db8db54810cd8d83",
+    "history.md": "ae1b0017de7534f891db81bd30bde07b442a5cd4"
+  }
+}

@@ -87,11 +87,43 @@ que o proprio critico depois corrigiu para 8, e um numero que depende de alguem 
 nao deve sustentar a afirmacao. O padrao — ubuntu ora falha ora passa no mesmo commit, os outros
 dois nunca falham — nao depende da contagem.)*
 
-A causa-raiz dessa variancia (por que `_recente_o_bastante` enxerga `src/a.py` diferente la) segue
-**em aberto**, no `## Em aberto` do `history.md`, com proximo passo concreto. Esta entrada conserta
-a PROVA, nao a variancia.
+### E a causa-raiz apareceu — e nao era o que este bloco supunha
 
-**A causa nao e' o gate, e' a forma dos testes.** As quatro provas da uniao sao NEGATIVAS puras
+O primeiro diagnostico (a cobertura de `src/a.py` caindo por ambiente) estava **errado**, e so' nao
+virou fato porque foi escrito como **INFERIDO**. O proprio CI o derrubou: no run que falhou, o
+baseline reportou **0 falhas com os 65 testes VIVOS** — o controle positivo passou, `src/a.py`
+ESTAVA coberto, e a mutacao "sobreviveu" assim mesmo. Impossivel, **se a mutacao tiver rodado**.
+
+**Ela nao rodou.** O Python invalida `__pycache__` por **mtime + TAMANHO** do fonte. `all(` ->
+`any(` tem o MESMO tamanho e e' escrito milissegundos depois da restauracao anterior: quando as
+duas escritas caem no mesmo tique de mtime, o `.pyc` do baseline e' reaproveitado. O canario
+reportava "SOBREVIVEU (0->0 falhas)" para uma mutacao **que nunca foi executada**.
+
+Explica o que ninguem entendia: so' ESTA mutacao — **medido: das 37, ela e' a UNICA em que `de` e
+`para` tem o mesmo numero de bytes**; as outras mudam de tamanho e invalidam o cache — e
+intermitente, porque e' corrida de mtime. *(A concentracao no ubuntu e' compativel com diferenca
+de granularidade de mtime e de velocidade de disco, mas isso NAO foi medido: e' hipotese, nao
+conclusao. O resto deste paragrafo e' medicao.)*
+
+- **Provado em laboratorio, fora do repo**, nao deduzido: modulo com `all`, `.pyc` gerado, arquivo
+  reescrito com `any` do mesmo tamanho e `os.utime` devolvendo o mtime antigo -> o processo
+  seguinte executa `all`. Com `PYTHONDONTWRITEBYTECODE=1` e cache limpo -> executa `any`.
+- **Fechado por mecanismo:** env var + limpeza de `__pycache__` a cada execucao, e uma
+  **autoverificacao** que roda ANTES de medir e aborta se, naquele ambiente, uma mutacao do mesmo
+  tamanho nao for vista. Sem ela a protecao sumiria no proximo refactor.
+- **O controle positivo continua valendo**, por outro motivo: ele e' o que transforma o proximo
+  "SOBREVIVEU (0->0)" mudo num `FAIL baseline` que diz o nome.
+
+*O repo ja' tinha o nome do defeito num canario irmao — "mutacao do MESMO tamanho em modulo
+importado se prova" — e mesmo assim ele mordeu aqui.*
+
+> **O que vem abaixo e' a HIPOTESE ORIGINAL, mantida de proposito e REFUTADA pelo bloco acima.**
+> Ela nao foi a causa deste incidente — a mutacao nunca rodou. Continua valendo como razao para o
+> controle positivo existir: ele defende contra ESSA classe de falha (prova negativa passando por
+> vacuidade), que e' real mesmo nao tendo sido o que aconteceu aqui. Lido sem esta ponte, o arquivo
+> parece apresentar duas explicacoes convivendo. [achado MEDIA do qa-critic, 4a rodada]
+
+**A hipotese original: a causa nao seria o gate, e sim a forma dos testes.** As quatro provas da uniao sao NEGATIVAS puras
 (`assert _qa_critic_attested(...) is False`). Sob `any()`, o resultado so continua `False` se
 **nenhum** caminho estiver coberto — entao, se a cobertura de `src/a.py` cai por ambiente, as
 quatro seguem verdes. E o teste POSITIVO da uniao, sob `any()`, passa com **um** caminho coberto.

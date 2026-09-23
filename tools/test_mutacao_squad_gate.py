@@ -277,6 +277,40 @@ def _nomes_que_falharam(proc):
     return nomes
 
 
+def _prova_que_o_cache_nao_cega(env):
+    """O ambiente desta execucao ENXERGA uma mutacao do mesmo tamanho? Prova antes de medir.
+
+    Sem isto, a protecao contra o .pyc velho e' prosa: some no proximo refactor e o canario volta
+    a reportar "SOBREVIVEU (0->0)" para mutacoes que nunca rodaram. E a mutacao mais importante
+    deste arquivo — `all(` -> `any(` — e' justamente do mesmo tamanho.
+
+    COMO ELA FALHA, com precisao (achado BAIXA do qa-critic, 4a rodada): no caminho FELIZ — com
+    `PYTHONDONTWRITEBYTECODE=1` valendo — o primeiro `roda()` nao chega a escrever `__pycache__`,
+    entao o `utime` e o `rmtree` abaixo nao tem com o que colidir e a funcao devolve True porque o
+    fonte novo e' simplesmente lido. Isso nao e' vacuidade: e' o caminho em que nao ha' o que
+    detectar. A funcao existe para o caminho QUEBRADO — env var removida por um refactor, ou
+    interpretador que a ignore — e ai' o primeiro `roda()` gera um .pyc de verdade, o `utime`
+    forca a colisao de mtime, e ela devolve False, abortando a medicao inteira.
+    """
+    with tempfile.TemporaryDirectory(prefix="mut-selfcheck-") as t:
+        mod = os.path.join(t, "m_selfcheck.py")
+        io.open(mod, "w", encoding="utf-8").write("def f(xs):\n    return all(x for x in xs)\n")
+        io.open(os.path.join(t, "t_selfcheck.py"), "w", encoding="utf-8").write(
+            "import m_selfcheck\nprint('VIU', 'any' if m_selfcheck.f([True, False]) else 'all')\n")
+
+        def roda():
+            r = subprocess.run([sys.executable, "t_selfcheck.py"], cwd=t,
+                               capture_output=True, env=env)
+            return r.stdout.decode("utf-8", "replace").strip()
+
+        roda()                                   # gera o .pyc do baseline SE o ambiente o escrever
+        st = os.stat(mod)
+        io.open(mod, "w", encoding="utf-8").write("def f(xs):\n    return any(x for x in xs)\n")
+        os.utime(mod, (st.st_atime, st.st_mtime))       # MESMO tamanho E mesmo mtime
+        shutil.rmtree(os.path.join(t, "__pycache__"), ignore_errors=True)
+        return roda().endswith("any")
+
+
 def _mostrar(proc, limite=12):
     """As linhas que IMPORTAM da saida do canario (FAIL/RESULTADO), nunca um corte cego.
 
@@ -316,9 +350,35 @@ def main():
         # para o commit da copia. O import resolve para a COPIA porque o script esta em tmp/tools/.
         # roda SO os testes do bloco: o canario inteiro roda uma vez por mutacao, e a prova
         # so precisa saber se as defesas DESTE ADR mordem. Corta a suite em ~4x (regua §0-b).
-        env = dict(os.environ, PYTHONIOENCODING="utf-8",
+        # PYTHONDONTWRITEBYTECODE=1 — E' A CAUSA-RAIZ DO "FLAKE", provada em 23/09/2026.
+        #
+        # O Python invalida `__pycache__` por **mtime + TAMANHO** do fonte. A mutacao
+        # `all(` -> `any(` tem exatamente o MESMO tamanho, e e' escrita milissegundos depois da
+        # restauracao anterior: quando as duas escritas caem no mesmo tique de mtime, o .pyc do
+        # BASELINE e' reaproveitado e a mutacao **nunca chega a rodar**. O canario reporta
+        # "SOBREVIVEU (0->0 falhas)" — e nao sobreviveu nada, nem foi testada.
+        #
+        # Isso explica tudo o que se via e nao se entendia: por que so' ESTA mutacao (as outras
+        # mudam de tamanho e invalidam o cache), por que intermitente (e' corrida de mtime), e por
+        # que mais no ubuntu (granularidade de mtime e velocidade de disco diferentes).
+        #
+        # Reproduzido em laboratorio, fora do repo: modulo com `all`, .pyc gerado, arquivo
+        # reescrito com `any` do mesmo tamanho e `os.utime` devolvendo o mtime antigo -> o
+        # processo seguinte executa `all`. Com esta env var e o cache limpo -> executa `any`.
+        #
+        # O repo ja' tinha o nome do defeito num canario irmao ("mutacao do MESMO tamanho em
+        # modulo importado se prova") e mesmo assim ele mordeu aqui.
+        env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONDONTWRITEBYTECODE="1",
                    SQUAD_GATE_TESTES=",".join(TESTES_DO_BLOCO))
 
+        if not _prova_que_o_cache_nao_cega(env):
+            print("FAIL autoverificacao: neste ambiente uma mutacao do MESMO TAMANHO nao e' vista "
+                  "(bytecode em cache). Toda 'sobrevivencia' medida aqui seria ilusao — foi este "
+                  "exato defeito que travou o PR #140 por dois dias. Ver o CHANGELOG de 23/09.")
+            return 1
+        print("autoverificacao: mutacao do mesmo tamanho E' vista (cache nao cega a prova)")
+
+        shutil.rmtree(os.path.join(tmp, "tools", "__pycache__"), ignore_errors=True)
         base = subprocess.run([sys.executable, canario], cwd=tmp, capture_output=True, env=env)
         n_base = _falhas(base)
         if n_base < 0:
@@ -355,6 +415,10 @@ def main():
                 vivos.append(nome)
                 continue
             io.open(alvo, "w", encoding="utf-8").write(orig.replace(de, para, 1))
+            # CINTO E SUSPENSORIO: a env var impede ESCREVER .pyc novo, mas um .pyc deixado por
+            # outra execucao (ou por um Python que ignore a var) ainda seria lido. Apagar o cache
+            # e' barato e fecha o caso sem depender do comportamento do interpretador.
+            shutil.rmtree(os.path.join(tmp, "tools", "__pycache__"), ignore_errors=True)
             r = subprocess.run([sys.executable, canario], cwd=tmp, capture_output=True, env=env)
             n_mut = _falhas(r)
             # -1 = o canario nem imprimiu resultado (crashou). Conta como MORREU? Nao: prova por

@@ -669,7 +669,32 @@ Riscos ativos: corte do release feito de `9TRP7H4` (não-kerberus); se kerberus 
 
 ## Em aberto
 
-- **A variancia de ambiente que faz a mutacao `all`->`any` sobreviver no ubuntu-latest**
+- ~~**A variancia de ambiente que faz a mutacao `all`->`any` sobreviver no ubuntu-latest**~~
+  **FECHADO EM 23/09/2026, com causa-raiz PROVADA — nao inferida.** Ficou aberto por poucas horas
+  e a resposta veio do proprio CI: no run que falhou, o baseline reportou **0 falhas com os 65
+  testes VIVOS** — ou seja, o controle positivo passou, `src/a.py` ESTAVA coberto, e mesmo assim a
+  mutacao "sobreviveu". Isso e' logicamente impossivel **se a mutacao tiver rodado**. Ela nao rodou.
+  **CAUSA:** o Python invalida `__pycache__` por **mtime + TAMANHO** do fonte. `all(` -> `any(` tem
+  o MESMO tamanho e e' escrito milissegundos depois da restauracao anterior; quando as duas
+  escritas caem no mesmo tique de mtime, o `.pyc` do baseline e' reaproveitado e a mutacao nunca
+  chega a ser executada. O canario reportava "SOBREVIVEU (0->0 falhas)" para uma mutacao que nao
+  foi testada.
+  Explica tudo o que se via e nao se entendia: **so' esta** mutacao (as outras mudam de tamanho e
+  invalidam o cache), **intermitente** (e' corrida de mtime), **mais no ubuntu** (granularidade de
+  mtime e velocidade de disco).
+  **PROVADO em laboratorio, fora do repo:** modulo com `all`, .pyc gerado, arquivo reescrito com
+  `any` do mesmo tamanho e `os.utime` devolvendo o mtime antigo -> o processo seguinte executa
+  `all`. Com `PYTHONDONTWRITEBYTECODE=1` e cache limpo -> executa `any`.
+  **Fechado por MECANISMO, nao por prosa:** a env var + limpeza de `__pycache__` a cada execucao,
+  e uma **autoverificacao** que roda ANTES de medir qualquer coisa e aborta se, naquele ambiente,
+  uma mutacao do mesmo tamanho nao for vista. Sem ela, a protecao sumiria no proximo refactor.
+  **A LICAO, que vale mais que o conserto:** o diagnostico anterior (cobertura de `src/a.py` caindo
+  por ambiente) estava ERRADO, e eu o tinha escrito aqui como INFERIDO — foi so' por estar marcado
+  como inferencia que ele nao virou fato. O repo ja' tinha ate' o nome do defeito num canario irmao
+  ("mutacao do MESMO tamanho em modulo importado se prova") e mesmo assim ele mordeu.
+  *(O item abaixo fica como registro do que se acreditava antes.)*
+
+- **~~[SUPERADO pelo item acima]~~ A variancia de ambiente no ubuntu-latest**
   (aberto em 23/09/2026, ao consertar a prova no PR #140). **A PROVA foi consertada; a CAUSA nao.**
   **Medido em multiplos runs de CI entre 21 e 23/09:** o MESMO commit ora falha ora passa no
   ubuntu — ha' pares de runs irmaos, com minutos de diferenca, em que um SOBREVIVEU e o outro
