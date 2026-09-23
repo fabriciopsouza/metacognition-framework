@@ -28,6 +28,17 @@ Por projeto preencha só `docs/briefing.md` + `.agent/rules/00-glossario.md`.
   alto-risco/regulado→ +`high-stakes-gate`. O pedido do dono não é imune a questionamento:
   surface-and-reconcile com custo/consequência; override de gate só explícito (ADR-051).
   Output-style governa TOM, nunca o processo (ADR-028).
+- **Confirmação interativa é o DEFAULT (ADR-111):** antes de executar um BLOCO, apresentar o
+  plano — o que será tocado, decisões em aberto com alternativas, o que fica de fora — e
+  esperar aprovação do dono. Uma interrupção por bloco, em CONVERSA (documento com perguntas
+  abertas não é elicitar). NÃO passam pelo gate: leitura/investigação e o **QA adversarial
+  obrigatório do degrau abaixo, que é automático** (ADR-110). `"siga"`/`"ok"` continuam o
+  escopo declarado, não abrem escopo novo. Detalhe: `.agent/rules/06-confirmacao-interativa.md`.
+- **Não abandonar trabalho em curso (ADR-112):** tarefa em andamento ou programada É CONCLUÍDA.
+  Mensagem nova não cancela: pausa, responde, RETOMA e termina. Exceção única — ordem
+  simultaneamente CLARA, IMPERATIVA e sem margem de interpretação. Pergunta de status, crítica,
+  pedido novo, `"ok"`/`"siga"` NÃO param nada. Detalhe:
+  `.agent/rules/07-nao-abandonar-trabalho-em-curso.md`.
 - **Modos de execução (ADR-005):** default · avançado · autosuficiente, ratchet forward-only
   em `~/.claude/framework-mode.json`. Detalhe: `_shared/execution-modes/SKILL.md`.
 - **Modo NON-ADMIN — gates anunciados (ADR-047):** onde GPO/EDR veta hooks, o agente **anuncia,

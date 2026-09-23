@@ -1,0 +1,47 @@
+{
+ "bloco": "adr-115-fail-closed-no-veredito",
+ "papel": "qa_critic",
+ "rodada": 24,
+ "passou": false,
+ "recomendacao": "reprovar",
+ "veredito": "reprovar",
+ "data": "2026-09-16T00:00:00Z",
+ "escopo_paths": [
+  "tools/squad_gate.py",
+  "tools/test_squad_gate.py",
+  "tools/test_mutacao_squad_gate.py",
+  "behaviors/manifest.json",
+  "docs/adr/115-fail-closed-no-veredito-achado-bloqueante-nao-passa-por-rotulo.md",
+  "CHANGELOG.md",
+  "capabilities.json"
+ ],
+ "atestacao": {
+  "agentId": "a0ff8a73ece96ffad",
+  "modelo": "sonnet",
+  "autor": "opus",
+  "isolamento": "subagente qa-critic em segundo plano, degrau canonico (sonnet, um abaixo do autor opus); proibido de tocar o repositorio, reproducoes em diretorios temporarios no scratchpad"
+ },
+ "resumo": "A rodada em que a PERGUNTA mudou, e o resultado mudou com ela. As cinco rodadas anteriores acharam todas a mesma familia — arquivo ou extensao fora da matriz de cobertura — que pertence ao ADR-092/027, nao ao 115. Entao o pedido desta rodada foi outro: LISTE as promessas explicitas do ADR-115 e verifique uma a uma, sem avaliar o que o ADR nao promete. O critico montou a tabela das quatro promessas, CONFIRMOU tres (severidade normalizada, `aceito` exige assinatura, legado pinado por conteudo) e QUEBROU a quarta — 'schema de `problemas` validado' — com um CRITICO que as vinte e tres rodadas anteriores nao tocaram: `json.load` resolve CHAVE DUPLICADA em silencio, a segunda vence, a primeira some sem erro, e isso acontece ANTES de qualquer validacao rodar. `{'severidade':'CRITICO','estado':'aberto','estado':'corrigido'}` faz `achados_bloqueantes_abertos` devolver lista vazia; `{'problemas':[...CRITICO...],'problemas':[]}` apaga o achado inteiro. Nenhuma das defesas construidas em 23 rodadas alcanca isso, porque o dict que o gate recebe ja chega com UMA chave, canonica, de tipo certo. E nao precisa de Unicode, homoglifo, zero-width nem ma-fe: e' JSON ASCII valido, do jeito que sai de copiar um template e esquecer de apagar o bloco anterior.",
+ "verificacoes_executadas": [
+  "critico leu o ADR inteiro e MONTOU a tabela das promessas explicitas antes de testar, em vez de procurar defeito solto",
+  "critico reproduziu as DUAS formas contra o binario real, com sha_revisado = HEAD real, chamando `main()` e conferindo exit code: OK e exit 0 nos dois casos",
+  "critico verificou que `qa_evidence.write_artifact()` NAO produz a colisao — e explicou por que isso nao salva o mecanismo: o ledger deste ADR trata JSON escrito a mao em `_meta/qa/` como o vetor padrao em todas as 23 rodadas anteriores",
+  "critico RECUSOU contar as lacunas de `.cmd`/`.bat`/`.js`/templates como achado deste bloco, classificando-as como ADR-092/027 — e recusou tambem `run_canaries.py` (ja coberto por `suffix: .py`) e branch protection (nao e' arquivo versionado)",
+  "critico propos a direcao de correcao (`object_pairs_hook`) observando que `load_evidence` ja descarta artefato malformado, entao o efeito cairia no mesmo caminho fail-closed existente",
+  "autor mediu o raio ANTES de corrigir: ZERO arquivos do ledger, do manifesto e do capabilities tem chave duplicada hoje",
+  "autor identificou um risco na proposta do critico e corrigiu o desenho: descarte SILENCIOSO seria fail-open do lado da reprovacao — um veredito reprovativo com chave duplicada sumiria e pararia de morder. A recusa passou a NOMEAR o arquivo na saida, e o canario exige isso",
+  "autor estendeu a checagem alem do veredito: `load_manifest` tambem, porque uma `matriz` duplicada apagaria metade das entradas sem aviso; e `legados_declarados`",
+  "autor, apos corrigir: o diretorio malicioso carrega 0 vereditos, o aprovativo forjado nao atesta, e o ledger real segue carregando 84 vereditos",
+  "autor: 79 PASS / 0 FAIL; 32/32 mutacoes mortas com baseline ZERO; sha256 do squad_gate identico antes e depois"
+ ],
+ "problemas": [
+  {
+   "severidade": "CRITICO",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — load_evidence(), load_manifest(), legados_declarados()",
+   "descricao": "Chave JSON duplicada era colapsada em silencio pelo parser ANTES de qualquer validacao do gate rodar, tornando inuteis de uma vez `CAMPOS_CONHECIDOS`, `CAMPOS_DO_ACHADO`, a chave obrigatoria `problemas` e toda a defesa contra homoglifo das rodadas 4 a 8. Duas formas reproduzidas: `estado` duplicado dentro do achado (o achado 'fecha') e `problemas` duplicado no topo (o achado some). CORRIGIDO com `object_pairs_hook` que recusa duplicata, aplicado as TRES leituras — o manifesto tambem decide comportamento do gate. DESENHO CORRIGIDO EM RELACAO A PROPOSTA DO CRITICO: ele sugeriu cair no descarte silencioso que ja existe para JSON quebrado, e isso seria fail-OPEN do lado da reprovacao, porque um veredito reprovativo com duplicata sumiria do ledger e pararia de morder. A recusa NOMEIA o arquivo na saida, e o canario exige a denuncia explicitamente. Provado por mutacao e por canario que cobre as duas formas, a denuncia por nome, e que o ledger real continua carregando."
+  }
+ ],
+ "recomendacao_do_critico": "reprovar; a promessa n.4 do proprio ADR ('schema de problemas validado') e' falsa na pratica, porque o schema e' validado depois que a informacao ja se perdeu",
+ "nota_do_autor": "Vigesima quarta rodada, e a licao maior nao e' o bug — e' que MUDAR A PERGUNTA mudou o resultado. Cinco rodadas seguidas acharam a mesma familia (cobertura da matriz), que nem sequer e' escopo deste ADR. Ao pedir 'verifique as promessas do 115, uma a uma, e ignore o que ele nao promete', o critico achou em minutos o furo mais barato de todos, exatamente dentro do escopo. Registro tambem que ele recusou, por conta propria, inflar o veredito com tres candidatos fora de escopo — e que eu corrigi a direcao da correcao que ele propos, porque descartar em silencio teria criado um fail-open novo do outro lado."
+}

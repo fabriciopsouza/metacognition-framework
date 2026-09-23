@@ -1,0 +1,62 @@
+{
+ "bloco": "adr-115-fail-closed-no-veredito",
+ "papel": "qa_critic",
+ "rodada": 18,
+ "passou": false,
+ "recomendacao": "reprovar",
+ "veredito": "reprovar",
+ "data": "2026-09-14T00:00:00Z",
+ "escopo_paths": [
+  "tools/squad_gate.py",
+  "tools/test_squad_gate.py",
+  "tools/test_mutacao_squad_gate.py",
+  "behaviors/manifest.json",
+  "docs/adr/115-fail-closed-no-veredito-achado-bloqueante-nao-passa-por-rotulo.md",
+  "CHANGELOG.md",
+  "capabilities.json"
+ ],
+ "atestacao": {
+  "agentId": "a64f4c962bd16d42c",
+  "modelo": "sonnet",
+  "autor": "opus",
+  "isolamento": "subagente qa-critic em segundo plano, DEGRAU CANONICO (sonnet, um abaixo do autor opus) — ao contrario da 17a rodada, que teve de rodar em haiku porque o sonnet estava no limite de sessao. Esta rodada repara aquela fraqueza."
+ },
+ "resumo": "Rodada no degrau CANONICO, encarregada de verificar as cinco afirmacoes mecanicas do autor e procurar o proximo buraco. CONFIRMOU AS CINCO sem ressalva — inclusive reproduzindo que o canario dos interruptores nao e' carimbo e que o veredito da 17a declara honestamente a propria fraqueza. E achou UM CRITICO que dezessete rodadas nao pegaram, exatamente da classe que este ADR ja nomeou sete vezes: `_cobre()` nunca recebeu o `.casefold()` que `classify()` recebeu na 15a rodada. OITAVA assimetria entre irmaos. O caminho destravado e' o pior possivel porque `_cobre` serve aos DOIS lados do gate: uma reprovacao com CRITICO em aberto, no MESMO sha e sobre o MESMO arquivo, deixava de invalidar o aprovativo se `escopo_paths` trouxesse `Tools/Squad_Gate.py` em vez de `tools/squad_gate.py` — e em sistema de arquivos case-insensitive, que e' o desta maquina, isso nao exige ma-fe nenhuma. Mais uma MEDIA: `.claude/settings.nonadmin.json` e' o TEMPLATE que `bootstrap.py activate_nonadmin()` copia POR CIMA de `.claude/settings.json`, e so' o destino estava na matriz.",
+ "verificacoes_executadas": [
+  "critico CONFIRMOU a afirmacao 1 do autor ao vivo: classify(['../tools/x.py']) == classify(['tools/x.py']) == {'qa_critic'} e classify(['../_shared/foo.md']) == set()",
+  "critico CONFIRMOU a afirmacao 2: a entrada de .agent/workflows/ existe na matriz e nada dela esta staged",
+  "critico CONFIRMOU a afirmacao 3 removendo cada uma das 8 entradas de interruptores e observando classify virar vazio — o canario quebraria para cada uma",
+  "critico CONFIRMOU a afirmacao 4 rodando de verdade: 27/27 mutacoes, 76 passed no pytest, 87 PASS / 1 SKIP / 0 FAIL na suite",
+  "critico CONFIRMOU a afirmacao 5 lendo o campo atestacao.isolamento da 17a rodada, que declara com todas as letras que rodou em haiku e que isso enfraquece a evidencia",
+  "critico reproduziu o CRITICO contra o binario real: _reprovacao_vigente -> False e _qa_critic_attested -> True com escopo em caixa diferente",
+  "critico mediu o raio: zero colisoes de caixa entre os aprovativos e reprovacoes reais do ledger com sha_revisado",
+  "critico rastreou bootstrap.py activate_nonadmin() linhas 61-69 e comprovou que ele copia settings.nonadmin.json por cima de settings.json",
+  "critico identificou que .claude/settings.local.json e' GITIGNORED (git check-ignore confirma) e portanto estruturalmente invisivel a qualquer gate baseado em git diff — e classificou isso como limite a declarar, nao como bug",
+  "critico apresentou o argumento que sustentaria aprovar_com_ressalvas e explicou por que NAO o adota",
+  "autor mediu o raio do casefold em _cobre de forma independente, comparando cobertura crua x normalizada de TODOS os vereditos do ledger contra TODOS os arquivos rastreados: ZERO paths mudam",
+  "autor, apos corrigir: _reprovacao_vigente -> True e _qa_critic_attested -> False; .claude/settings.nonadmin.json -> ['qa_critic']",
+  "autor: 77 PASS / 0 FAIL no canario; 28/28 mutacoes mortas com baseline ZERO; sha256 do squad_gate identico antes e depois"
+ ],
+ "problemas": [
+  {
+   "severidade": "CRITICO",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — _cobre()",
+   "descricao": "Comparava path como string crua, sem casefold, enquanto `classify()` — que compara path exatamente do mesmo jeito — recebeu casefold na 15a rodada. OITAVA assimetria entre irmaos deste bloco. Pior que as anteriores porque `_cobre` serve aos DOIS lados: `_qa_critic_attested` (o aprovativo cobre o alvo?) e `_reprovacao_vigente` (a reprovacao cobre o mesmo escopo?). CORRIGIDO com casefold nos dois lados. REGISTRO HONESTO DA DIRECAO: este casefold corta para os dois lados — faz a reprovacao morder MAIS (fail-closed) e o aprovativo cobrir MAIS (fail-open). Nao e' escolha entre um e outro: e' correcao de um erro anterior, porque `Tools/X.py` e `tools/x.py` SAO o mesmo arquivo e trata-los como dois quebrava as duas direcoes ao mesmo tempo. Raio medido pelo critico e, de forma independente, pelo autor sobre todo o ledger x todos os arquivos rastreados: ZERO mudancas de cobertura."
+  },
+  {
+   "severidade": "MEDIA",
+   "estado": "corrigido",
+   "local": "behaviors/manifest.json — ausencia de .claude/settings.nonadmin.json",
+   "descricao": "A matriz protegia `.claude/settings.json` e deixava de fora o TEMPLATE que `bootstrap.py activate_nonadmin()` copia por cima dele. Editar o template e commita-lo sozinho passava sem revisao, e o efeito so' aparecia quando o bootstrap rodasse em outra maquina. Proteger o destino e deixar a origem aberta nao protege nada. CORRIGIDO, e coberto pelo canario dos interruptores."
+  },
+  {
+   "severidade": "BAIXA",
+   "estado": "documentado",
+   "local": ".claude/settings.local.json — gitignored",
+   "descricao": "E' gitignored, portanto estruturalmente invisivel a qualquer gate que leia `git diff --cached`. Nao ha correcao mecanica possivel dentro deste desenho — e' irmao do limite ja declarado para `_meta/qa/` (circularidade). DOCUMENTADO no ADR ao lado dele. NAO submetido ao dono e NAO tratado como risco aceito: e' limite estrutural, nao decisao."
+  }
+ ],
+ "recomendacao_do_critico": "reprovar; um CRITICO reproduzido na funcao que decide cobertura para os dois lados do gate",
+ "nota_do_autor": "Decima oitava rodada, e a primeira no degrau canonico depois da 17a ter caido para haiku. Ela reparou aquela fraqueza de duas formas: confirmou as cinco afirmacoes que eu tinha registrado, e achou o que a rodada mais fraca nao achou. O achado e' a OITAVA assimetria entre irmaos deste bloco — e a mais cara, porque `_cobre` e' usada pelos dois lados da decisao. Registro a direcao do casefold de proposito: ele afrouxa um lado enquanto aperta o outro, e seria desonesto vender como puro fail-closed."
+}

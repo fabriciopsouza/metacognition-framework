@@ -91,3 +91,10 @@ ANP\s*884	uma norma setorial
 # --- fallback final: qualquer "AIVI"/"aivi" remanescente ---
 \bAIVI\b	o caso real
 \baivi\b	caso-real
+
+# --- repo/caso de cliente descoberto na rodada de fechamento ADR-113/114 (2026-09-12) ---
+# `migracao-sac` e' o repo do projeto que adotou o pacote de controle. O nome foi introduzido
+# na prosa ao CORRIGIR uma citacao morta (o hash sozinho nao resolvia) — trocou-se um defeito
+# de procedencia por um de vazamento. O endereco fica no repo privado; no export vira rotulo.
+\bmigracao-sac\b	PROJETO-QUE-ADOTOU
+\bf6a334d\b	<commit no repo privado>

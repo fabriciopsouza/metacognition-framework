@@ -13,6 +13,50 @@
 > **Poda de contexto (ADR-107):** este arquivo quente mantem os ultimos **10** checkpoints + `## Em aberto` + `## Aprendizado`. **56** checkpoints mais antigos estao em [`docs/history/history-archive.md`](docs/history/history-archive.md) (nada deletado — so realocado). Rotacao: `python tools/rotate_history.py`.
 <!-- history-archive-pointer -->
 
+## 2026-09-22 — O bloco represado sai, e o gate para de medir o que não muda (ADR-113/114/115)
+
+Três ADRs que não commitavam havia semanas entraram na `main` pelo [PR #139](https://github.com/fabriciopsouza/metacognition-framework/pull/139):
+137 arquivos, 22.649 inserções, `ed087b5..5305ae2`. Não commitavam porque o `squad_gate` —
+corretamente — não tinha evidência que os cobrisse. Foram 39 rodadas adversariais no total, três
+delas nesta sessão, e o bloco saiu **sem override**.
+
+**O que destravou não foi uma exceção, foi um conserto.** O `_recente_o_bastante` media
+ancestralidade de *commit*, e o gate roda no pré-commit — quando, por definição, todo arquivo do
+bloco está fora do HEAD. Medido: três vereditos aprovativos de **agosto** seguiam "recentes" para
+arquivos editados em **setembro**. O veredito passou a carregar `blobs_revisados`, o hash do blob
+indexado, que é a única coisa que descreve conteúdo ainda não commitado.
+
+**E a regra que fabricava o artefato que ela mesma criticava.** `_qa_critic_attested` exigia UM
+veredito cobrindo TODOS os caminhos: para fechar um bloco de 91 era preciso declarar os 91 num
+artefato só, e nenhum crítico sozinho revisou 91 arquivos. Medido: **57 dos 91** dependiam desse
+veredito-cobertor. Agora vale a união por caminho.
+
+**O achado que vale mais que os dois consertos** veio contra mim, na 37ª: ao otimizar o caminho
+novo eu pulei a validação de `sha_revisado`, raciocinando que o hash de conteúdo é mais forte que
+a ancestralidade. Verdade para *aquela função* e falso para o sistema — `sha_revisado` também é a
+chave que `_reprovacao_vigente` usa para achar a reprovação irmã, e um aprovativo com sha podre
+fazia uma reprovação legítima deixar de ser vigente. Era a reabertura do defeito que as rodadas 8,
+9 e 10 fecharam. *Antes de pular a validação de um campo, procurar quem mais o lê.*
+
+**A cegueira que a CI expôs, e que nenhuma das 38 rodadas anteriores podia ver:** o gate roda numa
+plataforma só. Os 20 pinos de hash foram calculados de bytes CRLF e o repo guarda LF — o canário
+de integridade só podia passar no Windows. E um canário montava barreira de escrita com semântica
+NTFS, reprovando no POSIX uma garantia que existe. O trade-off "1 OS" do ADR-088 segue defensável;
+o que faltava era medir o custo dele em vez de citá-lo.
+
+**Padrão da sessão:** três rodadas seguidas tiveram o achado principal na **prosa**, não no código
+— um comentário afirmando critério de aceite falso sobre o próprio arquivo, a palavra "mais
+estrito" onde cabia "mais cirúrgico", e o gancho do índice de memória que envelheceu enquanto o
+corpo era atualizado. Nenhum canário lê prosa.
+
+**Seis sessões escreveram nesta árvore durante o bloco.** O HEAD andou quatro vezes. Duas sessões
+atribuíram commits uma à outra, e nenhuma das duas era responsável. O que impediu estrago não foi
+gate — foi releitura antes de editar, e uma sessão ter parado para perguntar antes de commitar.
+
+**Próximo passo:** decidir o desenho para a composição de vereditos de SHAs diferentes (três vias
+na mesa, custa um ADR) e fechar o canário de `.agent/workflows/*.md`, que é o buraco com mais
+reincidência medida.
+
 ## 2026-08-18 — Release v1.90.0 (MINOR): o boletim deixa de ser escrito só pelo avaliado (ADR-108)
 
 O dono fez a pergunta que faltava: depois de zerar o passivo, dá para dizer que é determinístico
@@ -624,6 +668,79 @@ Riscos ativos: corte do release feito de `9TRP7H4` (não-kerberus); se kerberus 
 ---
 
 ## Em aberto
+
+- **Pedido novo chegando no meio do trabalho deve ir para uma FILA ESCRITA, nao para a memoria do
+  agente** (aberto em 21/08/2026, pelo dono: *"nao pare de fazer o que esta fazendo. adicione os
+  pedidos na fila -> este tb deve ser um comportamento PADRAO do framework ou qualquer ferramenta
+  relacionada"*).
+  **O que falta.** O ADR-112 ja resolve METADE: nao abandonar trabalho em curso. A outra metade nao
+  existe — o pedido que chega no meio precisa ficar REGISTRADO em arquivo no momento em que chega.
+  Hoje ele fica na cabeca do agente ate o fim do bloco, e cabeca de agente e' o unico lugar do
+  sistema sem canario: a sessao compacta, o contexto vira resumo, e o pedido some sem erro e sem
+  aviso. Ja aconteceu nesta sessao — o dono precisou repetir "Um comando NAO anula o outro" e
+  "Qd peco uma coisa, NAO ELIMINA o que pedi antes".
+  **Escopo:** comportamento padrao do framework, nao de um projeto. Gravar na chegada, sem
+  interromper; devolver a fila ao dono no fecho do bloco; e um canario que prove que pedido
+  registrado nao evapora entre um bloco e o seguinte.
+  **Nao confundir com** o item de enforcement abaixo: aquele e' sobre o squad nao viajar para
+  projeto novo; este e' sobre o pedido do dono nao sobreviver dentro da mesma sessao.
+
+- **REFORÇADO PELO DONO EM 21/08/2026, terceira vez:** *"este deve ser o comportamento em TODOS
+  os projetos. qd eu mandar atualizar ou iniciar nova sessao, ativar a skill/ capacidade projetos
+  agidesk, etc, o repo em trabalho deve atuar exatamente como o framework pede e como as
+  capacidades invocadas pedem"*. **Escopo que isto acrescenta ao item abaixo:** não basta o
+  enforcement (hooks, gates, squad) viajar — a ATIVAÇÃO das capacidades declaradas pelo projeto
+  também tem de ser automática no boot e no "atualizar", em vez de depender de o agente lembrar.
+  Hoje o `projeto.json` de um projeto já declara o que ele usa (`adotado`, `adaptadores`); falta o
+  boot LER essa declaração e se comportar de acordo. Medido em 21/08/2026: `migracao-sac` não tinha
+  `.agent/`, `.claude/`, nem uma menção ao framework — ele foi aplicado por sessão, nunca instalado.
+
+- **PRIORIDADE MÁXIMA DO PRÓXIMO BLOCO — o squad e a crítica adversarial não são determinísticos
+  fora do repo do framework** (aberto em 18/08/2026, por reclamação do dono; **não é a primeira vez
+  que ele reclama exatamente disto** — o gatilho declarado no ADR-097 item 4 está atingido duas vezes:
+  o dono declarou E o passo desapareceu sem ninguém notar, por horas).
+  **O que aconteceu, medido em 18/08/2026 na abertura do projeto `migracao-sac`:** o conjunto
+  documental inteiro foi escrito, commitado três vezes e declarado pronto **sem uma única rodada de
+  crítica adversarial em modelo isolado**. Pior: o autor ofereceu *autocrítica* no lugar, e o dono
+  precisou dizer que nunca pediu autocrítica — é sempre adversarial. Substituir o crítico
+  independente por autocrítica é exatamente o defeito que o ADR-108 fechou do outro lado (o avaliado
+  escrevendo o próprio boletim), reaparecendo por outra porta.
+  **As quatro causas, todas verificadas por comando, não supostas:**
+  **(1) A aplicação é por repositório e o repositório novo nasceu sem ela.**
+  `migracao-sac/.git/hooks/pre-commit` **não existe**; `tools/install_git_hooks.py` existe e ninguém
+  o chamou na criação do projeto. O `.claude/settings.json` do framework (route-gate, mission-gate)
+  não vale em outra pasta — então nenhum gate de boot ou de turno rodou lá.
+  **(2) O gate é de COMMIT, e o que precisa ser barrado é a ENTREGA.** O `pre-commit` bloqueia
+  `git commit`; ele não tem como impedir o agente de dizer "pronto" no chat, que é onde a entrega
+  acontece de fato. Um gate que só vive no commit é cego para o canal principal.
+  **(3) O `squad_gate` depende de `behaviors/manifest.json`, que só existe no núcleo.** Projeto de
+  domínio não tem manifesto, então não há o que cobrar — o gate passaria mesmo instalado.
+  **(4) A CAUSA NOVA, e a mais grave porque é invisível: o runtime pode VETAR o subagente e o
+  framework não detecta o veto.** A sessão rodou com instrução de não disparar subagente sem pedido
+  explícito do usuário. O framework declara o crítico isolado como obrigatório, o runtime proibiu, e
+  o efeito foi o passo obrigatório **desaparecer em silêncio** — o agente seguiu trabalhando e
+  pedindo autorização em vez de falhar ruidosamente. Enquanto o framework não distinguir
+  "não rodou porque passou" de "não rodou porque foi proibido", o mecanismo é opcional na prática.
+  **O que o dono pediu, e é o veículo da correção:** empacotar o framework como **plugin instalável
+  a partir de repositório** — um stack que o time da Natulab configura UMA vez e que traz junto, em
+  sequência: skills, subagentes com `model:` fixado (crítico != autor por definição, não por
+  lembrança), hooks de boot/turno/entrega, e comandos. **Verificado em 18/08/2026: não existe.**
+  Não há `.claude-plugin/` nem `marketplace.json` no repo — hoje a instalação é manual, por guia.
+  **Candidatos de mecanismo, a decidir por ADR no próximo bloco (nenhum implementado):**
+  (a) gate de ENTREGA, não de commit — o bloco não fecha sem veredito de crítico isolado no ledger;
+  (b) semeadura de projeto novo: um comando único que instala hooks + settings + manifesto mínimo ao
+  criar projeto de domínio, para o enforcement viajar com o trabalho em vez de ficar no núcleo;
+  (c) **fail-closed no veto**: se o subagente não pode ser disparado, o framework anuncia e trava,
+  em vez de continuar; o veto vira registro, não silêncio;
+  (d) empacotamento como plugin, com o subagente crítico declarando `model:` diferente do autor.
+  **Critério de aceite, binário (EMENDADO em 19/08/2026 por achado do QA de entrega):** abrir um
+  projeto novo de domínio numa pasta virgem, o crítico do **degrau abaixo** rodar **sem ninguém pedir**
+  nas junções, **e o crítico do degrau acima rodar na entrega quando autorizado** — e a ausência dele, quando não houver autorização, aparecer **declarada** no veredito em vez de silenciosa (ADR-110; achado MÉDIA do QA de junção de 19/08, que pegou este critério exigindo incondicionalmente o degrau caro e portanto impossível de fechar sem violar a política que ele mesmo deveria cobrar) — a versão anterior falava de "a crítica
+  adversarial" no singular, e podia ser quitada com um crítico só, deixando o segundo morrer sem
+  cobrança — e, se o runtime proibir, o bloco
+  falhar visivelmente em vez de seguir. Enquanto isso não passar, esta pendência não fecha.
+  **Rastro desta ocorrência:** o projeto em `migracao-sac` (3 commits sem veredito) e o registro em
+  `~/.claude/trabalhos/migracao-sac.md`.
 
 - **Quitação do override da régua §0 do ADR-102** (aberto em 13/08/2026): o padrão documental
   entrou como **adição pura** sob override explícito do dono. Duas condições fecham o débito, e

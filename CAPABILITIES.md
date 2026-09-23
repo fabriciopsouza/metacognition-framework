@@ -1,7 +1,7 @@
 <!-- GERADO por tools/build_capabilities.py a partir de capabilities.json — NAO editar a mao -->
 # CAPABILITIES — indice de capacidades (nivel 1: id + title)
 
-> **91 capacidades** — 80 ✅ PROVIDES · 11 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
+> **100 capacidades** — 89 ✅ PROVIDES · 11 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
 > **Como usar (file-first, boot):** leia esta lista p/ achar o `id`; o registro completo (mecanismo · canario · ADR · doc) vem por **`python tools/build_capabilities.py --show <id>`** ou `grep -A8 '"<id>"' capabilities.json`. Nao reexplore o repo antes disto.
 > **Manutencao:** feature nova -> +1 registro em `capabilities.json` + `python tools/build_capabilities.py`. Canario barra canario orfao (cobertura).
 
@@ -39,6 +39,9 @@
 - ✅ `context-brief-gate` — Contexto inferido vira ancora de pesquisa mecanizada (reparo do discovery)
 - ✅ `context-budget-gate` — context-budget: hook PreToolUse(Read) anuncia FRACIONAR (doc-intake) em fonte grande + tool chamavel
 - ✅ `context-budget-hook` — Hook PreToolUse(Read) que anuncia context-budget (mecaniza doc-intake p/ contexto maior; nao-bloqueante, fail-open)
+- ✅ `controle-base` — FRONTEIRA do pacote controle_*: todo valor vindo de projeto.json, estado.json ou da List e' convertido ou RECUSADO, nunca gravado nem comparado cru
+- ✅ `controle-projeto` — Politica de lancamento de projeto (sprint · executor · adiantamento com autorizacao ativa · auto sem impedimento), achada por resolvedor em qualquer projeto
+- ✅ `controle-sharepoint-list` — OPCAO — laco da List do SharePoint: ida derivada e volta por arquivo separado, com as duas recusas reais do importador viradas canario
 - ✅ `core-no-vendor` — Pureza do nucleo: nenhum nome de PRODUTO/VENDOR externo no conteudo operativo (_shared/.agent/skills/roteador); proveniencia so nos ADRs. Regression-guard do 'repo nao tem produtos' (P12)
 - ✅ `decisoes-que-governam` — Colisao entre o pedido e decisao ja registrada vira consulta deterministica
 - ✅ `delivery-floor-gate` — Piso de entregabilidade ao humano (teste binario de entrega minima)
@@ -50,6 +53,8 @@
 - ✅ `elicitation-gate` — Elicitation-first VINCULANTE antes de implementar sobre indicador/metrica/regra de dominio de risco alto: ficha de insumo (6 campos) nao-skippavel mesmo em autosuficiente (enforcement, nao skill nova)
 - ✅ `enforcement-mutation-audit` — Prova de mutacao obrigatoria: capacidade fail-closed declara a sabotagem que deixa seu canario VERMELHO
 - ✅ `entrypoint-tty-gate` — Entrypoint nao depende de TTY (roda em CI/headless)
+- ✅ `escrita-padrao` — Norma de escrita com canario: alcance da regra em todo papel do squad + referencia citada como apoio, nunca no lugar da explicacao
+- ✅ `export-so-rastreados` — Export leva SO' o que o git rastreia: arquivo gitignored (ex.: .agent/brain/) nao entra no pacote publico
 - ✅ `external-work-provenance` — Carimbo de PROCEDENCIA em trabalho executado FORA do repo: PROCEDENCIA.md com framework/versao/commit/sessao deterministicos + status por artefato (MINUTA/PROPOSTA/MIGRADO/APROVADO)
 - ✅ `handoff-generator` — Gerador deterministico do Pacote de handoff P14 do estado do repo + sugestao de modelo (papel+risco)
 - ✅ `history-rotation` — Rotacao deterministica do history.md — ultimos N checkpoints quentes + Em aberto/Aprendizado inteiros; antigos -> docs/history/history-archive.md (poda de contexto, zero perda, idempotente)
@@ -61,8 +66,10 @@
 - ✅ `make-index-tool` — Gerador de indice de documentos/ADRs (make_index)
 - ✅ `marketing-honesty-gate` — Gates de honestidade da vitrine (anti-overclaim, claim provado ancorado, versao em sync)
 - ✅ `mission-gate` — Declara/confirma product_type + escopo antes de J2+ (mission.md)
-- ✅ `model-policy` — Politica de modelo como dado: papel x risco -> tier com chain de fallback + escada de heterogeneidade + indisponibilidade declarada (env)
+- ✅ `model-policy` — Politica de modelo como dado: papel x risco -> tier com chain de fallback + escada de heterogeneidade + indisponibilidade declarada (env) + escada RELATIVA ao default (executor/1o QA/2o QA) com regra de borda verificada em codigo
+- ✅ `mutacao-controle` — Prova de mutacao do pacote controle_*: cada defeito ja corrigido e' reintroduzido numa COPIA e o canario correspondente e' exigido a reprovar
 - ✅ `nonadmin-profile` — Perfil non-admin: gates anunciados inline quando GPO/EDR veta hooks
+- ✅ `numeros-da-prosa` — Numero afirmado na documentacao do pacote controle_* e' MEDIDO contra o repositorio, e numero ja refutado nao volta
 - ✅ `onboarding-master-gate` — Popup usar-vs-desenvolver so no MASTER-CANONICO (nao vaza p/ public/premium/gemini)
 - ✅ `oracle-bias-canary` — Canario anti-vies de oraculo + estabilidade de decisao
 - ✅ `overclaim-lexicon` — Lexico PT-BR de overclaim (absoluto-sem-hedge) usado pelos gates de honestidade
@@ -90,6 +97,7 @@
 - ✅ `risk-gate` — Gating deterministico por risco (prob x impacto -> gate + tier P0-P3); recast externo (ADR-086) sob P15, forma agnostica (categorias = blueprint)
 - 🟡 `route-gate` — Lembrete de rota deterministico 1x/sessao (UserPromptSubmit), fail-open
 - ✅ `rules-parity-guard` — Anti-drift das 4 regras inviolaveis entre arquivos de autoridade (sem violar SSoT §6.5)
+- ✅ `service-valuation` — Valoracao de servico por valor entregue, com memoria de calculo rastreavel
 - ✅ `shadow-drift-alarm` — Deriva das distribuicoes publicadas vira numero; falta de medicao nao vira aprovacao
 - ✅ `shadow-sync` — Hook que auto-casa o espelho publicado com origin no boot (reset --hard mecanico, so em shadow)
 - ✅ `shadow-write-guard` — Write-isolation: NEGA push de shadow E push pra remote != canonical (escreve so no proprio repo; read livre)
@@ -100,5 +108,6 @@
 - ✅ `sycophancy-canary` — Canario adversarial anti-sicofancia (nao concordar para agradar)
 - ✅ `trabalhos-registro` — Registro persistente de trabalhos: handoff sobrevive a sessao e e oferecido ate ser tratado
 - 🟡 `validation-reporting` — Metodo de validacao ponto a ponto com reporte legivel por humano que decide
+- ✅ `veredito-fail-closed` — Veredito aprovativo com achado bloqueante nao resolvido e' rejeitado pelo gate
 - ✅ `web-export` — Gerador deterministico das distribuicoes web (publico/premium) a partir da mae
 

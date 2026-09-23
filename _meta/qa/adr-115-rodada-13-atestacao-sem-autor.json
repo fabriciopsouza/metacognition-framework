@@ -1,0 +1,44 @@
+{
+ "bloco": "adr-115-fail-closed-no-veredito",
+ "papel": "qa_critic",
+ "rodada": 13,
+ "passou": false,
+ "recomendacao": "reprovar",
+ "veredito": "reprovar",
+ "data": "2026-09-14T00:00:00Z",
+ "escopo_paths": [
+  "tools/squad_gate.py",
+  "tools/test_squad_gate.py",
+  "tools/test_mutacao_squad_gate.py",
+  "docs/adr/115-fail-closed-no-veredito-achado-bloqueante-nao-passa-por-rotulo.md",
+  "CHANGELOG.md"
+ ],
+ "atestacao": {
+  "agentId": "af5afa8c9cb8529d8",
+  "modelo": "sonnet",
+  "autor": "opus",
+  "isolamento": "subagente qa-critic em segundo plano, degrau abaixo do autor (ADR-109/110); proibido de tocar o repositorio, experimentos no scratchpad"
+ },
+ "resumo": "REPROVOU com UM CRITICO, e e' o bypass mais barato dos treze — numa funcao que as doze rodadas anteriores nunca tocaram: `_atestacao_valida`. A clausula era `(not autor or modelo != autor)`. Com o campo `autor` AUSENTE, `not autor` e' True e a expressao inteira e' True: a checagem 'modelo do critico != autor do bloco' so' rodava para quem se desse ao trabalho de preencher o campo. O autor podia escrever o proprio veredito aprovativo do proprio codigo, sem mentir em nada, apenas NAO escrevendo uma linha, e o gate imprimia 'OK — evidencia atestada presente'. Nao exige homoglifo, Unicode, encoding, escopo nem sha malformado: nenhuma das tecnicas que as doze rodadas anteriores precisaram. E estava exatamente na checagem que da NOME ao mecanismo — a defesa anti-teatro, anti-autoatestacao. O cabecalho do proprio arquivo e o ADR-092 afirmavam a garantia como INCONDICIONAL; nao era. Nao era limite aceito, era buraco nao percebido.",
+ "verificacoes_executadas": [
+  "critico reproduziu contra o binario real pelo caminho que o main() usa: evaluate(['tools/squad_gate.py'], manifest, [veredito_sem_autor]) -> faltam=[], detalhe={'qa_critic': True}",
+  "critico mediu o ledger: nenhum dos vereditos existentes com agentId+modelo omite autor/modelo_autor — o gap nunca foi exercitado na pratica, mas o mecanismo permitia",
+  "critico cruzou o codigo com TRES documentos que afirmam a garantia como incondicional: cabecalho de squad_gate.py (linhas 15-17), ADR-092 (linhas 46, 54, 84) e o proprio ADR-115 (linhas 176-177)",
+  "critico verificou que qa_evidence.py --from-json grava o veredito verbatim, sem checar presenca de atestacao.autor",
+  "critico apresentou de forma explicita o argumento CONTRARIO ao proprio achado (tratar como limite aceito, igual a assimetria da reprovacao) e o refutou com a distincao certa: aquela assimetria barra DEMAIS, esta ABRE o unico portao que o mecanismo existe para fechar",
+  "critico declarou TRES hipoteses nao testadas (case-insensitividade do NTFS em _cobre, main() com symlink/Unicode/JSON gigante, encoding nao-UTF-8 em --paths-from) — terceira rodada seguida sem inflar o relatorio",
+  "autor mediu antes de fechar: dos 16 vereditos que hoje contam como atestados, os 16 declaram autor ou modelo_autor. Raio de explosao NULO",
+  "autor, apos corrigir, reproduziu o exploit do critico: agora faltam=['qa_critic'], detalhe={'qa_critic': False}",
+  "autor: 70 PASS / 0 FAIL no canario; 22/22 mutacoes mortas com baseline ZERO; sha256 do squad_gate identico antes e depois; suite completa 87 PASS / 1 SKIP / 0 FAIL"
+ ],
+ "problemas": [
+  {
+   "severidade": "CRITICO",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — _atestacao_valida()",
+   "descricao": "`(not autor or modelo != autor)`: campo ausente significava 'isolamento nao contestado' em vez de 'isolamento nao comprovado'. Autoatestacao passava por omissao. CORRIGIDO para `agent and modelo and autor and modelo != autor` — ausencia bloqueia, que e' o default de todo o resto do arquivo. Canario cobre a funcao E o caminho do main(): campo ausente, vazio, so' espacos, None, autoatestacao explicita, atestacao completa e o nome legado `modelo_autor`. Provado por mutacao que reintroduz a clausula antiga. NOTA DE DESENHO: cogitei validar tambem na ESCRITA (qa_evidence.py), e descartei — duplicaria a regra em dois lugares, e quando as duas divergissem a autoridade ficaria ambigua. O gate e' a autoridade; o escritor nao precisa saber a regra."
+  }
+ ],
+ "recomendacao_do_critico": "reprovar; bypass reproduzido na checagem central do mecanismo, e nao e' limite declarado — e' buraco nao percebido",
+ "nota_do_autor": "Decima terceira rodada. Este e' o achado que mais me incomoda das treze, porque nao e' sofisticado: nao precisa de homoglifo nem de Unicode invisivel, precisa de uma OMISSAO. Doze rodadas de critica adversarial passaram ao lado dele — inclusive eu, que escrevi um ADR inteiro sobre campo opcional virar porta de fuga e nao olhei para o campo opcional da funcao que autoriza tudo. A atencao das rodadas foi para `problemas`, `estado`, `severidade`, `sha_revisado`, `veredito_legado`, e a checagem que da nome ao mecanismo nunca foi revisitada. Registro tambem que o critico construiu o argumento CONTRARIO ao proprio achado antes de refuta-lo — e a refutacao esta certa: a assimetria da reprovacao barra demais, esta abre."
+}

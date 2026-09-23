@@ -1,0 +1,59 @@
+{
+ "bloco": "adr-115-fail-closed-no-veredito",
+ "papel": "qa_critic",
+ "rodada": 25,
+ "passou": false,
+ "recomendacao": "reprovar",
+ "veredito": "reprovar",
+ "data": "2026-09-16T00:00:00Z",
+ "escopo_paths": [
+  "tools/squad_gate.py",
+  "tools/test_squad_gate.py",
+  "tools/test_mutacao_squad_gate.py",
+  "behaviors/manifest.json",
+  "docs/adr/115-fail-closed-no-veredito-achado-bloqueante-nao-passa-por-rotulo.md",
+  "CHANGELOG.md",
+  "capabilities.json"
+ ],
+ "atestacao": {
+  "agentId": "af6642778d5f3788f",
+  "modelo": "sonnet",
+  "autor": "opus",
+  "isolamento": "subagente qa-critic em segundo plano, degrau canonico (sonnet, um abaixo do autor opus); proibido de tocar o repositorio, reproducao em diretorio temporario no scratchpad"
+ },
+ "resumo": "CRITICO, e o defeito foi O MEU REMEDIO. A 24a fechou a chave duplicada recusando o arquivo e denunciando por nome. Eu ate ANTECIPEI o risco — escrevi no proprio codigo que 'descartar em silencio seria fail-OPEN do lado da reprovacao' — e resolvi pela metade: tornei a recusa barulhenta e CONTINUEI descartando. `print` nao e' bloqueio. O critico reproduziu fim a fim: uma reprovacao LEGITIMA (CRITICO aberto correto, mesmo `sha_revisado`, mesmo escopo) com uma chave duplicada num campo IRRELEVANTE (`resumo`) sumia do julgamento inteiro, e o aprovativo ao lado passava sozinho, com exit 0. E' exatamente o cenario que as rodadas 8, 9 e 10 fecharam, REABERTO pelo remedio: o gate jogava fora a PROVA do bloqueio em vez de trata-la COMO bloqueio. Agravante que o critico tambem pegou: o canario que eu escrevi na 24a exigia o contrato ERRADO (`arts == []`, isto e', que o arquivo SUMISSE) — ele passava justamente por causa do defeito.",
+ "verificacoes_executadas": [
+  "critico reproduziu fim a fim contra `main()` real, com sha_revisado = HEAD real: aviso impresso, exit 0, commit liberado com CRITICO aberto vigente na porta ao lado",
+  "critico verificou que `_reprovacao_vigente` so' enxerga o que sobreviveu a `load_evidence`, e que o arquivo descartado nao virava bloqueante sintetico — era tratado como se nunca tivesse sido escrito",
+  "critico testou e CONFIRMOU que a defesa da 24a cobre chave duplicada ANINHADA (dentro de `atestacao`, dentro de item de `problemas`) e via escape `\\u0065stado` — object_pairs_hook roda em qualquer profundidade",
+  "critico verificou que `sha_do_veredito` so' e' chamado DEPOIS do parse estrito suceder — nao ha caminho que compute sha de arquivo rejeitado",
+  "critico descartou NFC/NFD como vetor, explicando por que: nenhum campo critico tem acento",
+  "critico revisitou as quatro promessas do ADR e manteve tres como cumpridas, quebrando so' a quarta — pela segunda rodada seguida usando a tabela de promessas como metodo",
+  "critico achou tambem que `legados_declarados` engolia o erro em SILENCIO, ao contrario do irmao, contradizendo a paridade que o veredito da 24a afirmava entre as tres leituras — e classificou como MEDIA nao-bloqueante por afetar so' relatorio, em vez de inflar",
+  "critico RECUSOU tratar isto como o limite ja declarado ('reprovacao nao exige atestacao'), explicando a diferenca: ali o risco e' travar demais; aqui o efeito e' o aprovativo PASSAR",
+  "autor, apos corrigir: aprovativo limpo ao lado de reprovacao ilegivel -> faltam=['evidencia_integra'], gate TRAVA, denuncia nomeia o arquivo; ledger real com 85 vereditos segue PASSANDO",
+  "autor: 80 PASS / 0 FAIL; 33/33 mutacoes mortas com baseline ZERO; sha256 do squad_gate identico antes e depois"
+ ],
+ "problemas": [
+  {
+   "severidade": "CRITICO",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — load_evidence() e evaluate()",
+   "descricao": "Evidencia ilegivel (chave JSON duplicada em QUALQUER campo, inclusive prosa irrelevante) era descartada, e o descarte fazia uma reprovacao legitima e vigente desaparecer do julgamento — deixando o aprovativo ao lado passar sozinho. CORRIGIDO mudando a regra de 'descarta e avisa' para 'nao consigo confirmar => nao passa': o arquivo ilegivel entra no ledger MARCADO (`_recusado`) e `evaluate()` trava o gate inteiro ANTES de avaliar qualquer papel, porque o arquivo corrompido pode ser justamente a reprovacao que derrubaria o aprovativo. A mensagem nomeia o arquivo a corrigir. Provado por mutacao (a sabotagem faz o ilegivel sumir de novo) e por DOIS canarios: o cenario exato do critico, e o da 24a com o contrato corrigido."
+  },
+  {
+   "severidade": "MEDIA",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — legados_declarados(), tratamento de erro",
+   "descricao": "O `except` desta funcao era MUDO, ao contrario do irmao em `load_evidence`. RETRATACAO (26a rodada): a primeira versao deste campo dizia 'CORRIGIDO com denuncia por nome' e o codigo NAO tinha sido corrigido — o script que eu rodei tinha uma condicao que nao disparou, e eu marquei 'corrigido' sem reler o arquivo. Rotulo divergindo de conteudo, no ledger do ADR que existe para impedir exatamente isso, e a mesma familia dos outros erros de prosa deste bloco. O critico da 26a leu a funcao linha a linha e o `git diff` dela, e pegou. CORRIGIDO DE VERDADE agora, e verificado por execucao. NAO bloqueia, de proposito: esta funcao alimenta o relatorio de divida, nao a decisao do gate."
+  },
+  {
+   "severidade": "MEDIA",
+   "estado": "corrigido",
+   "local": "tools/test_squad_gate.py — test_chave_JSON_duplicada_nao_apaga_achado",
+   "descricao": "O canario que eu escrevi na 24a exigia `arts == []` — ou seja, EXIGIA o proprio defeito: que o arquivo ilegivel sumisse. Ele passava por isso. CORRIGIDO para o contrato certo: o ilegivel tem de entrar MARCADO e o gate tem de TRAVAR. E' a terceira vez neste bloco que um teste meu mede a intencao em vez do comportamento (20a: grepava o fonte; 21a: docstring alegava mais do que cobria; agora: assercao que congela o bug)."
+  }
+ ],
+ "recomendacao_do_critico": "reprovar; a promessa central do ADR e' quebrada porque o mecanismo joga fora a prova do bloqueio em vez de trata-la como bloqueio",
+ "nota_do_autor": "Vigesima quinta rodada, e a licao e' sobre COMO eu conserto. Eu vi o risco, escrevi o risco no comentario, e mesmo assim entreguei meia correcao — barulhenta, mas ainda fail-open. Ver o risco e nomea-lo nao e' fecha-lo. E' a segunda vez que um remedio meu abre furo do lado oposto neste bloco; a primeira foi `_reprovacao_vigente` na 9a, que levou tres rodadas para assentar. O padrao comum das duas: eu corrijo a DIRECAO que o critico apontou e nao verifico a direcao contraria da mesma mudanca. RETRATACAO REGISTRADA NA 26a RODADA: o achado do `legados_declarados` estava marcado 'corrigido' neste veredito sem que o codigo tivesse mudado. E' a falha mais grave que um ledger de procedencia pode ter — pior que o bug que ele descreve — e fica registrada aqui em vez de silenciosamente acertada."
+}

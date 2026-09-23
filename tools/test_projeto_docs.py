@@ -17,8 +17,10 @@ Uso: python tools/test_projeto_docs.py   (exit 0 PASS; 1 se o quadro divergir da
 import csv
 import io
 import json
+import os
 import sys
 import tempfile
+from datetime import datetime, timedelta
 from pathlib import Path
 
 TOOLS = Path(__file__).resolve().parent
@@ -132,6 +134,81 @@ def main():
              pd.backlog(r) == [] and pd.gerar(r))
         rep = (r / pd.SAIDA / "STATUS-REPORT.md").read_text(encoding="utf-8")
         caso("e o report diz explicitamente que nada esta em aberto", "nada em aberto" in rep)
+
+    # ── o CARIMBO de canarios: quatro modos de falha, nenhum coberto antes ──
+    #
+    # `estado()` deixou de RODAR a suite (subprocess com teto de 600s, que a suite
+    # ja' ultrapassava) e passou a LER `_meta/canarios-ultimo.json`. O QA da 35a
+    # rodada achou 2 ALTA + 1 MEDIA nesse codigo novo — e achou tambem que ele
+    # tinha ZERO cobertura. Estes quatro casos sao a rede que faltava.
+    with tempfile.TemporaryDirectory(prefix="pd-carimbo-") as td:
+        r = _repo(td)
+        alvo = r / "_meta" / "canarios-ultimo.json"
+        alvo.parent.mkdir(parents=True, exist_ok=True)
+
+        alvo.write_text("null", encoding="utf-8")
+        e = pd.estado(r)
+        caso("carimbo JSON-valido mas NAO-dict nao derruba o quadro",
+             "ilegível" in e["canarios"] and "NoneType" in e["canarios"])
+
+        alvo.write_text("{truncado", encoding="utf-8")
+        caso("carimbo truncado (o que a escrita nao-atomica produzia) e' legivel como erro",
+             "ilegível" in pd.estado(r)["canarios"])
+
+        alvo.write_text(json.dumps({
+            "resultado": "88 PASS · 1 SKIP · 0 FAIL (de 89 canários)",
+            "medido_em": "2020-01-01T00:00:00-03:00", "commit": "deadbee",
+        }), encoding="utf-8")
+        velho = pd.estado(r)["canarios"]
+        caso("numero medido em 2020 sai marcado DESATUALIZADO, nao como atual",
+             "88 PASS" in velho and "DESATUALIZADO" in velho)
+
+        # e o par que prova que a marca sabe ficar QUIETA: medicao no futuro
+        # proximo cobre tudo que ha' no disco, entao nada envelheceu.
+        alvo.write_text(json.dumps({
+            "resultado": "88 PASS · 1 SKIP · 0 FAIL (de 89 canários)",
+            "medido_em": (datetime.now().astimezone()
+                          + timedelta(days=1)).isoformat(timespec="seconds"),
+            "commit": "deadbee",
+        }), encoding="utf-8")
+        fresco = pd.estado(r)["canarios"]
+        caso("medicao mais nova que todo arquivo NAO e' marcada desatualizada",
+             "88 PASS" in fresco and "DESATUALIZADO" not in fresco)
+
+        # A MARCA NAO PODE SE ACUSAR. Gerar o quadro toca STATUS-REPORT.md,
+        # backlog.csv e cronograma.csv — rastreados, e portanto contados como
+        # "mudaram depois da medicao". A 1a versao acendia a marca ao gerar, e a
+        # contagem CRESCIA a cada geracao: marca sempre acesa por motivo alheio
+        # aos canarios, que e' pior que marca nenhuma porque ensina a ignora-la.
+        pd.gerar(r)
+        pd.gerar(r)
+        depois_de_gerar = pd.estado(r)["canarios"]
+        caso("gerar o quadro (2x) NAO envelhece o proprio quadro",
+             "88 PASS" in depois_de_gerar and "DESATUALIZADO" not in depois_de_gerar)
+
+        # E O PAR: mexer em CODIGO de verdade acende, senao a exclusao dos
+        # derivados virou cegueira em vez de precisao.
+        #
+        # A 1a versao deste caso reaproveitava o carimbo do caso anterior, cuja
+        # medicao esta' no FUTURO (amanha) — nada que se escrevesse podia ser
+        # mais novo que ela, e o caso reprovava por vazamento de estado entre
+        # casos, nao por defeito. Aqui o carimbo e' de AGORA e o arquivo de
+        # codigo recebe mtime explicitamente posterior.
+        agora = datetime.now().astimezone()
+        alvo.write_text(json.dumps({
+            "resultado": "88 PASS · 1 SKIP · 0 FAIL (de 89 canários)",
+            "medido_em": agora.isoformat(timespec="seconds"), "commit": "deadbee",
+        }), encoding="utf-8")
+        caso("com o carimbo de agora, nada envelheceu ainda",
+             "DESATUALIZADO" not in pd.estado(r)["canarios"])
+
+        (r / "tools").mkdir(parents=True, exist_ok=True)
+        codigo_novo = r / "tools" / "algo.py"
+        codigo_novo.write_text("# mudei o codigo\n", encoding="utf-8")
+        futuro = agora.timestamp() + 120
+        os.utime(codigo_novo, (futuro, futuro))
+        caso("mas mexer em CODIGO depois da medicao acende a marca",
+             "DESATUALIZADO" in pd.estado(r)["canarios"])
 
     print("-" * 50)
     ruins = [n for n, ok in resultados if not ok]

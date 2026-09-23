@@ -36,6 +36,7 @@ import json
 import re
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
 RAIZ_PADRAO = Path(__file__).resolve().parent.parent
@@ -172,22 +173,121 @@ def releases(raiz, n=5):
     return saida
 
 
-def estado(raiz):
-    canarios = "não executada nesta geração"
-    alvo = Path(raiz) / "tools" / "run_canaries.py"
-    if alvo.is_file():
+def _carimbo_envelheceu(raiz, c):
+    """O numero publicado descreve o codigo de AGORA, ou o de antes? String ou "".
+
+    Antes desta troca, `estado()` RODAVA a suite, e o numero ficava fresco POR
+    CONSTRUCAO. Ler o carimbo e' mais barato e nao perde a corrida contra o
+    relogio — mas a frescura deixou de ser garantida e passou a depender de
+    alguem lembrar de medir. Nenhum gate confere isso: o `--verificar` recorta
+    so' a secao "O que falta" e ignora "Estado agora" de proposito.
+
+    Cenario concreto do QA: mede na segunda (88 PASS), quebra tres canarios ao
+    longo da semana sem remedir, gera o quadro na sexta — e commita "88 PASS"
+    sobre um estado que tem 3 FAIL.
+
+    A escolha aqui e' DECLARAR em vez de travar. Fazer o gate reprovar exigiria
+    remedir a cada commit, e gate que vira rotina custosa acaba desarmado — o
+    proprio repositorio ja' registrou que empurrar o operador para a escapatoria
+    e' "pior que o buraco que ela fecha". Entao o numero velho continua saindo,
+    e sai dizendo que e' velho. [achado ALTA, 35a rodada]
+    """
+    marca = str(c.get("medido_em") or "")
+    if not marca:
+        return "sem data de medição: não dá para saber se o número é atual"
+    try:
+        quando = datetime.fromisoformat(marca).timestamp()
+    except (TypeError, ValueError):
+        return "data de medição ilegível"
+
+    # A LISTA vem do git, e quando o git nao responde ela vem do disco.
+    #
+    # A 1a versao usava so' `git ls-files`. Num diretorio sem git isso volta
+    # vazio, `depois` fica 0, e a funcao concluia "nada envelheceu" — por NAO
+    # CONSEGUIR OLHAR. Nao saber virava "esta' fresco", que e' fail-open, e foi
+    # o proprio canario novo deste bloco que pegou. Mesma classe que este
+    # repositorio persegue: a verificacao olha um fato que nao discrimina.
+    rastreados = [l for l in (_git(raiz, "ls-files") or "").splitlines() if l]
+    if not rastreados:
+        base = Path(raiz)
+        rastreados = [str(f.relative_to(base))
+                      for f in base.rglob("*")
+                      if f.is_file() and ".git" not in f.parts]
+    # O QUE ESTE QUADRO GERA NAO CONTA COMO MUDANCA DE CODIGO.
+    #
+    # Medido: gerar o quadro tocava STATUS-REPORT.md, backlog.csv e cronograma.csv,
+    # que sao rastreados — e a leitura seguinte dizia "DESATUALIZADO: 3 arquivos
+    # mudaram", crescendo a cada geracao. A marca ficava permanentemente acesa por
+    # motivo que nada tem a ver com os canarios, e marca sempre acesa ensina a
+    # ignorar a marca: pior que nao ter marca nenhuma. Sao artefatos DERIVADOS,
+    # nao entrada dos testes.
+    # OS ARTEFATOS AUTO-GERADOS, ENUMERADOS — nao o diretorio inteiro.
+    #
+    # A 1a versao excluia o prefixo `docs/projeto/`. Duas coisas erradas nisso:
+    # (a) `docs/projeto/CONTEXTO.md` e' escrito A MAO (o proprio arquivo declara
+    # isso na linha 6) e era varrido junto, o que hoje nao esconde sinal nenhum
+    # porque nenhum canario o le — mas e' sorte, nao propriedade do codigo; e
+    # (b) o proprio carimbo mora FORA de `docs/projeto/` e nunca era excluido, de
+    # modo que no ramo sem-git ele se auto-acusava: e' sempre escrito DEPOIS do
+    # instante de `medido_em`, e com escrita lenta (fsync em disco de rede, EDR
+    # segurando o arquivo) o delta passa da tolerancia. O QA reproduziu forcando
+    # 1,3s. [achado MEDIA, 36a rodada]
+    derivados = {f"{SAIDA}/{n}".replace("\\", "/")
+                 for n in ("STATUS-REPORT.md", "backlog.csv", "cronograma.csv")}
+    derivados.add("_meta/canarios-ultimo.json")
+
+    # TOLERANCIA: 2 segundos, e o numero tem de onde vir — e' a granularidade de
+    # timestamp do FAT/exFAT, que ainda aparece em pendrive e disco de rede. Em
+    # NTFS/ext4 a folga sobra. O `+1` anterior nao tinha justificativa escrita:
+    # cobria por acaso a truncagem de `timespec="seconds"` no `medido_em`, que
+    # esta rodada eliminou na raiz (o carimbo agora grava precisao cheia).
+    # Numero sem justificativa e' a classe que este repositorio persegue, e este
+    # era um. [ressalva do QA, 36a rodada]
+    GRANULARIDADE_FS = 2
+    depois = 0
+    for rel in rastreados:
+        if rel.replace("\\", "/") in derivados:
+            continue
         try:
-            # `-X utf8` no filho: sem isso ele emite na codificacao do console e o
-            # relatorio sai com acento quebrado — documento com mojibake e' descartado
-            # na primeira olhada, entao isto nao e' cosmetico.
-            r = subprocess.run([sys.executable, "-X", "utf8", str(alvo)],
-                               capture_output=True, text=True, encoding="utf-8",
-                               errors="replace", cwd=str(raiz), timeout=600,
-                               stdin=subprocess.DEVNULL)
-            linha = [l for l in (r.stdout or "").splitlines() if l.startswith("RESULTADO:")]
-            canarios = linha[-1].replace("RESULTADO:", "").strip() if linha else "sem resultado"
-        except (OSError, subprocess.SubprocessError):
-            canarios = "não consegui executar"
+            if (Path(raiz) / rel).stat().st_mtime > quando + GRANULARIDADE_FS:
+                depois += 1
+        except OSError:
+            continue
+    if not depois:
+        return ""
+    return (f"DESATUALIZADO: {depois} arquivo(s) rastreado(s) mudaram depois da "
+            f"medição — rode `python tools/run_canaries.py`")
+
+
+def estado(raiz):
+    # NAO roda a suite. Quem MEDE grava o carimbo (`run_canaries.py::_gravar_carimbo`),
+    # quem PUBLICA le. Antes isto era um subprocess com teto fixo — 120s, depois 600s —
+    # e a suite cresceu ate passar dos 600: o quadro publicava "nao consegui executar".
+    # Teto fixo contra suite que cresce e' corrida que o teto perde sempre, e perder em
+    # silencio e' fail-open. O numero agora vem SEMPRE com a data em que foi medido, para
+    # que medicao velha apareca como velha. [achado MEDIA da 34a rodada, ADR-115]
+    canarios = "não medido — rode `python tools/run_canaries.py`"
+    carimbo = Path(raiz) / "_meta" / "canarios-ultimo.json"
+    if carimbo.is_file():
+        try:
+            c = json.loads(carimbo.read_text(encoding="utf-8"))
+            # `json.loads` devolve `null`, lista ou numero sem levantar ValueError,
+            # e `.get` num deles estoura AttributeError — que NAO estava capturado e
+            # derrubava `gerar()` inteiro, sem produzir quadro nenhum. Um `except`
+            # que lista duas excecoes nao cobre a terceira. [achado MEDIA, 35a rodada]
+            if not isinstance(c, dict):
+                raise ValueError(f"carimbo nao e' um objeto JSON (veio {type(c).__name__})")
+            canarios = f"{c.get('resultado', '?')} — medido em {str(c.get('medido_em', ''))[:16]}"
+            if c.get("commit"):
+                canarios += f", commit `{c['commit']}`"
+            if c.get("arvore_suja"):
+                canarios += " (árvore suja na medição)"
+            velhice = _carimbo_envelheceu(raiz, c)
+            if velhice:
+                canarios += f" — **{velhice}**"
+        except (OSError, ValueError, TypeError, AttributeError) as erro:
+            canarios = (f"carimbo de canários ilegível ({erro}) — "
+                        f"rode `python tools/run_canaries.py`")
     return {
         "branch": _git(raiz, "rev-parse", "--abbrev-ref", "HEAD") or "?",
         "commit": _git(raiz, "log", "-1", "--format=%h %s") or "?",

@@ -1,0 +1,95 @@
+{
+  "bloco": "procedencia-narrativa-na-prosa-publica",
+  "papel": "qa_critic",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "sha_revisado": "f067af8",
+  "resumo": "Detector de PROCEDENCIA NARRATIVA (gate (i) em test_marketing_claims.py): prosa publica que ALEGA UM CASO tem de dizer onde conferir, a mesma vara que o gate (b) ja aplica a claim PROVADO. Existe porque, horas antes nesta sessao, o autor INVENTOU um caso e o pos na vitrine publica, e NENHUM canario podia ver: o lexico de overclaim caca promessa absoluta, e caso fabricado e' o oposto - modesto, plausivel. RODADA 1 REPROVOU com o achado que o proprio autor havia declarado letal: FALSO POSITIVO em prosa honesta, quatro casos executados (fonte no bloco seguinte, 'ver secao 09', link markdown sem extensao, 'decisao 109' sem prefixo ADR). Gate que reprova o certo e' desligado por quem tem pressa. Corrigido: TEM_FONTE deixou de exigir UM formato e a fonte passou a valer tambem no bloco imediatamente seguinte; os quatro FP viraram casos de regressao no auto-teste. Uma sugestao do critico foi RECUSADA com motivo escrito no codigo (ampliar o padrao para 'pediu' singular): casa com prosa legitima do proprio repo, e o critico confirmou a recusa buscando ocorrencias reais em ADR-065 e ADR-094. RODADA 2 aprovou com ressalva e achou o defeito mais fino da serie: o auto-teste provava a FUNCAO e nao a FIACAO - trocando o laco dos arquivos reais por uma tupla vazia, o caso fabricado passava batido com o gate reportando PASS. Detector perfeito ligado a lista vazia reporta PASS para sempre. Fechado com contador de arquivos varridos, e o exploit do critico agora reprova.",
+  "verificacoes_executadas": [
+    "r1: executou 4 padroes de prosa honesta e provou falso positivo em todos",
+    "r1: mapeou as classes de fuga e exigiu que o limite fosse nomeado, nao resumido",
+    "r2: reexecutou os 4 FP e confirmou que fecharam",
+    "r2: buscou FP NOVO criado pela ampliacao do regex — nao achou exploracao viva na vitrine real",
+    "r2: validou a recusa da conjugacao singular contra prosa real do repo (ADR-065, ADR-094)",
+    "r2: provou em copia fora do repo que o auto-teste nao cobria a fiacao",
+    "autor: mutacao cegando o padrao inteiro -> auto-teste apita",
+    "autor: mutacao reinserindo o caso fabricado na vitrine -> gate reprova",
+    "autor: mutacao esvaziando o laco de arquivos (exploit da r2) -> gate reprova",
+    "suite completa: 80 PASS, 1 SKIP, 0 FAIL"
+  ],
+  "problemas": [
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "tools/test_marketing_claims.py TEM_FONTE",
+      "descricao": "falso positivo em prosa honesta que citava fonte fora do formato previsto, ou no bloco seguinte. Quatro casos executados pelo critico. TEM_FONTE ampliado e vizinhanca de bloco aceita; os quatro viraram regressao no auto-teste."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/test_marketing_claims.py, laco do gate (i)",
+      "descricao": "[achado na r2] o auto-teste provava a funcao e nao a fiacao: laco vazio fazia o gate reportar PASS sem varrer nada. Contador de arquivos varridos, com reprovacao em zero."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "comentario do limite",
+      "descricao": "limite declarado era vago. Passou a nomear as 4 fugas uma a uma, incluindo fonte decorativa (arquivo, URL, ADR, decisao) e o modelo de ameaca: o alvo e' o autor desatento, nao um adversario."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "skipped",
+      "local": "ABRE_CASO",
+      "descricao": "ampliar para conjugacao singular ('pediu'). RECUSADO com motivo: casa com prosa legitima do repo ('o dono pediu que...'), e o falso positivo custa mais que a fuga. O critico da r2 validou a recusa buscando ocorrencias reais."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "no_change_needed",
+      "local": "escopo do gate (i)",
+      "descricao": "README fora do escopo. Mantido, agora DECLARADO com o motivo: nao tem trecho que dispare, e ampliar sem necessidade medida contraria a regua §0."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "no_change_needed",
+      "local": "tools/test_marketing_claims.py",
+      "descricao": "branch 'href=' apontado como morto na r1; a r2 verificou e nao o encontrou — a reescrita do TEM_FONTE ja o havia removido. Discrepancia reportada pelo proprio critico em vez de aceita."
+    }
+  ],
+  "escopo_paths": [
+    "_meta/qa/procedencia-narrativa-na-prosa-publica.json",
+    "_meta/qa/procedencia-narrativa-na-prosa-publica.md",
+    "guia/web/index.html",
+    "tools/test_marketing_claims.py"
+  ],
+  "atestacao": {
+    "agentId": "a7cb5276b297e8cc0",
+    "prova_transcript": "sha256:1d5d76547ff7e7b8838e00db0012001175d7550385bf398bd7493d90dcfc0e91",
+    "modelo": "claude-sonnet-5",
+    "modelo_autor": "claude-opus-5",
+    "isolamento": "subagente qa-critic isolado, read-only; as sabotagens rodaram em copia do repo no scratchpad, nunca nos arquivos reais",
+    "provas": [
+      {
+        "agentId": "aeba213a59f5ef517",
+        "prova_transcript": "sha256:c4293f7c566ed9bc7b06c6201ed815b668181d952479d4f21c21bafea93b840d",
+        "rodada": 1
+      },
+      {
+        "agentId": "a7cb5276b297e8cc0",
+        "prova_transcript": "sha256:1d5d76547ff7e7b8838e00db0012001175d7550385bf398bd7493d90dcfc0e91",
+        "rodada": 2
+      }
+    ]
+  },
+  "postura": {
+    "adversarial": "o critico foi instruido a caçar FALSO POSITIVO como risco letal, nao so falso negativo — e foi por ai que a r1 reprovou. Na r2 ele ainda contestou uma premissa do briefing (o branch morto) em vez de aceita-la, o que e' a postura certa."
+  },
+  "nao_verificado": [
+    "o degrau ACIMA do default (2o QA final) NAO rodou: exige autorizacao ativa do dono (ADR-110), nao dada.",
+    "FONTE DECORATIVA continua lavando o gate: ponteiro sem relacao com o caso satisfaz TEM_FONTE. Aceito e declarado — contra ADVERSARIO este gate nao serve, e dizer o contrario seria mentira.",
+    "as 4 classes de fuga estao nomeadas no codigo; nenhuma tem teste, porque testar uma fuga conhecida so provaria que ela existe.",
+    "os dois arquivos deste veredito estao em escopo por serem o artefato do ledger, produzidos PELO QA e nao revisados POR ele."
+  ],
+  "data": "2026-08-19T00:00:00Z"
+}

@@ -1,0 +1,60 @@
+{
+ "bloco": "adr-115-fail-closed-no-veredito",
+ "papel": "qa_critic",
+ "rodada": 15,
+ "passou": false,
+ "recomendacao": "reprovar",
+ "veredito": "reprovar",
+ "data": "2026-09-14T00:00:00Z",
+ "escopo_paths": [
+  "tools/squad_gate.py",
+  "tools/test_squad_gate.py",
+  "tools/test_mutacao_squad_gate.py",
+  "docs/adr/115-fail-closed-no-veredito-achado-bloqueante-nao-passa-por-rotulo.md",
+  "CHANGELOG.md",
+  "capabilities.json"
+ ],
+ "atestacao": {
+  "agentId": "a71b19ed589d9c982",
+  "modelo": "sonnet",
+  "autor": "opus",
+  "isolamento": "subagente qa-critic em segundo plano, degrau abaixo do autor (ADR-109/110); proibido de tocar o repositorio, experimentos no scratchpad"
+ },
+ "resumo": "REPROVOU com dois CRITICOS, e o primeiro e' o mais barato dos quinze. (1) `classify()` — o PRIMEIRO filtro de tudo, que decide qual path exige qual papel — comparava suffix/prefix/exact como string CRUA. `tools/nova_backdoor.PY` nao casava com o suffix `.py`, entao `classify` devolvia conjunto vazio e `evaluate` devolvia faltam=[] com artifacts=[]: um arquivo Python NOVO, com ZERO evidencia no ledger, passava o gate como se nada precisasse ser revisado. Sem forjar atestacao, sem Unicode, sem homoglifo — so' trocando a caixa da extensao. Valia para toda a matriz (`Docs/ADR/`, `_SHARED/`, `CLAUDE.MD`). A licao central deste ADR ja estava aplicada a severidade, a campo de JSON e a assinatura, e nunca ao filtro que decide o que sequer entra em avaliacao. (2) `_norm_modelo()` trocava separador por ESPACO, o que so' funde quando os DOIS lados tem separador: `gpt-4` virava 'gpt 4' e `gpt4` continuava 'gpt4'. Basta OMITIR um hifen num dos campos para autoatestar — mais barato que qualquer tecnica das quatorze rodadas, e reabre pelo angulo vizinho a defesa que a 14a rodada acabara de fechar.",
+ "verificacoes_executadas": [
+  "critico reproduziu o CRITICO 1 ponta a ponta pelo caminho do main(): classify(['tools/nova_backdoor.PY']) -> set(); evaluate(...) -> (faltam=[], detalhe={})",
+  "critico observou que o bypass funciona nos dois SOs: FS case-insensitive no Windows, e no Linux o interpretador nao olha a extensao quando invocado direto",
+  "critico mediu o repo real: `git ls-files` nao tem hoje nenhum arquivo com extensao de caixa mista — raio zero, mesma situacao dos achados de homoglifo das rodadas 4 a 7",
+  "critico confirmou por grep que nenhum teste exercitava caixa em classify(), e que a prova por mutacao testava wiring em volta da comparacao, nunca a completude do match",
+  "critico reproduziu o CRITICO 2: _norm_modelo('gpt-4')='gpt 4' != _norm_modelo('gpt4')='gpt4', e _atestacao_valida com esse par devolve True",
+  "critico AUDITOU o canario do git da 14a rodada e o considerou honesto: restaura no finally (que roda mesmo se main() lancar), asserções fora do try, e chama main([]), o mesmo ponto de entrada do gancho",
+  "critico investigou e declarou LIMPAS, sem achado: _cobre(), load_evidence(), sha_do_veredito(), legados_declarados(), evaluate() e o uso de --paths/--paths-from",
+  "critico classificou o FileNotFoundError do git ausente como BAIXA/MEDIA e NAO bloqueante, explicando que o efeito liquido ja era fail-closed — precisao de severidade em vez de inflar",
+  "critico construiu o argumento pela APROVACAO e o refutou pela consistencia do proprio processo: desde a 4a rodada este bloco trata bypass barato e deliberado como CRITICO mesmo com raio zero",
+  "autor, apos corrigir: classify('tools/nova_backdoor.PY') -> ['qa_critic']; evaluate com ledger vazio -> faltam=['qa_critic']; gpt4 vs gpt-4 -> atestacao invalida",
+  "autor guardou o defeito INVERSO num canario proprio: 10 nomes reais de modelo (claude-opus-5, claude-sonnet-5, gpt-4, gpt-4o, o1, o3-mini, gemini-2-5-pro, llama-3-70b...) normalizados sem NENHUMA colisao — normalizacao agressiva demais rejeitaria evidencia legitima, que e' pior que o bypass",
+  "autor: 74 PASS / 0 FAIL no canario; 26/26 mutacoes mortas com baseline ZERO; sha256 do squad_gate identico antes e depois; suite completa 87 PASS / 1 SKIP / 0 FAIL"
+ ],
+ "problemas": [
+  {
+   "severidade": "CRITICO",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — classify()",
+   "descricao": "Match de suffix/prefix/exact como string crua: `tools/backdoor.PY` nao exigia papel nenhum e passava com ledger vazio. CORRIGIDO com casefold nos dois lados da comparacao. Casar MAIS e' o lado seguro — no maximo exige-se papel de um arquivo que talvez nao precisasse; casar de menos era o que deixava passar. Provado por mutacao e por canario que compara o conjunto de papeis do disfarcado com o do canonico E verifica que evaluate com ledger vazio nao libera. LICAO: a normalizacao ja existia em tres lugares deste arquivo (severidade, campo de JSON, assinatura) e faltava justamente no filtro que decide o que ENTRA em avaliacao — defender bem o que se avalia nao adianta se o item nem chega a ser avaliado."
+  },
+  {
+   "severidade": "CRITICO",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — _norm_modelo()",
+   "descricao": "Trocar separador por espaco so' funde quando os dois lados tem separador; `gpt-4` vs `gpt4` seguiam diferentes, e bastava omitir um hifen para autoatestar. CORRIGIDO REMOVENDO separador e espaco em vez de trocar. O canario guarda os dois lados: 5 pares que devem FUNDIR e 10 nomes reais de modelo que NAO podem colidir — porque normalizacao agressiva demais negaria evidencia legitima, defeito inverso e pior que o bypass. A correcao da 14a rodada estava certa na direcao e incompleta na execucao."
+  },
+  {
+   "severidade": "BAIXA",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py — main(), git ausente do PATH",
+   "descricao": "`FileNotFoundError` nao capturado matava o processo com traceback. O efeito liquido ja era fail-closed (exit != 0), como o critico corretamente observou ao NAO inflar a severidade, mas a mensagem era ilegivel e inconsistente com o irmao `_git()`, que sempre capturou OSError. CORRIGIDO com a mesma mensagem cuidada do caminho de returncode != 0."
+  }
+ ],
+ "recomendacao_do_critico": "reprovar; dois bypasses reproduzidos, um deles no filtro que decide o que sequer entra em avaliacao",
+ "nota_do_autor": "Decima quinta rodada. O achado do `classify` e' o mais humilhante do bloco: eu passei quatorze rodadas endurecendo como o gate JULGA a evidencia, e o filtro que decide QUAIS ARQUIVOS precisam de evidencia nunca foi olhado. Defender bem o julgamento nao serve de nada se o item nao chega a ser julgado. Registro tambem duas coisas boas do critico: ele auditou o canario que eu escrevi na rodada anterior (e o aprovou por razoes tecnicas corretas — restauracao no finally, assercao fora do try), e recusou-se a inflar a severidade do git ausente, chamando de BAIXA o que era BAIXA."
+}

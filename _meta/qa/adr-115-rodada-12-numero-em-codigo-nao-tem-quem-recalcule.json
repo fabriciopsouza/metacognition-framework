@@ -1,0 +1,54 @@
+{
+ "bloco": "adr-115-fail-closed-no-veredito",
+ "papel": "qa_critic",
+ "rodada": 12,
+ "passou": false,
+ "recomendacao": "reprovar",
+ "veredito": "reprovar",
+ "data": "2026-09-14T00:00:00Z",
+ "escopo_paths": [
+  "tools/squad_gate.py",
+  "tools/test_squad_gate.py",
+  "tools/test_mutacao_squad_gate.py",
+  "docs/adr/115-fail-closed-no-veredito-achado-bloqueante-nao-passa-por-rotulo.md",
+  "CHANGELOG.md",
+  "capabilities.json",
+  "_meta/qa/adr-115-rodada-11-reprovacao-sem-achado-estruturado.json"
+ ],
+ "atestacao": {
+  "agentId": "ac4a8d92872db704c",
+  "modelo": "sonnet",
+  "autor": "opus",
+  "isolamento": "subagente qa-critic em segundo plano, degrau abaixo do autor (ADR-109/110); proibido de tocar o repositorio, experimentos no scratchpad"
+ },
+ "resumo": "REPROVOU com UM achado ALTA, e — pela primeira vez em doze rodadas — NENHUM defeito de codigo. O achado: o numero '12 dos 67' seguia vivo no comentario de `tools/squad_gate.py` e no docstring de `tools/test_squad_gate.py`, ou seja, nos DOIS arquivos que sao o proprio mecanismo desta ADR e seu canario, ambos editados nesta mesma sessao e ambos listados no escopo do veredito anterior. Agravante que define a severidade: este par de arquivos JA tinha levado correcao manual do MESMO numero pelo MESMO motivo na 3a rodada — e quando o numero mudou de novo na 11a, a varredura repetiu a omissao exatamente nos mesmos dois lugares. Quarta ocorrencia. Nao e' amostragem infeliz, e' ponto cego recorrente na FORMA de varrer. O critico ainda mostrou que o numero 'correto' da 11a rodada (14 de 89) ja envelhecera no MESMO DIA, porque rodadas de QA de OUTROS blocos continuavam depositando .json no ledger — prova de que ancora de data DOCUMENTA o envelhecimento, nao o impede.",
+ "verificacoes_executadas": [
+  "critico testou `_reprovacao_tratada` contra o modulo real em 6 formas de malformacao (lista de nao-dicts, lista com dict vazio, dict, None, campo ausente, achado leve) e NAO achou buraco: todas devolvem o valor correto",
+  "critico verificou que os dois papeis usam a MESMA semantica do predicado compartilhado — a simetria que o ADR buscava depois de tres assimetrias",
+  "critico mediu contra o ledger REAL: 14 reprovacoes (cresceu de 13 porque o proprio veredito da 11a rodada virou uma), ZERO sem `problemas` estruturado — raio de explosao segue nulo",
+  "critico confirmou, lendo o JSON em disco, que o veredito da 11a rodada e' computado como tratada=True: o gate nao trava o proprio bloco que se corrigiu",
+  "critico rodou os dois canarios: 69 PASS / 0 FAIL e 21/21 mutacoes mortas, baseline zero, nenhum ALVO SUMIU — batem com o que ADR, CHANGELOG e capabilities.json afirmam",
+  "critico verificou que `legados_declarados()` devolve 20 vereditos / 41 achados E que `main()` de fato os IMPRIME na execucao real — a alegacao 'fica visivel, nao perdoada em silencio' e' verdadeira no mecanismo, nao so' na doc",
+  "critico conferiu CAPABILITIES.md em sync com capabilities.json via build_capabilities.py --check, e que o snippet de mutacao declarado ali bate literalmente com o codigo atual",
+  "critico auditou a honestidade do registro (item C do pedido) e nao achou maquiagem; verificou MECANICAMENTE que `documentado` nao esta em ESTADO_RESOLVIDO, logo o achado da assimetria so' nao veta por ser severidade leve, e nao por o estado ter sido aceito",
+  "critico declarou como HIPOTESE NAO TESTADA o falso-positivo da checagem `sumidos` por drift de whitespace — nao havia como construir sem alterar o squad_gate real, o que a regra de seguranca veta",
+  "autor, apos corrigir: grep confirma zero ocorrencias do numero velho em tools/; canario segue 69 PASS / 0 FAIL",
+  "autor validou executando que o comando publicado no ADR roda e devolve 15 grafias / 91 bloqueantes / 15 com grafia ALTA — o instantaneo dos tres documentos foi sincronizado com esse valor"
+ ],
+ "problemas": [
+  {
+   "severidade": "ALTA",
+   "estado": "corrigido",
+   "local": "tools/squad_gate.py (comentario de SEVERIDADE_LEVE) e tools/test_squad_gate.py (docstring de test_severidade_reconhecida_em_TODAS_as_grafias_do_ledger)",
+   "descricao": "Ambos seguiam afirmando '12 dos 67 achados', numero de duas rodadas atras, em tempo presente e sem ancora. Quarta ocorrencia do mesmo numero no mesmo par de arquivos. CORRIGIDO aplicando a licao que este proprio bloco ja tirou uma vez e nao aplicou aqui: REMOVER o numero em vez de redigita-lo. Comentario e docstring nao tem quem os recalcule, entao numero neles e' divida garantida — redigitar seria so' marcar a quinta ocorrencia. O numero passa a viver em UM lugar, o ADR, com ancora de data E o comando que o refaz (validado por execucao: 15 grafias / 91 bloqueantes). O comentario do codigo agora diz POR QUE nao tem numero, para que a proxima pessoa nao o 'conserte' de volta. Nao havia efeito funcional: nenhum teste dependia do numero, e a logica fail-closed independe dele."
+  },
+  {
+   "severidade": "MEDIA",
+   "estado": "corrigido",
+   "local": "docs/adr/115-*.md — paragrafo 'Por que este numero leva data'",
+   "descricao": "O critico mediu no MESMO DIA da ancora e achou outro valor (15/91 contra 14/89), porque rodadas de QA de outros blocos seguiam gravando no ledger. Ancora de data documenta o envelhecimento; nao o impede. CORRIGIDO: o paragrafo passa a dizer isso explicitamente e a trazer o comando de recalculo, e o texto troca 'medido em' por 'instantaneo de' — que e' o que o numero realmente e'."
+  }
+ ],
+ "recomendacao_do_critico": "reprovar; nenhum defeito de codigo, mas a quarta ocorrencia do mesmo numero defasado no mesmo par de arquivos e' ponto cego de processo, nao descuido",
+ "nota_do_autor": "Decima segunda rodada, e a primeira em que o codigo passou limpo: o critico atacou `_reprovacao_tratada` por seis caminhos e nao achou buraco. O que sobrou foi processo — e o achado e' melhor do que parece, porque nomeia o ponto cego em vez do sintoma: eu vinha varrendo `.md` e `.json` e tratando `.py` como 'codigo', quando o comentario dentro do .py e' prosa igual. A correcao nao foi atualizar o numero; foi tirar o numero de onde ninguem o recalcula. Registro tambem que o critico marcou como hipotese NAO testada o que nao conseguiu construir, em vez de inflar o relatorio — segunda rodada seguida em que isso acontece."
+}

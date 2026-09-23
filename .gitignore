@@ -22,6 +22,13 @@ output/
 .claude/boot-proof.json
 .claude/closing-proof.json
 
+# Carimbo da ultima execucao da suite de canarios (ADR-115, 34a rodada). MEDICAO LOCAL,
+# mesma classe de boot-proof/closing-proof: quem MEDE grava aqui, quem PUBLICA (projeto_docs)
+# le. Nao versionar — a suite roda varias vezes por sessao, e arvore suja congela o hook de
+# sync EM SILENCIO. O numero que precisa viajar ja' viaja dentro do STATUS-REPORT.md, com a
+# data da medicao ao lado; sem o carimbo o quadro diz "nao medido", que e' a verdade.
+_meta/canarios-ultimo.json
+
 # ADR-084: marker de defasagem vs branch de integracao + ack (por branch/maquina — nunca versionar)
 .claude/.stale-vs-main
 .claude/.stale-vs-main.ack

@@ -1,143 +1,279 @@
 {
-  "_doc": "Manifesto declarativo (forma BMAD) dos comportamentos/papeis + MATRIZ deterministica path->papeis exigidos. Lido por tools/squad_gate.py (ADR-092). Comportamento vira DADO versionado: editar aqui muda o que o gate exige, sem mexer no codigo. Cada item da matriz casa por PATH staged (deterministico, nao julgamento).",
-  "matriz": [
-    {
-      "match": {
-        "suffix": ".py"
-      },
-      "exige": [
-        "qa_critic"
-      ],
-      "porque": "mudanca de codigo"
-    },
-    {
-      "match": {
-        "prefix": "docs/adr/"
-      },
-      "exige": [
-        "architect",
-        "qa_critic"
-      ],
-      "porque": "ADR novo/alterado"
-    },
-    {
-      "match": {
-        "exact": "data/catalog/bindings.json"
-      },
-      "exige": [
-        "research_ou_ratificacao"
-      ],
-      "porque": "binding/numero regulado"
-    },
-    {
-      "match": {
-        "exact": "data/catalog/spec_faixas.json"
-      },
-      "exige": [
-        "research_ou_ratificacao"
-      ],
-      "porque": "faixa de especificacao regulada"
-    },
-    {
-      "match": {
-        "prefix": "CHANGELOG"
-      },
-      "exige": [
-        "juncao_release"
-      ],
-      "porque": "release (junção J0-J6, ADR-077)"
-    },
-    {
-      "match": {
-        "prefix": "_shared/"
-      },
-      "exige": [
-        "qa_critic"
-      ],
-      "porque": "skill de NUCLEO governa o comportamento de toda sessao futura — alavancagem maior que a maioria do codigo"
-    },
-    {
-      "match": {
-        "prefix": ".agent/skills/"
-      },
-      "exige": [
-        "qa_critic"
-      ],
-      "porque": "skill de papel muda como o squad opera"
-    },
-    {
-      "match": {
-        "prefix": ".agent/rules/"
-      },
-      "exige": [
-        "qa_critic"
-      ],
-      "porque": "regra sempre-ativa vale para toda sessao, sem opt-in"
-    },
-    {
-      "match": {
-        "exact": "behaviors/manifest.json"
-      },
-      "exige": [
-        "qa_critic"
-      ],
-      "porque": "mexer na propria matriz de enforcement — sem isso o gate se auto-afrouxa"
-    },
-    {
-      "match": {
-        "exact": "AGENT-FRAMEWORK.md"
-      },
-      "exige": [
-        "architect",
-        "qa_critic"
-      ],
-      "porque": "roteador raiz: decide o modo de toda sessao"
-    },
-    {
-      "match": {
-        "exact": "CLAUDE.md"
-      },
-      "exige": [
-        "qa_critic"
-      ],
-      "porque": "entrada do framework"
-    },
-    {
-      "match": {
-        "exact": "AGENTS.md"
-      },
-      "exige": [
-        "qa_critic"
-      ],
-      "porque": "entrada cross-tool"
-    }
-  ],
-  "comportamentos": {
-    "qa_critic": {
-      "evidencia": "artefato em _meta/qa/<bloco>.json com recomendacao aprovativa E atestacao de isolamento",
-      "atestacao_obrigatoria": [
-        "agentId",
-        "modelo"
-      ],
-      "regra": "agentId nao-vazio (subagente isolado) e modelo != autor do bloco (ADR-074). String solta NAO passa.",
-      "check": "tools/squad_gate.py"
-    },
-    "architect": {
-      "evidencia": "ADR correspondente em docs/adr/ (o proprio arquivo staged)",
-      "check": "tools/squad_gate.py"
-    },
-    "research_ou_ratificacao": {
-      "evidencia": "research-ledger (>=K dominios DISTINTOS + resultado url+hash) OU campo ratificado_por humano",
-      "check": "tools/research_evidence.py"
-    },
-    "busca_exaustiva": {
-      "evidencia": "para todo [DESCONHECIDO] que vai a decisao: >=K dominios distintos, fonte oficial, resultado anexado, vigencia verificada",
-      "porque": "NAO SEI so e legitimo APOS busca provada — elimina o punt preguicoso (nao garante onisciencia)",
-      "check": "tools/research_evidence.py"
-    }
+ "_doc": "Manifesto declarativo (forma BMAD) dos comportamentos/papeis + MATRIZ deterministica path->papeis exigidos. Lido por tools/squad_gate.py (ADR-092). Comportamento vira DADO versionado: editar aqui muda o que o gate exige, sem mexer no codigo. Cada item da matriz casa por PATH staged (deterministico, nao julgamento).",
+ "matriz": [
+  {
+   "match": {
+    "suffix": ".py"
+   },
+   "exige": [
+    "qa_critic"
+   ],
+   "porque": "mudanca de codigo"
   },
-  "parametros": {
-    "K_dominios_distintos": 2,
-    "atestacao_anti_self": true
+  {
+   "match": {
+    "prefix": "docs/adr/"
+   },
+   "exige": [
+    "architect",
+    "qa_critic"
+   ],
+   "porque": "ADR novo/alterado"
+  },
+  {
+   "match": {
+    "exact": "data/catalog/bindings.json"
+   },
+   "exige": [
+    "research_ou_ratificacao"
+   ],
+   "porque": "binding/numero regulado"
+  },
+  {
+   "match": {
+    "exact": "data/catalog/spec_faixas.json"
+   },
+   "exige": [
+    "research_ou_ratificacao"
+   ],
+   "porque": "faixa de especificacao regulada"
+  },
+  {
+   "match": {
+    "prefix": "CHANGELOG"
+   },
+   "exige": [
+    "juncao_release"
+   ],
+   "porque": "release (junção J0-J6, ADR-077)"
+  },
+  {
+   "match": {
+    "prefix": "_shared/"
+   },
+   "exige": [
+    "qa_critic"
+   ],
+   "porque": "skill de NUCLEO governa o comportamento de toda sessao futura — alavancagem maior que a maioria do codigo"
+  },
+  {
+   "match": {
+    "prefix": ".agent/skills/"
+   },
+   "exige": [
+    "qa_critic"
+   ],
+   "porque": "skill de papel muda como o squad opera"
+  },
+  {
+   "match": {
+    "prefix": ".agent/rules/"
+   },
+   "exige": [
+    "qa_critic"
+   ],
+   "porque": "regra sempre-ativa vale para toda sessao, sem opt-in"
+  },
+  {
+   "match": {
+    "exact": "behaviors/manifest.json"
+   },
+   "exige": [
+    "qa_critic"
+   ],
+   "porque": "mexer na propria matriz de enforcement — sem isso o gate se auto-afrouxa"
+  },
+  {
+   "match": {
+    "exact": "AGENT-FRAMEWORK.md"
+   },
+   "exige": [
+    "architect",
+    "qa_critic"
+   ],
+   "porque": "roteador raiz: decide o modo de toda sessao"
+  },
+  {
+   "match": {
+    "exact": "CLAUDE.md"
+   },
+   "exige": [
+    "qa_critic"
+   ],
+   "porque": "entrada do framework"
+  },
+  {
+   "match": {
+    "exact": "AGENTS.md"
+   },
+   "exige": [
+    "qa_critic"
+   ],
+   "porque": "entrada cross-tool"
+  },
+  {
+   "match": {
+    "prefix": ".github/workflows/"
+   },
+   "exige": [
+    "architect",
+    "qa_critic"
+   ],
+   "porque": "o workflow do CI e' o INTERRUPTOR do proprio gate: `continue-on-error` decide se o squad-gate e' advisory ou bloqueante (ADR-104). Editar isso sem papel nenhum permitiria religar o advisory, remover o step ou mudar o `if:` em silencio. [achado ALTA da 16a rodada do ADR-115]"
+  },
+  {
+   "match": {
+    "prefix": ".claude/agents/"
+   },
+   "exige": [
+    "qa_critic"
+   ],
+   "porque": "e' a DEFINICAO dos subagentes reais — inclusive a do proprio qa-critic, que declara 'contexto isolado' e 'hipotese default: existe bug'. A matriz ja protegia `.agent/skills/` e `.agent/rules/` e esquecia o irmao que de fato roda. `_atestacao_valida` confere agentId e modelo, e nao tem como saber se a definicao do critico foi reescrita. [achado ALTA da 16a rodada do ADR-115]"
+  },
+  {
+   "match": {
+    "exact": ".claude/settings.json"
+   },
+   "exige": [
+    "qa_critic"
+   ],
+   "porque": "configura os HOOKS e as permissoes da sessao — pode desarmar o gate sem tocar no gate. [achado do autor seguindo o metodo da 16a rodada do ADR-115]"
+  },
+  {
+   "match": {
+    "exact": "tools/model-policy.json"
+   },
+   "exige": [
+    "qa_critic"
+   ],
+   "porque": "define a escada de modelos (ADR-078): e' o arquivo que decide o que significa 'um degrau abaixo do autor'. Reescrito, faria o critico isolado ser o MESMO modelo do autor sem que `_atestacao_valida` percebesse — ela compara os nomes declarados, nao a politica. [achado do autor seguindo o metodo da 16a rodada do ADR-115]"
+  },
+  {
+   "match": {
+    "prefix": ".agent/workflows/"
+   },
+   "exige": [
+    "qa_critic"
+   ],
+   "porque": "os workflows de operacao sao a SEQUENCIA do squad — start-session, handoff, checkpoint, implement. Enquanto `.github/workflows/` executa codigo no CI, estes orquestram o comportamento do proprio squad: omitir um passo (sync, reconciliacao de WIP, boot-check) altera todas as sessoes futuras sem tocar em codigo nenhum. A matriz ja protegia `.agent/skills/` e `.agent/rules/` e esquecia o terceiro irmao. [achado MEDIA da 17a rodada do ADR-115]"
+  },
+  {
+   "match": {
+    "exact": ".claude/settings.nonadmin.json"
+   },
+   "exige": [
+    "qa_critic"
+   ],
+   "porque": "e' o TEMPLATE que `bootstrap.py activate_nonadmin()` copia POR CIMA de `.claude/settings.json` — o arquivo que a matriz ja protege. Editar o template e commita-lo sozinho passava sem revisao, e o efeito so' aparecia quando o bootstrap rodasse em OUTRA maquina. Proteger o destino e deixar a origem aberta nao protege nada. [achado MEDIA da 18a rodada do ADR-115]"
+  },
+  {
+   "match": {
+    "suffix": ".gitignore"
+   },
+   "exige": [
+    "qa_critic"
+   ],
+   "porque": "e' o arquivo que decide O QUE O GIT VE — e portanto o que este gate, que le `git diff --cached`, consegue avaliar. Um curinga a mais aqui torna um caminho inteiro invisivel ao gate sem tocar no gate, e sem que `git status` acuse nada. Nao e' hipotese neste projeto: um padrao `*credential*` ja engoliu `credentials.py` por 12 commits, em silencio. [achado ALTA da 19a rodada do ADR-115; a 20a mostrou que `exact` cobria SO' a raiz e deixava `tools/.gitignore` — na MESMA pasta do gate — de fora. Virou SUFIXO, que e' a forma ja usada para `.py` e cobre qualquer .gitignore da arvore.]"
+  },
+  {
+   "match": {
+    "suffix": ".ps1"
+   },
+   "exige": [
+    "qa_critic"
+   ],
+   "porque": "os hooks .ps1 NAO sao acessorio: `route-gate.ps1` e' a UNICA implementacao do ADR-027, e `effect-gate.ps1`/`mission-gate.ps1`/`overwrite-guard.ps1` sao o fallback que RODA quando o Python e' vetado — o MODO NON-ADMIN que o CLAUDE.md documenta como real e que ja aconteceu nesta maquina. Reescrever `effect-gate.ps1` para sair 0 desarma o bloqueio de acao destrutiva, e a matriz classificava isso como 'papeis exigidos: nenhum'. Sufixo, e nao prefixo, para cobrir tambem `bootstrap.ps1` e qualquer hook futuro fora das duas pastas — mesma forma ja usada para `.py`. [achado ALTA da 22a rodada do ADR-115]"
+  },
+  {
+   "match": {
+    "suffix": ".sh"
+   },
+   "exige": [
+    "qa_critic"
+   ],
+   "porque": "paridade POSIX declarada dos hooks .ps1 (ADR-039/040): sao os MESMOS gates para host nao-Windows. Hoje sem wiring vivo — `.claude/settings.json` invoca so' `.py || .ps1` (ADR-027) e `bootstrap.sh` admite que o hook global fica inativo ate 'o port .sh chegar'. Por isso o raio HOJE e' zero, e por isso mesmo entra: e' mina dormente. No dia em que o port for ligado, o arquivo ja estara 'pronto' ha meses sem nunca ter passado por qa_critic, e o unico lugar que o exercita (`test_parity.py` em runner ubuntu/macos) cai no canal que a memoria do dono ja registra como nao-confiavel. [achado MEDIA da QA adversarial de 17/09/2026 — ver _meta/qa/]"
+  },
+  {
+   "match": {
+    "prefix": "tools/"
+   },
+   "exige": [
+    "qa_critic"
+   ],
+   "porque": "os ARQUIVOS DE DADOS que parametrizam os gates viviam fora da matriz. `suffix: .py` cobria o codigo dos gates e deixava de fora exatamente o que eles leem: `sensitive-denylist.txt` e `anonymize-map.txt` decidem o que o `check_core_agnostic --sensitive`, o `export-clean.py` e o `execution_report.py --publish` recusam publicar; `effect-rules.json` e' o que barra acao destrutiva; `agnostic-denylist.txt` e o que mede vazamento de dominio no nucleo; `model-policy.json` define o que e' 'um degrau abaixo do autor'. Remover uma linha de qualquer um desarma o gate sem tocar no gate — e a matriz classificava isso como 'papeis exigidos: nenhum'. E' PREFIXO da pasta inteira, e nao `exact` nos dois arquivos achados, porque a licao da 20a rodada foi exatamente essa: `exact` cobria so' o que alguem lembrou de listar, e o irmao ao lado passava. `tools/` inteiro e' maquinaria de framework; casar demais aqui custa exigir revisao de um arquivo que talvez nao precisasse, e casar de menos e' o que deixava passar — a mesma regra que o proprio `classify` ja declara. [achado ALTA da QA adversarial de 17/09/2026 — ver _meta/qa/; o critico achou 2 arquivos, a varredura da pasta achou 8] CUSTO ACEITO, com os dois casos nomeados pelo critico da 24a rodada: `tools/requirements-dev.txt` (pins de libs opcionais; sem elas os canarios degradam para SKIP, nunca FAIL) e `tools/templates/central-reports-ci.yml` (template COPIADO para outro repositorio, nao vive aqui) passam a exigir revisao sem parametrizar gate algum. Fica assim de proposito: pin de dependencia e' superficie de supply-chain, e template que viaja para outro repo muda o comportamento LA'. Restringir a regra a uma lista de arquivos reabriria a classe que a 20a rodada fechou — `exact` cobre so' o que alguem lembrou de listar."
+  },
+  {
+   "match": {
+    "exact": "capabilities.json"
+   },
+   "exige": [
+    "qa_critic"
+   ],
+   "porque": "o REGISTRO DE CAPACIDADES decide, para cada uma das 100, se o enforcement e' `fail-closed` ou `advisory`, e se ha' bloco `mutacao` provando a sabotagem. Trocar um `fail-closed` por `advisory` e remover o `mutacao` rebaixa a garantia SEM tocar em codigo nenhum — e a matriz classificava um stage com so' esse arquivo como 'papeis exigidos: nenhum'. Nao ha' segunda camada: `test_capabilities.py` valida FORMA (`advisory` e' valor legitimo, e capacidade advisory nao precisa de mutacao), e o `audit_enforcement.py`, que teria o ratchet de verdade, NAO roda no `run_canaries.py`. `CAPABILITIES.md` entra junto por ser o espelho publico do registro: editar a mao ali esconde o drift de quem le o indice em vez do JSON. E' a QUINTA instancia de 'interruptor fora da matriz' (as outras: .gitignore na 19a, `tools/.gitignore` na 20a, .ps1 na 22a, dados de `tools/` na 23a) — e a primeira em que o interruptor esta' na RAIZ, onde nenhum prefixo de pasta alcanca. [achado ALTA da QA adversarial de 17/09/2026 — ver _meta/qa/]"
+  },
+  {
+   "match": {
+    "exact": "CAPABILITIES.md"
+   },
+   "exige": [
+    "qa_critic"
+   ],
+   "porque": "espelho publico de `capabilities.json` — mesma razao, mesmo achado da 24a rodada."
+  },
+  {
+   "match": {
+    "exact": ".repo-identity.json"
+   },
+   "exige": [
+    "qa_critic"
+   ],
+   "porque": "`canonical_remote`, `canonical_branch` e `stale_behind_threshold` deste arquivo sao LIDOS por `repo_identity.classify()` para decidir a ancestralidade e, com ela, `writable_master` — o sinal que `framework_onboarding.py` usa para liberar escrita na arvore. O critico da 25a rodada provou em clone descartavel: editando um unico campo (`canonical_remote`) para casar com o origin local, o veredito vira MASTER-CANONICO com `writable_master: true`. O `note` do proprio arquivo dizia que copiar o arquivo nao bastava — verdade; o que basta e' EDITA-LO. Sexta instancia de 'interruptor fora da matriz' (as anteriores: .gitignore 19a/20a, .ps1 22a, dados de tools/ 23a, capabilities.json 24a). [achado ALTA da QA adversarial de 17/09/2026 — ver _meta/qa/]"
+  },
+  {
+   "match": {
+    "exact": "_meta/enforcement-baseline.json"
+   },
+   "exige": [
+    "qa_critic"
+   ],
+   "porque": "e' a lista que DISPENSA capacidades do bloqueio fail-closed do ADR-106. Quem esta' nela e' passivo herdado e nao barra o CI; quem NAO esta' e' capacidade nova e precisa de prova. O critico da 26a rodada provou: `modo_declaracao` com a capacidade quebrada FORA da baseline devolve rc=1 e bloqueia; com o mesmo id DENTRO, devolve rc=0. Acrescentar uma linha aqui apaga o bloqueio de qualquer capacidade recem-quebrada, sem exigir papel nenhum. E' o interruptor mais direto de todos: nao desliga o gate, desliga o ALVO. Setima instancia de 'interruptor fora da matriz' (anteriores: .gitignore 19a/20a, .ps1 22a, dados de tools/ 23a, capabilities.json 24a, .repo-identity.json 25a). [achado ALTA da QA adversarial de 17/09/2026 — ver _meta/qa/]"
+  },
+  {
+   "match": {
+    "prefix": ".claude/commands/"
+   },
+   "exige": [
+    "qa_critic"
+   ],
+   "porque": "os comandos do Claude Code SAO o processo. `.claude/commands/start-session.md` e' o que o proprio CLAUDE.md chama de 'primeira acao obrigatoria em toda sessao' — quem edita ele muda a sequencia de boot do squad (rules, briefing, history, gates) sem tocar em codigo nenhum, e a matriz classificava isso como 'papeis exigidos: nenhum'. Vale para todo comando: `controle-projeto.md` e `controle-sharepoint.md` entraram nesta mesma sessao. Oitava instancia de 'interruptor fora da matriz' (anteriores: .gitignore 19a/20a, .ps1 22a, dados de tools/ 23a, capabilities.json 24a, .repo-identity.json 25a, _meta/enforcement-baseline.json 26a). [achado ALTA da QA adversarial de 17/09/2026 — ver _meta/qa/]"
   }
+ ],
+ "comportamentos": {
+  "qa_critic": {
+   "evidencia": "artefato em _meta/qa/<bloco>.json com recomendacao aprovativa E atestacao de isolamento",
+   "atestacao_obrigatoria": [
+    "agentId",
+    "modelo"
+   ],
+   "regra": "agentId nao-vazio (subagente isolado) e modelo != autor do bloco (ADR-074). String solta NAO passa.",
+   "check": "tools/squad_gate.py"
+  },
+  "architect": {
+   "evidencia": "ADR correspondente em docs/adr/ (o proprio arquivo staged)",
+   "check": "tools/squad_gate.py"
+  },
+  "research_ou_ratificacao": {
+   "evidencia": "research-ledger (>=K dominios DISTINTOS + resultado url+hash) OU campo ratificado_por humano",
+   "check": "tools/research_evidence.py"
+  },
+  "busca_exaustiva": {
+   "evidencia": "para todo [DESCONHECIDO] que vai a decisao: >=K dominios distintos, fonte oficial, resultado anexado, vigencia verificada",
+   "porque": "NAO SEI so e legitimo APOS busca provada — elimina o punt preguicoso (nao garante onisciencia)",
+   "check": "tools/research_evidence.py"
+  }
+ },
+ "parametros": {
+  "K_dominios_distintos": 2,
+  "atestacao_anti_self": true
+ }
 }

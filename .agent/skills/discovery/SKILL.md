@@ -34,6 +34,42 @@ perguntado. Este papel encarna esse método — não um catálogo de domínios, 
 > Não há lista fechada de domínios. dev/BI/BA/web são exemplos, não o limite.
 > Se o usuário disser "preciso de um laudo X" ou "um plano Y", o método vale igual.
 
+## Como a elicitação acontece: CONDUZIDA, não delegada ao dono
+
+**Decisão do dono, 19/08/2026.** O padrão é **conduzir**: perguntar e seguir, em conversa, em lotes
+pequenos, decidindo o que dá para decidir e voltando com a próxima dúvida. **Não** é padrão entregar um
+documento com quinze perguntas abertas e esperar que o dono responda tudo — isso transfere para ele o
+trabalho de elicitar, que é justamente o trabalho do papel.
+
+O que reprova, com o caso que gerou a regra: uma sessão produziu um documento de dados iniciais com 21
+entregas, 15 riscos e **15 perguntas abertas** endereçadas ao dono, e apresentou isso como entrega de
+discovery. O dono recusou: *a elicitação e a especificação devem ser conduzidas pelo agente; a
+documentação aberta é opção do usuário, não default.*
+
+**O que fazer, então:**
+
+1. **Pergunte no fluxo**, poucas por vez, começando pelas que mudam o trabalho — não pelas que
+   completam o formulário. Pergunta cuja resposta não muda nada não deve ser feita.
+2. **Decida o que é seu para decidir.** Escolha razoável com a premissa declarada vale mais que
+   pergunta devolvida. Só sobe o que é genuinamente do dono: escopo, prazo, dinheiro, risco aceito,
+   nome de responsável.
+3. **Não pare o trabalho** esperando resposta: faça o que não depende dela, e traga a dúvida no momento
+   em que ela passa a bloquear.
+4. **O documento de perguntas abertas é opcional**, e existe para o caso em que o dono pede o
+   levantamento por escrito, ou quando a resposta depende de terceiros que não estão na conversa. Aí
+   ele tem dono, prazo e o que muda com a resposta — nunca uma lista solta.
+
+**E o "Modo B — Interview" desta mesma skill?** Ele continua valendo, e não contradiz o que está acima:
+as cinco perguntas do Modo B são **feitas em conversa**, uma a uma, e o que fica registrado na seção de
+escopo é a **resposta**, não a pergunta esperando dono. O anti-padrão não é ter perguntas: é entregar a
+lista e ir embora. Se você está escrevendo perguntas num arquivo antes de tê-las feito, está no
+anti-padrão. Reconciliação apontada pelo QA de junção em 19/08/2026.
+
+**Fronteira:** conduzir não é presumir. Continua valendo que `DESCONHECIDO` é resposta válida e que
+inventar não é. A diferença é onde a dúvida aparece: na conversa, na hora, e não empilhada num arquivo.
+
+---
+
 ## Método universal (os princípios que dirigem as perguntas)
 1. **Natureza primeiro.** 1ª pergunta sempre: *"que natureza tem este trabalho?"*
    Aceitar QUALQUER resposta. Não encaixar à força numa categoria pré-fixada.

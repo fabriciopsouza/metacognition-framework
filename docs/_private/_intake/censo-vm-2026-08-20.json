@@ -1,0 +1,43 @@
+{
+  "coletado_em": "2026-08-20 22:51:15",
+  "host": "9TRP7H4",
+  "so": "Windows 11 (10.0.26200)",
+  "python": "3.12.10",
+  "cpu": {
+    "modelo": "13th Gen Intel(R) Core(TM) i5-1345U",
+    "nucleos_fisicos": 10,
+    "nucleos_logicos": 12,
+    "clock_mhz": 1600
+  },
+  "simd": {
+    "SSE2": true,
+    "AVX": true,
+    "AVX2": true,
+    "AVX512F": false,
+    "confianca": "alta (confirmado pela API do Windows)"
+  },
+  "memoria": {
+    "ram_gb": 15.7,
+    "fabricante": "Dell Inc.",
+    "modelo_maquina": "Dell Pro 14 PC14250",
+    "ram_livre_gb": 1.5
+  },
+  "disco": {
+    "total_gb": 237.3,
+    "livre_gb": 21.5
+  },
+  "banda_memoria": {
+    "copia_gb_s": 3.33,
+    "amostra_mb": 256,
+    "nota": "estimativa grosseira (Python), nao e' STREAM/benchmark real"
+  },
+  "virtualizacao": "nao identificada (pode ser fisica)",
+  "leitura": [
+    "SIMD: AVX2 presente -- GATE DA FASE 0 APROVADO. Usar build avx2 do llama.cpp.",
+    "  (confianca da deteccao SIMD: alta (confirmado pela API do Windows))",
+    "RAM ~16 GB: faixa ALVO -- modelo 4B Q4 (~2,5 GB) + embeddings + indice, com folga para 2-4 sessoes.",
+    "DISCO: 21.5 GB livres -- suficiente (reserva ~15 GB).",
+    "Threads recomendados para o llama.cpp: 10 (1 por nucleo FISICO; hyper-threading da <=10% e as vezes piora).",
+    "  (a VM expoe 12 logicos -- NAO usar 12 threads)"
+  ]
+}

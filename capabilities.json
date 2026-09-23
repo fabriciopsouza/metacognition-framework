@@ -1,1894 +1,2118 @@
 {
-  "schema_version": "1.0",
-  "note": "Registry SSoT de capacidades (ADR-072). UM registro por feature. Fonte única; CAPABILITIES.md e o manifest de equivalencia sao DERIVADOS (build_capabilities.py). Canario anti-drift: tools/test_capabilities.py. status: PROVIDES|PARTIAL|ABSENT|JUSTIFIED_ABSENT.",
-  "capabilities": [
-    {
-      "id": "qa-attestation-provenance",
-      "title": "Procedencia do veredito de qa-critic: hash do relatorio real do subagente conferido contra o log do harness",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/verify_qa_attestation.py",
-      "test": "tools/test_verify_qa_attestation.py",
-      "adr": "docs/adr/108-procedencia-do-veredito-de-qa-critic.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "qa",
-        "evidence",
-        "anti-teatro",
-        "provenance"
-      ],
-      "mutacao": {
-        "arquivo": "tools/verify_qa_attestation.py",
-        "de": "        return \"divergente\", (\"o relatorio do critico diz REPROVAR e o veredito gravado e' \"",
-        "para": "        return \"verificado\", (\"SABOTADO: aceita veredito que contradiz o relatorio \"",
-        "canario": "tools/test_verify_qa_attestation.py",
-        "espera": "relatorio REPROVA + veredito aprovativo e PEGO"
-      }
-    },
-    {
-      "id": "capability-index",
-      "title": "Indice de capacidades derivado + canario anti-drift",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/build_capabilities.py",
-      "test": "tools/test_capabilities.py",
-      "adr": "docs/adr/072-indice-de-capacidades-registry-derivado.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "meta",
-        "discoverability",
-        "anti-drift"
-      ],
-      "mutacao": {
-        "arquivo": "tools/build_capabilities.py",
-        "de": "    out.append(\"# CAPABILITIES — indice de capacidades (nivel 1: id + title)\")",
-        "para": "    out.append(\"# CAPABILITIES — indice SABOTADO\")",
-        "canario": "tools/test_capabilities.py",
-        "espera": "CAPABILITIES.md fora de sync com o registry"
-      }
-    },
-    {
-      "id": "boot-self-check",
-      "title": "Self-check de boot consolidado (sync+agnosticismo+boot-scan+versao) com prova checavel",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/boot_check.py",
-      "test": "tools/test_boot_check.py",
-      "adr": "docs/adr/061-auditor-de-liveness-anti-falha-silenciosa-de-hooks.md",
-      "cross_ai": false,
-      "enforcement": "manual",
-      "tags": [
-        "boot",
-        "anti-bypass",
-        "liveness",
-        "determinism"
-      ]
-    },
-    {
-      "id": "environment-applicability-gate",
-      "title": "Deteccao de ambiente no boot + aplicabilidade das premissas (APLICA/ESTALE/AUSENTE) cross-session/cross-IA",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/boot_check.py",
-      "test": "tools/test_environment_applicability.py",
-      "adr": "docs/adr/093-boot-deteccao-ambiente-aplicabilidade-premissas-cross-session.md",
-      "cross_ai": true,
-      "enforcement": "fail-soft",
-      "tags": [
-        "boot",
-        "environment",
-        "file-first",
-        "cross-session",
-        "anti-stale"
-      ]
-    },
-    {
-      "id": "cross-ai-antiloop-gate",
-      "title": "Trava fisica anti-loop da troca cross-IA (terminacao garantida)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/cross_ai_gate.py",
-      "test": "tools/test_cross_ai_gate.py",
-      "adr": "docs/adr/069-isolamento-por-ia-repos-canonicos-hub-handoff.md",
-      "doc": "docs/_private/cross-ai/README.md",
-      "cross_ai": true,
-      "enforcement": "ci-ready",
-      "tags": [
-        "cross-ai",
-        "anti-loop",
-        "gate"
-      ]
-    },
-    {
-      "id": "cross-ai-hub-tooling",
-      "title": "Scan/manifest/deposit do hub cross-IA (descoberta no boot + deposit validado pelo gate)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/cross_ai_hub.py",
-      "test": "tools/test_cross_ai_hub.py",
-      "adr": "docs/adr/069-isolamento-por-ia-repos-canonicos-hub-handoff.md",
-      "doc": "docs/_private/cross-ai/README.md",
-      "cross_ai": true,
-      "enforcement": "manual",
-      "tags": [
-        "cross-ai",
-        "hub",
-        "scan",
-        "deposit"
-      ]
-    },
-    {
-      "id": "repo-identity-gate",
-      "title": "Classificador de identidade de repo (master|shadow|clone|foreign), ancestry-first",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/repo_identity.py",
-      "test": "tools/test_repo_identity.py",
-      "adr": "docs/adr/070-repo-identity-gate-advisory-ancestry-first.md",
-      "cross_ai": true,
-      "enforcement": "advisory",
-      "tags": [
-        "cross-ai",
-        "identity",
-        "gate"
-      ]
-    },
-    {
-      "id": "shadow-write-guard",
-      "title": "Write-isolation: NEGA push de shadow E push pra remote != canonical (escreve so no proprio repo; read livre)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/hooks/shadow_write_guard.py",
-      "test": "tools/test_shadow_write_guard.py",
-      "adr": "docs/adr/070-repo-identity-gate-advisory-ancestry-first.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "identity",
-        "guard",
-        "shadow",
-        "runtime"
-      ],
-      "mutacao": {
-        "arquivo": "tools/hooks/shadow_write_guard.py",
-        "de": "if info.get(\"verdict\") == \"SOMBRA-EXPORT\":",
-        "para": "if info.get(\"verdict\") == \"SOMBRA-EXPORTX\":",
-        "canario": "tools/test_shadow_write_guard.py",
-        "espera": "shadow + push deveria ser DENY"
-      }
-    },
-    {
-      "id": "shadow-sync",
-      "title": "Hook que auto-casa o espelho publicado com origin no boot (reset --hard mecanico, so em shadow)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/hooks/shadow_sync.py",
-      "test": "tools/test_shadow_sync.py",
-      "adr": "docs/adr/070-repo-identity-gate-advisory-ancestry-first.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "identity",
-        "guard",
-        "shadow",
-        "sync"
-      ],
-      "mutacao": {
-        "arquivo": "tools/hooks/shadow_sync.py",
-        "de": "if head == target:",
-        "para": "if head != target:",
-        "canario": "tools/test_shadow_sync.py",
-        "espera": "shadow divergente deveria"
-      }
-    },
-    {
-      "id": "repo-mode-user-vs-dev",
-      "title": "Modo por identidade no boot: shadow=USER (aplica a dominio, nao desenvolve), master=DEV",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/repo_mode.py",
-      "test": "tools/test_repo_mode.py",
-      "adr": "docs/adr/070-repo-identity-gate-advisory-ancestry-first.md",
-      "cross_ai": false,
-      "enforcement": "advisory",
-      "note": "Anuncia o modo (advisory); a TRAVA fisica de 'shadow nao desenvolve' e o shadow-write-guard (fail-closed) + shadow-sync.",
-      "tags": [
-        "identity",
-        "mode",
-        "shadow",
-        "boot"
-      ]
-    },
-    {
-      "id": "equivalence-gate",
-      "title": "Equivalencia de capacidade entre repos-mae (PROVIDES|JUSTIFIED_ABSENT + hitl_proof)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/equivalence_gate.py",
-      "test": "tools/test_equivalence_gate.py",
-      "adr": "docs/adr/071-equivalencia-convergencia-entre-repos-mae.md",
-      "cross_ai": true,
-      "enforcement": "ci-ready",
-      "tags": [
-        "cross-ai",
-        "equivalence",
-        "gate"
-      ]
-    },
-    {
-      "id": "export-shadow-stamp",
-      "title": "Carimbo fisico role=shadow no export (trava contra sombra se passar por master)",
-      "status": "PARTIAL",
-      "ai_owner": "claude",
-      "mechanism": "tools/export-clean.py",
-      "adr": "docs/adr/070-repo-identity-gate-advisory-ancestry-first.md",
-      "cross_ai": true,
-      "enforcement": "physical",
-      "tags": [
-        "cross-ai",
-        "identity",
-        "export"
-      ],
-      "note": "PARTIAL (qa-critic 2026-06-06): stamp_shadow_identity() nao tem canario dedicado; test_premium_tier nao o exercita. Honestidade > overclaim."
-    },
-    {
-      "id": "premium-tier-export",
-      "title": "Tier premium na export-clean (mesma fonte, mantem camada premium; baseline single-source)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/export-clean.py",
-      "test": "tools/test_premium_tier.py",
-      "adr": "docs/adr/049-tres-distribuicoes-premium-baseline-single-source.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "distribution",
-        "premium"
-      ],
-      "mutacao": {
-        "arquivo": "tools/export-clean.py",
-        "de": "        if \"premium:start\" in low:",
-        "para": "        if \"premium:start-SABOTADO\" in low:",
-        "canario": "tools/test_premium_tier.py",
-        "espera": "FAIL strip remove a seção premium"
-      }
-    },
-    {
-      "id": "onboarding-master-gate",
-      "title": "Popup usar-vs-desenvolver so no MASTER-CANONICO (nao vaza p/ public/premium/gemini)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/framework_onboarding.py",
-      "test": "tools/test_framework_onboarding.py",
-      "adr": "docs/adr/067-onboarding-popup-primeira-abertura-instala-fecha-abre-projeto.md",
-      "cross_ai": false,
-      "enforcement": "advisory",
-      "tags": [
-        "onboarding",
-        "gate",
-        "identity"
-      ]
-    },
-    {
-      "id": "agnostic-core-linter",
-      "title": "Linter fail-closed: nucleo nao carrega norma de dominio (agnosticismo)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/check_core_agnostic.py",
-      "test": "tools/test_core_agnostic.py",
-      "adr": "docs/adr/020-linter-agnosticismo-nucleo.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "agnosticism",
-        "linter",
-        "gate"
-      ],
-      "mutacao": {
-        "arquivo": "tools/check_core_agnostic.py",
-        "de": "            m = rx.search(line)",
-        "para": "            m = None",
-        "canario": "tools/test_core_agnostic.py",
-        "espera": "FAIL [6] token de cliente detectado"
-      }
-    },
-    {
-      "id": "marketing-honesty-gate",
-      "title": "Gates de honestidade da vitrine (anti-overclaim, claim provado ancorado, versao em sync)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/test_marketing_claims.py",
-      "test": "tools/test_marketing_claims.py",
-      "adr": "docs/adr/059-gates-de-honestidade-da-vitrine.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "honesty",
-        "doc-sync",
-        "gate"
-      ],
-      "mutacao": {
-        "arquivo": "tools/test_marketing_claims.py",
-        "de": "    sem_campo = sum(1 for c in caps if not c.get(\"enforcement\"))",
-        "para": "    sem_campo = 0",
-        "canario": "tools/test_marketing_claims.py",
-        "espera": "auto-teste da contagem da vitrine"
-      }
-    },
-    {
-      "id": "consistency-closing-ci",
-      "title": "Consistencia de fechamento FAIL-CLOSED no CI (dim do consistency-gate que o hook PS vetado nao enforcava)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/test_consistency_closing.py",
-      "test": "tools/test_consistency_closing.py",
-      "adr": "docs/adr/030-consistency-gate-auditoria-de-fechamento.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "doc-sync",
-        "anti-bypass",
-        "closing",
-        "gate"
-      ],
-      "mutacao": {
-        "arquivo": "tools/test_consistency_closing.py",
-        "de": "Status:\\s*(?:\\*\\*)?\\s*proposto",
-        "para": "Status:\\s*(?:\\*\\*)?\\s*propostoZZ",
-        "canario": "tools/test_consistency_closing.py",
-        "espera": "o bug recorrente do ADR-051"
-      }
-    },
-    {
-      "id": "rules-parity-guard",
-      "title": "Anti-drift das 4 regras inviolaveis entre arquivos de autoridade (sem violar SSoT §6.5)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/check_rules_parity.py",
-      "test": "tools/test_rules_parity.py",
-      "adr": "docs/adr/075-rules-parity-anti-drift-regras-inviolaveis.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "anti-bypass",
-        "anti-drift",
-        "authority",
-        "gate"
-      ],
-      "mutacao": {
-        "arquivo": "tools/check_rules_parity.py",
-        "de": "N_CANON = len(CANON)",
-        "para": "N_CANON = 3",
-        "canario": "tools/test_rules_parity.py",
-        "espera": "repo real deveria PASSAR mas reportou drift"
-      }
-    },
-    {
-      "id": "handoff-generator",
-      "title": "Gerador deterministico do Pacote de handoff P14 do estado do repo + sugestao de modelo (papel+risco)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/handoff.py",
-      "test": "tools/test_handoff.py",
-      "adr": "docs/adr/076-handoff-deterministico-gerador-sugestao-modelo.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "handoff",
-        "determinism",
-        "cross-session",
-        "model-suggestion"
-      ],
-      "mutacao": {
-        "arquivo": "tools/handoff.py",
-        "de": "if st[\"unpushed\"] == \"?\":",
-        "para": "if st[\"unpushed\"] == \"?!\":",
-        "canario": "tools/test_handoff.py",
-        "espera": "renderizou 'nada pendente' (falso)"
-      }
-    },
-    {
-      "id": "model-policy",
-      "title": "Politica de modelo como dado: papel x risco -> tier com chain de fallback + escada de heterogeneidade + indisponibilidade declarada (env)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/model-policy.json",
-      "test": "tools/test_handoff.py",
-      "adr": "docs/adr/078-model-policy-fonte-unica-escada-heterogeneidade.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "models",
-        "policy",
-        "heterogeneity",
-        "fallback"
-      ],
-      "mutacao": {
-        "arquivo": "tools/model-policy.json",
-        "de": "\"tier\": \"baseline\"",
-        "para": "\"tier\": \"economy\"",
-        "canario": "tools/test_handoff.py",
-        "espera": "(autoral) = haiku, esperado baseline opus"
-      }
-    },
-    {
-      "id": "limits-catalog",
-      "title": "Catalogo LIMITS.md de capacidades provadas (PROVADO|PARCIAL|EM-DESENV), derivado",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/build_limits.py",
-      "test": "tools/test_marketing_claims.py",
-      "adr": "docs/adr/044-limits-e-marketing-ancorado.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "honesty",
-        "catalog",
-        "doc-sync"
-      ],
-      "mutacao": {
-        "arquivo": "tools/build_limits.py",
-        "de": "    L.append(\"# LIMITS.md — o que o framework GARANTE, prova, e o que NÃO faz (gerado por tools/build_limits.py, ADR-044)\")",
-        "para": "    L.append(\"# LIMITS.md — SABOTADO\")",
-        "canario": "tools/test_marketing_claims.py",
-        "espera": "FAIL LIMITS.md em sync com os canários"
-      }
-    },
-    {
-      "id": "knowledge-catalog",
-      "title": "Retroalimentacao do corpus: catalogo + BM25 offline + insights no boot",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/knowledge_catalog.py",
-      "test": "tools/test_knowledge_catalog.py",
-      "adr": "docs/adr/068-knowledge-catalog-rag-lexico-insights.md",
-      "cross_ai": false,
-      "enforcement": "fail-soft",
-      "tags": [
-        "memory",
-        "recall",
-        "boot"
-      ]
-    },
-    {
-      "id": "execution-report",
-      "title": "Relatorio de execucao (telemetria de processo + licoes), opt-in anonimizado",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/gen_exec_doc.py",
-      "test": "tools/test_gen_exec_doc.py",
-      "adr": "docs/adr/062-relatorio-de-execucao-aprendizado-publico-anonimizado.md",
-      "cross_ai": true,
-      "enforcement": "fail-soft",
-      "tags": [
-        "telemetry",
-        "corpus",
-        "learning"
-      ]
-    },
-    {
-      "id": "web-export",
-      "title": "Gerador deterministico das distribuicoes web (publico/premium) a partir da mae",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/web_export.py",
-      "test": "tools/test_web_export.py",
-      "adr": "docs/adr/054-pacote-web-dois-tiers-cascata-como-profile.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "distribution",
-        "web"
-      ],
-      "mutacao": {
-        "arquivo": "tools/web_export.py",
-        "de": "                    violations.append(f\"{rel}: '{m.group(0)[:60]}'\")",
-        "para": "                    violations.append(\"\") if False else None",
-        "canario": "tools/test_web_export.py",
-        "espera": "FAIL gate anti-JARVIS pega asserção"
-      }
-    },
-    {
-      "id": "repo-sync-boot",
-      "title": "Sync do repo no boot: dim.1 vs proprio upstream (pull seguro) + dim.2 ORTOGONAL vs branch de integracao (origin/HEAD) com marker persistente repetido por-turno (ADR-084)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/hooks/check_repo_sync.py",
-      "test": "tools/test_repo_sync.py",
-      "adr": "docs/adr/084-defasagem-vs-branch-de-integracao-baseline-ortogonal.md",
-      "cross_ai": false,
-      "enforcement": "fail-soft",
-      "note": "ADR-019/060 cobriam apenas defasagem vs @{upstream}; numa feature branch isso reporta 'em dia' mesmo N commits atras de origin/main (regressao 2026-06-16). ADR-084 adiciona a dimensao ortogonal (baseline = origin/HEAD, agnostica) + nudge persistente via route-gate (canarios C6/C7).",
-      "tags": [
-        "boot",
-        "sync",
-        "gate",
-        "baseline-drift"
-      ]
-    },
-    {
-      "id": "effect-gate",
-      "title": "Action-safety por EFEITO: classifica acao destrutiva e pede confirmacao (T3)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/hooks/effect_gate.py",
-      "test": "tools/test_effect_gate.py",
-      "adr": "docs/adr/039-effect-gate-motor-por-efeito.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "safety",
-        "gate",
-        "runtime"
-      ],
-      "mutacao": {
-        "arquivo": "tools/hooks/effect_gate.py",
-        "de": "        if rule.get(\"decision\") == \"deny\":",
-        "para": "        if False:",
-        "canario": "tools/test_effect_gate.py",
-        "espera": "FAIL [deny ->allow]"
-      }
-    },
-    {
-      "id": "mission-gate",
-      "title": "Declara/confirma product_type + escopo antes de J2+ (mission.md)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/hooks/mission_gate.py",
-      "test": "tools/test_mission_gate.py",
-      "adr": "docs/adr/022-mission-gate-product-type.md",
-      "cross_ai": false,
-      "enforcement": "fail-soft",
-      "tags": [
-        "mission",
-        "gate",
-        "runtime"
-      ]
-    },
-    {
-      "id": "compaction-gate",
-      "title": "Bloqueia compaction sem digest persistido (history.md sem checkpoint), fail-open",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/hooks/compaction_gate.py",
-      "test": "tools/test_compaction_gate.py",
-      "adr": "docs/adr/021-compaction-gate-precompact.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "context",
-        "gate",
-        "runtime"
-      ],
-      "mutacao": {
-        "arquivo": "tools/hooks/compaction_gate.py",
-        "de": "    print(json.dumps({\"decision\": \"block\", \"reason\": reason}))",
-        "para": "    print(json.dumps({\"decision\": \"allow\", \"reason\": reason}))",
-        "canario": "tools/test_compaction_gate.py",
-        "espera": "FAIL [block->allow]"
-      }
-    },
-    {
-      "id": "overwrite-guard",
-      "title": "Le o arquivo antes de sobrescrever artefato com conteudo; avisa",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/hooks/overwrite_guard.py",
-      "test": "tools/test_overwrite_guard.py",
-      "adr": "docs/adr/037-action-safety-overwrite-non-session.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "safety",
-        "gate",
-        "runtime"
-      ],
-      "mutacao": {
-        "arquivo": "tools/hooks/overwrite_guard.py",
-        "de": "        sys.exit(2)",
-        "para": "        sys.exit(0)",
-        "canario": "tools/test_overwrite_guard.py",
-        "espera": "FAIL [ps1 rc 0, esperado 2] Write sobre"
-      }
-    },
-    {
-      "id": "sycophancy-canary",
-      "title": "Canario adversarial anti-sicofancia (nao concordar para agradar)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/check_field_mapping.py",
-      "test": "tools/test_sycophancy.py",
-      "adr": "docs/adr/041-sicofancia-canario-adversarial.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "honesty",
-        "canary"
-      ],
-      "mutacao": {
-        "arquivo": "tools/check_field_mapping.py",
-        "de": "            bad.append((s[:90], falta))",
-        "para": "            pass",
-        "canario": "tools/test_sycophancy.py",
-        "espera": "APROVOU (sicofância!)"
-      }
-    },
-    {
-      "id": "reorchestration-gate",
-      "title": "PMO maestro: decisao de re-orquestracao na fronteira de bloco (J6)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/check_reorchestration.py",
-      "test": "tools/test_reorchestration.py",
-      "adr": "docs/adr/045-pmo-maestro-reorquestracao-fronteira-bloco.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "process",
-        "gate"
-      ],
-      "mutacao": {
-        "arquivo": "tools/check_reorchestration.py",
-        "de": "    return False, (\"bloco fechado SEM decisão de RE-ORQUESTRAÇÃO do PMO (ADR-045): registre \"",
-        "para": "    return True, (\"bloco fechado SEM decisão de RE-ORQUESTRAÇÃO do PMO (ADR-045): registre \"",
-        "canario": "tools/test_reorchestration.py",
-        "espera": "FAIL [esperado FAIL] bloco fechado SEM"
-      }
-    },
-    {
-      "id": "doc-intake",
-      "title": "Parse deterministico offline (pdf/docx/xlsx/...) -> chunks + sha256, sem embeddings",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/doc_intake.py",
-      "test": "tools/test_doc_intake.py",
-      "adr": "docs/adr/029-doc-intake-parse-deterministico-sem-embeddings.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "intake",
-        "provenance"
-      ],
-      "mutacao": {
-        "arquivo": "tools/doc_intake.py",
-        "de": "        piece = text[start:end]",
-        "para": "        piece = text[start:max(end - 1, start)]",
-        "canario": "tools/test_doc_intake.py",
-        "espera": "guardado difere do texto nesses offsets"
-      }
-    },
-    {
-      "id": "consistency-gate",
-      "title": "Espelho de consistencia no FECHAMENTO, cabeado no evento Stop (7 dimensoes)",
-      "status": "PARTIAL",
-      "ai_owner": "claude",
-      "mechanism": "tools/hooks/consistency_gate.py",
-      "adr": "docs/adr/030-consistency-gate-auditoria-de-fechamento.md",
-      "cross_ai": false,
-      "tags": [
-        "doc-sync",
-        "gate",
-        "closure"
-      ],
-      "test": "tools/test_consistency_gate.py",
-      "enforcement": "fail-soft"
-    },
-    {
-      "id": "adr-changelog-sync",
-      "title": "Canario doc-sync: toda ADR Aceito deve estar no CHANGELOG (mecaniza falha recorrente)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/test_adr_changelog_sync.py",
-      "test": "tools/test_adr_changelog_sync.py",
-      "adr": "docs/adr/030-consistency-gate-auditoria-de-fechamento.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "doc-sync",
-        "canary",
-        "closure"
-      ],
-      "mutacao": {
-        "arquivo": "tools/test_adr_changelog_sync.py",
-        "de": "status[:* ]+.*aceito",
-        "para": "status[:* ]+.*aceitoZZ",
-        "canario": "tools/test_adr_changelog_sync.py",
-        "espera": "detector cego"
-      }
-    },
-    {
-      "id": "release-checkpoint-gate",
-      "title": "Process-evidence (fail-closed): release atual do CHANGELOG tem checkpoint no history (forward-only)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/test_release_checkpoint.py",
-      "test": "tools/test_release_checkpoint.py",
-      "adr": "docs/adr/074-process-evidence-gate-fechamento-com-evidencia.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "doc-sync",
-        "closure",
-        "process-evidence",
-        "canary"
-      ],
-      "mutacao": {
-        "arquivo": "tools/test_release_checkpoint.py",
-        "de": "    return bool(pat.search(hist))",
-        "para": "    return True",
-        "canario": "tools/test_release_checkpoint.py",
-        "espera": "FORA de heading datado foi aceita"
-      }
-    },
-    {
-      "id": "dev-dogfood-gate",
-      "title": "Dev-dogfood DETERMINISTA: master fechando bloco DEVE ter execution-report + handoff cross-IA (nao opt-in, shadow-aware)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/test_dev_dogfood.py",
-      "test": "tools/test_dev_dogfood.py",
-      "adr": "docs/adr/074-process-evidence-gate-fechamento-com-evidencia.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "doc-sync",
-        "closure",
-        "process-evidence",
-        "cross-ai",
-        "canary"
-      ],
-      "mutacao": {
-        "arquivo": "tools/test_dev_dogfood.py",
-        "de": "if len(t.strip()) < min_chars:",
-        "para": "if len(t.strip()) < 0:",
-        "canario": "tools/test_dev_dogfood.py",
-        "espera": "placeholder CURTO passou no piso de tamanho"
-      }
-    },
-    {
-      "id": "route-gate",
-      "title": "Lembrete de rota deterministico 1x/sessao (UserPromptSubmit), fail-open",
-      "status": "PARTIAL",
-      "ai_owner": "claude",
-      "mechanism": "tools/hooks/route-gate.ps1",
-      "adr": "docs/adr/027-roteamento-deterministico-e-wiring-global-self-heal.md",
-      "cross_ai": false,
-      "enforcement": "advisory",
-      "tags": [
-        "routing",
-        "gate",
-        "runtime"
-      ]
-    },
-    {
-      "id": "prepush-sync-guard",
-      "title": "Guarda de pre-push: evita push sobre base dessincronizada",
-      "status": "PARTIAL",
-      "ai_owner": "claude",
-      "mechanism": "tools/hooks/prepush_sync_guard.py",
-      "adr": "docs/adr/060-edr-pode-vetar-hooks-resiliencia-de-sync.md",
-      "cross_ai": false,
-      "enforcement": "fail-soft",
-      "tags": [
-        "sync",
-        "gate",
-        "git"
-      ]
-    },
-    {
-      "id": "skill-contract",
-      "title": "Valida o contrato minimo de frontmatter das skills (ADR-013)",
-      "status": "PARTIAL",
-      "ai_owner": "claude",
-      "mechanism": "tools/validate_skills.py",
-      "test": "tools/test_skill_contract.py",
-      "adr": "docs/adr/013-contrato-minimo-skill.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "skills",
-        "contract",
-        "linter"
-      ],
-      "mutacao": {
-        "arquivo": "tools/validate_skills.py",
-        "de": "            errors.append(f\"campo obrigatorio ausente: '{key}'\")",
-        "para": "            pass",
-        "canario": "tools/test_skill_contract.py",
-        "espera": "campo obrigatorio deixou de ser exigido"
-      }
-    },
-    {
-      "id": "clean-env-gate",
-      "title": "Teste porta-do-usuario + ambiente limpo (sem residuo de dev na entrega)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/check_clean_env.py",
-      "test": "tools/test_clean_env.py",
-      "adr": "docs/adr/036-teste-porta-do-usuario-e-ambiente-limpo.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "delivery",
-        "gate"
-      ],
-      "mutacao": {
-        "arquivo": "tools/check_clean_env.py",
-        "de": "    return proc.returncode == 0, (proc.stdout or \"\") + (proc.stderr or \"\")",
-        "para": "    return True, (proc.stdout or \"\") + (proc.stderr or \"\")",
-        "canario": "tools/test_clean_env.py",
-        "espera": "FAIL [esperado FAIL] requirements com pacote"
-      }
-    },
-    {
-      "id": "completeness-gate",
-      "title": "Cobertura escopo-pedido x entrega: quantificador sem criterio em validation falha",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/check_completeness.py",
-      "test": "tools/test_completeness.py",
-      "adr": "docs/adr/034-completeness-vs-request-gate.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "completeness",
-        "gate"
-      ],
-      "mutacao": {
-        "arquivo": "tools/check_completeness.py",
-        "de": "        if q not in val:",
-        "para": "        if q in val:",
-        "canario": "tools/test_completeness.py",
-        "espera": "FAIL [esperado PASS] entrega cobre"
-      }
-    },
-    {
-      "id": "context-brief-gate",
-      "title": "Contexto inferido vira ancora de pesquisa mecanizada (reparo do discovery)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/check_context_brief.py",
-      "test": "tools/test_context_brief.py",
-      "adr": "docs/adr/051-reparo-discovery-contexto-inferido-pesquisa-ancora-mecanizada.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "discovery",
-        "gate"
-      ],
-      "mutacao": {
-        "arquivo": "tools/check_context_brief.py",
-        "de": "    return sorted({s for s in signals if re.search(r\"\\b\" + re.escape(s) + r\"\\b\", t)})",
-        "para": "    return []",
-        "canario": "tools/test_context_brief.py",
-        "espera": "esperado FAIL (brief ausente), veio PASS"
-      }
-    },
-    {
-      "id": "delivery-floor-gate",
-      "title": "Piso de entregabilidade ao humano (teste binario de entrega minima)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/check_delivery_floor.py",
-      "test": "tools/test_delivery_floor.py",
-      "adr": "docs/adr/053-teste-binario-de-entregabilidade-ao-humano.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "delivery",
-        "gate"
-      ],
-      "mutacao": {
-        "arquivo": "tools/check_delivery_floor.py",
-        "de": "            if fn.lower().endswith(DOC_EXT) and (_tokens(fn) & RUNBOOK_TOKENS):",
-        "para": "            if False:",
-        "canario": "tools/test_delivery_floor.py",
-        "espera": "entrega COM runbook deveria PASS"
-      }
-    },
-    {
-      "id": "discovery-eval",
-      "title": "Discovery com eval executado (nao so prosa de plano)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/check_spec_depth.py",
-      "test": "tools/test_discovery_eval.py",
-      "adr": "docs/adr/042-discovery-eval-executado.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "discovery",
-        "eval",
-        "canary"
-      ],
-      "mutacao": {
-        "arquivo": "tools/check_spec_depth.py",
-        "de": "    return (len(faltando_obr) == 0), faltando_obr, avisos_rec",
-        "para": "    return True, faltando_obr, avisos_rec",
-        "canario": "tools/test_discovery_eval.py",
-        "espera": "saída rasa PASSOU (eval não discrimina!)"
-      }
-    },
-    {
-      "id": "entrypoint-tty-gate",
-      "title": "Entrypoint nao depende de TTY (roda em CI/headless)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/check_entrypoint_tty.py",
-      "test": "tools/test_entrypoint_no_tty.py",
-      "adr": "docs/adr/036-teste-porta-do-usuario-e-ambiente-limpo.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "delivery",
-        "gate",
-        "ci"
-      ],
-      "mutacao": {
-        "arquivo": "tools/check_entrypoint_tty.py",
-        "de": "        return \"FAIL\", \"quebrou lendo stdin sem TTY (input() bloqueante como única via)\"",
-        "para": "        return \"PASS\", \"sabotado: aceita quebra sem TTY\"",
-        "canario": "tools/test_entrypoint_no_tty.py",
-        "espera": "[esperado FAIL -> PASS] input() bloqueante"
-      }
-    },
-    {
-      "id": "execution-report-builder",
-      "title": "Builder do relatorio de execucao (dois tiers: telemetria processo + anonimizada)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/execution_report.py",
-      "test": "tools/test_execution_report.py",
-      "adr": "docs/adr/038-execution-report-telemetria.md",
-      "cross_ai": true,
-      "enforcement": "fail-soft",
-      "tags": [
-        "telemetry",
-        "corpus"
-      ]
-    },
-    {
-      "id": "input-contract-gate",
-      "title": "Contrato de entrada: spec sem contrato de input declarado falha",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/check_input_contract.py",
-      "test": "tools/test_input_contract.py",
-      "adr": "docs/adr/033-elicitacao-consultiva-banco-agnostico-linter-de-spec.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "spec",
-        "contract",
-        "gate"
-      ],
-      "mutacao": {
-        "arquivo": "tools/check_input_contract.py",
-        "de": "            if f[\"required\"]:",
-        "para": "            if False:",
-        "canario": "tools/test_input_contract.py",
-        "espera": "FAIL [esperado FAIL] arquivo obrigatório ausente"
-      }
-    },
-    {
-      "id": "make-index-tool",
-      "title": "Gerador de indice de documentos/ADRs (make_index)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/make_index.py",
-      "test": "tools/test_make_index.py",
-      "cross_ai": false,
-      "enforcement": "fail-soft",
-      "tags": [
-        "tooling",
-        "index"
-      ]
-    },
-    {
-      "id": "nonadmin-profile",
-      "title": "Perfil non-admin: gates anunciados inline quando GPO/EDR veta hooks",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": ".claude/settings.nonadmin.json",
-      "test": "tools/test_nonadmin.py",
-      "adr": "docs/adr/047-modo-non-admin-single-source-multi-distribuicao.md",
-      "cross_ai": false,
-      "enforcement": "manual",
-      "tags": [
-        "non-admin",
-        "resilience"
-      ]
-    },
-    {
-      "id": "oracle-bias-canary",
-      "title": "Canario anti-vies de oraculo + estabilidade de decisao",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/check_field_mapping.py",
-      "test": "tools/test_oracle_bias.py",
-      "adr": "docs/adr/035-anti-vies-oraculo-estabilidade-decisao.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "honesty",
-        "canary"
-      ],
-      "mutacao": {
-        "arquivo": "tools/check_field_mapping.py",
-        "de": "            bad.append((s[:90], falta))",
-        "para": "            pass",
-        "canario": "tools/test_oracle_bias.py",
-        "espera": "FAIL [esperado FAIL] mapeamento por inferência"
-      }
-    },
-    {
-      "id": "overclaim-lexicon",
-      "title": "Lexico PT-BR de overclaim (absoluto-sem-hedge) usado pelos gates de honestidade",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/overclaim_lexicon.py",
-      "test": "tools/test_overclaim_lexicon.py",
-      "adr": "docs/adr/059-gates-de-honestidade-da-vitrine.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "honesty",
-        "lexicon"
-      ],
-      "mutacao": {
-        "arquivo": "tools/overclaim_lexicon.py",
-        "de": "    (\"não/nunca alucina (claim positivo)\", re.compile(r\"(n[ãa]o|nunca|jamais)\\s+alucina\", re.I)),",
-        "para": "    (\"desativado\", re.compile(r\"zzz-nunca-casa-com-nada\", re.I)),",
-        "canario": "tools/test_overclaim_lexicon.py",
-        "espera": "FALSO-NEGATIVO (deixou passar veneno)"
-      }
-    },
-    {
-      "id": "parity-cross-platform",
-      "title": "Paridade cross-platform dos canarios (Linux/Mac/Windows) na CI",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": ".github/workflows/ci.yml",
-      "test": "tools/test_parity.py",
-      "adr": "docs/adr/040-paridade-cross-platform-ci.md",
-      "cross_ai": false,
-      "enforcement": "ci-ready",
-      "tags": [
-        "ci",
-        "parity",
-        "canary"
-      ]
-    },
-    {
-      "id": "project-token-report",
-      "title": "Relatorio de tokens por projeto (custo de sessao)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/project_report.py",
-      "test": "tools/test_project_report.py",
-      "adr": "docs/adr/026-relatorio-tokens-projeto.md",
-      "cross_ai": false,
-      "enforcement": "fail-soft",
-      "tags": [
-        "telemetry",
-        "cost"
-      ]
-    },
-    {
-      "id": "regulatory-coverage-gate",
-      "title": "Cobertura de perfis regulados declarados pelo discovery (catalogo agnostico)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/check_regulatory_coverage.py",
-      "test": "tools/test_regulatory_coverage.py",
-      "adr": "docs/adr/043-catalogo-perfis-regulados.md",
-      "cross_ai": false,
-      "enforcement": "advisory",
-      "tags": [
-        "regulatory",
-        "coverage",
-        "gate"
-      ]
-    },
-    {
-      "id": "spec-depth-gate",
-      "title": "Profundidade minima de spec (linter anti-spec-rasa)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/check_spec_depth.py",
-      "test": "tools/test_spec_depth.py",
-      "adr": "docs/adr/033-elicitacao-consultiva-banco-agnostico-linter-de-spec.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "spec",
-        "gate"
-      ],
-      "mutacao": {
-        "arquivo": "tools/check_spec_depth.py",
-        "de": "    faltando_obr = [d[\"key\"] for d in dims if d[\"obr\"] and d[\"key\"] not in covered]",
-        "para": "    faltando_obr = []",
-        "canario": "tools/test_spec_depth.py",
-        "espera": "[esperado FAIL -> obteve PASS] spec faltando"
-      }
-    },
-    {
-      "id": "junction-ledger",
-      "title": "Ledger de juncoes J0-J6 (rastro mecanico do gate PASS por juncao; forward-only + J3 exige validation.md ou justificativa)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/qa_evidence.py",
-      "test": "tools/test_qa_evidence.py",
-      "adr": "docs/adr/077-enforcement-deterministico-juncao-release.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "qa",
-        "process-evidence",
-        "junctions",
-        "ledger"
-      ],
-      "mutacao": {
-        "arquivo": "tools/qa_evidence.py",
-        "de": "JUNCTION_ORDER[j] < JUNCTION_ORDER[last]",
-        "para": "JUNCTION_ORDER[j] > JUNCTION_ORDER[last]",
-        "canario": "tools/test_qa_evidence.py",
-        "espera": "aceitou indevidamente (deveria recusar)"
-      }
-    },
-    {
-      "id": "qa-evidence-gate",
-      "title": "qa-evidence (fail-closed): release exige veredito qa-critic aprovativo persistido em _meta/qa/ (ADR-074 emenda 2)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/qa_evidence.py",
-      "test": "tools/test_qa_evidence.py",
-      "adr": "docs/adr/074-process-evidence-gate-fechamento-com-evidencia.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "qa",
-        "process-evidence",
-        "closure",
-        "canary"
-      ],
-      "mutacao": {
-        "arquivo": "tools/qa_evidence.py",
-        "de": "    if last in JUNCTION_ORDER and JUNCTION_ORDER[j] < JUNCTION_ORDER[last] and not rewind:",
-        "para": "    if False:",
-        "canario": "tools/test_qa_evidence.py",
-        "espera": "regressao sem rewind: aceitou indevidamente"
-      }
-    },
-    {
-      "id": "posture-gate",
-      "title": "posture-gate (fail-closed): release exige evidencia de postura deep-research/squad (discovery+RRC+metodo-senior) atestada pelo qa-critic adversarial (ADR-074 emenda 3)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/test_posture_gate.py",
-      "test": "tools/test_posture_gate.py",
-      "adr": "docs/adr/074-process-evidence-gate-fechamento-com-evidencia.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "posture",
-        "process-evidence",
-        "deep-research",
-        "canary"
-      ],
-      "mutacao": {
-        "arquivo": "tools/test_posture_gate.py",
-        "de": "APPROVING = {\"aprovar\", \"aprovar_com_ressalvas\"}",
-        "para": "APPROVING = {\"aprovar\", \"aprovar_com_ressalvas\", \"reprovar\"}",
-        "canario": "tools/test_posture_gate.py",
-        "espera": "REPROVADO foi aceito como evidencia aprovativa"
-      }
-    },
-    {
-      "id": "context-budget-gate",
-      "title": "context-budget: hook PreToolUse(Read) anuncia FRACIONAR (doc-intake) em fonte grande + tool chamavel",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/context_budget.py",
-      "test": "tools/test_context_budget.py",
-      "adr": "docs/adr/029-doc-intake-parse-deterministico-sem-embeddings.md",
-      "cross_ai": false,
-      "enforcement": "fail-soft",
-      "tags": [
-        "context",
-        "tokens",
-        "doc-intake",
-        "canary"
-      ]
-    },
-    {
-      "id": "hitl-proof-verify",
-      "title": "verify_hitl_proofs: CI verifica autenticidade dos hitl_proof via git verify-commit/verify-tag (ADR-071 pendencia)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/verify_hitl_proofs.py",
-      "test": "tools/test_verify_hitl_proofs.py",
-      "adr": "docs/adr/071-equivalencia-convergencia-entre-repos-mae.md",
-      "cross_ai": true,
-      "enforcement": "ci-ready",
-      "tags": [
-        "cross-ai",
-        "hitl",
-        "equivalence",
-        "canary"
-      ]
-    },
-    {
-      "id": "context-budget-hook",
-      "title": "Hook PreToolUse(Read) que anuncia context-budget (mecaniza doc-intake p/ contexto maior; nao-bloqueante, fail-open)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/hooks/context_budget_gate.py",
-      "test": "tools/test_context_budget_gate.py",
-      "adr": "docs/adr/029-doc-intake-parse-deterministico-sem-embeddings.md",
-      "cross_ai": false,
-      "enforcement": "fail-soft",
-      "tags": [
-        "context",
-        "tokens",
-        "hook",
-        "doc-intake",
-        "canary"
-      ]
-    },
-    {
-      "id": "web-bundles-coaches",
-      "title": "Coaches cross-IA (planejamento em Gemini/ChatGPT) gerados do dado com canario de drift fail-closed",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/build_web_bundles.py",
-      "test": "tools/test_web_bundles.py",
-      "adr": "docs/adr/083-cross-ai-web-bundles-coaches.md",
-      "cross_ai": true,
-      "enforcement": "fail-closed",
-      "tags": [
-        "cross-ai",
-        "web-bundles",
-        "planning",
-        "external-integration"
-      ],
-      "mutacao": {
-        "arquivo": "tools/build_web_bundles.py",
-        "de": "## Nucleo do metodo (vale por LEITURA",
-        "para": "## Nucleo do metodo (vale por LEITURA-SABOTADO",
-        "canario": "tools/test_web_bundles.py",
-        "espera": "!= coaches.json (regenere e commite)"
-      }
-    },
-    {
-      "id": "author-tier-gate",
-      "title": "Gate de tier-autor da sessao: detecta modelo ativo (transcript) + alerta LOUD se autor < baseline (ADR-082)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/hooks/check_author_tier.py",
-      "test": "tools/test_author_tier.py",
-      "adr": "docs/adr/082-baseline-de-autor-relativo-gate-tier-sessao.md",
-      "cross_ai": false,
-      "enforcement": "fail-soft",
-      "tags": [
-        "models",
-        "baseline",
-        "boot",
-        "heterogeneity"
-      ]
-    },
-    {
-      "id": "advanced-elicitation",
-      "title": "Elicitacao avancada: catalogo de 77 metodos (convergente #1-69 + divergente CIS #70-76 + tuning-loop #77) com canario de integridade fail-closed; execucao pela skill",
-      "status": "PARTIAL",
-      "enforcement": "fail-closed",
-      "ai_owner": "claude",
-      "mechanism": ".agent/skills/advanced-elicitation/methods.md",
-      "test": "tools/test_elicitation_catalog.py",
-      "adr": "docs/adr/081-integracao-bmad-elicitation-edge-case-party-readiness.md",
-      "cross_ai": false,
-      "tags": [
-        "elicitation",
-        "discovery",
-        "methods",
-        "external-integration",
-        "divergente",
-        "canary"
-      ],
-      "mutacao": {
-        "arquivo": ".agent/skills/advanced-elicitation/methods.md",
-        "de": "| 40 |",
-        "para": "| 400 |",
-        "canario": "tools/test_elicitation_catalog.py",
-        "espera": "numeracao nao-contigua: faltam"
-      }
-    },
-    {
-      "id": "risk-gate",
-      "title": "Gating deterministico por risco (prob x impacto -> gate + tier P0-P3); recast externo (ADR-086) sob P15, forma agnostica (categorias = blueprint)",
-      "status": "PROVIDES",
-      "enforcement": "fail-closed",
-      "ai_owner": "claude",
-      "mechanism": "tools/risk_score.py",
-      "test": "tools/test_risk_score.py",
-      "adr": "docs/adr/086-risk-score-gating-deterministico-por-risco.md",
-      "cross_ai": false,
-      "tags": [
-        "risk",
-        "gate",
-        "deterministic",
-        "external-integration",
-        "canary"
-      ],
-      "mutacao": {
-        "arquivo": "tools/risk_score.py",
-        "de": "HITL_MIN_SCORE = 6",
-        "para": "HITL_MIN_SCORE = 99",
-        "canario": "tools/test_risk_score.py",
-        "espera": "hitl_required esperado True (tem um 6), veio False"
-      }
-    },
-    {
-      "id": "byo-ci-gate",
-      "title": "Gate de merge dirigido pelos canarios LOCAIS (BYO-CI) — a seguranca do GHA sem GHA: posta commit-status verde so com 0 FAIL; branch protection exige o context",
-      "status": "PROVIDES",
-      "enforcement": "fail-closed",
-      "ai_owner": "claude",
-      "mechanism": "tools/post_canary_status.py",
-      "test": "tools/test_post_canary_status.py",
-      "adr": "docs/adr/088-byo-ci-gate-canarios-local-sem-github-actions.md",
-      "cross_ai": false,
-      "tags": [
-        "ci",
-        "gate",
-        "merge",
-        "deterministic",
-        "canary"
-      ],
-      "mutacao": {
-        "arquivo": "tools/post_canary_status.py",
-        "de": "CONTEXT = \"canarios-local\"",
-        "para": "CONTEXT = \"outro-nome\"",
-        "canario": "tools/test_post_canary_status.py",
-        "espera": "mas a protecao da main exige"
-      }
-    },
-    {
-      "id": "autonomy-retry-policy",
-      "title": "Dial retry/escalate por MODO (ADR-087): HITL escala na 1a falha; autosuficiente auto-retenta subindo a escada de modelo ate budget, escala por ultimo",
-      "status": "PROVIDES",
-      "enforcement": "fail-closed",
-      "ai_owner": "claude",
-      "mechanism": "tools/autonomy_policy.py",
-      "test": "tools/test_autonomy_policy.py",
-      "adr": "docs/adr/087-autosuficiente-retry-budget-escalacao-ultima.md",
-      "cross_ai": false,
-      "tags": [
-        "autonomy",
-        "execution-modes",
-        "retry",
-        "hitl",
-        "external-integration",
-        "canary"
-      ],
-      "mutacao": {
-        "arquivo": "tools/autonomy_policy.py",
-        "de": "CAP_ORDER = [\"haiku\", \"sonnet\", \"opus\", \"fable\"]",
-        "para": "CAP_ORDER = [\"fable\", \"opus\", \"sonnet\", \"haiku\"]",
-        "canario": "tools/test_autonomy_policy.py",
-        "espera": "esperado retry/sonnet, veio escalate/None"
-      }
-    },
-    {
-      "id": "core-no-vendor",
-      "title": "Pureza do nucleo: nenhum nome de PRODUTO/VENDOR externo no conteudo operativo (_shared/.agent/skills/roteador); proveniencia so nos ADRs. Regression-guard do 'repo nao tem produtos' (P12)",
-      "status": "PROVIDES",
-      "enforcement": "fail-closed",
-      "ai_owner": "claude",
-      "mechanism": "tools/test_core_no_vendor.py",
-      "test": "tools/test_core_no_vendor.py",
-      "adr": "docs/adr/091-nucleo-product-free-proveniencia-nos-adrs.md",
-      "cross_ai": false,
-      "tags": [
-        "agnosticism",
-        "core-purity",
-        "guard",
-        "canary"
-      ],
-      "mutacao": {
-        "arquivo": "tools/test_core_no_vendor.py",
-        "de": "m = VENDOR.search(scrub)",
-        "para": "m = None",
-        "canario": "tools/test_core_no_vendor.py",
-        "espera": "detector cego"
-      }
-    },
-    {
-      "id": "elicitation-gate",
-      "title": "Elicitation-first VINCULANTE antes de implementar sobre indicador/metrica/regra de dominio de risco alto: ficha de insumo (6 campos) nao-skippavel mesmo em autosuficiente (enforcement, nao skill nova)",
-      "status": "PROVIDES",
-      "enforcement": "fail-closed",
-      "ai_owner": "claude",
-      "mechanism": ".agent/skills/discovery/SKILL.md",
-      "test": "tools/test_elicitation_gate.py",
-      "adr": "docs/adr/089-elicitation-first-vinculante-dado-indicador-regra.md",
-      "cross_ai": false,
-      "tags": [
-        "elicitation",
-        "discovery",
-        "gate",
-        "high-stakes",
-        "enforcement",
-        "canary"
-      ],
-      "mutacao": {
-        "arquivo": ".agent/skills/discovery/SKILL.md",
-        "de": "ADR-089",
-        "para": "ADR-08X",
-        "canario": "tools/test_elicitation_gate.py",
-        "espera": "ADR-089) ausente no discovery"
-      }
-    },
-    {
-      "id": "web-prompt-currency",
-      "title": "Guard de currency do prompt chat-web: carimbo 'Alinhado ao vX.Y.Z' nao pode ficar >5 minors atras de main (anti-drift-silencioso do prompt mantido a mao)",
-      "status": "PROVIDES",
-      "enforcement": "fail-closed",
-      "ai_owner": "claude",
-      "mechanism": "tools/test_web_prompt_currency.py",
-      "test": "tools/test_web_prompt_currency.py",
-      "adr": "docs/adr/089-elicitation-first-vinculante-dado-indicador-regra.md",
-      "cross_ai": true,
-      "tags": [
-        "web",
-        "chat-web",
-        "currency",
-        "guard",
-        "canary"
-      ],
-      "mutacao": {
-        "arquivo": "tools/test_web_prompt_currency.py",
-        "de": "if gap > GAP_MAX:",
-        "para": "if gap > GAP_MAX + 1000:",
-        "canario": "tools/test_web_prompt_currency.py",
-        "espera": "janela de currency parou de valer"
-      }
-    },
-    {
-      "id": "project-onboarding",
-      "title": "Onboarding/wayfinding de projeto por COMPOSICAO (ADR-090): fork greenfield/brownfield no discovery + workflows generate-project-context/document-project (compoem handoff/explorer/docops) + guia user-facing POR-ONDE-COMECAR",
-      "status": "PROVIDES",
-      "enforcement": "fail-closed",
-      "ai_owner": "claude",
-      "mechanism": ".agent/workflows/generate-project-context.md",
-      "test": "tools/test_project_onboarding.py",
-      "adr": "docs/adr/090-bmad-project-onboarding-greenfield-brownfield-wayfinding.md",
-      "cross_ai": false,
-      "tags": [
-        "onboarding",
-        "wayfinding",
-        "discovery",
-        "composition",
-        "external-integration",
-        "canary"
-      ],
-      "mutacao": {
-        "arquivo": ".agent/workflows/generate-project-context.md",
-        "de": "knowledge_catalog",
-        "para": "knowledge-catalog",
-        "canario": "tools/test_project_onboarding.py",
-        "espera": "não compõe 'knowledge_catalog'"
-      }
-    },
-    {
-      "id": "edge-case-hunter",
-      "title": "Percurso mecanico exaustivo de paths nao tratados — output JSON verificavel",
-      "status": "PARTIAL",
-      "enforcement": "prose",
-      "ai_owner": "claude",
-      "mechanism": ".agent/skills/edge-case-hunter/SKILL.md",
-      "test": null,
-      "adr": "docs/adr/081-integracao-bmad-elicitation-edge-case-party-readiness.md",
-      "cross_ai": false,
-      "tags": [
-        "qa",
-        "edge-cases",
-        "code-review",
-        "external-integration"
-      ]
-    },
-    {
-      "id": "party-mode",
-      "title": "Exploracao multi-perspectiva com personas em conflito deliberado",
-      "status": "PARTIAL",
-      "enforcement": "prose",
-      "ai_owner": "claude",
-      "mechanism": ".agent/skills/party-mode/SKILL.md",
-      "test": null,
-      "adr": "docs/adr/081-integracao-bmad-elicitation-edge-case-party-readiness.md",
-      "cross_ai": false,
-      "tags": [
-        "exploration",
-        "personas",
-        "brainstorming",
-        "external-integration"
-      ]
-    },
-    {
-      "id": "readiness-gate",
-      "title": "Gate pre-developer: valida alinhamento requirements+ADR antes de J3",
-      "status": "PARTIAL",
-      "enforcement": "prose",
-      "ai_owner": "claude",
-      "mechanism": ".agent/skills/readiness-gate/SKILL.md",
-      "test": null,
-      "adr": "docs/adr/081-integracao-bmad-elicitation-edge-case-party-readiness.md",
-      "cross_ai": false,
-      "tags": [
-        "qa",
-        "gate",
-        "pre-dev",
-        "external-integration"
-      ]
-    },
-    {
-      "id": "squad-enforcement-gate",
-      "title": "Enforcement deterministico do squad: manifesto de papeis + gate com atestacao de isolamento — ADVISORY no CI (ativacao desacoplada, ADR-104)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/squad_gate.py",
-      "test": "tools/test_squad_gate.py",
-      "adr": "docs/adr/104-desacoplamento-padrao-documental-e-ativacao-do-gate.md",
-      "cross_ai": false,
-      "tags": [
-        "squad",
-        "enforcement",
-        "anti-drift",
-        "advisory"
-      ],
-      "enforcement": "advisory"
-    },
-    {
-      "id": "external-work-provenance",
-      "title": "Carimbo de PROCEDENCIA em trabalho executado FORA do repo: PROCEDENCIA.md com framework/versao/commit/sessao deterministicos + status por artefato (MINUTA/PROPOSTA/MIGRADO/APROVADO)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/handoff.py",
-      "test": "tools/test_handoff.py",
-      "enforcement": "manual",
-      "adr": "docs/adr/095-procedencia-de-trabalho-executado-fora-do-repo.md",
-      "cross_ai": false,
-      "tags": [
-        "traceability",
-        "provenance",
-        "external-work",
-        "regulated",
-        "anti-drift"
-      ]
-    },
-    {
-      "id": "path-resolves-at-destination",
-      "title": "Referencia a arquivo resolve no cwd do DESTINATARIO: raiz absoluta no Pacote P14 + auditoria de diretorio temporario e link markdown relativo",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/handoff.py",
-      "test": "tools/test_path_absoluto.py",
-      "enforcement": "advisory",
-      "adr": "docs/adr/098-referencia-a-arquivo-absoluta-e-resolvivel-fora-do-cwd.md",
-      "cross_ai": false,
-      "tags": [
-        "traceability",
-        "handoff",
-        "cross-session",
-        "anti-drift",
-        "path"
-      ]
-    },
-    {
-      "id": "validation-reporting",
-      "title": "Metodo de validacao ponto a ponto com reporte legivel por humano que decide",
-      "status": "PARTIAL",
-      "ai_owner": "claude",
-      "mechanism": "_shared/validation-reporting/SKILL.md",
-      "adr": "docs/adr/099-metodo-de-validacao-ponto-a-ponto-com-reporte-para-humano.md",
-      "cross_ai": false,
-      "enforcement": "prose",
-      "tags": [
-        "validacao",
-        "reporte",
-        "humano",
-        "metodo"
-      ],
-      "note": "PARTIAL / prose por honestidade: skill de METODO sem mecanismo — nao ha avisador, logo 'advisory' afirmaria um mecanismo inexistente (achado A2 do qa-critic; precedentes edge-case-hunter/party-mode/readiness-gate usam 'prose'). Contraria a §10 da propria skill; debito declarado no ADR-099 §Regua §0, que assume o override do dono (ADR-051) em vez de alegar a porta (c). Vira PROVIDES quando houver canario sobre artefato-exemplo com veredito derivado."
-    },
-    {
-      "id": "trabalhos-registro",
-      "title": "Registro persistente de trabalhos: handoff sobrevive a sessao e e oferecido ate ser tratado",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/trabalhos.py",
-      "adr": "docs/adr/100-registro-de-trabalhos-handoff-persistente.md",
-      "cross_ai": false,
-      "enforcement": "advisory",
-      "tags": [
-        "handoff",
-        "boot",
-        "continuidade",
-        "p14"
-      ],
-      "note": "advisory por desenho: trabalho pendente e INFORMACAO, nao erro — o gate check_trabalhos_abertos do boot_check nunca falha o boot, mas nunca fica silencioso ('nenhum aberto' e resultado declarado). Ciclo aberto->tratado; so o dono encerra. Persistencia em ~/.claude/trabalhos/ (fora do repo, porque um trabalho pode envolver varios repositorios).",
-      "test": "tools/test_trabalhos.py"
-    },
-    {
-      "id": "project-docs-standard",
-      "title": "Padrao do conjunto documental de projeto (7 propriedades + conjunto graduado + 4 gates) — PROSA, sem canario proprio",
-      "status": "PARTIAL",
-      "ai_owner": "claude",
-      "mechanism": "_shared/project-docs/SKILL.md",
-      "test": null,
-      "adr": "docs/adr/102-padrao-do-conjunto-documental-de-projeto.md",
-      "cross_ai": false,
-      "enforcement": "prose",
-      "tags": [
-        "docs",
-        "projeto",
-        "handoff",
-        "anti-drift",
-        "adversarial"
-      ]
-    },
-    {
-      "id": "qa-evidence-integrity",
-      "title": "Canario de integridade da evidencia de QA: .json e .md do mesmo bloco nao podem contar historias opostas",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/test_qa_evidence_integrity.py",
-      "test": "tools/test_qa_evidence_integrity.py",
-      "adr": "docs/adr/103-ativacao-do-squad-gate-como-bloqueio.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "tags": [
-        "qa",
-        "integridade",
-        "anti-teatro",
-        "auditoria"
-      ],
-      "mutacao": {
-        "arquivo": "tools/test_qa_evidence_integrity.py",
-        "de": "if rec_json and rec_md and rec_json != rec_md:",
-        "para": "if rec_json and rec_md and rec_json == rec_md:",
-        "canario": "tools/test_qa_evidence_integrity.py",
-        "espera": "CONTRADITORIA entre .json e .md nao foi pega"
-      }
-    },
-    {
-      "id": "enforcement-mutation-audit",
-      "title": "Prova de mutacao obrigatoria: capacidade fail-closed declara a sabotagem que deixa seu canario VERMELHO",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/audit_enforcement.py",
-      "test": "tools/test_audit_enforcement.py",
-      "adr": "docs/adr/106-prova-de-mutacao-para-capacidade-fail-closed.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "mutacao": {
-        "arquivo": "tools/audit_enforcement.py",
-        "de": "problema = \"declara `fail-closed` sem `mutacao` declarada\"",
-        "para": "problema = None",
-        "canario": "tools/test_audit_enforcement.py",
-        "espera": "[FALHA] nova `fail-closed` sem `mutacao` declarada"
-      },
-      "tags": [
-        "qa",
-        "anti-teatro",
-        "auditoria",
-        "enforcement"
-      ]
-    },
-    {
-      "id": "canary-runner-bytecode-isolation",
-      "title": "O executor da suite nao pode ser enganado por bytecode velho",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/run_canaries.py",
-      "test": "tools/test_run_canaries.py",
-      "adr": "docs/adr/106-prova-de-mutacao-para-capacidade-fail-closed.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "mutacao": {
-        "arquivo": "tools/run_canaries.py",
-        "de": "env = {**os.environ, \"PYTHONPYCACHEPREFIX\": str(prefixo_cache)}",
-        "para": "env = {k: v for k, v in os.environ.items() if k != \"PYTHONPYCACHEPREFIX\"}",
-        "canario": "tools/test_run_canaries.py",
-        "espera": "[FALHA] o ambiente do runner NAO e' enganado"
-      },
-      "tags": [
-        "qa",
-        "anti-teatro",
-        "canario",
-        "determinismo"
-      ]
-    },
-    {
-      "id": "decisoes-que-governam",
-      "title": "Colisao entre o pedido e decisao ja registrada vira consulta deterministica",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/decisoes_que_governam.py",
-      "test": "tools/test_decisoes_que_governam.py",
-      "adr": "docs/adr/051-reparo-discovery-contexto-inferido-pesquisa-ancora-mecanizada.md",
-      "cross_ai": false,
-      "enforcement": "advisory",
-      "tags": [
-        "postura",
-        "anti-passividade",
-        "decisoes",
-        "determinismo"
-      ]
-    },
-    {
-      "id": "history-rotation",
-      "title": "Rotacao deterministica do history.md — ultimos N checkpoints quentes + Em aberto/Aprendizado inteiros; antigos -> docs/history/history-archive.md (poda de contexto, zero perda, idempotente)",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/rotate_history.py",
-      "test": "tools/test_rotate_history.py",
-      "adr": "docs/adr/107-rotacao-history-poda-de-contexto.md",
-      "cross_ai": false,
-      "enforcement": "fail-soft",
-      "tags": [
-        "context",
-        "tokens",
-        "history",
-        "canary"
-      ]
-    },
-    {
-      "id": "squad-gate-git-hook",
-      "title": "Instalador do pre-commit que faz o squad-gate rodar sozinho, com escapatoria declarada",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/install_git_hooks.py",
-      "test": "tools/test_install_git_hooks.py",
-      "adr": "docs/adr/092-camada-enforcement-comportamentos-manifesto-gate-githook.md",
-      "cross_ai": false,
-      "enforcement": "fail-soft",
-      "tags": [
-        "enforcement",
-        "squad",
-        "git",
-        "determinismo"
-      ]
-    },
-    {
-      "id": "research-evidence",
-      "title": "NAO SEI so vale depois de busca provada: >= K dominios distintos com prova, ou ratificacao humana",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/research_evidence.py",
-      "test": "tools/test_research_evidence.py",
-      "adr": "docs/adr/092-camada-enforcement-comportamentos-manifesto-gate-githook.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "mutacao": {
-        "arquivo": "tools/research_evidence.py",
-        "de": "    if len(doms) < k:",
-        "para": "    if False:",
-        "canario": "tools/test_research_evidence.py",
-        "espera": "[FALHA] mesmo dominio duas vezes NAO conta"
-      },
-      "tags": [
-        "anti-alucinacao",
-        "pesquisa",
-        "enforcement",
-        "squad"
-      ]
-    },
-    {
-      "id": "install-verification",
-      "title": "Instalar em qualquer PC com veredito: o que bloqueia, o que avisa, e como resolver cada um",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "bootstrap.py",
-      "test": "tools/test_bootstrap_check.py",
-      "adr": "docs/adr/047-modo-non-admin-single-source-multi-distribuicao.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "mutacao": {
-        "arquivo": "bootstrap.py",
-        "de": "    if not os.path.isdir(os.path.join(raiz, \".git\")):",
-        "para": "    if False:",
-        "canario": "tools/test_bootstrap_check.py",
-        "espera": "[FALHA] baixar o .zip em vez de clonar"
-      },
-      "tags": [
-        "instalacao",
-        "onboarding",
-        "runbook",
-        "non-admin"
-      ]
-    },
-    {
-      "id": "conformance-topologia",
-      "title": "Executado x desenhado no fluxo de juncoes: fitness auditavel em vez de julgamento",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/conformance.py",
-      "test": "tools/test_conformance.py",
-      "adr": "docs/adr/097-conformance-topologia-hard-event-log-canario-process-mining.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "mutacao": {
-        "arquivo": "tools/conformance.py",
-        "de": "        if status not in STATUS_VALIDOS:",
-        "para": "        if False:",
-        "canario": "tools/test_conformance.py",
-        "espera": "[FALHA] status fora do conjunto fechado"
-      },
-      "tags": [
-        "conformance",
-        "process-mining",
-        "topologia",
-        "anti-teatro"
-      ]
-    },
-    {
-      "id": "projeto-docs-derivados",
-      "title": "Backlog, cronograma e status report DERIVADOS do estado real — quadro que nao envelhece",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/projeto_docs.py",
-      "test": "tools/test_projeto_docs.py",
-      "adr": "docs/adr/102-padrao-do-conjunto-documental-de-projeto.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "mutacao": {
-        "arquivo": "tools/projeto_docs.py",
-        "de": "             \"titulo\": f\"Passivo de prova: {total} capacidades sem gate provado\",",
-        "para": "             \"titulo\": \"Passivo de prova\",",
-        "canario": "tools/test_projeto_docs.py",
-        "espera": "[FALHA] passivo entra AGREGADO"
-      },
-      "validado_em_projetos": 1,
-      "_nota_validacao": "ADR-102 sobe marcado como PENDENTE de validacao em 2o projeto — decisao do dono em 16/08 que desfez a circularidade do desenho original (so' promovia apos 2o uso, mas nenhum 2o projeto conseguia usar antes da promocao). A marca sai quando um segundo projeto real adotar.",
-      "tags": [
-        "gestao",
-        "backlog",
-        "status-report",
-        "adr-102"
-      ]
-    },
-    {
-      "id": "shadow-drift-alarm",
-      "title": "Deriva das distribuicoes publicadas vira numero; falta de medicao nao vira aprovacao",
-      "status": "PROVIDES",
-      "ai_owner": "claude",
-      "mechanism": "tools/shadow_drift.py",
-      "test": "tools/test_shadow_drift.py",
-      "adr": "docs/adr/049-tres-distribuicoes-premium-baseline-single-source.md",
-      "cross_ai": false,
-      "enforcement": "fail-closed",
-      "mutacao": {
-        "arquivo": "tools/shadow_drift.py",
-        "de": "        return [], \"`gh` ausente ou nao autenticado — sem como consultar as publicadas\"",
-        "para": "        return [], None",
-        "canario": "tools/test_shadow_drift.py",
-        "espera": "[FALHA] sem `gh` autenticado, declara SKIP"
-      },
-      "tags": [
-        "distribuicao",
-        "deriva",
-        "alarme",
-        "anti-silencio"
-      ]
-    }
-  ],
-  "registry_waivers": [
-    {
-      "file": "tools/test_effect_gate_push.py",
-      "reason": "regressao do MESMO mecanismo effect-gate (fix push false-positive, PR#63) — capacidade ja registrada em 'effect-gate'; nao e feature distinta."
-    }
-  ]
+ "schema_version": "1.0",
+ "note": "Registry SSoT de capacidades (ADR-072). UM registro por feature. Fonte única; CAPABILITIES.md e o manifest de equivalencia sao DERIVADOS (build_capabilities.py). Canario anti-drift: tools/test_capabilities.py. status: PROVIDES|PARTIAL|ABSENT|JUSTIFIED_ABSENT.",
+ "capabilities": [
+  {
+   "id": "qa-attestation-provenance",
+   "title": "Procedencia do veredito de qa-critic: hash do relatorio real do subagente conferido contra o log do harness",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/verify_qa_attestation.py",
+   "test": "tools/test_verify_qa_attestation.py",
+   "adr": "docs/adr/108-procedencia-do-veredito-de-qa-critic.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "qa",
+    "evidence",
+    "anti-teatro",
+    "provenance"
+   ],
+   "mutacao": {
+    "arquivo": "tools/verify_qa_attestation.py",
+    "de": "    if do_relatorio == \"reprovar\" and declarado in APROVATIVOS:",
+    "para": "    if False:  # sabotado: relatorio que REPROVA vira veredito aprovativo calado",
+    "canario": "tools/test_verify_qa_attestation.py",
+    "espera": "FAIL relatorio REPROVA + veredito aprovativo vira RESSALVA visivel"
+   }
+  },
+  {
+   "id": "capability-index",
+   "title": "Indice de capacidades derivado + canario anti-drift",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/build_capabilities.py",
+   "test": "tools/test_capabilities.py",
+   "adr": "docs/adr/072-indice-de-capacidades-registry-derivado.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "meta",
+    "discoverability",
+    "anti-drift"
+   ],
+   "mutacao": {
+    "arquivo": "tools/build_capabilities.py",
+    "de": "    out.append(\"# CAPABILITIES — indice de capacidades (nivel 1: id + title)\")",
+    "para": "    out.append(\"# CAPABILITIES — indice SABOTADO\")",
+    "canario": "tools/test_capabilities.py",
+    "espera": "CAPABILITIES.md fora de sync com o registry"
+   }
+  },
+  {
+   "id": "boot-self-check",
+   "title": "Self-check de boot consolidado (sync+agnosticismo+boot-scan+versao) com prova checavel",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/boot_check.py",
+   "test": "tools/test_boot_check.py",
+   "adr": "docs/adr/061-auditor-de-liveness-anti-falha-silenciosa-de-hooks.md",
+   "cross_ai": false,
+   "enforcement": "manual",
+   "tags": [
+    "boot",
+    "anti-bypass",
+    "liveness",
+    "determinism"
+   ]
+  },
+  {
+   "id": "environment-applicability-gate",
+   "title": "Deteccao de ambiente no boot + aplicabilidade das premissas (APLICA/ESTALE/AUSENTE) cross-session/cross-IA",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/boot_check.py",
+   "test": "tools/test_environment_applicability.py",
+   "adr": "docs/adr/093-boot-deteccao-ambiente-aplicabilidade-premissas-cross-session.md",
+   "cross_ai": true,
+   "enforcement": "fail-soft",
+   "tags": [
+    "boot",
+    "environment",
+    "file-first",
+    "cross-session",
+    "anti-stale"
+   ]
+  },
+  {
+   "id": "cross-ai-antiloop-gate",
+   "title": "Trava fisica anti-loop da troca cross-IA (terminacao garantida)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/cross_ai_gate.py",
+   "test": "tools/test_cross_ai_gate.py",
+   "adr": "docs/adr/069-isolamento-por-ia-repos-canonicos-hub-handoff.md",
+   "doc": "docs/_private/cross-ai/README.md",
+   "cross_ai": true,
+   "enforcement": "ci-ready",
+   "tags": [
+    "cross-ai",
+    "anti-loop",
+    "gate"
+   ]
+  },
+  {
+   "id": "cross-ai-hub-tooling",
+   "title": "Scan/manifest/deposit do hub cross-IA (descoberta no boot + deposit validado pelo gate)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/cross_ai_hub.py",
+   "test": "tools/test_cross_ai_hub.py",
+   "adr": "docs/adr/069-isolamento-por-ia-repos-canonicos-hub-handoff.md",
+   "doc": "docs/_private/cross-ai/README.md",
+   "cross_ai": true,
+   "enforcement": "manual",
+   "tags": [
+    "cross-ai",
+    "hub",
+    "scan",
+    "deposit"
+   ]
+  },
+  {
+   "id": "repo-identity-gate",
+   "title": "Classificador de identidade de repo (master|shadow|clone|foreign), ancestry-first",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/repo_identity.py",
+   "test": "tools/test_repo_identity.py",
+   "adr": "docs/adr/070-repo-identity-gate-advisory-ancestry-first.md",
+   "cross_ai": true,
+   "enforcement": "advisory",
+   "tags": [
+    "cross-ai",
+    "identity",
+    "gate"
+   ]
+  },
+  {
+   "id": "shadow-write-guard",
+   "title": "Write-isolation: NEGA push de shadow E push pra remote != canonical (escreve so no proprio repo; read livre)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/hooks/shadow_write_guard.py",
+   "test": "tools/test_shadow_write_guard.py",
+   "adr": "docs/adr/070-repo-identity-gate-advisory-ancestry-first.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "identity",
+    "guard",
+    "shadow",
+    "runtime"
+   ],
+   "mutacao": {
+    "arquivo": "tools/hooks/shadow_write_guard.py",
+    "de": "if info.get(\"verdict\") == \"SOMBRA-EXPORT\":",
+    "para": "if info.get(\"verdict\") == \"SOMBRA-EXPORTX\":",
+    "canario": "tools/test_shadow_write_guard.py",
+    "espera": "shadow + push deveria ser DENY"
+   }
+  },
+  {
+   "id": "shadow-sync",
+   "title": "Hook que auto-casa o espelho publicado com origin no boot (reset --hard mecanico, so em shadow)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/hooks/shadow_sync.py",
+   "test": "tools/test_shadow_sync.py",
+   "adr": "docs/adr/070-repo-identity-gate-advisory-ancestry-first.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "identity",
+    "guard",
+    "shadow",
+    "sync"
+   ],
+   "mutacao": {
+    "arquivo": "tools/hooks/shadow_sync.py",
+    "de": "if head == target:",
+    "para": "if head != target:",
+    "canario": "tools/test_shadow_sync.py",
+    "espera": "shadow divergente deveria"
+   }
+  },
+  {
+   "id": "repo-mode-user-vs-dev",
+   "title": "Modo por identidade no boot: shadow=USER (aplica a dominio, nao desenvolve), master=DEV",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/repo_mode.py",
+   "test": "tools/test_repo_mode.py",
+   "adr": "docs/adr/070-repo-identity-gate-advisory-ancestry-first.md",
+   "cross_ai": false,
+   "enforcement": "advisory",
+   "note": "Anuncia o modo (advisory); a TRAVA fisica de 'shadow nao desenvolve' e o shadow-write-guard (fail-closed) + shadow-sync.",
+   "tags": [
+    "identity",
+    "mode",
+    "shadow",
+    "boot"
+   ]
+  },
+  {
+   "id": "equivalence-gate",
+   "title": "Equivalencia de capacidade entre repos-mae (PROVIDES|JUSTIFIED_ABSENT + hitl_proof)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/equivalence_gate.py",
+   "test": "tools/test_equivalence_gate.py",
+   "adr": "docs/adr/071-equivalencia-convergencia-entre-repos-mae.md",
+   "cross_ai": true,
+   "enforcement": "ci-ready",
+   "tags": [
+    "cross-ai",
+    "equivalence",
+    "gate"
+   ]
+  },
+  {
+   "id": "export-shadow-stamp",
+   "title": "Carimbo fisico role=shadow no export (trava contra sombra se passar por master)",
+   "status": "PARTIAL",
+   "ai_owner": "claude",
+   "mechanism": "tools/export-clean.py",
+   "adr": "docs/adr/070-repo-identity-gate-advisory-ancestry-first.md",
+   "cross_ai": true,
+   "enforcement": "physical",
+   "tags": [
+    "cross-ai",
+    "identity",
+    "export"
+   ],
+   "note": "PARTIAL (qa-critic 2026-06-06): stamp_shadow_identity() nao tem canario dedicado; test_premium_tier nao o exercita. Honestidade > overclaim."
+  },
+  {
+   "id": "premium-tier-export",
+   "title": "Tier premium na export-clean (mesma fonte, mantem camada premium; baseline single-source)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/export-clean.py",
+   "test": "tools/test_premium_tier.py",
+   "adr": "docs/adr/049-tres-distribuicoes-premium-baseline-single-source.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "distribution",
+    "premium"
+   ],
+   "mutacao": {
+    "arquivo": "tools/export-clean.py",
+    "de": "        if \"premium:start\" in low:",
+    "para": "        if \"premium:start-SABOTADO\" in low:",
+    "canario": "tools/test_premium_tier.py",
+    "espera": "FAIL strip remove a seção premium"
+   }
+  },
+  {
+   "id": "onboarding-master-gate",
+   "title": "Popup usar-vs-desenvolver so no MASTER-CANONICO (nao vaza p/ public/premium/gemini)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/framework_onboarding.py",
+   "test": "tools/test_framework_onboarding.py",
+   "adr": "docs/adr/067-onboarding-popup-primeira-abertura-instala-fecha-abre-projeto.md",
+   "cross_ai": false,
+   "enforcement": "advisory",
+   "tags": [
+    "onboarding",
+    "gate",
+    "identity"
+   ]
+  },
+  {
+   "id": "agnostic-core-linter",
+   "title": "Linter fail-closed: nucleo nao carrega norma de dominio (agnosticismo)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/check_core_agnostic.py",
+   "test": "tools/test_core_agnostic.py",
+   "adr": "docs/adr/020-linter-agnosticismo-nucleo.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "agnosticism",
+    "linter",
+    "gate"
+   ],
+   "mutacao": {
+    "arquivo": "tools/check_core_agnostic.py",
+    "de": "            m = rx.search(line)",
+    "para": "            m = None",
+    "canario": "tools/test_core_agnostic.py",
+    "espera": "FAIL [6] token de cliente detectado"
+   }
+  },
+  {
+   "id": "marketing-honesty-gate",
+   "title": "Gates de honestidade da vitrine (anti-overclaim, claim provado ancorado, versao em sync)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/test_marketing_claims.py",
+   "test": "tools/test_marketing_claims.py",
+   "adr": "docs/adr/059-gates-de-honestidade-da-vitrine.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "honesty",
+    "doc-sync",
+    "gate"
+   ],
+   "mutacao": {
+    "arquivo": "tools/test_marketing_claims.py",
+    "de": "    sem_campo = sum(1 for c in caps if not c.get(\"enforcement\"))",
+    "para": "    sem_campo = 0",
+    "canario": "tools/test_marketing_claims.py",
+    "espera": "auto-teste da contagem da vitrine"
+   }
+  },
+  {
+   "id": "consistency-closing-ci",
+   "title": "Consistencia de fechamento FAIL-CLOSED no CI (dim do consistency-gate que o hook PS vetado nao enforcava)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/test_consistency_closing.py",
+   "test": "tools/test_consistency_closing.py",
+   "adr": "docs/adr/030-consistency-gate-auditoria-de-fechamento.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "doc-sync",
+    "anti-bypass",
+    "closing",
+    "gate"
+   ],
+   "mutacao": {
+    "arquivo": "tools/test_consistency_closing.py",
+    "de": "Status:\\s*(?:\\*\\*)?\\s*proposto",
+    "para": "Status:\\s*(?:\\*\\*)?\\s*propostoZZ",
+    "canario": "tools/test_consistency_closing.py",
+    "espera": "o bug recorrente do ADR-051"
+   }
+  },
+  {
+   "id": "rules-parity-guard",
+   "title": "Anti-drift das 4 regras inviolaveis entre arquivos de autoridade (sem violar SSoT §6.5)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/check_rules_parity.py",
+   "test": "tools/test_rules_parity.py",
+   "adr": "docs/adr/075-rules-parity-anti-drift-regras-inviolaveis.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "anti-bypass",
+    "anti-drift",
+    "authority",
+    "gate"
+   ],
+   "mutacao": {
+    "arquivo": "tools/check_rules_parity.py",
+    "de": "N_CANON = len(CANON)",
+    "para": "N_CANON = 3",
+    "canario": "tools/test_rules_parity.py",
+    "espera": "repo real deveria PASSAR mas reportou drift"
+   }
+  },
+  {
+   "id": "handoff-generator",
+   "title": "Gerador deterministico do Pacote de handoff P14 do estado do repo + sugestao de modelo (papel+risco)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/handoff.py",
+   "test": "tools/test_handoff.py",
+   "adr": "docs/adr/076-handoff-deterministico-gerador-sugestao-modelo.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "handoff",
+    "determinism",
+    "cross-session",
+    "model-suggestion"
+   ],
+   "mutacao": {
+    "arquivo": "tools/handoff.py",
+    "de": "if st[\"unpushed\"] == \"?\":",
+    "para": "if st[\"unpushed\"] == \"?!\":",
+    "canario": "tools/test_handoff.py",
+    "espera": "renderizou 'nada pendente' (falso)"
+   }
+  },
+  {
+   "id": "model-policy",
+   "title": "Politica de modelo como dado: papel x risco -> tier com chain de fallback + escada de heterogeneidade + indisponibilidade declarada (env) + escada RELATIVA ao default (executor/1o QA/2o QA) com regra de borda verificada em codigo",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/model-policy.json",
+   "test": "tools/test_handoff.py",
+   "adr": "docs/adr/078-model-policy-fonte-unica-escada-heterogeneidade.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "models",
+    "policy",
+    "heterogeneity",
+    "fallback"
+   ],
+   "mutacao": {
+    "arquivo": "tools/model-policy.json",
+    "de": "\"tier\": \"baseline\",\n      \"why\": \"papel AUTORAL",
+    "para": "\"tier\": \"economy\",\n      \"why\": \"papel AUTORAL",
+    "canario": "tools/test_handoff.py",
+    "espera": "(autoral) = haiku, esperado baseline opus",
+    "_ancora": "a ancora inclui o inicio do campo `why` da regra `developer` DE PROPOSITO: existem duas regras com `tier: baseline` (architect e developer) e audit_enforcement.py substitui so a primeira ocorrencia. Ancora curta miraria a regra errada e a prova falharia pelo motivo errado — achado ALTO do qa-critic (Sonnet) em 19/08/2026."
+   },
+   "adr_emenda": "docs/adr/109-escada-relativa-de-qa-e-norma-de-escrita-com-canario.md"
+  },
+  {
+   "id": "limits-catalog",
+   "title": "Catalogo LIMITS.md de capacidades provadas (PROVADO|PARCIAL|EM-DESENV), derivado",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/build_limits.py",
+   "test": "tools/test_marketing_claims.py",
+   "adr": "docs/adr/044-limits-e-marketing-ancorado.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "honesty",
+    "catalog",
+    "doc-sync"
+   ],
+   "mutacao": {
+    "arquivo": "tools/build_limits.py",
+    "de": "    L.append(\"# LIMITS.md — o que o framework GARANTE, prova, e o que NÃO faz (gerado por tools/build_limits.py, ADR-044)\")",
+    "para": "    L.append(\"# LIMITS.md — SABOTADO\")",
+    "canario": "tools/test_marketing_claims.py",
+    "espera": "FAIL LIMITS.md em sync com os canários"
+   }
+  },
+  {
+   "id": "knowledge-catalog",
+   "title": "Retroalimentacao do corpus: catalogo + BM25 offline + insights no boot",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/knowledge_catalog.py",
+   "test": "tools/test_knowledge_catalog.py",
+   "adr": "docs/adr/068-knowledge-catalog-rag-lexico-insights.md",
+   "cross_ai": false,
+   "enforcement": "fail-soft",
+   "tags": [
+    "memory",
+    "recall",
+    "boot"
+   ]
+  },
+  {
+   "id": "execution-report",
+   "title": "Relatorio de execucao (telemetria de processo + licoes), opt-in anonimizado",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/gen_exec_doc.py",
+   "test": "tools/test_gen_exec_doc.py",
+   "adr": "docs/adr/062-relatorio-de-execucao-aprendizado-publico-anonimizado.md",
+   "cross_ai": true,
+   "enforcement": "fail-soft",
+   "tags": [
+    "telemetry",
+    "corpus",
+    "learning"
+   ]
+  },
+  {
+   "id": "web-export",
+   "title": "Gerador deterministico das distribuicoes web (publico/premium) a partir da mae",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/web_export.py",
+   "test": "tools/test_web_export.py",
+   "adr": "docs/adr/054-pacote-web-dois-tiers-cascata-como-profile.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "distribution",
+    "web"
+   ],
+   "mutacao": {
+    "arquivo": "tools/web_export.py",
+    "de": "                    violations.append(f\"{rel}: '{m.group(0)[:60]}'\")",
+    "para": "                    violations.append(\"\") if False else None",
+    "canario": "tools/test_web_export.py",
+    "espera": "FAIL gate anti-JARVIS pega asserção"
+   }
+  },
+  {
+   "id": "export-so-rastreados",
+   "title": "Export leva SO' o que o git rastreia: arquivo gitignored (ex.: .agent/brain/) nao entra no pacote publico",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/export-clean.py",
+   "test": "tools/test_export_so_rastreados.py",
+   "adr": "docs/adr/070-repo-identity-gate-advisory-ancestry-first.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "export",
+    "leak",
+    "shadow",
+    "privacy"
+   ],
+   "mutacao": {
+    "arquivo": "tools/export-clean.py",
+    "de": "        saida = subprocess.run([\"git\", \"-C\", src, \"ls-files\", \"-z\"],",
+    "para": "        saida = subprocess.run([\"git\", \"-C\", src, \"ls-files\", \"-z\", \"--others\"],",
+    "canario": "tools/test_export_so_rastreados.py",
+    "espera": "FAIL token de controle NAO viaja"
+   }
+  },
+  {
+   "id": "repo-sync-boot",
+   "title": "Sync do repo no boot: dim.1 vs proprio upstream (pull seguro) + dim.2 ORTOGONAL vs branch de integracao (origin/HEAD) com marker persistente repetido por-turno (ADR-084)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/hooks/check_repo_sync.py",
+   "test": "tools/test_repo_sync.py",
+   "adr": "docs/adr/084-defasagem-vs-branch-de-integracao-baseline-ortogonal.md",
+   "cross_ai": false,
+   "enforcement": "fail-soft",
+   "note": "ADR-019/060 cobriam apenas defasagem vs @{upstream}; numa feature branch isso reporta 'em dia' mesmo N commits atras de origin/main (regressao 2026-06-16). ADR-084 adiciona a dimensao ortogonal (baseline = origin/HEAD, agnostica) + nudge persistente via route-gate (canarios C6/C7).",
+   "tags": [
+    "boot",
+    "sync",
+    "gate",
+    "baseline-drift"
+   ]
+  },
+  {
+   "id": "effect-gate",
+   "title": "Action-safety por EFEITO: classifica acao destrutiva e pede confirmacao (T3)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/hooks/effect_gate.py",
+   "test": "tools/test_effect_gate.py",
+   "adr": "docs/adr/039-effect-gate-motor-por-efeito.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "safety",
+    "gate",
+    "runtime"
+   ],
+   "mutacao": {
+    "arquivo": "tools/hooks/effect_gate.py",
+    "de": "        if rule.get(\"decision\") == \"deny\":",
+    "para": "        if False:",
+    "canario": "tools/test_effect_gate.py",
+    "espera": "FAIL [deny ->allow]"
+   }
+  },
+  {
+   "id": "mission-gate",
+   "title": "Declara/confirma product_type + escopo antes de J2+ (mission.md)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/hooks/mission_gate.py",
+   "test": "tools/test_mission_gate.py",
+   "adr": "docs/adr/022-mission-gate-product-type.md",
+   "cross_ai": false,
+   "enforcement": "fail-soft",
+   "tags": [
+    "mission",
+    "gate",
+    "runtime"
+   ]
+  },
+  {
+   "id": "compaction-gate",
+   "title": "Bloqueia compaction sem digest persistido (history.md sem checkpoint), fail-open",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/hooks/compaction_gate.py",
+   "test": "tools/test_compaction_gate.py",
+   "adr": "docs/adr/021-compaction-gate-precompact.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "context",
+    "gate",
+    "runtime"
+   ],
+   "mutacao": {
+    "arquivo": "tools/hooks/compaction_gate.py",
+    "de": "    print(json.dumps({\"decision\": \"block\", \"reason\": reason}))",
+    "para": "    print(json.dumps({\"decision\": \"allow\", \"reason\": reason}))",
+    "canario": "tools/test_compaction_gate.py",
+    "espera": "FAIL [block->allow]"
+   }
+  },
+  {
+   "id": "overwrite-guard",
+   "title": "Le o arquivo antes de sobrescrever artefato com conteudo; avisa",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/hooks/overwrite_guard.py",
+   "test": "tools/test_overwrite_guard.py",
+   "adr": "docs/adr/037-action-safety-overwrite-non-session.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "safety",
+    "gate",
+    "runtime"
+   ],
+   "mutacao": {
+    "arquivo": "tools/hooks/overwrite_guard.py",
+    "de": "        sys.exit(2)",
+    "para": "        sys.exit(0)",
+    "canario": "tools/test_overwrite_guard.py",
+    "espera": "FAIL [ps1 rc 0, esperado 2] Write sobre"
+   }
+  },
+  {
+   "id": "sycophancy-canary",
+   "title": "Canario adversarial anti-sicofancia (nao concordar para agradar)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/check_field_mapping.py",
+   "test": "tools/test_sycophancy.py",
+   "adr": "docs/adr/041-sicofancia-canario-adversarial.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "honesty",
+    "canary"
+   ],
+   "mutacao": {
+    "arquivo": "tools/check_field_mapping.py",
+    "de": "            bad.append((s[:90], falta))",
+    "para": "            pass",
+    "canario": "tools/test_sycophancy.py",
+    "espera": "APROVOU (sicofância!)"
+   }
+  },
+  {
+   "id": "reorchestration-gate",
+   "title": "PMO maestro: decisao de re-orquestracao na fronteira de bloco (J6)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/check_reorchestration.py",
+   "test": "tools/test_reorchestration.py",
+   "adr": "docs/adr/045-pmo-maestro-reorquestracao-fronteira-bloco.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "process",
+    "gate"
+   ],
+   "mutacao": {
+    "arquivo": "tools/check_reorchestration.py",
+    "de": "    return False, (\"bloco fechado SEM decisão de RE-ORQUESTRAÇÃO do PMO (ADR-045): registre \"",
+    "para": "    return True, (\"bloco fechado SEM decisão de RE-ORQUESTRAÇÃO do PMO (ADR-045): registre \"",
+    "canario": "tools/test_reorchestration.py",
+    "espera": "FAIL [esperado FAIL] bloco fechado SEM"
+   }
+  },
+  {
+   "id": "doc-intake",
+   "title": "Parse deterministico offline (pdf/docx/xlsx/...) -> chunks + sha256, sem embeddings",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/doc_intake.py",
+   "test": "tools/test_doc_intake.py",
+   "adr": "docs/adr/029-doc-intake-parse-deterministico-sem-embeddings.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "intake",
+    "provenance"
+   ],
+   "mutacao": {
+    "arquivo": "tools/doc_intake.py",
+    "de": "        piece = text[start:end]",
+    "para": "        piece = text[start:max(end - 1, start)]",
+    "canario": "tools/test_doc_intake.py",
+    "espera": "guardado difere do texto nesses offsets"
+   }
+  },
+  {
+   "id": "consistency-gate",
+   "title": "Espelho de consistencia no FECHAMENTO, cabeado no evento Stop (7 dimensoes)",
+   "status": "PARTIAL",
+   "ai_owner": "claude",
+   "mechanism": "tools/hooks/consistency_gate.py",
+   "adr": "docs/adr/030-consistency-gate-auditoria-de-fechamento.md",
+   "cross_ai": false,
+   "tags": [
+    "doc-sync",
+    "gate",
+    "closure"
+   ],
+   "test": "tools/test_consistency_gate.py",
+   "enforcement": "fail-soft"
+  },
+  {
+   "id": "adr-changelog-sync",
+   "title": "Canario doc-sync: toda ADR Aceito deve estar no CHANGELOG (mecaniza falha recorrente)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/test_adr_changelog_sync.py",
+   "test": "tools/test_adr_changelog_sync.py",
+   "adr": "docs/adr/030-consistency-gate-auditoria-de-fechamento.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "doc-sync",
+    "canary",
+    "closure"
+   ],
+   "mutacao": {
+    "arquivo": "tools/test_adr_changelog_sync.py",
+    "de": "status[:* ]+.*aceito",
+    "para": "status[:* ]+.*aceitoZZ",
+    "canario": "tools/test_adr_changelog_sync.py",
+    "espera": "detector cego"
+   }
+  },
+  {
+   "id": "release-checkpoint-gate",
+   "title": "Process-evidence (fail-closed): release atual do CHANGELOG tem checkpoint no history (forward-only)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/test_release_checkpoint.py",
+   "test": "tools/test_release_checkpoint.py",
+   "adr": "docs/adr/074-process-evidence-gate-fechamento-com-evidencia.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "doc-sync",
+    "closure",
+    "process-evidence",
+    "canary"
+   ],
+   "mutacao": {
+    "arquivo": "tools/test_release_checkpoint.py",
+    "de": "    return bool(pat.search(hist))",
+    "para": "    return True",
+    "canario": "tools/test_release_checkpoint.py",
+    "espera": "FORA de heading datado foi aceita"
+   }
+  },
+  {
+   "id": "dev-dogfood-gate",
+   "title": "Dev-dogfood DETERMINISTA: master fechando bloco DEVE ter execution-report + handoff cross-IA (nao opt-in, shadow-aware)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/test_dev_dogfood.py",
+   "test": "tools/test_dev_dogfood.py",
+   "adr": "docs/adr/074-process-evidence-gate-fechamento-com-evidencia.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "doc-sync",
+    "closure",
+    "process-evidence",
+    "cross-ai",
+    "canary"
+   ],
+   "mutacao": {
+    "arquivo": "tools/test_dev_dogfood.py",
+    "de": "if len(t.strip()) < min_chars:",
+    "para": "if len(t.strip()) < 0:",
+    "canario": "tools/test_dev_dogfood.py",
+    "espera": "placeholder CURTO passou no piso de tamanho"
+   }
+  },
+  {
+   "id": "route-gate",
+   "title": "Lembrete de rota deterministico 1x/sessao (UserPromptSubmit), fail-open",
+   "status": "PARTIAL",
+   "ai_owner": "claude",
+   "mechanism": "tools/hooks/route-gate.ps1",
+   "adr": "docs/adr/027-roteamento-deterministico-e-wiring-global-self-heal.md",
+   "cross_ai": false,
+   "enforcement": "advisory",
+   "tags": [
+    "routing",
+    "gate",
+    "runtime"
+   ]
+  },
+  {
+   "id": "prepush-sync-guard",
+   "title": "Guarda de pre-push: evita push sobre base dessincronizada",
+   "status": "PARTIAL",
+   "ai_owner": "claude",
+   "mechanism": "tools/hooks/prepush_sync_guard.py",
+   "adr": "docs/adr/060-edr-pode-vetar-hooks-resiliencia-de-sync.md",
+   "cross_ai": false,
+   "enforcement": "fail-soft",
+   "tags": [
+    "sync",
+    "gate",
+    "git"
+   ]
+  },
+  {
+   "id": "skill-contract",
+   "title": "Valida o contrato minimo de frontmatter das skills (ADR-013)",
+   "status": "PARTIAL",
+   "ai_owner": "claude",
+   "mechanism": "tools/validate_skills.py",
+   "test": "tools/test_skill_contract.py",
+   "adr": "docs/adr/013-contrato-minimo-skill.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "skills",
+    "contract",
+    "linter"
+   ],
+   "mutacao": {
+    "arquivo": "tools/validate_skills.py",
+    "de": "            errors.append(f\"campo obrigatorio ausente: '{key}'\")",
+    "para": "            pass",
+    "canario": "tools/test_skill_contract.py",
+    "espera": "campo obrigatorio deixou de ser exigido"
+   }
+  },
+  {
+   "id": "clean-env-gate",
+   "title": "Teste porta-do-usuario + ambiente limpo (sem residuo de dev na entrega)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/check_clean_env.py",
+   "test": "tools/test_clean_env.py",
+   "adr": "docs/adr/036-teste-porta-do-usuario-e-ambiente-limpo.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "delivery",
+    "gate"
+   ],
+   "mutacao": {
+    "arquivo": "tools/check_clean_env.py",
+    "de": "    return proc.returncode == 0, (proc.stdout or \"\") + (proc.stderr or \"\")",
+    "para": "    return True, (proc.stdout or \"\") + (proc.stderr or \"\")",
+    "canario": "tools/test_clean_env.py",
+    "espera": "FAIL [esperado FAIL] requirements com pacote"
+   }
+  },
+  {
+   "id": "completeness-gate",
+   "title": "Cobertura escopo-pedido x entrega: quantificador sem criterio em validation falha",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/check_completeness.py",
+   "test": "tools/test_completeness.py",
+   "adr": "docs/adr/034-completeness-vs-request-gate.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "completeness",
+    "gate"
+   ],
+   "mutacao": {
+    "arquivo": "tools/check_completeness.py",
+    "de": "        if q not in val:",
+    "para": "        if q in val:",
+    "canario": "tools/test_completeness.py",
+    "espera": "FAIL [esperado PASS] entrega cobre"
+   }
+  },
+  {
+   "id": "context-brief-gate",
+   "title": "Contexto inferido vira ancora de pesquisa mecanizada (reparo do discovery)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/check_context_brief.py",
+   "test": "tools/test_context_brief.py",
+   "adr": "docs/adr/051-reparo-discovery-contexto-inferido-pesquisa-ancora-mecanizada.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "discovery",
+    "gate"
+   ],
+   "mutacao": {
+    "arquivo": "tools/check_context_brief.py",
+    "de": "    return sorted({s for s in signals if re.search(r\"\\b\" + re.escape(s) + r\"\\b\", t)})",
+    "para": "    return []",
+    "canario": "tools/test_context_brief.py",
+    "espera": "esperado FAIL (brief ausente), veio PASS"
+   }
+  },
+  {
+   "id": "delivery-floor-gate",
+   "title": "Piso de entregabilidade ao humano (teste binario de entrega minima)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/check_delivery_floor.py",
+   "test": "tools/test_delivery_floor.py",
+   "adr": "docs/adr/053-teste-binario-de-entregabilidade-ao-humano.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "delivery",
+    "gate"
+   ],
+   "mutacao": {
+    "arquivo": "tools/check_delivery_floor.py",
+    "de": "            if fn.lower().endswith(DOC_EXT) and (_tokens(fn) & RUNBOOK_TOKENS):",
+    "para": "            if False:",
+    "canario": "tools/test_delivery_floor.py",
+    "espera": "entrega COM runbook deveria PASS"
+   }
+  },
+  {
+   "id": "discovery-eval",
+   "title": "Discovery com eval executado (nao so prosa de plano)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/check_spec_depth.py",
+   "test": "tools/test_discovery_eval.py",
+   "adr": "docs/adr/042-discovery-eval-executado.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "discovery",
+    "eval",
+    "canary"
+   ],
+   "mutacao": {
+    "arquivo": "tools/check_spec_depth.py",
+    "de": "    return (len(faltando_obr) == 0), faltando_obr, avisos_rec",
+    "para": "    return True, faltando_obr, avisos_rec",
+    "canario": "tools/test_discovery_eval.py",
+    "espera": "saída rasa PASSOU (eval não discrimina!)"
+   }
+  },
+  {
+   "id": "entrypoint-tty-gate",
+   "title": "Entrypoint nao depende de TTY (roda em CI/headless)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/check_entrypoint_tty.py",
+   "test": "tools/test_entrypoint_no_tty.py",
+   "adr": "docs/adr/036-teste-porta-do-usuario-e-ambiente-limpo.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "delivery",
+    "gate",
+    "ci"
+   ],
+   "mutacao": {
+    "arquivo": "tools/check_entrypoint_tty.py",
+    "de": "        return \"FAIL\", \"quebrou lendo stdin sem TTY (input() bloqueante como única via)\"",
+    "para": "        return \"PASS\", \"sabotado: aceita quebra sem TTY\"",
+    "canario": "tools/test_entrypoint_no_tty.py",
+    "espera": "[esperado FAIL -> PASS] input() bloqueante"
+   }
+  },
+  {
+   "id": "execution-report-builder",
+   "title": "Builder do relatorio de execucao (dois tiers: telemetria processo + anonimizada)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/execution_report.py",
+   "test": "tools/test_execution_report.py",
+   "adr": "docs/adr/038-execution-report-telemetria.md",
+   "cross_ai": true,
+   "enforcement": "fail-soft",
+   "tags": [
+    "telemetry",
+    "corpus"
+   ]
+  },
+  {
+   "id": "input-contract-gate",
+   "title": "Contrato de entrada: spec sem contrato de input declarado falha",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/check_input_contract.py",
+   "test": "tools/test_input_contract.py",
+   "adr": "docs/adr/033-elicitacao-consultiva-banco-agnostico-linter-de-spec.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "spec",
+    "contract",
+    "gate"
+   ],
+   "mutacao": {
+    "arquivo": "tools/check_input_contract.py",
+    "de": "            if f[\"required\"]:",
+    "para": "            if False:",
+    "canario": "tools/test_input_contract.py",
+    "espera": "FAIL [esperado FAIL] arquivo obrigatório ausente"
+   }
+  },
+  {
+   "id": "make-index-tool",
+   "title": "Gerador de indice de documentos/ADRs (make_index)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/make_index.py",
+   "test": "tools/test_make_index.py",
+   "cross_ai": false,
+   "enforcement": "fail-soft",
+   "tags": [
+    "tooling",
+    "index"
+   ]
+  },
+  {
+   "id": "nonadmin-profile",
+   "title": "Perfil non-admin: gates anunciados inline quando GPO/EDR veta hooks",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": ".claude/settings.nonadmin.json",
+   "test": "tools/test_nonadmin.py",
+   "adr": "docs/adr/047-modo-non-admin-single-source-multi-distribuicao.md",
+   "cross_ai": false,
+   "enforcement": "manual",
+   "tags": [
+    "non-admin",
+    "resilience"
+   ]
+  },
+  {
+   "id": "oracle-bias-canary",
+   "title": "Canario anti-vies de oraculo + estabilidade de decisao",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/check_field_mapping.py",
+   "test": "tools/test_oracle_bias.py",
+   "adr": "docs/adr/035-anti-vies-oraculo-estabilidade-decisao.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "honesty",
+    "canary"
+   ],
+   "mutacao": {
+    "arquivo": "tools/check_field_mapping.py",
+    "de": "            bad.append((s[:90], falta))",
+    "para": "            pass",
+    "canario": "tools/test_oracle_bias.py",
+    "espera": "FAIL [esperado FAIL] mapeamento por inferência"
+   }
+  },
+  {
+   "id": "overclaim-lexicon",
+   "title": "Lexico PT-BR de overclaim (absoluto-sem-hedge) usado pelos gates de honestidade",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/overclaim_lexicon.py",
+   "test": "tools/test_overclaim_lexicon.py",
+   "adr": "docs/adr/059-gates-de-honestidade-da-vitrine.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "honesty",
+    "lexicon"
+   ],
+   "mutacao": {
+    "arquivo": "tools/overclaim_lexicon.py",
+    "de": "    (\"não/nunca alucina (claim positivo)\", re.compile(r\"(n[ãa]o|nunca|jamais)\\s+alucina\", re.I)),",
+    "para": "    (\"desativado\", re.compile(r\"zzz-nunca-casa-com-nada\", re.I)),",
+    "canario": "tools/test_overclaim_lexicon.py",
+    "espera": "FALSO-NEGATIVO (deixou passar veneno)"
+   }
+  },
+  {
+   "id": "parity-cross-platform",
+   "title": "Paridade cross-platform dos canarios (Linux/Mac/Windows) na CI",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": ".github/workflows/ci.yml",
+   "test": "tools/test_parity.py",
+   "adr": "docs/adr/040-paridade-cross-platform-ci.md",
+   "cross_ai": false,
+   "enforcement": "ci-ready",
+   "tags": [
+    "ci",
+    "parity",
+    "canary"
+   ]
+  },
+  {
+   "id": "project-token-report",
+   "title": "Relatorio de tokens por projeto (custo de sessao)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/project_report.py",
+   "test": "tools/test_project_report.py",
+   "adr": "docs/adr/026-relatorio-tokens-projeto.md",
+   "cross_ai": false,
+   "enforcement": "fail-soft",
+   "tags": [
+    "telemetry",
+    "cost"
+   ]
+  },
+  {
+   "id": "regulatory-coverage-gate",
+   "title": "Cobertura de perfis regulados declarados pelo discovery (catalogo agnostico)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/check_regulatory_coverage.py",
+   "test": "tools/test_regulatory_coverage.py",
+   "adr": "docs/adr/043-catalogo-perfis-regulados.md",
+   "cross_ai": false,
+   "enforcement": "advisory",
+   "tags": [
+    "regulatory",
+    "coverage",
+    "gate"
+   ]
+  },
+  {
+   "id": "spec-depth-gate",
+   "title": "Profundidade minima de spec (linter anti-spec-rasa)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/check_spec_depth.py",
+   "test": "tools/test_spec_depth.py",
+   "adr": "docs/adr/033-elicitacao-consultiva-banco-agnostico-linter-de-spec.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "spec",
+    "gate"
+   ],
+   "mutacao": {
+    "arquivo": "tools/check_spec_depth.py",
+    "de": "    faltando_obr = [d[\"key\"] for d in dims if d[\"obr\"] and d[\"key\"] not in covered]",
+    "para": "    faltando_obr = []",
+    "canario": "tools/test_spec_depth.py",
+    "espera": "[esperado FAIL -> obteve PASS] spec faltando"
+   }
+  },
+  {
+   "id": "junction-ledger",
+   "title": "Ledger de juncoes J0-J6 (rastro mecanico do gate PASS por juncao; forward-only + J3 exige validation.md ou justificativa)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/qa_evidence.py",
+   "test": "tools/test_qa_evidence.py",
+   "adr": "docs/adr/077-enforcement-deterministico-juncao-release.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "qa",
+    "process-evidence",
+    "junctions",
+    "ledger"
+   ],
+   "mutacao": {
+    "arquivo": "tools/qa_evidence.py",
+    "de": "JUNCTION_ORDER[j] < JUNCTION_ORDER[last]",
+    "para": "JUNCTION_ORDER[j] > JUNCTION_ORDER[last]",
+    "canario": "tools/test_qa_evidence.py",
+    "espera": "aceitou indevidamente (deveria recusar)"
+   }
+  },
+  {
+   "id": "qa-evidence-gate",
+   "title": "qa-evidence (fail-closed): release exige veredito qa-critic aprovativo persistido em _meta/qa/ (ADR-074 emenda 2)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/qa_evidence.py",
+   "test": "tools/test_qa_evidence.py",
+   "adr": "docs/adr/074-process-evidence-gate-fechamento-com-evidencia.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "qa",
+    "process-evidence",
+    "closure",
+    "canary"
+   ],
+   "mutacao": {
+    "arquivo": "tools/qa_evidence.py",
+    "de": "    if last in JUNCTION_ORDER and JUNCTION_ORDER[j] < JUNCTION_ORDER[last] and not rewind:",
+    "para": "    if False:",
+    "canario": "tools/test_qa_evidence.py",
+    "espera": "regressao sem rewind: aceitou indevidamente"
+   }
+  },
+  {
+   "id": "posture-gate",
+   "title": "posture-gate (fail-closed): release exige evidencia de postura deep-research/squad (discovery+RRC+metodo-senior) atestada pelo qa-critic adversarial (ADR-074 emenda 3)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/test_posture_gate.py",
+   "test": "tools/test_posture_gate.py",
+   "adr": "docs/adr/074-process-evidence-gate-fechamento-com-evidencia.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "posture",
+    "process-evidence",
+    "deep-research",
+    "canary"
+   ],
+   "mutacao": {
+    "arquivo": "tools/test_posture_gate.py",
+    "de": "APPROVING = {\"aprovar\", \"aprovar_com_ressalvas\"}",
+    "para": "APPROVING = {\"aprovar\", \"aprovar_com_ressalvas\", \"reprovar\"}",
+    "canario": "tools/test_posture_gate.py",
+    "espera": "REPROVADO foi aceito como evidencia aprovativa"
+   }
+  },
+  {
+   "id": "context-budget-gate",
+   "title": "context-budget: hook PreToolUse(Read) anuncia FRACIONAR (doc-intake) em fonte grande + tool chamavel",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/context_budget.py",
+   "test": "tools/test_context_budget.py",
+   "adr": "docs/adr/029-doc-intake-parse-deterministico-sem-embeddings.md",
+   "cross_ai": false,
+   "enforcement": "fail-soft",
+   "tags": [
+    "context",
+    "tokens",
+    "doc-intake",
+    "canary"
+   ]
+  },
+  {
+   "id": "hitl-proof-verify",
+   "title": "verify_hitl_proofs: CI verifica autenticidade dos hitl_proof via git verify-commit/verify-tag (ADR-071 pendencia)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/verify_hitl_proofs.py",
+   "test": "tools/test_verify_hitl_proofs.py",
+   "adr": "docs/adr/071-equivalencia-convergencia-entre-repos-mae.md",
+   "cross_ai": true,
+   "enforcement": "ci-ready",
+   "tags": [
+    "cross-ai",
+    "hitl",
+    "equivalence",
+    "canary"
+   ]
+  },
+  {
+   "id": "context-budget-hook",
+   "title": "Hook PreToolUse(Read) que anuncia context-budget (mecaniza doc-intake p/ contexto maior; nao-bloqueante, fail-open)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/hooks/context_budget_gate.py",
+   "test": "tools/test_context_budget_gate.py",
+   "adr": "docs/adr/029-doc-intake-parse-deterministico-sem-embeddings.md",
+   "cross_ai": false,
+   "enforcement": "fail-soft",
+   "tags": [
+    "context",
+    "tokens",
+    "hook",
+    "doc-intake",
+    "canary"
+   ]
+  },
+  {
+   "id": "web-bundles-coaches",
+   "title": "Coaches cross-IA (planejamento em Gemini/ChatGPT) gerados do dado com canario de drift fail-closed",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/build_web_bundles.py",
+   "test": "tools/test_web_bundles.py",
+   "adr": "docs/adr/083-cross-ai-web-bundles-coaches.md",
+   "cross_ai": true,
+   "enforcement": "fail-closed",
+   "tags": [
+    "cross-ai",
+    "web-bundles",
+    "planning",
+    "external-integration"
+   ],
+   "mutacao": {
+    "arquivo": "tools/build_web_bundles.py",
+    "de": "## Nucleo do metodo (vale por LEITURA",
+    "para": "## Nucleo do metodo (vale por LEITURA-SABOTADO",
+    "canario": "tools/test_web_bundles.py",
+    "espera": "!= coaches.json (regenere e commite)"
+   }
+  },
+  {
+   "id": "author-tier-gate",
+   "title": "Gate de tier-autor da sessao: detecta modelo ativo (transcript) + alerta LOUD se autor < baseline (ADR-082)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/hooks/check_author_tier.py",
+   "test": "tools/test_author_tier.py",
+   "adr": "docs/adr/082-baseline-de-autor-relativo-gate-tier-sessao.md",
+   "cross_ai": false,
+   "enforcement": "fail-soft",
+   "tags": [
+    "models",
+    "baseline",
+    "boot",
+    "heterogeneity"
+   ]
+  },
+  {
+   "id": "advanced-elicitation",
+   "title": "Elicitacao avancada: catalogo de 77 metodos (convergente #1-69 + divergente CIS #70-76 + tuning-loop #77) com canario de integridade fail-closed; execucao pela skill",
+   "status": "PARTIAL",
+   "enforcement": "fail-closed",
+   "ai_owner": "claude",
+   "mechanism": ".agent/skills/advanced-elicitation/methods.md",
+   "test": "tools/test_elicitation_catalog.py",
+   "adr": "docs/adr/081-integracao-bmad-elicitation-edge-case-party-readiness.md",
+   "cross_ai": false,
+   "tags": [
+    "elicitation",
+    "discovery",
+    "methods",
+    "external-integration",
+    "divergente",
+    "canary"
+   ],
+   "mutacao": {
+    "arquivo": ".agent/skills/advanced-elicitation/methods.md",
+    "de": "| 40 |",
+    "para": "| 400 |",
+    "canario": "tools/test_elicitation_catalog.py",
+    "espera": "numeracao nao-contigua: faltam"
+   }
+  },
+  {
+   "id": "risk-gate",
+   "title": "Gating deterministico por risco (prob x impacto -> gate + tier P0-P3); recast externo (ADR-086) sob P15, forma agnostica (categorias = blueprint)",
+   "status": "PROVIDES",
+   "enforcement": "fail-closed",
+   "ai_owner": "claude",
+   "mechanism": "tools/risk_score.py",
+   "test": "tools/test_risk_score.py",
+   "adr": "docs/adr/086-risk-score-gating-deterministico-por-risco.md",
+   "cross_ai": false,
+   "tags": [
+    "risk",
+    "gate",
+    "deterministic",
+    "external-integration",
+    "canary"
+   ],
+   "mutacao": {
+    "arquivo": "tools/risk_score.py",
+    "de": "HITL_MIN_SCORE = 6",
+    "para": "HITL_MIN_SCORE = 99",
+    "canario": "tools/test_risk_score.py",
+    "espera": "hitl_required esperado True (tem um 6), veio False"
+   }
+  },
+  {
+   "id": "byo-ci-gate",
+   "title": "Gate de merge dirigido pelos canarios LOCAIS (BYO-CI) — a seguranca do GHA sem GHA: posta commit-status verde so com 0 FAIL; branch protection exige o context",
+   "status": "PROVIDES",
+   "enforcement": "fail-closed",
+   "ai_owner": "claude",
+   "mechanism": "tools/post_canary_status.py",
+   "test": "tools/test_post_canary_status.py",
+   "adr": "docs/adr/088-byo-ci-gate-canarios-local-sem-github-actions.md",
+   "cross_ai": false,
+   "tags": [
+    "ci",
+    "gate",
+    "merge",
+    "deterministic",
+    "canary"
+   ],
+   "mutacao": {
+    "arquivo": "tools/post_canary_status.py",
+    "de": "CONTEXT = \"canarios-local\"",
+    "para": "CONTEXT = \"outro-nome\"",
+    "canario": "tools/test_post_canary_status.py",
+    "espera": "mas a protecao da main exige"
+   }
+  },
+  {
+   "id": "autonomy-retry-policy",
+   "title": "Dial retry/escalate por MODO (ADR-087): HITL escala na 1a falha; autosuficiente auto-retenta subindo a escada de modelo ate budget, escala por ultimo",
+   "status": "PROVIDES",
+   "enforcement": "fail-closed",
+   "ai_owner": "claude",
+   "mechanism": "tools/autonomy_policy.py",
+   "test": "tools/test_autonomy_policy.py",
+   "adr": "docs/adr/087-autosuficiente-retry-budget-escalacao-ultima.md",
+   "cross_ai": false,
+   "tags": [
+    "autonomy",
+    "execution-modes",
+    "retry",
+    "hitl",
+    "external-integration",
+    "canary"
+   ],
+   "mutacao": {
+    "arquivo": "tools/autonomy_policy.py",
+    "de": "CAP_ORDER = [\"haiku\", \"sonnet\", \"opus\", \"fable\"]",
+    "para": "CAP_ORDER = [\"fable\", \"opus\", \"sonnet\", \"haiku\"]",
+    "canario": "tools/test_autonomy_policy.py",
+    "espera": "esperado retry/sonnet, veio escalate/None"
+   }
+  },
+  {
+   "id": "core-no-vendor",
+   "title": "Pureza do nucleo: nenhum nome de PRODUTO/VENDOR externo no conteudo operativo (_shared/.agent/skills/roteador); proveniencia so nos ADRs. Regression-guard do 'repo nao tem produtos' (P12)",
+   "status": "PROVIDES",
+   "enforcement": "fail-closed",
+   "ai_owner": "claude",
+   "mechanism": "tools/test_core_no_vendor.py",
+   "test": "tools/test_core_no_vendor.py",
+   "adr": "docs/adr/091-nucleo-product-free-proveniencia-nos-adrs.md",
+   "cross_ai": false,
+   "tags": [
+    "agnosticism",
+    "core-purity",
+    "guard",
+    "canary"
+   ],
+   "mutacao": {
+    "arquivo": "tools/test_core_no_vendor.py",
+    "de": "m = VENDOR.search(scrub)",
+    "para": "m = None",
+    "canario": "tools/test_core_no_vendor.py",
+    "espera": "detector cego"
+   }
+  },
+  {
+   "id": "elicitation-gate",
+   "title": "Elicitation-first VINCULANTE antes de implementar sobre indicador/metrica/regra de dominio de risco alto: ficha de insumo (6 campos) nao-skippavel mesmo em autosuficiente (enforcement, nao skill nova)",
+   "status": "PROVIDES",
+   "enforcement": "fail-closed",
+   "ai_owner": "claude",
+   "mechanism": ".agent/skills/discovery/SKILL.md",
+   "test": "tools/test_elicitation_gate.py",
+   "adr": "docs/adr/089-elicitation-first-vinculante-dado-indicador-regra.md",
+   "cross_ai": false,
+   "tags": [
+    "elicitation",
+    "discovery",
+    "gate",
+    "high-stakes",
+    "enforcement",
+    "canary"
+   ],
+   "mutacao": {
+    "arquivo": ".agent/skills/discovery/SKILL.md",
+    "de": "ADR-089",
+    "para": "ADR-08X",
+    "canario": "tools/test_elicitation_gate.py",
+    "espera": "ADR-089) ausente no discovery"
+   }
+  },
+  {
+   "id": "web-prompt-currency",
+   "title": "Guard de currency do prompt chat-web: carimbo 'Alinhado ao vX.Y.Z' nao pode ficar >5 minors atras de main (anti-drift-silencioso do prompt mantido a mao)",
+   "status": "PROVIDES",
+   "enforcement": "fail-closed",
+   "ai_owner": "claude",
+   "mechanism": "tools/test_web_prompt_currency.py",
+   "test": "tools/test_web_prompt_currency.py",
+   "adr": "docs/adr/089-elicitation-first-vinculante-dado-indicador-regra.md",
+   "cross_ai": true,
+   "tags": [
+    "web",
+    "chat-web",
+    "currency",
+    "guard",
+    "canary"
+   ],
+   "mutacao": {
+    "arquivo": "tools/test_web_prompt_currency.py",
+    "de": "if gap > GAP_MAX:",
+    "para": "if gap > GAP_MAX + 1000:",
+    "canario": "tools/test_web_prompt_currency.py",
+    "espera": "janela de currency parou de valer"
+   }
+  },
+  {
+   "id": "project-onboarding",
+   "title": "Onboarding/wayfinding de projeto por COMPOSICAO (ADR-090): fork greenfield/brownfield no discovery + workflows generate-project-context/document-project (compoem handoff/explorer/docops) + guia user-facing POR-ONDE-COMECAR",
+   "status": "PROVIDES",
+   "enforcement": "fail-closed",
+   "ai_owner": "claude",
+   "mechanism": ".agent/workflows/generate-project-context.md",
+   "test": "tools/test_project_onboarding.py",
+   "adr": "docs/adr/090-bmad-project-onboarding-greenfield-brownfield-wayfinding.md",
+   "cross_ai": false,
+   "tags": [
+    "onboarding",
+    "wayfinding",
+    "discovery",
+    "composition",
+    "external-integration",
+    "canary"
+   ],
+   "mutacao": {
+    "arquivo": ".agent/workflows/generate-project-context.md",
+    "de": "knowledge_catalog",
+    "para": "knowledge-catalog",
+    "canario": "tools/test_project_onboarding.py",
+    "espera": "não compõe 'knowledge_catalog'"
+   }
+  },
+  {
+   "id": "edge-case-hunter",
+   "title": "Percurso mecanico exaustivo de paths nao tratados — output JSON verificavel",
+   "status": "PARTIAL",
+   "enforcement": "prose",
+   "ai_owner": "claude",
+   "mechanism": ".agent/skills/edge-case-hunter/SKILL.md",
+   "test": null,
+   "adr": "docs/adr/081-integracao-bmad-elicitation-edge-case-party-readiness.md",
+   "cross_ai": false,
+   "tags": [
+    "qa",
+    "edge-cases",
+    "code-review",
+    "external-integration"
+   ]
+  },
+  {
+   "id": "party-mode",
+   "title": "Exploracao multi-perspectiva com personas em conflito deliberado",
+   "status": "PARTIAL",
+   "enforcement": "prose",
+   "ai_owner": "claude",
+   "mechanism": ".agent/skills/party-mode/SKILL.md",
+   "test": null,
+   "adr": "docs/adr/081-integracao-bmad-elicitation-edge-case-party-readiness.md",
+   "cross_ai": false,
+   "tags": [
+    "exploration",
+    "personas",
+    "brainstorming",
+    "external-integration"
+   ]
+  },
+  {
+   "id": "readiness-gate",
+   "title": "Gate pre-developer: valida alinhamento requirements+ADR antes de J3",
+   "status": "PARTIAL",
+   "enforcement": "prose",
+   "ai_owner": "claude",
+   "mechanism": ".agent/skills/readiness-gate/SKILL.md",
+   "test": null,
+   "adr": "docs/adr/081-integracao-bmad-elicitation-edge-case-party-readiness.md",
+   "cross_ai": false,
+   "tags": [
+    "qa",
+    "gate",
+    "pre-dev",
+    "external-integration"
+   ]
+  },
+  {
+   "id": "squad-enforcement-gate",
+   "title": "Enforcement deterministico do squad: manifesto de papeis + gate com atestacao de isolamento — ADVISORY no CI (ativacao desacoplada, ADR-104)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/squad_gate.py",
+   "test": "tools/test_squad_gate.py",
+   "adr": "docs/adr/104-desacoplamento-padrao-documental-e-ativacao-do-gate.md",
+   "cross_ai": false,
+   "tags": [
+    "squad",
+    "enforcement",
+    "anti-drift",
+    "advisory"
+   ],
+   "enforcement": "advisory"
+  },
+  {
+   "id": "external-work-provenance",
+   "title": "Carimbo de PROCEDENCIA em trabalho executado FORA do repo: PROCEDENCIA.md com framework/versao/commit/sessao deterministicos + status por artefato (MINUTA/PROPOSTA/MIGRADO/APROVADO)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/handoff.py",
+   "test": "tools/test_handoff.py",
+   "enforcement": "manual",
+   "adr": "docs/adr/095-procedencia-de-trabalho-executado-fora-do-repo.md",
+   "cross_ai": false,
+   "tags": [
+    "traceability",
+    "provenance",
+    "external-work",
+    "regulated",
+    "anti-drift"
+   ]
+  },
+  {
+   "id": "path-resolves-at-destination",
+   "title": "Referencia a arquivo resolve no cwd do DESTINATARIO: raiz absoluta no Pacote P14 + auditoria de diretorio temporario e link markdown relativo",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/handoff.py",
+   "test": "tools/test_path_absoluto.py",
+   "enforcement": "advisory",
+   "adr": "docs/adr/098-referencia-a-arquivo-absoluta-e-resolvivel-fora-do-cwd.md",
+   "cross_ai": false,
+   "tags": [
+    "traceability",
+    "handoff",
+    "cross-session",
+    "anti-drift",
+    "path"
+   ]
+  },
+  {
+   "id": "validation-reporting",
+   "title": "Metodo de validacao ponto a ponto com reporte legivel por humano que decide",
+   "status": "PARTIAL",
+   "ai_owner": "claude",
+   "mechanism": "_shared/validation-reporting/SKILL.md",
+   "adr": "docs/adr/099-metodo-de-validacao-ponto-a-ponto-com-reporte-para-humano.md",
+   "cross_ai": false,
+   "enforcement": "prose",
+   "tags": [
+    "validacao",
+    "reporte",
+    "humano",
+    "metodo"
+   ],
+   "note": "PARTIAL / prose por honestidade: skill de METODO sem mecanismo — nao ha avisador, logo 'advisory' afirmaria um mecanismo inexistente (achado A2 do qa-critic; precedentes edge-case-hunter/party-mode/readiness-gate usam 'prose'). Contraria a §10 da propria skill; debito declarado no ADR-099 §Regua §0, que assume o override do dono (ADR-051) em vez de alegar a porta (c). Vira PROVIDES quando houver canario sobre artefato-exemplo com veredito derivado."
+  },
+  {
+   "id": "trabalhos-registro",
+   "title": "Registro persistente de trabalhos: handoff sobrevive a sessao e e oferecido ate ser tratado",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/trabalhos.py",
+   "adr": "docs/adr/100-registro-de-trabalhos-handoff-persistente.md",
+   "cross_ai": false,
+   "enforcement": "advisory",
+   "tags": [
+    "handoff",
+    "boot",
+    "continuidade",
+    "p14"
+   ],
+   "note": "advisory por desenho: trabalho pendente e INFORMACAO, nao erro — o gate check_trabalhos_abertos do boot_check nunca falha o boot, mas nunca fica silencioso ('nenhum aberto' e resultado declarado). Ciclo aberto->tratado; so o dono encerra. Persistencia em ~/.claude/trabalhos/ (fora do repo, porque um trabalho pode envolver varios repositorios).",
+   "test": "tools/test_trabalhos.py"
+  },
+  {
+   "id": "project-docs-standard",
+   "title": "Padrao do conjunto documental de projeto (7 propriedades + conjunto graduado + 4 gates) — PROSA, sem canario proprio",
+   "status": "PARTIAL",
+   "ai_owner": "claude",
+   "mechanism": "_shared/project-docs/SKILL.md",
+   "test": null,
+   "adr": "docs/adr/102-padrao-do-conjunto-documental-de-projeto.md",
+   "cross_ai": false,
+   "enforcement": "prose",
+   "tags": [
+    "docs",
+    "projeto",
+    "handoff",
+    "anti-drift",
+    "adversarial"
+   ]
+  },
+  {
+   "id": "qa-evidence-integrity",
+   "title": "Canario de integridade da evidencia de QA: .json e .md do mesmo bloco nao podem contar historias opostas",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/test_qa_evidence_integrity.py",
+   "test": "tools/test_qa_evidence_integrity.py",
+   "adr": "docs/adr/103-ativacao-do-squad-gate-como-bloqueio.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "qa",
+    "integridade",
+    "anti-teatro",
+    "auditoria"
+   ],
+   "mutacao": {
+    "arquivo": "tools/test_qa_evidence_integrity.py",
+    "de": "if rec_json and rec_md and rec_json != rec_md:",
+    "para": "if rec_json and rec_md and rec_json == rec_md:",
+    "canario": "tools/test_qa_evidence_integrity.py",
+    "espera": "CONTRADITORIA entre .json e .md nao foi pega"
+   }
+  },
+  {
+   "id": "enforcement-mutation-audit",
+   "title": "Prova de mutacao obrigatoria: capacidade fail-closed declara a sabotagem que deixa seu canario VERMELHO",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/audit_enforcement.py",
+   "test": "tools/test_audit_enforcement.py",
+   "adr": "docs/adr/106-prova-de-mutacao-para-capacidade-fail-closed.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "mutacao": {
+    "arquivo": "tools/audit_enforcement.py",
+    "de": "problema = \"declara `fail-closed` sem `mutacao` declarada\"",
+    "para": "problema = None",
+    "canario": "tools/test_audit_enforcement.py",
+    "espera": "[FALHA] nova `fail-closed` sem `mutacao` declarada"
+   },
+   "tags": [
+    "qa",
+    "anti-teatro",
+    "auditoria",
+    "enforcement"
+   ]
+  },
+  {
+   "id": "canary-runner-bytecode-isolation",
+   "title": "O executor da suite nao pode ser enganado por bytecode velho",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/run_canaries.py",
+   "test": "tools/test_run_canaries.py",
+   "adr": "docs/adr/106-prova-de-mutacao-para-capacidade-fail-closed.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "mutacao": {
+    "arquivo": "tools/run_canaries.py",
+    "de": "env = {**os.environ, \"PYTHONPYCACHEPREFIX\": str(prefixo_cache)}",
+    "para": "env = {k: v for k, v in os.environ.items() if k != \"PYTHONPYCACHEPREFIX\"}",
+    "canario": "tools/test_run_canaries.py",
+    "espera": "[FALHA] o ambiente do runner NAO e' enganado"
+   },
+   "tags": [
+    "qa",
+    "anti-teatro",
+    "canario",
+    "determinismo"
+   ]
+  },
+  {
+   "id": "decisoes-que-governam",
+   "title": "Colisao entre o pedido e decisao ja registrada vira consulta deterministica",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/decisoes_que_governam.py",
+   "test": "tools/test_decisoes_que_governam.py",
+   "adr": "docs/adr/051-reparo-discovery-contexto-inferido-pesquisa-ancora-mecanizada.md",
+   "cross_ai": false,
+   "enforcement": "advisory",
+   "tags": [
+    "postura",
+    "anti-passividade",
+    "decisoes",
+    "determinismo"
+   ]
+  },
+  {
+   "id": "history-rotation",
+   "title": "Rotacao deterministica do history.md — ultimos N checkpoints quentes + Em aberto/Aprendizado inteiros; antigos -> docs/history/history-archive.md (poda de contexto, zero perda, idempotente)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/rotate_history.py",
+   "test": "tools/test_rotate_history.py",
+   "adr": "docs/adr/107-rotacao-history-poda-de-contexto.md",
+   "cross_ai": false,
+   "enforcement": "fail-soft",
+   "tags": [
+    "context",
+    "tokens",
+    "history",
+    "canary"
+   ]
+  },
+  {
+   "id": "squad-gate-git-hook",
+   "title": "Instalador do pre-commit que faz o squad-gate rodar sozinho, com escapatoria declarada",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/install_git_hooks.py",
+   "test": "tools/test_install_git_hooks.py",
+   "adr": "docs/adr/092-camada-enforcement-comportamentos-manifesto-gate-githook.md",
+   "cross_ai": false,
+   "enforcement": "fail-soft",
+   "tags": [
+    "enforcement",
+    "squad",
+    "git",
+    "determinismo"
+   ]
+  },
+  {
+   "id": "research-evidence",
+   "title": "NAO SEI so vale depois de busca provada: >= K dominios distintos com prova, ou ratificacao humana",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/research_evidence.py",
+   "test": "tools/test_research_evidence.py",
+   "adr": "docs/adr/092-camada-enforcement-comportamentos-manifesto-gate-githook.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "mutacao": {
+    "arquivo": "tools/research_evidence.py",
+    "de": "    if len(doms) < k:",
+    "para": "    if False:",
+    "canario": "tools/test_research_evidence.py",
+    "espera": "[FALHA] mesmo dominio duas vezes NAO conta"
+   },
+   "tags": [
+    "anti-alucinacao",
+    "pesquisa",
+    "enforcement",
+    "squad"
+   ]
+  },
+  {
+   "id": "install-verification",
+   "title": "Instalar em qualquer PC com veredito: o que bloqueia, o que avisa, e como resolver cada um",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "bootstrap.py",
+   "test": "tools/test_bootstrap_check.py",
+   "adr": "docs/adr/047-modo-non-admin-single-source-multi-distribuicao.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "mutacao": {
+    "arquivo": "bootstrap.py",
+    "de": "    if not os.path.isdir(os.path.join(raiz, \".git\")):",
+    "para": "    if False:",
+    "canario": "tools/test_bootstrap_check.py",
+    "espera": "[FALHA] baixar o .zip em vez de clonar"
+   },
+   "tags": [
+    "instalacao",
+    "onboarding",
+    "runbook",
+    "non-admin"
+   ]
+  },
+  {
+   "id": "conformance-topologia",
+   "title": "Executado x desenhado no fluxo de juncoes: fitness auditavel em vez de julgamento",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/conformance.py",
+   "test": "tools/test_conformance.py",
+   "adr": "docs/adr/097-conformance-topologia-hard-event-log-canario-process-mining.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "mutacao": {
+    "arquivo": "tools/conformance.py",
+    "de": "        if status not in STATUS_VALIDOS:",
+    "para": "        if False:",
+    "canario": "tools/test_conformance.py",
+    "espera": "[FALHA] status fora do conjunto fechado"
+   },
+   "tags": [
+    "conformance",
+    "process-mining",
+    "topologia",
+    "anti-teatro"
+   ]
+  },
+  {
+   "id": "projeto-docs-derivados",
+   "title": "Backlog, cronograma e status report DERIVADOS do estado real — quadro que nao envelhece",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/projeto_docs.py",
+   "test": "tools/test_projeto_docs.py",
+   "adr": "docs/adr/102-padrao-do-conjunto-documental-de-projeto.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "mutacao": {
+    "arquivo": "tools/projeto_docs.py",
+    "de": "             \"titulo\": f\"Passivo de prova: {total} capacidades sem gate provado\",",
+    "para": "             \"titulo\": \"Passivo de prova\",",
+    "canario": "tools/test_projeto_docs.py",
+    "espera": "[FALHA] passivo entra AGREGADO"
+   },
+   "validado_em_projetos": 1,
+   "_nota_validacao": "ADR-102 sobe marcado como PENDENTE de validacao em 2o projeto — decisao do dono em 16/08 que desfez a circularidade do desenho original (so' promovia apos 2o uso, mas nenhum 2o projeto conseguia usar antes da promocao). A marca sai quando um segundo projeto real adotar.",
+   "tags": [
+    "gestao",
+    "backlog",
+    "status-report",
+    "adr-102"
+   ]
+  },
+  {
+   "id": "shadow-drift-alarm",
+   "title": "Deriva das distribuicoes publicadas vira numero; falta de medicao nao vira aprovacao",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/shadow_drift.py",
+   "test": "tools/test_shadow_drift.py",
+   "adr": "docs/adr/049-tres-distribuicoes-premium-baseline-single-source.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "mutacao": {
+    "arquivo": "tools/shadow_drift.py",
+    "de": "        return [], \"`gh` ausente ou nao autenticado — sem como consultar as publicadas\"",
+    "para": "        return [], None",
+    "canario": "tools/test_shadow_drift.py",
+    "espera": "[FALHA] sem `gh` autenticado, declara SKIP"
+   },
+   "tags": [
+    "distribuicao",
+    "deriva",
+    "alarme",
+    "anti-silencio"
+   ]
+  },
+  {
+   "id": "escrita-padrao",
+   "title": "Norma de escrita com canario: alcance da regra em todo papel do squad + referencia citada como apoio, nunca no lugar da explicacao",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "_shared/output-format/SKILL.md",
+   "test": "tools/test_escrita_padrao.py",
+   "adr": "docs/adr/109-escada-relativa-de-qa-e-norma-de-escrita-com-canario.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "escrita",
+    "formato",
+    "clareza",
+    "acionavel"
+   ],
+   "mutacao": {
+    "arquivo": "_shared/output-format/SKILL.md",
+    "de": "## Parte A.0 — O texto se sustenta sozinho",
+    "para": "## Parte A.0 — (secao removida pela sabotagem)",
+    "canario": "tools/test_escrita_padrao.py",
+    "espera": "nao contem mais a secao da norma",
+    "_por_que": "a sabotagem apaga o TITULO DA NORMA no arquivo que a capacidade declara como mecanismo. Antes ela mexia numa skill de papel, que e consumidora e nao mecanismo — provaria outra coisa. Achado do canario de auditoria."
+   },
+   "_limite_declarado": "o canario checa ALCANCE (todo papel aponta para a norma) e REFERENCIA SOLTA (frase cujo unico conteudo e um codigo interno). NAO checa qualidade de redacao: gate que adivinha se um texto esta bom erra, e gate que erra e desligado por quem tem pressa. A parte nao mecanizavel da norma continua cobravel em revisao adversarial.",
+   "_secao": "secao A.0 — o texto se sustenta sozinho"
+  },
+  {
+   "id": "controle-projeto",
+   "title": "Politica de lancamento de projeto (sprint · executor · adiantamento com autorizacao ativa · auto sem impedimento), achada por resolvedor em qualquer projeto",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/controle_projeto.py",
+   "test": "tools/test_controle_projeto.py",
+   "adr": "docs/adr/113-politica-de-lancamento-de-projeto-como-pacote-resolvido.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "gestao",
+    "sprint",
+    "backlog",
+    "capacidade",
+    "adr-113"
+   ],
+   "mutacao": {
+    "arquivo": "tools/controle_projeto.py",
+    "de": "                                      \"limite_em_execucao\", 3)",
+    "para": "                                      \"limite_em_execucao\", 99)  # sabotado",
+    "canario": "tools/test_controle_projeto.py",
+    "espera": "FAIL teto None -> 3"
+   }
+  },
+  {
+   "id": "controle-sharepoint-list",
+   "title": "OPCAO — laco da List do SharePoint: ida derivada e volta por arquivo separado, com as duas recusas reais do importador viradas canario",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/controle_sharepoint.py",
+   "test": "tools/test_controle_sharepoint.py",
+   "adr": "docs/adr/113-politica-de-lancamento-de-projeto-como-pacote-resolvido.md",
+   "cross_ai": false,
+   "enforcement": "advisory",
+   "tags": [
+    "sharepoint",
+    "list",
+    "gestao",
+    "csv",
+    "adr-113"
+   ],
+   "_enforcement_leia": "advisory, e nao fail-closed, porque o modulo e' OPT-IN: nada obriga um projeto a usar a List, e o canario dele nao bloqueia commit nenhum. O que ele garante e' que, QUANDO usado, a saida sai no formato que o importador aceita e sem nome de pessoa. [o QA adversarial de 21/08/2026 levantou a heterogeneidade vs controle-projeto (fail-closed) como sem justificativa escrita — a heterogeneidade esta certa, faltava o motivo, que agora esta aqui.]"
+  },
+  {
+   "id": "numeros-da-prosa",
+   "title": "Numero afirmado na documentacao do pacote controle_* e' MEDIDO contra o repositorio, e numero ja refutado nao volta",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/test_numeros_controle.py",
+   "test": "tools/test_numeros_controle.py",
+   "adr": "docs/adr/113-politica-de-lancamento-de-projeto-como-pacote-resolvido.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "honestidade",
+    "prosa",
+    "numero",
+    "anti-fabricacao",
+    "adr-113"
+   ],
+   "mutacao": {
+    "arquivo": "tools/test_numeros_controle.py",
+    "de": "            elif valor not in validos:",
+    "para": "            elif False:  # sabotado: numero inventado deixa de ser pego",
+    "canario": "tools/test_numeros_controle.py",
+    "espera": "FAIL auto-teste: sabotagem inventada tambem e' pega"
+   },
+   "_leia": "Nasceu de um achado do QA rodada 3: a versao anterior vivia dentro de test_controle_projeto.py e ALEGAVA conferir os numeros contra a realidade medida, mas media UM e bloqueava quatro strings. Denylist nao e' verificacao. Mora separado por motivo mecanico: para medir quantas verificacoes um canario executa e' preciso roda-lo, e um teste que roda a si mesmo nao termina."
+  },
+  {
+   "id": "controle-base",
+   "title": "FRONTEIRA do pacote controle_*: todo valor vindo de projeto.json, estado.json ou da List e' convertido ou RECUSADO, nunca gravado nem comparado cru",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/controle_base.py",
+   "test": "tools/test_controle_base.py",
+   "adr": "docs/adr/113-politica-de-lancamento-de-projeto-como-pacote-resolvido.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "fronteira",
+    "validacao",
+    "normalizacao",
+    "gestao",
+    "adr-113"
+   ],
+   "mutacao": {
+    "arquivo": "tools/controle_base.py",
+    "de": "    return f if math.isfinite(f) else None",
+    "para": "    return f",
+    "canario": "tools/test_controle_base.py",
+    "espera": "FAIL _num('nan') = None"
+   },
+   "_leia": "Nasceu da decisao do dono de REABRIR O DESENHO depois de cinco rodadas de critica adversarial, todas reprovando: quase todos os ~28 achados moravam nesta camada, e ela estava espalhada entre dois modulos — a validacao de tipo existia num e faltava no irmao, lendo o MESMO projeto.json."
+  },
+  {
+   "id": "mutacao-controle",
+   "title": "Prova de mutacao do pacote controle_*: cada defeito ja corrigido e' reintroduzido numa COPIA e o canario correspondente e' exigido a reprovar",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/test_mutacao_controle.py",
+   "test": "tools/test_mutacao_controle.py",
+   "adr": "docs/adr/113-politica-de-lancamento-de-projeto-como-pacote-resolvido.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "mutacao",
+    "prova",
+    "gestao",
+    "anti-regressao",
+    "adr-113"
+   ],
+   "mutacao": {
+    "arquivo": "tools/test_mutacao_controle.py",
+    "de": "            checar(f\"a copia intacta passa em {canario}\", r.returncode == 0,",
+    "para": "            checar(f\"a copia intacta passa em {canario}\", r.returncode != 0,",
+    "canario": "tools/test_mutacao_controle.py",
+    "espera": "FAIL a copia intacta passa em test_controle_base.py"
+   },
+   "_leia": "Nasceu de um achado MEDIA do QA rodada 8: a documentacao afirmava 'N defeitos provados por mutacao' e a prova morava num script de rascunho, fora do repositorio. A afirmacao era verdadeira mas nao verificavel, ao lado de duas que eram medidas. Nao escreve no repositorio: copia o pacote para pasta temporaria e muta a copia."
+  },
+  {
+   "id": "service-valuation",
+   "title": "Valoracao de servico por valor entregue, com memoria de calculo rastreavel",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "_shared/service-valuation/SKILL.md",
+   "test": "tools/test_service_valuation.py",
+   "adr": "docs/adr/114-valoracao-de-servico-entra-no-nucleo-calibrada-por-caso-real.md",
+   "cross_ai": false,
+   "enforcement": "advisory",
+   "tags": [
+    "valoracao",
+    "preco",
+    "estimativa",
+    "memoria-de-calculo",
+    "metodo"
+   ],
+   "note": "Metodo trazido de fora e calibrado pelo caso H-01, em que a v1.0 errou o preco em uma ordem de grandeza (270.000 -> 13.000, 20,8x) — oito violacoes, SEIS delas de regras que a propria skill ja tinha. As cinco travas novas (retrabalho do fornecedor fora do faturavel, faixa de unidade como TRAVA, Lente B inexistente sem fonte independente, teto indeterminado nao autoriza preco, teste do espanto) transformam regra em condicao de parada. O canario audita ESTRUTURA e mede a prosa contra a tabela do proprio arquivo (o maximo de quatro pisos e' 1,75, e a versao recebida afirmava 1,8); provado por mutacao nas duas direcoes, inclusive contra virar decoracao. NAO cobre o criterio de aceite COMPORTAMENTAL do dono (a skill reprovar a v1.0 do caso) — isso exige rodar modelo e fica como evidencia datada no ADR-114. Rate card e historico ficam em docs/_private/, fora do export: _shared/ viaja para os repos-sombra publicos."
+  },
+  {
+   "id": "veredito-fail-closed",
+   "title": "Veredito aprovativo com achado bloqueante nao resolvido e' rejeitado pelo gate",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/squad_gate.py",
+   "test": "tools/test_squad_gate.py",
+   "adr": "docs/adr/115-fail-closed-no-veredito-achado-bloqueante-nao-passa-por-rotulo.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "qa",
+    "gate",
+    "fail-closed",
+    "severidade",
+    "veredito"
+   ],
+   "note": "O gate lia o ROTULO do veredito e nunca os achados: um 'aprovar_com_ressalvas' com ALTA em aberto passava. Agora severidade e' normalizada (15 grafias no ledger; o desconhecido bloqueia), 'aceito' exige assinatura em achado bloqueante, e o legado e' cortado por SCHEMA — nunca por prosa — ficando listado, nao perdoado. 33 mutacoes, 33 mortas.",
+   "mutacao": {
+    "arquivo": "tools/squad_gate.py",
+    "de": "return _norm(problema.get(\"severidade\")) not in SEVERIDADE_LEVE",
+    "para": "return _norm(problema.get(\"severidade\")) in {\"ALTA\"}",
+    "canario": "tools/test_squad_gate.py",
+    "espera": "FAIL test_grafia_DESCONHECIDA_bloqueia_fail_closed"
+   }
+  }
+ ],
+ "registry_waivers": [
+  {
+   "file": "tools/test_effect_gate_push.py",
+   "reason": "regressao do MESMO mecanismo effect-gate (fix push false-positive, PR#63) — capacidade ja registrada em 'effect-gate'; nao e feature distinta."
+  },
+  {
+   "file": "tools/test_mutacao_squad_gate.py",
+   "reason": "prova por MUTACAO do mesmo mecanismo ja registrado em 'veredito-fail-closed' (tools/squad_gate.py) — nao e' feature distinta. Existe como arquivo porque a 2a rodada do QA apontou que '8 mutacoes, 8 mortas' era prosa: alegacao de sabotagem que so vive no relatorio e' a classe que o ADR-106 proibe."
+  }
+ ]
 }

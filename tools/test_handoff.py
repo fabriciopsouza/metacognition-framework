@@ -34,10 +34,16 @@ MODEL_CASES = [
     ("qa-critic", "low", "fable", "sonnet"),  # heterogeneo: autor fable -> sonnet
     ("qa-critic", "low", "sonnet", "fable"),  # heterogeneo: autor sonnet -> tier max
     ("review", "low", "opus", "sonnet"),
-    ("cross-ai", "low", "opus", "fable"),     # handoff cross-IA -> tier max
-    ("handoff gemini", "low", "opus", "fable"),
-    ("architect", "low", "opus", "fable"),    # tier max
-    ("discovery", "low", "opus", "fable"),
+    # DECISAO DO DONO 19/08/2026: coordenacao cross-IA saiu do tier max. Era a ultima porta que
+    # abria o degrau acima do default POR PAPEL, sem autorizacao ativa. Devolver para "fable"
+    # aqui reprova.
+    ("cross-ai", "low", "opus", "opus"),      # handoff cross-IA -> baseline
+    ("handoff gemini", "low", "opus", "opus"),
+    # DECISAO DO DONO 18/08/2026: fable NAO e default. Arquiteto, planejador e executor sao OPUS;
+    # fable entra so no SEGUNDO QA adversarial final (model-policy.json:qa_final_duplo). Se alguem
+    # devolver esses papeis para o tier max, este canario reprova de novo.
+    ("architect", "low", "opus", "opus"),
+    ("discovery", "low", "opus", "opus"),
     ("docops", "low", "opus", "haiku"),       # tier economy (mecanico gateado por canario)
     ("developer", "low", "opus", "opus"),     # papel autoral -> tier baseline (= opus hoje; ADR-082)
     ("developer", "high", "opus", "fable"),   # risco sobrepoe papel -> tier max
@@ -125,6 +131,238 @@ def main():
         if not ba.get("author_roles"):
             fails.append("baseline_author.author_roles vazio (quais papeis sao autorais)")
     # papel autoral developer DEVE resolver ao baseline (nao mais ao default balanced)
+    # (b3.1) DECISAO DO DONO 18/08/2026: o QA adversarial final e DUPLO, sonnet depois fable, e a
+    # politica tem de dizer isso como DADO. Sem esta assercao, apagar o bloco nao reprovaria nada.
+    # A regra do dono e RELATIVA: executor no default, 1o QA um degrau abaixo, 2o QA um degrau acima.
+    # A assercao e CALCULADA da escada — assim, promover o baseline move os dois criticos junto e este
+    # canario continua verdadeiro sem ninguem reescrever numero nenhum.
+    qfd = pol.get("qa_final_duplo")
+    esc = (pol.get("escada_relativa") or {}).get("ordem")
+    if not isinstance(esc, list) or len(esc) < 3:
+        fails.append("model-policy.json sem 'escada_relativa.ordem' — a regra de QA e relativa ao "
+                     "default e sem a escada ela nao pode ser resolvida")
+    elif not isinstance(qfd, dict):
+        fails.append("model-policy.json sem 'qa_final_duplo' — a decisao do dono de fechar bloco com "
+                     "DOIS QA adversariais finais nao esta registrada como dado")
+    else:
+        base = (pol.get("baseline_author") or {}).get("model")
+        # [qa-critic Sonnet 19/08/2026, achado ALTA] a assercao era TAUTOLOGICA: ela calculava o
+        # esperado a partir da propria escada, entao inverter a ordem passava verde — com o critico
+        # barato no degrau caro e vice-versa. A ordem passa a ser conferida contra os tiers, que sao
+        # declaracao independente no mesmo arquivo: o topo do tier `max` e o mais capaz, e o topo do
+        # tier `economy` e o mais barato.
+        topo_max = ((pol.get("tiers") or {}).get("max") or {}).get("chain") or []
+        topo_eco = ((pol.get("tiers") or {}).get("economy") or {}).get("chain") or []
+        if topo_max and esc and topo_max[0] != esc[-1]:
+            fails.append(f"escada_relativa.ordem termina em {esc[-1]!r}, mas o tier 'max' comeca em "
+                         f"{topo_max[0]!r} — a ordem da escada contradiz os tiers do mesmo arquivo; "
+                         f"invertida, ela poria o critico barato no degrau caro")
+        if topo_eco and esc and topo_eco[0] != esc[0]:
+            fails.append(f"escada_relativa.ordem comeca em {esc[0]!r}, mas o tier 'economy' comeca em "
+                         f"{topo_eco[0]!r} — mesma contradicao, do lado barato")
+        if base not in esc:
+            fails.append(f"baseline_author.model {base!r} nao esta na escada {esc}")
+        else:
+            i = esc.index(base)
+            esperado = {
+                "executor": base,
+                "passo_1": esc[max(0, i - 1)],
+                "passo_2": esc[min(len(esc) - 1, i + 1)],
+                "juncoes": esc[max(0, i - 1)],
+                "mecanico": esc[0],
+            }
+            # [qa-critic Sonnet 19/08/2026, achado ALTA] na BORDA da escada o degrau que faltaria
+            # nao existe, e a formula devolvia o PROPRIO modelo do autor para o 2o QA — critico igual
+            # ao avaliado, com o canario dizendo que estava certo. O ADR declarava a regra de borda em
+            # prosa; agora ela e' codigo.
+            # [qa-critic Fable 19/08/2026, achado MEDIA-ALTA] a versao anterior desta checagem
+            # EXIGIA que, na borda, o 2o QA fosse o MESMO modelo do autor — e reprovava quem
+            # configurasse um modelo distinto, que e' justamente o que o ADR-018 quer. O gate
+            # reprovava a configuracao honesta e aceitava a enviesada. Agora:
+            #   - modelo DISTINTO do autor: sempre aceito, e' o preferido, nao precisa declarar nada;
+            #   - modelo IGUAL ao autor: aceito so com declaracao SUBSTANTIVA (nao um "x").
+            for papel in ("passo_1", "passo_2", "juncoes"):
+                bloco = qfd.get(papel) or {}
+                quem = bloco.get("resolve_hoje")
+                ideal = esperado[papel]
+                if quem == ideal:
+                    continue                      # o degrau que a escada calcula: nada a discutir
+                if quem in esc and quem != esperado["executor"]:
+                    continue                      # outro degrau, mas distinto do autor: aceito
+                declaracao = str(bloco.get("borda_declarada") or "").strip()
+                if quem == esperado["executor"]:
+                    if len(declaracao) < 40:
+                        fails.append(f"qa_final_duplo.{papel}.resolve_hoje = {quem!r}, o MESMO modelo do "
+                                     f"autor — e' o vies que o ADR-018 proibe. Ou use um degrau distinto, "
+                                     f"ou escreva em `borda_declarada` por que a heterogeneidade esta "
+                                     f"indisponivel (o texto atual tem {len(declaracao)} caracteres; "
+                                     f"exige-se explicacao, nao carimbo)")
+                else:
+                    fails.append(f"qa_final_duplo.{papel}.resolve_hoje = {quem!r} nao esta na escada "
+                                 f"{esc}")
+            # [DECISAO DO DONO 19/08/2026] o degrau ACIMA do default (2o QA final) deixou de ser
+            # automatico: rodar por reflexo esgotou a janela de 5h de tokens de uma sessao. Ele passa
+            # a exigir AUTORIZACAO ATIVA - ordem direta do dono ou pergunta respondida com sim. Sem
+            # esta assercao, afrouxar a regra de volta para automatico nao reprovaria nada, e o
+            # afrouxamento silencioso e' exatamente a classe de regressao que este canario existe
+            # para pegar. O texto e' exigido SUBSTANTIVO (nao um carimbo) pela mesma razao ja
+            # aplicada a `borda_declarada` acima.
+            p2 = qfd.get("passo_2") or {}
+            autoriz = str(p2.get("autorizacao") or "").strip()
+            if "ATIVA" not in autoriz.upper() or len(autoriz) < 80:
+                fails.append(
+                    "qa_final_duplo.passo_2.autorizacao ausente ou raso "
+                    f"({len(autoriz)} caracteres) - a decisao do dono 19/08/2026 e' que o degrau "
+                    "ACIMA do default NUNCA roda por default: so com ordem explicita ou pergunta "
+                    "respondida. Exige-se o criterio escrito, nao um carimbo")
+            # [2o QA Fable 20/08/2026] a checagem passou a ser do VALOR, nao da prosa: o
+            # critico inverteu o sentido do texto mantendo as palavras-chave e a suite ficou
+            # verde. Booleano nao se inverte mantendo as palavras.
+            if p2.get("roda_sem_resposta") is not False:
+                fails.append(
+                    f"qa_final_duplo.passo_2.roda_sem_resposta = "
+                    f"{p2.get('roda_sem_resposta')!r}; tem de ser exatamente False. E' o "
+                    f"campo que decide se o degrau ACIMA dispara sem resposta do dono, e ele "
+                    f"e' booleano de proposito: a versao anterior verificava PROSA por "
+                    f"substring e o 2o QA inverteu o sentido mantendo as palavras-chave")
+            sem_resp = str(p2.get("default_sem_resposta") or "").strip().upper()
+            if "NAO RODA" not in sem_resp:
+                fails.append(
+                    f"qa_final_duplo.passo_2.default_sem_resposta = {p2.get('default_sem_resposta')!r}; "
+                    "o default na AUSENCIA de resposta tem de ser NAO RODA. Qualquer outro default "
+                    "devolve o automatismo pela porta dos fundos")
+            if "autorizacao ativa" not in str(qfd.get("proibido") or "").lower():
+                fails.append(
+                    "qa_final_duplo.proibido nao lista o degrau acima rodando SEM autorizacao ativa - "
+                    "a proibicao precisa estar onde quem le as proibicoes olha")
+            for papel in ("executor", "mecanico"):
+                bloco = qfd.get(papel) or {}
+                if bloco.get("resolve_hoje") != esperado[papel]:
+                    fails.append(f"qa_final_duplo.{papel}.resolve_hoje = "
+                                 f"{bloco.get('resolve_hoje')!r}; a escada com default {base!r} "
+                                 f"resolve para {esperado[papel]!r}")
+
+    # [DECISAO DO DONO 19/08/2026] "nao teremos autor sonnet - autor sempre default". A checagem
+    # abaixo cobria SO `developer`, e `author_roles` era lista decorativa: ninguem resolvia o conjunto.
+    # Resolvendo todos, `docops-generative` apareceu em HAIKU (a regra `docops`/economy vem antes no
+    # arquivo e o match e' por substring, entao engolia a especifica) - dois degraus ABAIXO do default,
+    # o "PROIBIDO silencioso" que o proprio baseline_author descreve. Este laco e' o eval que faltava:
+    # ele falha por PAPEL, dizendo qual, para o proximo bug do genero nao precisar ser adivinhado.
+    if isinstance(ba, dict) and ba.get("model") in (esc or []):
+        base_i = esc.index(ba["model"])
+        for papel in (ba.get("author_roles") or []):
+            fam_a, _w = handoff.suggest_model(papel, "low", ba["model"])
+            if fam_a not in esc:
+                fails.append(f"papel autoral {papel!r} resolve para {fam_a!r}, fora da escada {esc}")
+            elif esc.index(fam_a) < base_i:
+                fails.append(
+                    f"papel autoral {papel!r} resolve para {fam_a!r}, ABAIXO do default "
+                    f"{ba['model']!r} - viola a invariante 'autor sempre default' (dono, 19/08/2026) e o "
+                    f"'PROIBIDO silencioso' do proprio baseline_author. Ordem das regras em `roles` "
+                    f"importa: o match e' por SUBSTRING e o primeiro vence")
+            elif esc.index(fam_a) > base_i:
+                fails.append(
+                    f"papel autoral {papel!r} resolve para {fam_a!r}, ACIMA do default {ba['model']!r} - "
+                    f"o degrau acima nao roda por papel, so com autorizacao ativa "
+                    f"(qa_final_duplo.passo_2.autorizacao)")
+    # [ADR-110] o conserto da raiz vale se, e so se, a POSICAO da regra no arquivo nao importar.
+    # Provamos permutando: a entrada mais especifica vai para o FIM e o papel autoral tem de
+    # continuar no baseline. Antes do conserto isto resolvia para haiku. Este teste falha se alguem
+    # voltar o casador para "primeiro do arquivo vence" — que e' a regressao real a temer, ja que a
+    # regra `docops-generative` continuaria no lugar e o arquivo pareceria correto.
+    if isinstance(ba, dict) and ba.get("model"):
+        _salvo = handoff.POLICY["roles"]
+        try:
+            _perm = list(_salvo)
+            _esp = [r for r in _perm if "docops-generative" in (r.get("match") or [])]
+            if _esp:
+                _perm.remove(_esp[0]); _perm.append(_esp[0])
+                handoff.POLICY["roles"] = _perm
+                _fam, _ = handoff.suggest_model("docops-generative", "low", ba["model"])
+                if _fam != ba["model"]:
+                    fails.append(
+                        f"com a regra especifica no FIM do arquivo, 'docops-generative' resolve para "
+                        f"{_fam!r} em vez do baseline {ba['model']!r} — o casador voltou a deixar a "
+                        f"chave generica engolir a especifica, e a ordem do arquivo virou semantica "
+                        f"de novo (ADR-110)")
+        finally:
+            handoff.POLICY["roles"] = _salvo
+
+    if not str((ba or {}).get("author_invariant") or "").strip():
+        fails.append("baseline_author.author_invariant ausente - a decisao do dono de que o autor e' "
+                     "SEMPRE o default precisa estar escrita onde a politica vive")
+
+    # [QA de juncao Sonnet 19/08/2026, achado ALTA] a versao anterior deste arquivo testava so
+    # TOKENS CANONICOS ISOLADOS ("developer", "docops"), entao a suite ficava verde enquanto
+    # `developer docops` resolvia para HAIKU — papel autoral dois degraus abaixo do default. A causa
+    # era a ordem: a regra mecanica (economy) vinha ANTES da autoral (baseline), e chaves
+    # independentes nao sao cobertas pela excecao de contencao. Agora o teste percorre o PRODUTO
+    # CARTESIANO chave-autoral x chave-mecanica: exemplo que passa nao prova classe nenhuma.
+    if isinstance(ba, dict) and ba.get("model") in (esc or []):
+        _bi = esc.index(ba["model"])
+        _aut, _mec = [], []
+        for _r in (pol.get("roles") or []):
+            if _r.get("tier") == "economy":
+                _mec += _r.get("match") or []
+            elif _r.get("tier") == "baseline":
+                # [QA rodada 2, 19/08/2026, achado MEDIA-ALTA] a versao anterior filtrava por uma
+                # lista ESCRITA A MAO ("developer","author","autor"), entao `architect` e `discovery`
+                # — que tambem estao em author_roles — ficavam FORA do espaco testado. Reordenar a
+                # regra `architect` para depois da mecanica reproduzia o mesmo bug sem nada apitar.
+                # Lista a mao dentro de um teste envelhece igual a prosa que o teste deveria
+                # substituir: o conjunto agora e' DERIVADO do proprio arquivo (todo tier baseline).
+                _aut += _r.get("match") or []
+        _quebras = []
+        for _a in _aut:
+            for _m in _mec:
+                for _frase in (f"{_a} {_m}", f"{_m} {_a}"):
+                    _f, _ = handoff.suggest_model(_frase, "low", ba["model"])
+                    if _f in esc and esc.index(_f) < _bi:
+                        _quebras.append((_frase, _f))
+        if _quebras:
+            _am = ", ".join(f"{f!r}->{v}" for f, v in _quebras[:4])
+            fails.append(
+                f"{len(_quebras)} papeis COMPOSTOS (gatilho autoral + gatilho mecanico) resolvem ABAIXO "
+                f"do default {ba['model']!r}: {_am}. A ordem de `roles` E' a precedencia do casador — a "
+                f"regra autoral tem de vir ANTES da mecanica (ADR-110)")
+        elif len(_aut) * len(_mec) == 0:
+            fails.append("produto cartesiano autoral x mecanico vazio — o teste nao esta exercitando "
+                         "nada; confira os tiers em `roles`")
+
+    # [2o QA Fable 19-20/08/2026, achado ALTA] o cartesiano acima cobria autoral x mecanica e
+    # PAROU AI. A precedencia declarada e' SEGURANCA > autoral > mecanico, e o degrau de SEGURANCA
+    # nao tinha teste: movendo a regra `qa/critic` para o fim de `roles`, a suite ficava VERDE
+    # enquanto "qa do developer", "revisar a implementacao do developer" e "review do design"
+    # resolviam para o modelo do PROPRIO AUTOR — exatamente o auto-vies que o ADR-018 proibe, e o
+    # oposto do que docs/adr/110 afirma ("reprova qualquer configuracao que tire QA do degrau
+    # heterogeneo"). Mesmo defeito da rodada anterior — espaco testado menor que o espaco
+    # declarado — uma camada acima. Agora: papel COMPOSTO que contenha gatilho de QA tem de sair
+    # heterogeneo, isto e', NUNCA no modelo do autor, venha o outro gatilho de onde vier.
+    if isinstance(ba, dict) and ba.get("model"):
+        _base = ba["model"]
+        _qa_keys, _outras = [], []
+        for _r in (pol.get("roles") or []):
+            if _r.get("tier") == "heterogeneous":
+                _qa_keys += _r.get("match") or []
+            else:
+                _outras += _r.get("match") or []
+        _viol = []
+        for _q in _qa_keys:
+            for _o in _outras:
+                for _frase in (f"{_q} do {_o}", f"{_o} {_q}"):
+                    _f, _ = handoff.suggest_model(_frase, "low", _base)
+                    if _f == _base:
+                        _viol.append((_frase, _f))
+        if _viol:
+            _am = ", ".join(f"{f!r}->{v}" for f, v in _viol[:4])
+            fails.append(
+                f"{len(_viol)} papeis COMPOSTOS com gatilho de QA resolvem para o MODELO DO AUTOR "
+                f"{_base!r}: {_am}. A regra `qa/critic` tem de vencer qualquer outra que case na mesma "
+                f"frase — e' a precedencia de SEGURANCA (ADR-018 anti-vies), e ela vive na POSICAO da "
+                f"regra em `roles`: ela e' a PRIMEIRA de proposito (ADR-110)")
+        elif len(_qa_keys) * len(_outras) == 0:
+            fails.append("cartesiano QA x demais vazio — o teste nao exercita nada; confira os tiers")
+
     fam_dev, _ = handoff.suggest_model("developer", "low", "opus")
     if fam_dev != (ba.get("model") if isinstance(ba, dict) else None):
         fails.append(f"developer (autoral) = {fam_dev}, esperado baseline {ba.get('model') if isinstance(ba, dict) else '?'}")
@@ -133,9 +371,18 @@ def main():
     saved_env = os.environ.get("FRAMEWORK_MODELS_UNAVAILABLE")
     try:
         os.environ["FRAMEWORK_MODELS_UNAVAILABLE"] = "fable"
-        fam, why = handoff.suggest_model("architect", "low", "opus")
+        # PORTADOR DO FALLBACK: `architect` saiu do tier max em 18/08 e `cross-ai` saiu em
+        # 19/08. Depois disso NENHUM papel alcanca o tier `max` sozinho - so `risk_override`.
+        # Entao quem exercita a degradacao da chain do max e 'developer com risco alto.
+        # Se alguem devolver algum papel ao tier max, este teste continua valido: ele afirma a
+        # degradacao, nao o portador.
+        fam, why = handoff.suggest_model("developer", "high", "opus")
         if fam != "opus" or "fallback" not in why:
-            fails.append(f"fable indisponivel: architect = {fam} ({why!r}), esperado opus com nota de fallback")
+            fails.append(f"fable indisponivel: developer/high (risk_override -> max) = {fam} "
+                         f"({why!r}), esperado opus com nota de fallback")
+        fam, _ = handoff.suggest_model("cross-ai", "low", "opus")
+        if fam != "opus":
+            fails.append(f"cross-ai = {fam}, esperado baseline opus (saiu do tier max em 19/08)")
         os.environ["FRAMEWORK_MODELS_UNAVAILABLE"] = "fable,opus"
         fam, _ = handoff.suggest_model("discovery", "low", "opus")
         if fam != "sonnet":
