@@ -1669,9 +1669,29 @@ def test_uniao_dois_vereditos_parciais_cobrem_o_conjunto():
 
 
 def test_uniao_NAO_cobre_caminho_que_ninguem_revisou():
-    """A porta que a uniao nao pode abrir: caminho sem veredito nenhum barra."""
+    """A porta que a uniao nao pode abrir: caminho sem veredito nenhum barra.
+
+    A PRE-CONDICAO E' PARTE DO TESTE, e nao uma suposicao dele (achado do bloco de 22/09/2026).
+    `assert ... is False` sozinho nao distingue "barrou porque `nunca_revisado.py` nao tem
+    veredito" de "barrou porque NADA aqui esta coberto" — e a segunda leitura passa pelo
+    mesmo verde. Foi assim que a mutacao `all`->`any` SOBREVIVEU num run de CI com baseline
+    limpo: com `any`, este teste e os tres irmaos abaixo continuam devolvendo False quando a
+    cobertura de `src/a.py` cai por ambiente, enquanto o teste POSITIVO da uniao — que exige
+    apenas UM caminho coberto sob `any` — segue verde com o outro. Cinco testes passando ao
+    mesmo tempo sem nenhum deles provar o que enuncia.
+
+    Com o controle positivo na mesma funcao a ambiguidade acaba: ou `src/a.py` esta coberto e
+    a mutacao morre na linha seguinte, ou a cobertura caiu e ESTA linha falha dizendo o nome.
+
+    RAIO DECLARADO: quando a cobertura cair, o controle faz o baseline de
+    `test_mutacao_squad_gate.py` ficar VERMELHO, e ele aborta as 37 mutacoes sem testar nenhuma
+    (`FAIL baseline`). E' mais barulho que o "SOBREVIVEU" silencioso de antes, e e' deliberado.
+    Quem encontrar `FAIL baseline` aqui: e' a mesma variancia de ambiente de 22-23/09/2026, nao um
+    defeito novo — ver CHANGELOG. [achado MEDIA do qa-critic sobre esta correcao]
+    """
     a = _ev(agentId="a1", modelo="sonnet", autor="opus", escopo=("src/a.py",))
     a["sha_revisado"] = sg._git("rev-parse", "HEAD")
+    assert sg._qa_critic_attested([a], ["src/a.py"]) is True          # controle positivo
     assert sg._qa_critic_attested([a], ["src/a.py", "src/nunca_revisado.py"]) is False
 
 
@@ -1682,6 +1702,7 @@ def test_uniao_NAO_aceita_veredito_sem_atestacao():
     b = _ev(agentId="a2", modelo="sonnet", autor="opus", escopo=("src/b.py",))
     b["sha_revisado"] = sg._git("rev-parse", "HEAD")
     b.pop("atestacao", None)
+    assert sg._qa_critic_attested([a], ["src/a.py"]) is True          # controle positivo
     assert sg._qa_critic_attested([a, b], ["src/a.py", "src/b.py"]) is False
 
 
@@ -1692,6 +1713,7 @@ def test_uniao_NAO_aceita_veredito_sem_escopo():
     b = _ev(agentId="a2", modelo="sonnet", autor="opus", escopo=("src/b.py",))
     b["sha_revisado"] = sg._git("rev-parse", "HEAD")
     b["escopo_paths"] = []
+    assert sg._qa_critic_attested([a], ["src/a.py"]) is True          # controle positivo
     assert sg._qa_critic_attested([a, b], ["src/a.py", "src/b.py"]) is False
 
 
@@ -1708,6 +1730,7 @@ def test_uniao_NAO_atravessa_reprovacao_vigente():
     rep["passou"] = False
     rep["problemas"] = [{"severidade": "CRITICO", "estado": "aberto",
                          "local": "src/b.py", "descricao": "defeito real"}]
+    assert sg._qa_critic_attested([a], ["src/a.py"]) is True          # controle positivo
     assert sg._qa_critic_attested([a, b, rep], ["src/a.py", "src/b.py"]) is False
 
 

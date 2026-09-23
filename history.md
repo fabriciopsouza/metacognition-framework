@@ -669,6 +669,28 @@ Riscos ativos: corte do release feito de `9TRP7H4` (não-kerberus); se kerberus 
 
 ## Em aberto
 
+- **A variancia de ambiente que faz a mutacao `all`->`any` sobreviver no ubuntu-latest**
+  (aberto em 23/09/2026, ao consertar a prova no PR #140). **A PROVA foi consertada; a CAUSA nao.**
+  **Medido em multiplos runs de CI entre 21 e 23/09:** o MESMO commit ora falha ora passa no
+  ubuntu — ha' pares de runs irmaos, com minutos de diferenca, em que um SOBREVIVEU e o outro
+  passou. `windows-latest` e `macos-latest` nunca falharam em nenhum run inspecionado. O enunciado
+  correto e' **especifico de ubuntu E intermitente** — a primeira redacao do CHANGELOG dizia
+  "nao e' por SO", e estava errada.
+  **O que se sabe:** as quatro provas negativas da uniao passavam por VACUIDADE quando a cobertura
+  de `src/a.py` caia; com o controle positivo, a proxima ocorrencia aparece como `FAIL baseline`
+  em vez de `SOBREVIVEU` silencioso. **O que NAO se sabe:** por que a cobertura cai la'. A
+  hipotese (o ramo de arquivo-sem-historico em `_recente_o_bastante`) e' **INFERIDA**, nao medida —
+  ninguem observou a queda ao vivo num runner ubuntu.
+  **Proximo passo concreto:** instrumentar no job do ubuntu o retorno de
+  `git log -1 --format=%H -- src/a.py` e de `rev-parse HEAD` DENTRO da arvore temporaria, e
+  comparar com o de uma execucao que passa.
+  **Risco declarado:** outras mutacoes estao a um teste redundante do mesmo modo de falha — hoje
+  elas nao zeram porque tem folga, nao porque estao protegidas.
+  *(Tambem registrado em `~/.claude/trabalhos/flake-ubuntu-cobertura-src-a.md`, que reaparece no
+  boot; mas aquele arquivo vive FORA do repo e ninguem que le este repositorio o encontra — por
+  isso o item mora AQUI. Achado do qa-critic: alegacao de "trabalho aberto" sem artefato
+  observavel no repo e' exatamente a divida que este bloco existe para eliminar.)*
+
 - **Pedido novo chegando no meio do trabalho deve ir para uma FILA ESCRITA, nao para a memoria do
   agente** (aberto em 21/08/2026, pelo dono: *"nao pare de fazer o que esta fazendo. adicione os
   pedidos na fila -> este tb deve ser um comportamento PADRAO do framework ou qualquer ferramenta

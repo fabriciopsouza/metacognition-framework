@@ -257,10 +257,42 @@ TESTES_DO_BLOCO = (
 
 
 def _nomes_que_falharam(proc):
-    """Nomes dos testes que falharam (o canario imprime 'FAIL <nome>')."""
+    """Nomes dos testes que falharam (o canario imprime 'FAIL <nome>').
+
+    SO NOMES DE TESTE. O canario tem outras duas linhas que comecam com "FAIL ": o aviso do filtro
+    ("FAIL filtro pede teste(s) que nao existem") e a barreira de completude ("FAIL
+    barreira-de-completude: ..."), e a segunda imprime um RESULTADO parseavel. Sem o prefixo
+    `test_`, uma mutacao que desalinhasse a contagem de funcoes apareceria no relatorio como se
+    "barreira-de-completude" fosse o nome do teste que mordeu — reintroduzindo, por um caso de
+    borda, exatamente a ambiguidade que este relatorio existe para acabar. [qa-critic, 23/09/2026]
+    """
     saida = proc.stdout.decode("utf-8", "replace")
-    return {l.split(None, 1)[1].strip()
-            for l in saida.splitlines() if l.startswith("FAIL ") and len(l.split(None, 1)) > 1}
+    nomes = set()
+    for l in saida.splitlines():
+        if not l.startswith("FAIL "):
+            continue
+        partes = l.split(None, 2)
+        if len(partes) > 1 and partes[1].startswith("test_"):
+            nomes.add(partes[1].strip())
+    return nomes
+
+
+def _mostrar(proc, limite=12):
+    """As linhas que IMPORTAM da saida do canario (FAIL/RESULTADO), nunca um corte cego.
+
+    Os dois caminhos de `FAIL baseline` usavam `[-900:]`, e o corte por bytes engole justamente o
+    que interessa: medido numa arvore sabotada de proposito, com 4 testes falhando e 2798 chars de
+    saida, os ultimos 900 mostravam so' os DOIS ULTIMOS nomes — os dois primeiros sumiam.
+    E `FAIL baseline` e' o modo de falha PRIMARIO depois desta mudanca (ver o trade-off declarado
+    no CHANGELOG): consertar o diagnostico so' no caminho raro e deixar cego o caminho provavel e'
+    consertar o espelho em vez do defeito. [achado MEDIA do qa-critic, 2a rodada]
+    """
+    saida = proc.stdout.decode("utf-8", "replace")
+    uteis = [l for l in saida.splitlines() if l.startswith("FAIL ") or l.startswith("RESULTADO")]
+    for linha in uteis[:limite] or ["(o canario nao imprimiu FAIL nem RESULTADO)"]:
+        print("   | %s" % linha)
+    if len(uteis) > limite:
+        print("   | ... +%d linha(s)" % (len(uteis) - limite))
 
 
 def _falhas(proc) -> int:
@@ -291,7 +323,7 @@ def main():
         n_base = _falhas(base)
         if n_base < 0:
             print("FAIL baseline: o canario nao imprimiu resultado — prova invalida")
-            print(base.stdout.decode("utf-8", "replace")[-900:])
+            _mostrar(base)
             return 1
 
         # Com o filtro, os testes de evidencia/escopo (que dependem de estado de repositorio que
@@ -300,7 +332,7 @@ def main():
         if n_base != 0:
             print("FAIL baseline: %d falha(s) nos testes DO BLOCO sem mutacao — a mutacao "
                   "correspondente nao teria como ser detectada" % n_base)
-            print(base.stdout.decode("utf-8", "replace")[-900:])
+            _mostrar(base)
             return 1
         print("baseline: 0 falhas; os %d testes do fail-closed estao VIVOS" % len(TESTES_DO_BLOCO))
 
@@ -328,12 +360,35 @@ def main():
             # -1 = o canario nem imprimiu resultado (crashou). Conta como MORREU? Nao: prova por
             # crash nao vale (ADR-106). Exigimos falha CONTADA, que so acontece por assercao.
             morreu = n_mut > n_base
+            # QUEM mordeu, nao so' QUANTOS morderam. `_nomes_que_falharam` existia desde a 1a
+            # versao deste arquivo e NUNCA foi chamada: o log dizia "0->5 falhas" sem dizer de
+            # quais defesas, e — pior — uma mutacao SOBREVIVENTE nao deixava rastro nenhum de
+            # por que. Foi exatamente o que aconteceu com `all`->`any` num run de CI de
+            # 22/09/2026: "SOBREVIVEU (0->0 falhas)" era tudo o que restava para diagnosticar,
+            # e o mesmo job passou num run irmao. Sem os nomes, a unica saida era reproduzir
+            # o ambiente do runner. [bloco de 22/09/2026]
+            nomes = sorted(_nomes_que_falharam(r))
             print("  %-62s %s (%s)"
                   % (nome, "MORREU" if morreu else "SOBREVIVEU",
                      "%d->%d falhas" % (n_base, n_mut) if n_mut >= 0
                      else "canario CRASHOU — nao conta como morte (ADR-106)"))
+            if nomes:
+                print("      mordeu: %s" % ", ".join(nomes[:6])
+                      + (" (+%d)" % (len(nomes) - 6) if len(nomes) > 6 else ""))
             if not morreu:
                 vivos.append(nome)
+                # AS LINHAS QUE IMPORTAM, nao as ultimas N. A 1a versao despejava as 6 ultimas
+                # linhas, e o critico mediu que isso erra nos dois sentidos: no caso que motivou o
+                # recurso (0->0 falhas) as ultimas linhas sao so' o "RESULTADO: N PASS / 0 FAIL",
+                # que nao acrescenta nada; e no caso em que HAVERIA o que mostrar — mutacao que
+                # troca QUAIS testes falham mantendo a contagem — um unico traceback de
+                # AssertionError ocupa 4-5 linhas e empurra a linha "FAIL <nome>" para fora da
+                # janela. Entao filtra-se por conteudo, e quando nao ha nada diz-se isso.
+                print("      --- o que o canario disse sob a mutacao ---")
+                _mostrar(r, limite=10)
+                if not nomes:
+                    print("      | NENHUM teste falhou: a explicacao NAO esta na saida do canario,")
+                    print("      | esta no ambiente (git/FS do runner). Ver o CHANGELOG de 23/09.")
             io.open(alvo, "w", encoding="utf-8").write(orig)   # restaura a COPIA
 
     # Nada foi escrito no repositorio: se este processo morrer aqui, o pior que acontece e' um

@@ -67,6 +67,52 @@ Não existe canário que valide `.agent/workflows/*.md` estruturalmente — `tes
 cobre as 13 skills e não tem uma referência sequer a workflow. Os dois defeitos acima (J6×PC e
 E5/E6) chegaram até o QA sem barreira automatizada nenhuma. Registrado como trabalho aberto.
 
+## [Nao lancado] — a prova de mutacao que passava pelo motivo errado
+
+### Quatro provas negativas passando por vacuidade, e o diagnostico que estava desligado
+
+O PR #140 ficou bloqueado por `test_mutacao_squad_gate.py` reportando **SOBREVIVEU** para a mutacao
+`all()`→`any()` em `squad_gate.py:924`, com baseline limpo (0 falhas, 65 testes vivos). O handoff
+da sessao anterior registrou isso como *"falha so no ubuntu-latest, de forma deterministica"*.
+
+**Medido em multiplos runs de CI entre 21 e 23/09, e a premissa cai pela metade:** ha' pares de
+runs IRMAOS — mesmo commit, minutos de diferenca, mesmo ubuntu — em que um SOBREVIVEU e o outro
+passou; e o rerun posterior passou nos tres SOs. **Nao e' deterministico.** Mas tambem nao e'
+indiferente ao SO, como a primeira redacao deste bloco chegou a afirmar: `windows-latest` e
+`macos-latest` **nunca** falharam nesta mutacao em nenhum run inspecionado. O enunciado correto e'
+**especifico de ubuntu E intermitente**.
+
+*(O numero exato de runs saiu daqui de proposito: a 1a redacao dizia "9 runs" herdando uma contagem
+que o proprio critico depois corrigiu para 8, e um numero que depende de alguem ter contado certo
+nao deve sustentar a afirmacao. O padrao — ubuntu ora falha ora passa no mesmo commit, os outros
+dois nunca falham — nao depende da contagem.)*
+
+A causa-raiz dessa variancia (por que `_recente_o_bastante` enxerga `src/a.py` diferente la) segue
+**em aberto**, no `## Em aberto` do `history.md`, com proximo passo concreto. Esta entrada conserta
+a PROVA, nao a variancia.
+
+**A causa nao e' o gate, e' a forma dos testes.** As quatro provas da uniao sao NEGATIVAS puras
+(`assert _qa_critic_attested(...) is False`). Sob `any()`, o resultado so continua `False` se
+**nenhum** caminho estiver coberto — entao, se a cobertura de `src/a.py` cai por ambiente, as
+quatro seguem verdes. E o teste POSITIVO da uniao, sob `any()`, passa com **um** caminho coberto.
+Cinco testes passando ao mesmo tempo sem nenhum provar o que enuncia.
+
+- **Controle positivo dentro de cada prova negativa** (`assert ... ["src/a.py"] is True`): ou o
+  caminho esta coberto e a mutacao morre na linha seguinte, ou a cobertura caiu e a propria prova
+  falha **dizendo o nome**. `assert is False` sozinho nao distingue "barrou o caminho certo" de
+  "barrou tudo".
+- **`_nomes_que_falharam()` ligada.** Ela existia desde a 1a versao do arquivo e **nunca foi
+  chamada**: o log dizia "0->5 falhas" sem dizer de quais defesas, e uma mutacao sobrevivente nao
+  deixava rastro nenhum. Agora cada mutacao imprime QUEM mordeu, e a sobrevivente despeja o fim da
+  saida do canario — o diagnostico deixa de exigir reproduzir o runner.
+
+**TRADE-OFF ACEITO, e e' preciso estar escrito** (achado MEDIA do qa-critic sobre esta propria
+mudanca): quando a variancia recorrer, o efeito deixa de ser "1 mutacao sem prova, em silencio" e
+passa a ser **`FAIL baseline`, abortando as 37 antes de testar qualquer uma**. O raio aumenta de
+proposito — falhar alto e' melhor que falhar mudo —, mas quem vir `FAIL baseline` no futuro precisa
+reconhecer que e' o MESMO problema de hoje, e nao um defeito novo. E' para isso que esta linha
+existe.
+
 ## [Nao lancado] — fail-closed no veredito (ADR-115)
 
 ### O gate deixa de acreditar no rotulo do veredito e passa a olhar os achados
