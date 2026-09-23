@@ -1658,57 +1658,90 @@ def test_veredito_SEM_arquivo_nao_tem_excecao():
 # atestacao, recencia e ausencia de reprovacao vigente, agora AVALIADAS uma a uma, que e'
 # mais estrito do que avaliar o conjunto de uma vez.
 # ---------------------------------------------------------------------------------
+def _ev_artefato(slug, **kw):
+    """Veredito cujo escopo e' o PROPRIO artefato — recencia sem tocar no git por caminho.
+
+    `_artefato_do_proprio_veredito` reconhece `_meta/qa/<slug>.json|.md` e PULA a checagem de
+    conteudo antes de qualquer `git log`/`rev-parse` de caminho. Sobra so' o piso de sha, que
+    e' `rev-parse HEAD` e existe em qualquer repo com um commit.
+
+    POR QUE ASSIM, e o historico vale mais que a regra: a v1 destes testes usava caminhos
+    inexistentes e caia no ramo "sem historico no git" — matava a mutacao `uniao vira any` no
+    Windows (37/37) e NAO matava no ubuntu (36/37), mesmo sha, medido pela CI em 23/09/2026.
+    A v2 usava caminhos reais com carimbo, e no sandbox da suite de mutacao o hash voltava None:
+    os testes faziam `return` em silencio e a mutacao sobrevivia nas DUAS plataformas — troquei
+    "mede em uma" por "nao mede em nenhuma". Fixture que consulta o ambiente mede o ambiente;
+    para provar logica pura (`all` contra `any`), a fixture tem de ser pura.
+
+    DEPENDENCIA INCIDENTAL, declarada porque o qa-critic a mediu e ela nao era obvia: se a
+    excecao do auto-artefato quebrar, estes testes vao a VERMELHO — mas por acidente, nao por
+    desenho. Sem a excecao, `_recente_o_bastante` cai no ramo `_blob_indexado`, e o caminho
+    sintetico `_meta/qa/<slug>.json` nao existe em disco nem no indice: `git rev-parse :<path>`
+    sai com codigo 128, `_git()` devolve None e a regra fecha. O fail-closed depende, portanto,
+    de o arquivo sintetico NAO existir de fato. Se um dia houver um `_meta/qa/` com esse nome, a
+    protecao muda de comportamento sem ninguem notar. Medido pelo qa-critic em 23/09/2026,
+    forcando `_artefato_do_proprio_veredito` para False: 2 dos 5 testes de uniao foram a
+    vermelho, os outros 3 nao dependem da excecao.
+    """
+    ev = _ev(escopo=("_meta/qa/" + slug + ".json",), **kw)
+    ev["_arquivo"] = slug + ".json"
+    ev["sha_revisado"] = sg._git("rev-parse", "HEAD")
+    ev["blobs_revisados"] = {"_meta/qa/" + slug + ".json": "0" * 40}
+    return ev
+
+
+_A1 = "_meta/qa/veredito-uniao-a.json"
+_A2 = "_meta/qa/veredito-uniao-b.json"
+
+
 def test_uniao_dois_vereditos_parciais_cobrem_o_conjunto():
     """A e B revisaram metades diferentes: juntos cobrem, e isso agora vale."""
-    a = _ev(agentId="a1", modelo="sonnet", autor="opus", escopo=("src/a.py",))
-    b = _ev(agentId="a2", modelo="sonnet", autor="opus", escopo=("src/b.py",))
-    for v in (a, b):
-        v["blobs_revisados"] = {}          # sem carimbo -> cai na regra antiga
-        v["sha_revisado"] = sg._git("rev-parse", "HEAD")
-    assert sg._qa_critic_attested([a, b], ["src/a.py", "src/b.py"]) is True
+    a = _ev_artefato("veredito-uniao-a", agentId="a1", modelo="sonnet", autor="opus")
+    b = _ev_artefato("veredito-uniao-b", agentId="a2", modelo="sonnet", autor="opus")
+    assert sg._qa_critic_attested([a, b], [_A1, _A2]) is True
 
 
 def test_uniao_NAO_cobre_caminho_que_ninguem_revisou():
-    """A porta que a uniao nao pode abrir: caminho sem veredito nenhum barra."""
-    a = _ev(agentId="a1", modelo="sonnet", autor="opus", escopo=("src/a.py",))
-    a["sha_revisado"] = sg._git("rev-parse", "HEAD")
-    assert sg._qa_critic_attested([a], ["src/a.py", "src/nunca_revisado.py"]) is False
+    """A porta que a uniao nao pode abrir — e e' ESTE que mata a mutacao `uniao vira any`.
+
+    Com `all`, o caminho descoberto derruba o conjunto; com `any`, o coberto liberaria tudo.
+    A primeira assercao existe porque foi exatamente ela que faltou nas duas versoes anteriores:
+    se o caminho coberto NAO passar sozinho, `all` e `any` coincidem em False, a mutacao fica
+    indistinguivel e o teste fica verde sem medir nada.
+    """
+    a = _ev_artefato("veredito-uniao-a", agentId="a1", modelo="sonnet", autor="opus")
+    assert sg._um_veredito_cobre([a], [_A1]) is True, (
+        "montagem invalida: o caminho coberto TEM de passar sozinho, senao este teste nao "
+        "distingue uniao de any")
+    assert sg._qa_critic_attested([a], [_A1, _A2]) is False
 
 
 def test_uniao_NAO_aceita_veredito_sem_atestacao():
     """Cada caminho segue exigindo atestacao valida — a uniao nao relaxa o item."""
-    a = _ev(agentId="a1", modelo="sonnet", autor="opus", escopo=("src/a.py",))
-    a["sha_revisado"] = sg._git("rev-parse", "HEAD")
-    b = _ev(agentId="a2", modelo="sonnet", autor="opus", escopo=("src/b.py",))
-    b["sha_revisado"] = sg._git("rev-parse", "HEAD")
+    a = _ev_artefato("veredito-uniao-a", agentId="a1", modelo="sonnet", autor="opus")
+    b = _ev_artefato("veredito-uniao-b", agentId="a2", modelo="sonnet", autor="opus")
     b.pop("atestacao", None)
-    assert sg._qa_critic_attested([a, b], ["src/a.py", "src/b.py"]) is False
+    assert sg._qa_critic_attested([a, b], [_A1, _A2]) is False
 
 
 def test_uniao_NAO_aceita_veredito_sem_escopo():
     """Evidencia sem `escopo_paths` nao vira carta-branca por estar acompanhada."""
-    a = _ev(agentId="a1", modelo="sonnet", autor="opus", escopo=("src/a.py",))
-    a["sha_revisado"] = sg._git("rev-parse", "HEAD")
-    b = _ev(agentId="a2", modelo="sonnet", autor="opus", escopo=("src/b.py",))
-    b["sha_revisado"] = sg._git("rev-parse", "HEAD")
+    a = _ev_artefato("veredito-uniao-a", agentId="a1", modelo="sonnet", autor="opus")
+    b = _ev_artefato("veredito-uniao-b", agentId="a2", modelo="sonnet", autor="opus")
     b["escopo_paths"] = []
-    assert sg._qa_critic_attested([a, b], ["src/a.py", "src/b.py"]) is False
+    assert sg._qa_critic_attested([a, b], [_A1, _A2]) is False
 
 
 def test_uniao_NAO_atravessa_reprovacao_vigente():
     """Reprovacao vigente num caminho derruba aquele caminho, e com ele o conjunto."""
-    sha = sg._git("rev-parse", "HEAD")
-    a = _ev(agentId="a1", modelo="sonnet", autor="opus", escopo=("src/a.py",))
-    a["sha_revisado"] = sha
-    b = _ev(agentId="a2", modelo="sonnet", autor="opus", escopo=("src/b.py",))
-    b["sha_revisado"] = sha
-    rep = _ev(agentId="a3", modelo="sonnet", autor="opus", escopo=("src/b.py",))
-    rep["sha_revisado"] = sha
+    a = _ev_artefato("veredito-uniao-a", agentId="a1", modelo="sonnet", autor="opus")
+    b = _ev_artefato("veredito-uniao-b", agentId="a2", modelo="sonnet", autor="opus")
+    rep = _ev_artefato("veredito-uniao-b", agentId="a3", modelo="sonnet", autor="opus")
     rep["recomendacao"] = "reprovar"
     rep["passou"] = False
     rep["problemas"] = [{"severidade": "CRITICO", "estado": "aberto",
-                         "local": "src/b.py", "descricao": "defeito real"}]
-    assert sg._qa_critic_attested([a, b, rep], ["src/a.py", "src/b.py"]) is False
+                         "local": _A2, "descricao": "defeito real"}]
+    assert sg._qa_critic_attested([a, b, rep], [_A1, _A2]) is False
 
 
 if __name__ == "__main__":

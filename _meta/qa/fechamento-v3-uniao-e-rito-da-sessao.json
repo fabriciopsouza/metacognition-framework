@@ -1,0 +1,65 @@
+{
+  "bloco": "fechamento-v3-uniao-e-rito-da-sessao",
+  "papel": "qa_critic",
+  "rodada": 1,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "data": "2026-09-23T00:00:00Z",
+  "escopo_paths": [
+    "tools/test_squad_gate.py",
+    "docs/_private/_intake/execution-report-2026-09-23-abertura-limpeza-e-alinhamento-de-sessoes.md",
+    "_meta/qa/fechamento-v3-uniao-e-rito-da-sessao.json",
+    "_meta/qa/fechamento-v3-uniao-e-rito-da-sessao.md"
+  ],
+  "atestacao": {
+    "agentId": "a664c1cb25cf1142b",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic em primeiro plano, degrau canonico sonnet um abaixo do autor opus. READ-ONLY, com proibicao explicita e nominal de git checkout/switch/restore/reset/stash/clean/add/commit/push/merge/rebase/worktree, de redirecionamento de escrita, rm, mv e sed -i. A proibicao nao foi formalidade: a arvore teve 5 sessoes vivas hoje e um `reset --hard` de uma delas ja' havia destruido trabalho nao commitado de outra na mesma manha. O critico conduziu os experimentos por monkeypatch em memoria, sem editar arquivo nenhum."
+  },
+  "resumo": "Fecha dois artefatos de proveniencia DIFERENTE num commit so'. O primeiro, tools/test_squad_gate.py (v3), NAO foi escrito por esta sessao: veio da sessao metacognition-framework-da, que o deixou em stage sem veredito ao encerrar por ordem do dono de unificar o trabalho agnostico numa sessao so'. O segundo e' o execution-report da propria sessao. O alvo principal do QA foi o ponto fraco que a AUTORA DA v3 declarou contra si mesma: a fixture da uniao depende da excecao do auto-artefato, que e' codigo do mesmo bloco, e um teste que mede duas coisas ao mesmo tempo pode ficar verde por acidente. O critico nao acreditou nem na autora nem em mim: forcou `_artefato_do_proprio_veredito` para False e RODOU. Dois dos cinco testes de uniao foram a VERMELHO, e os outros tres nao dependem da excecao. O medo era legitimo e o defeito nao ocorre. O critico tambem aplicou a mutacao real `uniao vira any`: 4 dos 5 testes a matam.",
+  "verificacoes_executadas": [
+    "critico forcou `sg._artefato_do_proprio_veredito` para False por monkeypatch e executou os 5 testes de uniao: `test_uniao_dois_vereditos_parciais_cobrem_o_conjunto` e `test_uniao_NAO_cobre_caminho_que_ninguem_revisou` foram a FAIL; os outros 3 nao dependem da excecao e seguiram OK",
+    "critico identificou o mecanismo do fail-closed: sem a excecao, `_recente_o_bastante` cai no ramo `_blob_indexado`, e `git rev-parse :_meta/qa/veredito-uniao-a.json` sai com codigo 128 porque o caminho sintetico nao existe em disco nem no indice, entao `_git()` devolve None",
+    "critico aplicou a mutacao real `uniao vira any` e mediu que 4 dos 5 testes a matam",
+    "critico comparou `git show HEAD:tools/test_squad_gate.py` com o staged: 96 testes em cada, nomes identicos, nenhum removido nem enfraquecido; um ganhou asserção de sanidade a mais",
+    "critico procurou saida silenciosa (return/skip/continue/assert True) nos trechos alterados e nao achou — era o defeito exato que derrubou a v2",
+    "autor rodou `python tools/test_squad_gate.py`: 96 PASS / 0 FAIL",
+    "autor rodou `python tools/test_mutacao_squad_gate.py` com a v3 em disco: PASS (37/37 mutacoes mortas)",
+    "autor mediu, e o numero NAO distingue as versoes: a v1 commitada tambem da 37/37 nesta maquina — foi assim que o defeito passou despercebido",
+    "critico recontou programaticamente os [v]/[ ] das 7 FASES do execution-report e recalculou round(pct*12/100): as 7 batem, nenhum percentual nem barra divergente",
+    "critico conferiu as afirmacoes do report contra as fontes reais: git show 5305ae2 --stat (137 arq/22.649 ins), gh pr view 142 (MERGED efa7374), gh api branches/main/protection (required: canarios-local), e o log literal do job ubuntu — que bate caractere a caractere com o que o report cita"
+  ],
+  "problemas": [
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "tools/test_squad_gate.py::_ev_artefato",
+      "descricao": "O fail-closed sob quebra da excecao do auto-artefato e' INCIDENTAL, nao declarado: ele depende de o arquivo sintetico `_meta/qa/<slug>.json` nao existir de fato. Se um dia existir um artefato com esse nome, a protecao muda de comportamento sem ninguem notar. CORRECAO: docstring de `_ev_artefato` passou a declarar a dependencia, com o mecanismo (ramo `_blob_indexado`, `git rev-parse :<path>` codigo 128, `_git()` None) e a medicao do critico."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "aceito",
+      "local": "execution-report, tabela 'De onde saimos'",
+      "descricao": "A contagem '37 para 36 trabalhos' nao e' re-verificavel: o armazem `~/.claude/trabalhos/` e' externo ao repo e compartilhado, e a contagem viva subiu para 38 por registros criados no mesmo dia. CORRECAO: Nao e' alegacao falsa — e' numero que envelhece por natureza do armazem. Dois dos registros novos sao exatamente os achados que a FASE 6 do proprio report descreve."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "processo de commit",
+      "descricao": "Dois artefatos de proveniencia diferente entrando juntos numa arvore que teve 5 sessoes vivas. CORRECAO: `git add` NOMEADO por caminho, nunca `-A`; e este veredito registrado DEPOIS do add, porque o carimbo `blobs_revisados` le o INDICE — registrar antes faria o gate barrar com 'FALTA qa_critic' sem dizer a causa."
+    }
+  ],
+  "nao_verificado": [
+    "Se a v3 conserta o comportamento no Linux. Ninguem aqui tem ambiente Linux, e a CI do GitHub nao e' utilizavel (o dono declarou em 23/09/2026 que nao ha plano nem credito, e despriorizou o assunto). O registro `uniao-por-caminho-sem-teste-que-distinga` FICA ABERTO por isso.",
+    "A causa raiz da divergencia ubuntu x Windows. PISTA NOVA, colhida por acidente ao rodar os testes e nao perseguida por ordem do dono: o proprio squad_gate emitiu `git saiu 128 — fatal: detected dubious ownership in repository`. E' exatamente a condicao que faria `_git()` devolver None dentro do sandbox da suite de mutacao, derrubando TODOS os caminhos para False e tornando `all` e `any` indistinguiveis. Nao testado.",
+    "Se `_ev_artefato` cobre os mesmos casos que a v1 cobria por outro caminho. O critico comparou nomes e contagem de testes (96 = 96), nao a equivalencia semantica caso a caso."
+  ],
+  "recomendacao_do_critico": "aprovar_com_ressalvas — nenhum achado ALTA nem MEDIA de conteudo; o defeito temido pela autora da v3 foi testado por execucao e nao ocorre; sem regressao de cobertura; o execution-report resistiu a checagem factual extensa. As tres ressalvas: declarar a dependencia incidental do fail-closed, usar `git add` nomeado com o veredito registrado depois, e manter `uniao-por-caminho-sem-teste-que-distinga` ABERTO ate validacao cross-platform real.",
+  "nota_do_autor": "A licao deste bloco nao esta' no codigo, esta' em quem mediu o que. A autora da v3 declarou o proprio ponto fraco em vez de entrega-lo silencioso, e escreveu o enunciado do ataque que ela nao teve tempo de executar. O critico executou esse ataque exato e provou que o medo era infundado. Isso so' funcionou porque ela nomeou a fraqueza — se tivesse entregue a v3 como 'pronta', o ataque nao teria sido desenhado e o risco continuaria desconhecido. E ela mesma avisou, sobre a v3 funcionar: 'eu acertei por motivo que nao era o que eu pensava, e isso nao e' acerto'. Registrar o proprio acerto acidental como acidente e' o que separa evidencia de sorte.",
+  "sha_revisado": "9ec6202ac1560f1ee3e459d4920a11dc2ad575a4",
+  "blobs_revisados": {
+    "tools/test_squad_gate.py": "ab577cd7d638a415057ec9e9178b87ac9975a628",
+    "docs/_private/_intake/execution-report-2026-09-23-abertura-limpeza-e-alinhamento-de-sessoes.md": "8668733d295b5ed0ebcf7b71d07733ef658f3fc0"
+  }
+}
