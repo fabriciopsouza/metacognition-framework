@@ -15,11 +15,11 @@
 
 ## Estado agora
 
-- Branch **main**, commit `e95ec49 Merge remote-tracking branch 'origin/main'`
-- Última tag: **v1.90.0**
-- Commits não enviados: **7**
-- Árvore de trabalho: **com alterações não commitadas**
-- Canários: **88 PASS · 1 SKIP · 0 FAIL (de 89 canários) — medido em 2026-09-23T17:50, commit `22e2377` — **DESATUALIZADO: 3 arquivo(s) rastreado(s) mudaram depois da medição — rode `python tools/run_canaries.py`****
+- Branch **main**, commit `08c00d9 Merge pull request #145 from fabriciopsouza/release/v1.91.0`
+- Última tag: **v1.91.0**
+- Commits não enviados: **0**
+- Árvore de trabalho: **limpa**
+- Canários: **88 PASS · 1 SKIP · 0 FAIL (de 89 canários) — medido em 2026-09-23T19:58, commit `b6c5738`**
 
 ## O que falta
 
