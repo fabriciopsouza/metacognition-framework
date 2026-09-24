@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Route Gate - Roteamento determinístico por complexidade (ADR-027)",
+      "trigger": "UserPromptSubmit",
+      "action": {
+        "type": "command",
+        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"tools/hooks/route-gate.ps1\""
+      }
+    }
+  ]
+}

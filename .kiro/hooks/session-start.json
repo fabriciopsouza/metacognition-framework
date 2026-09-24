@@ -1,0 +1,37 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Framework Boot - Modo por identidade (ADR-070/072)",
+      "trigger": "SessionStart",
+      "action": {
+        "type": "command",
+        "command": "python tools/repo_mode.py --mode"
+      }
+    },
+    {
+      "name": "Framework Boot - Sync com origin (ADR-019/060)",
+      "trigger": "SessionStart",
+      "action": {
+        "type": "command",
+        "command": "python tools/hooks/check_repo_sync.py"
+      }
+    },
+    {
+      "name": "Framework Boot - Self-check consolidado (ADR-061)",
+      "trigger": "SessionStart",
+      "action": {
+        "type": "command",
+        "command": "python tools/boot_check.py"
+      }
+    },
+    {
+      "name": "Framework Boot - STATUS / handoff P14 (ADR-076)",
+      "trigger": "SessionStart",
+      "action": {
+        "type": "command",
+        "command": "python tools/handoff.py"
+      }
+    }
+  ]
+}
