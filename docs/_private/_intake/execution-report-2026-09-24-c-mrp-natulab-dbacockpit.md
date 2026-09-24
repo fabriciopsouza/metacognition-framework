@@ -7,12 +7,13 @@
   soma dos transcripts do diretório de projeto inteiro, não desta sessão.
 - **Tempo (wall-clock):** NÃO MEDIDO
 - **Turnos:** 7 mensagens do dono (contadas na conversa)
-- **Arquivos tocados:** 5 criados, nenhum existente alterado:
-  - `CONSULTAS-DBACOCKPIT-treplicas.md` e `RETOMAR-nova-sessao_2026-09-24.md`, na pasta do projeto;
+- **Arquivos tocados:** 7 criados, nenhum existente alterado:
+  - `CONSULTAS-DBACOCKPIT-treplicas.md`, `RETOMAR-nova-sessao_2026-09-24.md` e as 2 medições brutas em
+    `medicoes-2026-09-24/`, na pasta do projeto;
   - este report;
   - a memória `consulta-pronta-sem-placeholder.md`, mais a linha nova no `MEMORY.md`.
 - **Testes:** não se aplica (entregável é SQL executado por humano; conferência por DD03L e QA isolado)
-- **Rodadas de retrabalho:** 2 (consultas: QA FAIL na rodada 1 e na 2, PASS na 3)
+- **Rodadas de retrabalho:** 3 (consultas: QA FAIL, FAIL, PASS; retomada: QA FAIL na rodada 1)
 
 ## Placar gate × achado
 
@@ -23,6 +24,8 @@
 | `IN ('', ' ')` em campo CHAR(4) | QA isolado, rodada 2 | QA isolado (funcionou) |
 | QA afirmou que BSTMI/BSTMA não existem | Autor, medindo no DD03L | Medição antes de aplicar o achado (funcionou) |
 | E-mail "pronto" com 5 afirmações sem sustentação | Autor, relendo contra a fonte na retomada | QA de 23/09 não pegou; data relativa envelheceu |
+| Autor afirmou "ME11 e ME21N concluídos nos 7 cenários" contando a presença da transação, não o status | QA isolado do handoff | Autor: contar o status, não a palavra (real: ME11 6/7, ME21N 3/7) |
+| "79 famílias" sem artefato bruto | QA isolado do handoff | Autor: medição durável em `medicoes-2026-09-24/` |
 
 ## Detecção: framework × humano
 
@@ -111,7 +114,7 @@ Nenhum dos dois dá erro nem volta vazio. O QA pegou os dois.
 O e-mail de 23/09 tinha passado por QA. Medido em 24/09:
 - "48 dias úteis" é contagem sem feriado;
 - "61 etapas" é média;
-- "validou sem passar pela compra" é contrariado pelo roteiro, que tem ME11 e ME21N nos 7 cenários;
+- "validou sem passar pela compra" é contrariado em parte pelo roteiro, que tem a ME21N concluída em 3 dos 7 cenários;
 - "lista de fontes comprovada" não tem evidência;
 - "cinco linhas" confunde regra com carga.
 
