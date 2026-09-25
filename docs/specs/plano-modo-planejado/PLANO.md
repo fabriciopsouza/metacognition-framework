@@ -11,23 +11,24 @@
 > Acumula as decisões de **todas** as respostas, inclusive as que já saíram da tela. A resposta no
 > chat traz só um status curto e aponta para cá.
 
-**Avanço:** B1 ✅ mergeado (PR #154; falta só a verificação manual B1.8) · B1.9 em revisão · B2 0% · B3 0%
+**Avanço:** B1 ✅ (PR #154; falta só a verificação manual B1.8) · B1.9 ✅ (PR #155) · S12 em revisão · B2 aprovado, em execução · B3 0%
 
 | # | Assunto | Situação | Quem age | Resultado / próximo |
 |---|---|---|---|---|
 | S1 | Relatório de 24/09 (bloco D) entrar no git | ✅ decidido (sim) · **concluído** | — | PR #153 mergeado em 25/09 (canários locais 88 PASS, 0 FAIL) |
 | S2 | Branch `kiro-ide-adapter` ir para o GitHub | ✅ decidido (sim) · feito | — | enviada em 25/09 |
-| S3 | Pasta aninhada pode ser apagada? | ⏳ pendente | **dono** | o que ela é está explicado na resposta do chat |
+| S3 | Pasta aninhada `C:\Users\fabriciosouza\metacognition-framework\metacognition-framework\` pode ser apagada? | ✅ decidido (sim, 25/09) · **apagada** após conferência final (0 alterações, 0 commits sem push em `main` e `kiro-ide-adapter`, 0 stash) | — | É uma segunda cópia inteira do framework (22 MB), clonada por outra sessão de IA em 24/09 15:49 para criar a camada do Kiro IDE; última atividade 24/09 16:39. Sem nenhuma alteração pendente; o único commit dela já está no GitHub (branch `kiro-ide-adapter`). Apagar não perde nada. Recomendação: apagar |
 | S4 | Débitos rápidos de "prova que não prova" | ⏸ adiado | dono | depois deste plano |
 | S5 | Revisão em subagente "proibida" fora do repo | ✅ ordem do dono: resolver sempre, em todo lugar · **feito** | — | regra global instalada; ADR-116 |
 | S6 | Link e caminho relativo | ✅ ordem do dono: sempre absoluto · **feito** | — | mesma regra global |
 | S7 | Painel acumulado + status curto por resposta | ✅ pedido do dono · em uso | agente | vira item B2.6 |
-| S8 | 1 arquivo × 3 de especificação + plano espelho | ⏳ **pendente** — o dono pediu AVALIAÇÃO de ganho, não decidiu (corrigido: eu tinha registrado como decisão dele). Regra do dono: "se for melhor, funcionar como antes, sem quebrar, e trazer ganho"; plano como espelho só "se nunca descolar" | **dono** | avaliação na seção "1 arquivo ou 3 + espelho"; recomendação: unificar |
+| S8 | 1 arquivo × 3 de especificação + plano espelho | ✅ **decidido pelo dono (25/09), condicional:** "se um arquivo não quebrar os mecanismos e não houver perda de especificação/informação, então UM. Se provocar perda, 3 + espelho" | agente | B2 vai com **1 arquivo**, e a condição vira critério de aceite binário: prova antes = depois nos gates + nenhuma seção dos 2 modelos atuais sem destino. Falhou a prova → volta para 3 + espelho, sem nova consulta |
+| S13 | Documentos que ficam na simplificação (B3) | ✅ **decidido pelo dono (25/09):** "os necessários são ERU (quando for sistema novo), Testes E2E, Evidências dos Testes" | agente | entram no kit do B3 ao lado de TAP, especificação, HANDOFF e glossário. Interpretação a confirmar: E2E e evidências valem para toda entrega testada; ERU só para sistema novo |
 | S9 | Toda mudança considera hooks, scripts, gates, README, site, links | ✅ ordem do dono | agente | vira item B1.7 (regra global) e o "mapa de impacto" do B2 |
 | S10 | Haiku como autor? | ✅ confirmado: nunca; só tarefa mecânica conferida por script | — | escrito na regra global |
 | S11 | Estudar o repositório `DietrichGebert/ponytail`: trazer, criar parecido ou incorporar? Se o ganho for grande e rápido, sobe nas prioridades | ✅ estudado · **priorizado** pelo critério do dono (ganho plausível, 0,5–1 h) | agente | recurso próprio, sem o pacote (Node.js + cerca de 20 adaptadores, a maioria para ferramentas não usadas aqui): escada anti-excesso de 7 degraus na skill `developer` + checagem no `qa-critic`. Próximo item depois do B1 (item B1.9). Ganho do autor (−54% linhas) é INFERIDO (n=4) |
-| S12 | A escada anti-excesso vale também na regra global (toda pasta)? E o marcador de "atalho deliberado" com colheita de dívida? | ⏳ pendente | **dono** | recomendação: 1 linha na regra global apontando para a skill (sim); marcador de dívida depois (não agora) |
-| D1–D6 | Decisões de desenho do B2/B3 | ⏳ pendentes | **dono** | tabela "Decisões em aberto" abaixo |
+| S12 | A escada anti-excesso vale também na regra global (toda pasta)? | ✅ decidido (sim, 25/09) · feito | agente | seção 3 da regra global + 10ª cláusula do canário; marcador de dívida fica para depois |
+| D1–D6 | Decisões de desenho do B2/B3 | ✅ decididas (25/09, "sim todos"): D1 barra aqui/avisa fora · D2 tarefas no arquivo (ou `estado.json` quando existir) · D3 tabela de decisões, ADR só para arquitetura · D4 mantém `/feature-plan` · D6 markdown agora | — | B2 aprovado e em execução |
 
 ---
 
@@ -167,9 +168,10 @@ Legenda: `[ ]` a fazer · `[x]` feito, com prova · `[~]` replanejado, com motiv
 
 ### B3 — Documentação de projeto enxuta
 
-- [ ] B3.1 Kit essencial: **TAP** · **especificação** (os 3 arquivos) · **HANDOFF** · **GLOSSÁRIO**; o PLANO é gerado.
-- [ ] B3.2 Gerados, nunca à mão: pptx e one page a partir do TAP + PLANO, via `tools/gen_exec_doc.py` (já gera pptx).
-- [ ] B3.3 Condicionais: RUNBOOK (quando alguém opera com as próprias mãos) · em ambiente regulado: registro de elicitação, pasta de provas, matriz requisito → prova, aprovação.
+- [ ] B3.1 Kit essencial: **TAP** · **especificação** (arquivo único, conforme S8) · **HANDOFF** · **GLOSSÁRIO**.
+- [ ] B3.1b Necessários por decisão do dono (S13): **Testes E2E** e **Evidências dos Testes** em toda entrega testada; **ERU** (especificação de requisitos do usuário) quando for **sistema novo**. O código de documento controlado (ex.: da garantia da qualidade) nunca é inventado: vem do dono.
+- [ ] B3.2 Gerados, nunca à mão: pptx e one page a partir do TAP + especificação, via `tools/gen_exec_doc.py` (já gera pptx).
+- [ ] B3.3 Condicionais: RUNBOOK (quando alguém opera com as próprias mãos) · em ambiente regulado, além dos de B3.1b: matriz requisito → prova e aprovação.
 - [ ] B3.4 Modelo de TAP neutro no núcleo (campos do termo do adaptador, sem nome de cliente); `mission.md` e `context-brief.md` são absorvidos por ele, respeitando o hook que lê `mission.md`.
 - [ ] B3.5 Reescrever a tabela de 15 documentos da skill `project-docs` para kit essencial + condicionais.
 - [ ] B3.6 ADR-118 + CHANGELOG + índice de capacidades.

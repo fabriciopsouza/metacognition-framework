@@ -72,7 +72,7 @@ link). O canário **estende** um verificador existente; nenhum arquivo de teste 
 
 ## Prova
 
-- `python tools/test_rules_parity.py`: 9 cláusulas apagadas uma a uma, 9 reprovadas; fonte ausente
+- `python tools/test_rules_parity.py`: 10 cláusulas apagadas uma a uma, 10 reprovadas; fonte ausente
   reprova; cada ponto de entrada (`sync-global.ps1`, `bootstrap.sh`, `bootstrap.py`) com a chamada
   apagada, ou só num comentário, reprova; os reais não são acusados.
 - A implementação é exercitada **dentro do canário**, a cada execução (itens b5 e b6): idempotente,
