@@ -141,6 +141,16 @@ fi
 
 warn "Hooks PowerShell (.ps1) so rodam em Windows; o hook global de auto-boot fica inativo aqui ate o port .sh chegar (ADR cross-platform futuro)."
 
+# 6b. Regras permanentes do dono em ~/.claude/CLAUDE.md (ADR-116) - lidas pelo Claude Code em TODA
+# pasta. Uma implementacao so (bootstrap.py); aqui so se chama. Falha nao aborta o setup: avisa.
+step "Instalando regras globais do dono (~/.claude/CLAUDE.md)"
+PY_BIN="$(command -v python3 || command -v python || true)"
+if [ -n "$PY_BIN" ]; then
+    "$PY_BIN" "$PROJECT_DIR/bootstrap.py" --regras-globais || echo "  aviso: regras globais NAO instaladas (veja a mensagem acima)"
+else
+    echo "  aviso: Python ausente - regras globais NAO instaladas; instale Python 3.8+ e rode: python3 bootstrap.py --regras-globais"
+fi
+
 # 7. Resumo
 echo ""
 echo "================================================================"

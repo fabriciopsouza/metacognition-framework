@@ -2103,6 +2103,32 @@
     "canario": "tools/test_squad_gate.py",
     "espera": "FAIL test_grafia_DESCONHECIDA_bloqueia_fail_closed"
    }
+  },
+  {
+   "id": "regras-globais-do-dono",
+   "title": "Regras permanentes do dono valem em toda pasta: revisao adversarial em subagente e caminho absoluto",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": ".claude/global/CLAUDE-global.md",
+   "test": "tools/test_rules_parity.py",
+   "adr": "docs/adr/116-regras-permanentes-do-dono-valem-em-toda-pasta.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "qa",
+    "subagente",
+    "global",
+    "caminho-absoluto",
+    "regras"
+   ],
+   "note": "A ordem do dono vivia so no CLAUDE.md deste repo; em outra pasta o agente lia a instrucao generica do harness (nao chamar subagente sem pedido; link relativo a raiz do workspace) e nada em contrario. Fonte versionada instalada por UMA implementacao (bootstrap.py --regras-globais), chamada por sync-global.ps1, bootstrap.sh e bootstrap.py, em ~/.claude/CLAUDE.md por marcadores (texto do usuario fora do bloco fica intacto). Marcadores fora do par exato = instalador recusa escrever. check_rules_parity reprova clausula apagada (9 de 9, provado em test_rules_parity) e instalador cuja linha de codigo sumiu.",
+   "mutacao": {
+    "arquivo": ".claude/global/CLAUDE-global.md",
+    "de": "Autocrítica não substitui a revisão.",
+    "para": "A revisão é opcional.",
+    "canario": "tools/test_rules_parity.py",
+    "espera": "repo real deveria PASSAR mas reportou drift"
+   }
   }
  ],
  "registry_waivers": [

@@ -1,0 +1,148 @@
+{
+  "bloco": "adr-116-regras-globais-do-dono",
+  "papel": "qa_critic",
+  "rodada": 5,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "escopo_paths": [
+    ".claude/global/CLAUDE-global.md",
+    ".claude/hooks/sync-global.ps1",
+    "CAPABILITIES.md",
+    "CHANGELOG.md",
+    "bootstrap.py",
+    "bootstrap.sh",
+    "capabilities.json",
+    "docs/adr/116-regras-permanentes-do-dono-valem-em-toda-pasta.md",
+    "docs/specs/plano-modo-planejado/PLANO.md",
+    "guia/SETUP.md",
+    "guia/web/index.html",
+    "tools/check_rules_parity.py",
+    "tools/test_rules_parity.py",
+    "_meta/qa/adr-116-regras-globais-do-dono.json",
+    "_meta/qa/adr-116-regras-globais-do-dono.md"
+  ],
+  "atestacao": {
+    "agentId": "ab7689ff9656c4b9e",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic isolado, degrau canonico sonnet um abaixo do autor opus, rodada 5 em PRIMEIRO PLANO sobre o indice exato do commit na worktree C:/Users/fabriciosouza/wt-adr116. Rodadas 1-4 anteriores (1 FAIL, 2 PASS-COM-RESSALVAS, 3 FAIL -> redesenho, 4 PASS-COM-RESSALVAS; 1a tentativa da 4 travou sem veredito). A revisora da rodada 5 VIOLOU a regra de so-leitura (editou 2 arquivos da worktree e restaurou com git checkout) e declarou; o autor conferiu original = worktree = indice por hash sem CR nos 5 arquivos tocados."
+  },
+  "postura": {
+    "discovery": "inline: causa MEDIDA antes de desenhar - qa-critic ja global em ~/.claude/agents, ~/.claude/CLAUDE.md inexistente; a ordem do dono so vivia no CLAUDE.md do repo",
+    "rrc": "PASSA",
+    "metodo_senior": "N/A: bloco de mecanismo do proprio framework, sem fonte canonica externa"
+  },
+  "resumo": "Regras permanentes do dono (revisao adversarial em subagente; escada de modelos com Haiku nunca autor; caminho absoluto com file:///) instaladas em ~/.claude/CLAUDE.md por UMA implementacao (python bootstrap.py --regras-globais), chamada por sync-global.ps1, bootstrap.sh e bootstrap.py. Tres reprovacoes seguidas levaram ao redesenho: duas copias da mesma logica (PowerShell e Python) eram a causa.",
+  "verificacoes_executadas": [
+    "python tools/test_rules_parity.py -> PASS (revisora, 2x) e autor",
+    "python tools/check_rules_parity.py -> PASS; com a chamada do sync-global comentada -> FAIL/drift (revisora)",
+    "python tools/test_capabilities.py -> PASS, 101 capacidades, 61 com mutacao",
+    "USERPROFILE/HOME temporario, CLAUDE.md chmod 0444 -> falha-escrita, exit 3, sem traceback (revisora)",
+    "USERPROFILE/HOME temporario, CLAUDE.md com quebra mista -> instalado, 43 CRLF, 0 LF avulso (revisora)",
+    "16 variacoes de regex contra GLOBAL_INSTALLER_PY_CALL e GLOBAL_CALLERS, incluindo linhas reais extraidas do repo -> sem falso negativo na direcao que importa (revisora)",
+    "sabotagem do autor: except OSError -> ZeroDivisionError faz o teste de somente-leitura falhar; estilo dominante desligado faz o teste de quebra mista falhar; restaurado e verde (autor)",
+    "post-violacao: hash sem CR de original, worktree e indice identicos nos 5 arquivos (autor)"
+  ],
+  "problemas": [
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "bootstrap.py instalar_regras_globais",
+      "descricao": "rodada 4: escrita em arquivo somente-leitura levantava PermissionError e abortava o bootstrap sem PowerShell; agora devolve falha-escrita, codigo 3"
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/check_rules_parity.py GLOBAL_CALLERS / GLOBAL_INSTALLER_PY_CALL",
+      "descricao": "rodada 4: a chamada escrita dentro de string (Write-Host/print) enganava o canario; regex ancoradas no inicio do comando"
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "bootstrap.py + ADR-116 + CHANGELOG",
+      "descricao": "rodada 4: quebra mista nao era preservada como o texto dizia; implementado estilo dominante e texto corrigido"
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "aceito",
+      "local": "tools/check_rules_parity.py",
+      "descricao": "rodada 5, nota de manutencao: chamada Python em coluna 0 nao seria detectada; refatorar o PS para nao capturar a saida daria falso alarme (direcao segura). Registrado no ADR-116. Aceito como nota de manutencao: nao ha chamada em coluna 0 no codigo, e o falso alarme bloqueia em vez de deixar passar."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "processo da revisao",
+      "descricao": "rodada 5: a revisora violou a regra de so-leitura na worktree; o autor conferiu por hash que nao houve alteracao de conteudo"
+    }
+  ],
+  "nao_verificado": [
+    "Comportamento numa sessao real aberta em pasta virgem (revisor roda sem pedido; links absolutos) - e o item B1.8 do plano, manual",
+    "bootstrap.sh executado de fato em Mac/Linux: nao ha maquina aqui; so a leitura do script e o canario da chamada"
+  ],
+  "recomendacao_do_critico": "aprovar_com_ressalvas na 5a rodada: correcoes da 4a confirmadas por execucao independente; ressalvas sao notas de manutencao e a autoinfracao declarada",
+  "nota_do_autor": "Cinco rodadas. O padrao: eu escrevia no ADR e no CHANGELOG o que PRETENDIA que o codigo fizesse ('somente-leitura relatado', 'quebra de linha preservada', 'os dois geram o mesmo bloco') antes de haver teste que provasse. Tres dessas frases eram falsas. O redesenho so veio na 3a reprovacao; deveria ter vindo na 2a, quando o primeiro achado de paridade apareceu.",
+  "data": "2026-09-25T16:18:09Z",
+  "sha_revisado": "262e605799b973083facde164f6e6f31b19f58d8",
+  "blobs_revisados": {
+    ".claude/global/CLAUDE-global.md": "568c845a8b312c1c34c9aef1a994d63cd46d3dc2",
+    ".claude/hooks/sync-global.ps1": "dbc762846519a43bdef344797128411e17caad4e",
+    "CAPABILITIES.md": "6bfc348826a5b989c89b518e033237746a8ab5ff",
+    "CHANGELOG.md": "b816ee476c34372b8aa178930c9e25ac6eb9541d",
+    "bootstrap.py": "b061caa09a550d461f671dc589c5d892e6987c88",
+    "bootstrap.sh": "22b4e1d3fc4289571e56b732cdec4e215b01d9e2",
+    "capabilities.json": "0bb7f7149c9bd796ce4cf36f4155f538ed338858",
+    "docs/adr/116-regras-permanentes-do-dono-valem-em-toda-pasta.md": "f399e08c70f46228a2867415f1b8ade3d93ec767",
+    "docs/specs/plano-modo-planejado/PLANO.md": "ca287f55a2db286f2b05a3622683efd7c8976c42",
+    "guia/SETUP.md": "5a408f9040aaf798351dbecb8c77a46185a85987",
+    "guia/web/index.html": "8341c44203be7706375ace9a99b2389168853b25",
+    "tools/check_rules_parity.py": "7d90c6d854fc21043bc7c300ec9767c0e17472b3",
+    "tools/test_rules_parity.py": "82a24c16d6806447051e13d940aa5bd486d75d37"
+  },
+  "substitui": [
+    {
+      "rodada": 5,
+      "data": "2026-09-25T16:16:18Z",
+      "recomendacao": "aprovar_com_ressalvas",
+      "sha_revisado": "262e605799b973083facde164f6e6f31b19f58d8",
+      "agentId": "ab7689ff9656c4b9e",
+      "escopo_paths": [
+        ".claude/global/CLAUDE-global.md",
+        ".claude/hooks/sync-global.ps1",
+        "CAPABILITIES.md",
+        "CHANGELOG.md",
+        "bootstrap.py",
+        "bootstrap.sh",
+        "capabilities.json",
+        "docs/adr/116-regras-permanentes-do-dono-valem-em-toda-pasta.md",
+        "docs/specs/plano-modo-planejado/PLANO.md",
+        "guia/SETUP.md",
+        "guia/web/index.html",
+        "tools/check_rules_parity.py",
+        "tools/test_rules_parity.py"
+      ]
+    },
+    {
+      "rodada": 5,
+      "data": "2026-09-25T16:17:23Z",
+      "recomendacao": "aprovar_com_ressalvas",
+      "sha_revisado": "262e605799b973083facde164f6e6f31b19f58d8",
+      "agentId": "ab7689ff9656c4b9e",
+      "escopo_paths": [
+        ".claude/global/CLAUDE-global.md",
+        ".claude/hooks/sync-global.ps1",
+        "CAPABILITIES.md",
+        "CHANGELOG.md",
+        "bootstrap.py",
+        "bootstrap.sh",
+        "capabilities.json",
+        "docs/adr/116-regras-permanentes-do-dono-valem-em-toda-pasta.md",
+        "docs/specs/plano-modo-planejado/PLANO.md",
+        "guia/SETUP.md",
+        "guia/web/index.html",
+        "tools/check_rules_parity.py",
+        "tools/test_rules_parity.py"
+      ]
+    }
+  ]
+}

@@ -38,6 +38,41 @@ CANON = [
 ]
 N_CANON = len(CANON)
 
+# Regras permanentes do dono que valem em TODA pasta (fonte versionada -> ~/.claude/CLAUDE.md pelo
+# sync-global). Sem elas, em projeto de fora o agente so le a instrucao generica do harness ("nao chame
+# subagente sem pedido"; "link relativo a raiz do workspace") e a ordem do dono some. Cada assinatura
+# e' uma clausula cuja perda ja' custou reincidencia medida.
+GLOBAL_SRC = os.path.join(".claude", "global", "CLAUDE-global.md")
+GLOBAL_INSTALLER = os.path.join(".claude", "hooks", "sync-global.ps1")
+# Rota non-admin (ADR-047): onde PowerShell e' vetado, so o bootstrap.py instala. Sem esta guarda a
+# regra "chegava em toda pasta" so' nas maquinas em que ela ja chegava (achado ALTA do QA 25/09).
+GLOBAL_INSTALLER_PY = "bootstrap.py"
+# Ancorada no INICIO do comando (opcionalmente com atribuicao): o nome dentro de uma string — print,
+# f-string, docstring — nao e' chamada. Antes casava `print("seria chamado: instalar_regras_globais(")`.
+GLOBAL_INSTALLER_PY_CALL = (r"(?m)^[ \t]+(?:[A-Za-z_]\w*(?:[ \t]*,[ \t]*[A-Za-z_]\w*)*[ \t]*=[ \t]*)?"
+                            r"instalar_regras_globais\(")
+# Implementacao UNICA em bootstrap.py; os outros pontos de entrada so' a CHAMAM (duas copias da
+# logica divergiram tres vezes na revisao de 25/09). Cada um precisa da chamada em linha de codigo.
+# A regex exige o comando EXECUTADO (operador & no PS; o interpretador no inicio da linha no sh). Texto
+# de ajuda que so' MENCIONA o comando (echo "rode ... --regras-globais") passava — furo confirmado
+# por mutacao em 25/09: apagar a chamada real e deixar so' a mensagem mantinha o canario verde.
+GLOBAL_CALLERS = [
+    # PS: a linha COMECA pela atribuicao do resultado da chamada; dentro de Write-Host "..." nao casa.
+    (GLOBAL_INSTALLER, r"(?m)^[ \t]*\$\w+[ \t]*=[ \t]*&[ \t]*\$py\.Source[ \t]+\$bootPy[ \t]+--regras-globais"),
+    ("bootstrap.sh", r"(?m)^[ \t]*\"\$PY_BIN\"[ \t]+\"[^\"\r\n]*bootstrap\.py\"[ \t]+--regras-globais"),
+]
+GLOBAL_RULES = [
+    ("marcador-inicio", r"<!-- framework:global:inicio"),
+    ("marcador-fim", r"<!-- framework:global:fim -->"),
+    ("revisao-em-subagente", r"qa-critic"),
+    ("haiku-nunca-autor", r"Haiku nunca [ée] autor"),
+    ("autocritica-nao-substitui", r"Autocr[ií]tica n[ãa]o substitui"),
+    ("falha-relata-erro-real", r"erro real"),
+    ("caminho-absoluto", r"caminho absoluto"),
+    ("alvo-file-uri", r"file:///"),
+    ("vence-link-relativo", r"link relativo"),
+]
+
 
 def _read(rel, root=ROOT):
     return open(os.path.join(root, rel), encoding="utf-8-sig").read()
@@ -124,6 +159,33 @@ def audit(root=ROOT):
         if not os.path.isfile(os.path.join(root, ".agent", "rules", arq)):
             issues.append(f"{origem} aponta para `.agent/rules/{arq}`, que NAO existe — ponteiro morto: "
                           f"a regra nao viaja, e quem clonar o projeto le uma promessa vazia")
+
+    # (5) Regras globais do dono: a fonte existe, carrega cada clausula, e o instalador ainda a instala.
+    try:
+        glob_txt = _read(GLOBAL_SRC, root)
+        for label, sig in GLOBAL_RULES:
+            if not re.search(sig, glob_txt, re.I):
+                issues.append(f"{GLOBAL_SRC}: clausula '{label}' ausente — a regra do dono deixa de "
+                              f"valer fora deste repo")
+    except Exception as e:
+        issues.append(f"{GLOBAL_SRC} ilegivel ou ausente ({e}) — sem ele nada leva as regras do dono "
+                      f"para outros projetos")
+    # Linha de CODIGO, nao substring: o comentario de cabecalho do instalador tambem cita o arquivo,
+    # e apagar a logica mantendo o comentario passava (achado MEDIA do QA de 25/09/2026).
+    for arq, chamada in GLOBAL_CALLERS:
+        try:
+            if not re.search(chamada, _read(arq, root)):
+                issues.append(f"{arq} nao instala mais CLAUDE-global.md (sem chamada a "
+                              f"`bootstrap.py --regras-globais`) — a fonte existe mas nao chega a "
+                              f"~/.claude/CLAUDE.md por este caminho")
+        except Exception as e:
+            issues.append(f"{arq} ilegivel ou ausente ({e})")
+    try:
+        if not re.search(GLOBAL_INSTALLER_PY_CALL, _read(GLOBAL_INSTALLER_PY, root)):
+            issues.append(f"{GLOBAL_INSTALLER_PY} nao instala mais CLAUDE-global.md (sem chamada a "
+                          f"instalar_regras_globais) — na rota non-admin as regras do dono nao chegam")
+    except Exception as e:
+        issues.append(f"{GLOBAL_INSTALLER_PY} ilegivel ou ausente ({e})")
 
     return issues
 

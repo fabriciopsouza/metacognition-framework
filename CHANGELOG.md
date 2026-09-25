@@ -3,6 +3,37 @@
 Formato: Keep a Changelog + SemVer. Cada mudança vincula-se à pesquisa que a sustenta.
 Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
+## [Não lançado]
+
+### ADR-116 — As regras do dono passam a valer em toda pasta (25/09/2026)
+
+- **Causa medida:** o subagente revisor já estava instalado globalmente
+  (`~/.claude/agents/qa-critic.md`), mas `~/.claude/CLAUDE.md` **não existia**. A ordem do dono
+  ("revisão adversarial sempre"; "caminho absoluto sempre") vivia só no `CLAUDE.md` deste repo. Em
+  outra pasta o agente lia apenas a instrução genérica do harness (não chamar subagente sem pedido;
+  link relativo à raiz do workspace) e nada em contrário. [CONFIRMADO]
+- **Fonte versionada** `.claude/global/CLAUDE-global.md`, instalada em `~/.claude/CLAUDE.md` por
+  **uma implementação só** (`python bootstrap.py --regras-globais`), que `sync-global.ps1`,
+  `bootstrap.sh` e o próprio `bootstrap.py` chamam (`--check` avisa se falta). O bloco leva o caminho
+  absoluto do framework naquela máquina e é gravado por **marcadores**: troca só o bloco do
+  framework; o conteúdo do usuário fora dele fica intacto, o BOM é mantido e a quebra de linha segue o
+  estilo dominante do arquivo. Marcadores fora do par exato → recusa escrever e avisa. Falha de
+  escrita (somente-leitura, permissão) vira resultado `falha-escrita`, sem exceção, e não interrompe
+  nem o `bootstrap.py` nem o sync. Tudo isso é exercitado no próprio canário, com home falso.
+- **Escada de modelos na regra global** (fonte: `tools/model-policy.json`): autor no modelo padrão;
+  1ª revisão um degrau abaixo, automática; 2ª um degrau acima só com autorização; Haiku nunca autor.
+- **Canário que morde:** `check_rules_parity.py` ganhou a verificação (5) — fonte ausente, cláusula
+  apagada ou instalador cuja **linha de código** sumiu reprovam (comentário citando o arquivo não
+  conta). `test_rules_parity.py`: 9 cláusulas, 9 reprovadas.
+- Registro `regras-globais-do-dono` em `capabilities.json`; site (`guia/web/index.html`) e
+  `guia/SETUP.md` atualizados (101 capacidades, 61 provadas por sabotagem).
+- QA rodada 1 (Sonnet isolado): FAIL com 7 achados (3 ALTA), todos corrigidos. Rodada 2: os 7
+  fechados; 2 novos (ALTA: `bootstrap.py` não instalava; MÉDIA: caminho relativo na própria regra),
+  corrigidos. Rodada 3: FAIL de novo (2 ALTA, 1 MÉDIA) → escalado e **redesenhado**: duas cópias da
+  mesma lógica (PowerShell e Python) eram a causa, e viraram uma. Rodada 4: PASS com ressalvas
+  (1 ALTA: somente-leitura derrubava o `bootstrap.py`; 1 MÉDIA: canário aceitava a chamada dentro de
+  string), corrigidas e provadas por sabotagem. Detalhe no ADR-116.
+
 ## [1.91.0] — 2026-09-23 — O gate para de medir o que nao muda, e o repo passa a ler os proprios workflows
 
 > Consolida 36 dias e tres secoes nao lancadas (ADR-010, 011, 045, 051, 092, 104, 108 a 115),

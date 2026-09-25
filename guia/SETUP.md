@@ -29,8 +29,10 @@ python bootstrap.py
 ```
 
 Funciona sem privilégio de administrador e sem PowerShell — é para isso que ele existe (ADR-047).
-Espelha as skills para `~/.claude/`, ativa o perfil sem hooks e cria seu cofre local. Rodar duas
-vezes não quebra nada. Em máquina onde o PowerShell roda liberado, `bootstrap.ps1` ativa também os
+Espelha as skills para `~/.claude/`, grava as regras permanentes do dono em `~/.claude/CLAUDE.md`
+(revisão adversarial em subagente e caminho absoluto, que passam a valer em **toda** pasta — ADR-116;
+o que você escreveu nesse arquivo fora do bloco do framework fica intacto), ativa o perfil sem hooks e
+cria seu cofre local. Rodar duas vezes não quebra nada. Em máquina onde o PowerShell roda liberado, `bootstrap.ps1` ativa também os
 hooks automáticos.
 
 **4. Verificar — este passo é o runbook de verdade.**
