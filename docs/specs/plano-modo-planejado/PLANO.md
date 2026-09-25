@@ -11,7 +11,7 @@
 > Acumula as decisões de **todas** as respostas, inclusive as que já saíram da tela. A resposta no
 > chat traz só um status curto e aponta para cá.
 
-**Avanço:** B1 85% (falta a 2ª revisão e o merge) · B2 0% · B3 0%
+**Avanço:** B1 ✅ mergeado (PR #154; falta só a verificação manual B1.8) · B1.9 em revisão · B2 0% · B3 0%
 
 | # | Assunto | Situação | Quem age | Resultado / próximo |
 |---|---|---|---|---|
@@ -25,7 +25,7 @@
 | S8 | 1 arquivo × 3 de especificação + plano espelho | ⏳ **pendente** — o dono pediu AVALIAÇÃO de ganho, não decidiu (corrigido: eu tinha registrado como decisão dele). Regra do dono: "se for melhor, funcionar como antes, sem quebrar, e trazer ganho"; plano como espelho só "se nunca descolar" | **dono** | avaliação na seção "1 arquivo ou 3 + espelho"; recomendação: unificar |
 | S9 | Toda mudança considera hooks, scripts, gates, README, site, links | ✅ ordem do dono | agente | vira item B1.7 (regra global) e o "mapa de impacto" do B2 |
 | S10 | Haiku como autor? | ✅ confirmado: nunca; só tarefa mecânica conferida por script | — | escrito na regra global |
-| S11 | Estudar o repositório `DietrichGebert/ponytail`: trazer, criar parecido ou incorporar? Se o ganho for grande e rápido, sobe nas prioridades | ✅ estudado · **priorizado** pelo critério do dono (ganho plausível, 0,5–1 h) | agente | recurso próprio, sem o pacote (Node.js + ~18 adaptadores inúteis aqui): escada anti-excesso de 7 degraus na skill `developer` + checagem no `qa-critic`. Próximo item depois do B1 (item B1.9). Ganho do autor (−54% linhas) é INFERIDO (n=4) |
+| S11 | Estudar o repositório `DietrichGebert/ponytail`: trazer, criar parecido ou incorporar? Se o ganho for grande e rápido, sobe nas prioridades | ✅ estudado · **priorizado** pelo critério do dono (ganho plausível, 0,5–1 h) | agente | recurso próprio, sem o pacote (Node.js + cerca de 20 adaptadores, a maioria para ferramentas não usadas aqui): escada anti-excesso de 7 degraus na skill `developer` + checagem no `qa-critic`. Próximo item depois do B1 (item B1.9). Ganho do autor (−54% linhas) é INFERIDO (n=4) |
 | S12 | A escada anti-excesso vale também na regra global (toda pasta)? E o marcador de "atalho deliberado" com colheita de dívida? | ⏳ pendente | **dono** | recomendação: 1 linha na regra global apontando para a skill (sim); marcador de dívida depois (não agora) |
 | D1–D6 | Decisões de desenho do B2/B3 | ⏳ pendentes | **dono** | tabela "Decisões em aberto" abaixo |
 
@@ -149,9 +149,9 @@ Legenda: `[ ]` a fazer · `[x]` feito, com prova · `[~]` replanejado, com motiv
 - [x] B1.4 ADR-116 + índice de capacidades + CHANGELOG. Prova: `test_capabilities.py` PASS.
 - [x] B1.5 1ª revisão adversarial (Sonnet): FAIL, 7 achados, 7 corrigidos.
 - [x] B1.6a Revisões 2 a 5 (a 3ª reprovou e levou ao redesenho: uma implementação só). Prova: ADR-116, tabela "Estado do QA".
-- [ ] B1.6b Suíte completa de canários · pull request · merge.
+- [x] B1.6b Suíte completa de canários · pull request · merge. Prova: PR #154 mergeado em 25/09, canários locais 88 PASS · 0 FAIL; `~/.claude/CLAUDE.md` reinstalado a partir da `main`.
 - [ ] B1.7 Regra global ganha "mapa de impacto em toda mudança" (sua ordem de 25/09), com canário.
-- [ ] B1.9 Escada anti-excesso de código (estudo do ponytail, S11): 7 degraus na skill `developer` (não precisa existir → já existe no repo → biblioteca padrão → recurso nativo → dependência já instalada → uma linha → código mínimo) e checagem de excesso no `qa-critic`. Texto próprio, sem copiar o pacote; atribuição à ideia original (MIT). Aceite: as duas skills carregam a escada; canário de paridade de skill não quebra.
+- [ ] B1.9 Escada anti-excesso de código (estudo do ponytail, S11): 7 degraus na skill `developer` (não precisa existir → já existe no repo → biblioteca padrão → recurso nativo → dependência já instalada → uma linha → código mínimo) e checagem de excesso no `qa-critic`. Texto próprio, sem copiar o pacote; atribuição à ideia original (MIT). Aceite: a skill `developer` tem a escada; a skill `qa-critic` e o subagente `.claude/agents/qa-critic.md` conferem contra ela; registro PARTIAL/prosa honesto; `test_capabilities`, `test_marketing_claims` e `test_audit_enforcement` verdes. Não há canário de conteúdo das skills: é prosa, cobrada em revisão.
 - [ ] B1.8 Verificação comportamental numa pasta virgem: pedir uma mudança de código → o revisor roda sem pedido e os links saem absolutos.
 
 ### B2 — Modo planejado (escrito para a opção B; se o dono escolher A, B2.1 vira "gerador do espelho")

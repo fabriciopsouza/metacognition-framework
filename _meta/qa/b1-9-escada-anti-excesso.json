@@ -1,0 +1,83 @@
+{
+  "bloco": "b1-9-escada-anti-excesso",
+  "papel": "qa_critic",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "veredito": "aprovar",
+  "escopo_paths": [
+    ".agent/skills/developer/SKILL.md",
+    ".agent/skills/qa-critic/SKILL.md",
+    ".claude/agents/qa-critic.md",
+    "capabilities.json",
+    "CAPABILITIES.md",
+    "guia/web/index.html",
+    "CHANGELOG.md",
+    "docs/specs/plano-modo-planejado/PLANO.md",
+    "_meta/qa/b1-9-escada-anti-excesso.json",
+    "_meta/qa/b1-9-escada-anti-excesso.md"
+  ],
+  "atestacao": {
+    "agentId": "a3d8d4873e10334a8",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic isolado, degrau canonico sonnet um abaixo do autor opus, rodada 2 em PRIMEIRO PLANO sobre o indice exato do commit na worktree C:/Users/fabriciosouza/wt-b19. Rodada 1 (agentId a9a0846ecc90a382a, tambem primeiro plano) deu FAIL com 4 achados. Nenhuma violacao de so-leitura declarada nesta rodada."
+  },
+  "postura": {
+    "discovery": "inline: estudo do repositorio DietrichGebert/ponytail por agente de pesquisa so-leitura; decisao de adaptar a ideia sem o pacote (Node.js e cerca de 20 adaptadores)",
+    "rrc": "PASSA",
+    "metodo_senior": "N/A: edicao de skill do proprio framework, sem fonte canonica regulada"
+  },
+  "resumo": "Escada anti-excesso de 7 degraus na skill developer; qa-critic (skill e subagente real) confere cada adicao contra ela; regra de so-leitura escrita na definicao do subagente e declarada honestamente como PROSA, com o mecanismo real registrado como pendencia subagente-revisor-so-leitura; capacidade PARTIAL/prose; site com 102 capacidades.",
+  "verificacoes_executadas": [
+    "python tools/test_capabilities.py -> PASS (revisora, rodadas 1 e 2)",
+    "python tools/test_marketing_claims.py -> PASS, 102/41/61 batem com o site (revisora)",
+    "python tools/test_audit_enforcement.py -> 37/37 (revisora)",
+    "leitura de tools/hooks/effect_gate.py e tools/effect-rules.json: nenhum campo de identidade de subagente; deny generico barraria a sessao principal (revisora, confirma o argumento do CHANGELOG)",
+    "grep por espelhos do checklist do qa-critic (Gemini/Copilot/Kiro): nenhum alem da skill e do subagente (revisora, rodada 1)"
+  ],
+  "problemas": [
+    {
+      "severidade": "CRITICO",
+      "estado": "corrigido",
+      "local": ".claude/agents/qa-critic.md + CHANGELOG.md",
+      "descricao": "rodada 1: a regra de so-leitura era prosa apresentada como correcao da causa. Corrigido declarando-a PROSA no CHANGELOG, explicando por que o bloqueio generico barraria a sessao principal, e registrando a pendencia subagente-revisor-so-leitura com primeiro passo mensuravel."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "docs/specs/plano-modo-planejado/PLANO.md",
+      "descricao": "rodada 1: aceite do B1.9 citava canario de paridade de skill inexistente; reescrito com os tres canarios que existem e rodam."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "CHANGELOG.md, PLANO.md",
+      "descricao": "rodada 1: numero de adaptadores divergente (20 x 18); unificado."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": ".agent/skills/developer/SKILL.md, CHANGELOG.md",
+      "descricao": "rodada 1: frase sugeria que o ADR-007 ja cobria codigo de projeto; reescrita como extensao nova deste bloco."
+    }
+  ],
+  "nao_verificado": [
+    "Originalidade literal do texto da escada frente ao AGENTS.md do ponytail: a revisora nao tinha acesso web; o texto foi escrito pelo autor a partir do resumo do agente de pesquisa, e a atribuicao MIT esta declarada.",
+    "Efeito real da escada no tamanho do codigo gerado: nao medido (o numero do autor do ponytail e INFERIDO, n=4)."
+  ],
+  "recomendacao_do_critico": "aprovar na rodada 2: os 4 achados da rodada 1 conferidos como corrigidos por leitura e execucao propria",
+  "nota_do_autor": "A rodada 1 pegou o mesmo vicio da rodada anterior do ADR-116: escrevi no CHANGELOG que a causa estava resolvida quando so tinha mudado de lugar uma frase. A correcao honesta nao foi construir o bloqueio agora (desenho incerto, depende de fato DESCONHECIDO sobre o hook), e sim dizer que e prosa e registrar o primeiro passo que decide o desenho.",
+  "data": "2026-09-25T20:18:20Z",
+  "sha_revisado": "2c4978ce267112b810d55323e9257ee171e6330c",
+  "blobs_revisados": {
+    ".agent/skills/developer/SKILL.md": "67c60be06de6c1af2bc604747ad69ebb8be64a45",
+    ".agent/skills/qa-critic/SKILL.md": "20f2a95ad2661769f54d0348de819b52b3b267b5",
+    ".claude/agents/qa-critic.md": "863705e7831e90d0bef4a3450fc0e16fa57895cf",
+    "capabilities.json": "ba3b9423f5591ae040b6a492f08d88fe51fc38d7",
+    "CAPABILITIES.md": "0ed3c4b74aa5a883e9c801e328fa2937bf0c8db4",
+    "guia/web/index.html": "1d43a77c19ec6b03189481bf809793178dea8b37",
+    "CHANGELOG.md": "60b6fad7cb04635afa70d048a3c01ee7739f5d85",
+    "docs/specs/plano-modo-planejado/PLANO.md": "44b74b4609df43c9f3645cf532837f0e131f6416"
+  }
+}

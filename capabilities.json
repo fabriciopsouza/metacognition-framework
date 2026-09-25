@@ -2129,6 +2129,24 @@
     "canario": "tools/test_rules_parity.py",
     "espera": "repo real deveria PASSAR mas reportou drift"
    }
+  },
+  {
+   "id": "escada-anti-excesso",
+   "title": "Escada anti-excesso de codigo: 7 degraus antes de escrever (developer) e checagem no diff (qa-critic) — PROSA, sem canario proprio",
+   "status": "PARTIAL",
+   "ai_owner": "claude",
+   "mechanism": ".agent/skills/developer/SKILL.md",
+   "test": null,
+   "adr": "docs/adr/007-regua-ganho-liquido-discovery-cascata-aprendizado-wip.md",
+   "cross_ai": false,
+   "enforcement": "prose",
+   "tags": [
+    "developer",
+    "qa",
+    "yagni",
+    "ganho-liquido"
+   ],
+   "note": "A regua de ganho liquido (ADR-007) valia para mudancas do proprio framework; o codigo escrito para um projeto so tinha 'diff minimo' solto. Adaptado da ideia de DietrichGebert/ponytail (MIT) sem as dependencias dele (Node.js, ~20 adaptadores). Cobrado na revisao: o qa-critic (skill e subagente) confere cada adicao contra a escada. Nao e' gate: prosa, declarada como tal."
   }
  ],
  "registry_waivers": [

@@ -5,6 +5,31 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### Escada anti-excesso de código no developer e no qa-critic (25/09/2026)
+
+- **Origem:** estudo do projeto `DietrichGebert/ponytail` (licença MIT) a pedido do dono. Decisão:
+  **não incorporar o pacote** (traria Node.js e cerca de 20 adaptadores, a maioria para ferramentas
+  não usadas aqui)
+  e sim adaptar a ideia. O ganho que o autor mede (cerca de 54% menos linhas) é **INFERIDO**: n=4 por
+  tarefa, sem replicação independente.
+- **`developer` 1.3.0:** 7 degraus antes de escrever, parando no primeiro que resolve (precisa
+  existir? já existe no repo? biblioteca padrão? a plataforma faz? dependência já instalada? uma
+  linha? só então código mínimo); bug corrigido na causa; atalho deliberado declarado no código.
+  **Extensão nova deste bloco:** leva o espírito da régua de ganho líquido (ADR-007), que valia para
+  mudanças do próprio framework, ao código escrito para um projeto.
+- **`qa-critic` 1.3.0 e o subagente `.claude/agents/qa-critic.md`:** conferem cada adição contra a
+  escada; alternativa mais simples **demonstrável** = achado MÉDIA, com a alternativa escrita. O
+  subagente real não carrega a skill `qa-critic`, então a checagem foi escrita nele também.
+- **Subagente revisor: só leitura escrita na definição — ainda PROSA, não bloqueio.** Duas revisoras
+  violaram a regra em 25/09 (uma escreveu no home real; outra usou `git checkout` numa worktree). A
+  proibição, que vivia só no pedido de cada rodada, passa a estar na definição do subagente, mas o
+  subagente continua com Bash livre e **nada barra** o comando: o gate de efeito não distingue
+  subagente de sessão principal, e bloquear `git checkout/add/commit` para todos barraria a sessão
+  principal. O mecanismo real está registrado como pendência (`subagente-revisor-so-leitura`),
+  começando por medir se o hook recebe a identidade do subagente.
+- Registro `escada-anti-excesso` em `capabilities.json` como **PARTIAL / prosa**: é cobrado na
+  revisão, não por gate. Site atualizado (102 capacidades, 41 com proteção mais fraca).
+
 ### ADR-116 — As regras do dono passam a valer em toda pasta (25/09/2026)
 
 - **Causa medida:** o subagente revisor já estava instalado globalmente
