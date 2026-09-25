@@ -7,6 +7,7 @@
 # - este proprio script                              -> ~/.claude/hooks/framework-sync.ps1  (v1.7.1)
 # - .claude/hooks/inject-start-session-global.template.ps1 -> ~/.claude/hooks/inject-start-session-global.ps1  (v1.8.0)
 # - .agent/workflows/<file>                          -> ~/.claude/workflows/<file>  (v1.8.0 - hook global le start-session.md de la)
+# - .claude/global/CLAUDE-global.md                  -> ~/.claude/CLAUDE.md  (bloco entre marcadores; resto do arquivo intacto)
 # Pre-requisito de "skill valida": ter SKILL.md na pasta (entry point).
 # Companion files (ex.: discovery/mapeamento-de-processo.md, ADR-003 progressive disclosure) sao
 # copiados automaticamente porque o -Recurse copia a pasta inteira. Nao precisa adicionar regra nova.
@@ -34,6 +35,7 @@ $skillCount    = 0
 $agentCount    = 0
 $hookCount     = 0
 $workflowCount = 0
+$globalNote    = ''
 
 try {
     if (-not (Test-Path $skillsDest))    { New-Item -ItemType Directory -Path $skillsDest -Force | Out-Null }
@@ -149,6 +151,27 @@ try {
                 $workflowCount++
             }
         }
+
+        # Regras permanentes do dono -> ~/.claude/CLAUDE.md, lido pelo Claude Code em TODA pasta (ADR-116).
+        # UMA implementacao so, em Python (bootstrap.py --regras-globais): a copia desta logica em
+        # PowerShell divergiu da do Python tres vezes seguidas na revisao (barra final no caminho, CRLF,
+        # instalador esquecido). Aqui so se chama e se repassa o resultado. Try proprio: falha aqui nao
+        # pode pular o self-heal ADR-027 nem o systemMessage abaixo.
+        $bootPy = Join-Path $projectRoot 'bootstrap.py'
+        if (Test-Path (Join-Path $projectRoot '.claude\global\CLAUDE-global.md')) {
+            try {
+                $py = Get-Command python -ErrorAction SilentlyContinue
+                if (-not $py) { $py = Get-Command py -ErrorAction SilentlyContinue }
+                if ($py) {
+                    $saida = & $py.Source $bootPy --regras-globais 2>&1 | Select-Object -Last 1
+                    $globalNote = if ($LASTEXITCODE -eq 0) { ' + regras globais (~/.claude/CLAUDE.md)' } else { " + regras globais NAO instaladas: $saida" }
+                } else {
+                    $globalNote = ' + regras globais NAO instaladas: Python ausente (rode python bootstrap.py)'
+                }
+            } catch {
+                $globalNote = " + regras globais FALHARAM: $($_.Exception.Message)"
+            }
+        }
     }
 
     # ADR-027 / v1.22.0 — SELF-HEAL: re-afirma a wiring de hooks GLOBAIS no ~/.claude/settings.json.
@@ -166,7 +189,7 @@ try {
         }
     }
 
-    $msg  = "Framework sync: $skillCount skills + $agentCount agents + $hookCount hooks + $workflowCount workflows -> ~/.claude/$healNote"
+    $msg  = "Framework sync: $skillCount skills + $agentCount agents + $hookCount hooks + $workflowCount workflows$globalNote -> ~/.claude/$healNote"
     $json = @{ systemMessage = $msg } | ConvertTo-Json -Compress
     Write-Output $json
 }
