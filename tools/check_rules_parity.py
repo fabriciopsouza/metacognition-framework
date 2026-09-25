@@ -71,6 +71,7 @@ GLOBAL_RULES = [
     ("caminho-absoluto", r"caminho absoluto"),
     ("alvo-file-uri", r"file:///"),
     ("vence-link-relativo", r"link relativo"),
+    ("escada-anti-excesso", r"primeiro degrau que resolve"),
 ]
 
 

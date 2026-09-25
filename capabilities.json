@@ -2121,7 +2121,7 @@
     "caminho-absoluto",
     "regras"
    ],
-   "note": "A ordem do dono vivia so no CLAUDE.md deste repo; em outra pasta o agente lia a instrucao generica do harness (nao chamar subagente sem pedido; link relativo a raiz do workspace) e nada em contrario. Fonte versionada instalada por UMA implementacao (bootstrap.py --regras-globais), chamada por sync-global.ps1, bootstrap.sh e bootstrap.py, em ~/.claude/CLAUDE.md por marcadores (texto do usuario fora do bloco fica intacto). Marcadores fora do par exato = instalador recusa escrever. check_rules_parity reprova clausula apagada (9 de 9, provado em test_rules_parity) e instalador cuja linha de codigo sumiu.",
+   "note": "A ordem do dono vivia so no CLAUDE.md deste repo; em outra pasta o agente lia a instrucao generica do harness (nao chamar subagente sem pedido; link relativo a raiz do workspace) e nada em contrario. Fonte versionada instalada por UMA implementacao (bootstrap.py --regras-globais), chamada por sync-global.ps1, bootstrap.sh e bootstrap.py, em ~/.claude/CLAUDE.md por marcadores (texto do usuario fora do bloco fica intacto). Marcadores fora do par exato = instalador recusa escrever. check_rules_parity reprova clausula apagada (10 de 10, provado em test_rules_parity) e instalador cuja linha de codigo sumiu.",
    "mutacao": {
     "arquivo": ".claude/global/CLAUDE-global.md",
     "de": "Autocrítica não substitui a revisão.",

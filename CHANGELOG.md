@@ -27,6 +27,9 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   subagente de sessão principal, e bloquear `git checkout/add/commit` para todos barraria a sessão
   principal. O mecanismo real está registrado como pendência (`subagente-revisor-so-leitura`),
   começando por medir se o hook recebe a identidade do subagente.
+- **A escada entra também na regra global** (`~/.claude/CLAUDE.md`, seção 3), por decisão do dono
+  (S12): vale em toda pasta, não só onde a skill `developer` é carregada. Cláusula vigiada pelo
+  `check_rules_parity` (10ª).
 - Registro `escada-anti-excesso` em `capabilities.json` como **PARTIAL / prosa**: é cobrado na
   revisão, não por gate. Site atualizado (102 capacidades, 41 com proteção mais fraca).
 
@@ -49,7 +52,7 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   1ª revisão um degrau abaixo, automática; 2ª um degrau acima só com autorização; Haiku nunca autor.
 - **Canário que morde:** `check_rules_parity.py` ganhou a verificação (5) — fonte ausente, cláusula
   apagada ou instalador cuja **linha de código** sumiu reprovam (comentário citando o arquivo não
-  conta). `test_rules_parity.py`: 9 cláusulas, 9 reprovadas.
+  conta). `test_rules_parity.py`: 10 cláusulas, 10 reprovadas (a 10ª, a escada anti-excesso, entrou por decisão do dono no mesmo dia).
 - Registro `regras-globais-do-dono` em `capabilities.json`; site (`guia/web/index.html`) e
   `guia/SETUP.md` atualizados (101 capacidades, 61 provadas por sabotagem).
 - QA rodada 1 (Sonnet isolado): FAIL com 7 achados (3 ALTA), todos corrigidos. Rodada 2: os 7

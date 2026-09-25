@@ -1,0 +1,67 @@
+{
+  "bloco": "s12-escada-na-regra-global",
+  "papel": "qa_critic",
+  "rodada": 1,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "veredito": "aprovar",
+  "escopo_paths": [
+    ".claude/global/CLAUDE-global.md",
+    "CHANGELOG.md",
+    "capabilities.json",
+    "docs/adr/116-regras-permanentes-do-dono-valem-em-toda-pasta.md",
+    "docs/specs/plano-modo-planejado/PLANO.md",
+    "tools/check_rules_parity.py",
+    "_meta/qa/s12-escada-na-regra-global.json",
+    "_meta/qa/s12-escada-na-regra-global.md"
+  ],
+  "atestacao": {
+    "agentId": "ac8575a52cf403f0d",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic isolado, degrau canonico sonnet um abaixo do autor opus, em PRIMEIRO PLANO sobre o indice exato do commit na worktree C:/Users/fabriciosouza/wt-s12. Nenhuma violacao de so-leitura declarada."
+  },
+  "postura": {
+    "discovery": "inline: decisao explicita do dono (S12, 25/09: 'sim todos') sobre recomendacao ja apresentada",
+    "rrc": "PASSA",
+    "metodo_senior": "N/A: acrescimo de clausula a regra global ja revisada no ADR-116"
+  },
+  "resumo": "Escada anti-excesso entra como secao 3 da regra global (~/.claude/CLAUDE.md), coerente com a skill developer; 10a clausula vigiada pelo check_rules_parity; contagens 9->10 atualizadas; painel com S3 (pasta aninhada apagada), S12 e D1-D6 decididas.",
+  "verificacoes_executadas": [
+    "python tools/test_rules_parity.py -> PASS; mutacao clausula a clausula usa len(GLOBAL_RULES) dinamico (revisora)",
+    "python tools/check_rules_parity.py -> PASS (revisora)",
+    "python tools/test_capabilities.py -> PASS (revisora)",
+    "len(GLOBAL_RULES) = 10, batendo com CHANGELOG/ADR-116/capabilities (revisora)",
+    "grep 'primeiro degrau que resolve' em .claude e .agent -> 1 ocorrencia, a propria clausula (revisora)",
+    "test -d da pasta aninhada -> ausente; origin/kiro-ide-adapter com 15018a1 presente (revisora)"
+  ],
+  "problemas": [
+    {
+      "severidade": "BAIXA",
+      "estado": "aceito",
+      "local": "CHANGELOG.md",
+      "descricao": "Redundancia de estilo: a 10a clausula e' citada em dois paragrafos vizinhos. Mantido: um descreve a regra, o outro a prova do canario."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "aceito",
+      "local": "docs/specs/plano-modo-planejado/PLANO.md S3",
+      "descricao": "A conferencia de que a pasta aninhada nao tinha nada pendente nao pode ser refeita porque a pasta foi apagada; e' registro do autor feito antes de apagar. Verificavel hoje: o commit dela esta no remoto."
+    }
+  ],
+  "nao_verificado": [
+    "Estado da pasta aninhada antes de apagar: registrado pelo autor, nao re-verificavel apos a exclusao."
+  ],
+  "recomendacao_do_critico": "aprovar",
+  "nota_do_autor": "Bloco separado do B2 de proposito, para nao misturar uma clausula de regra global com a reforma do modelo de especificacao.",
+  "data": "2026-09-25T21:49:29Z",
+  "sha_revisado": "ba951cac59296d6bc2d9451c5f75aed002d400ba",
+  "blobs_revisados": {
+    ".claude/global/CLAUDE-global.md": "078e549aa63f83bf94f08e4b1257fe0dda92103c",
+    "CHANGELOG.md": "412d7ddfa136e1e6a482c83bfe7b73959ca994ac",
+    "capabilities.json": "98f7c0abb7630ba6b9c06b2bf99a3ca830f6c2e1",
+    "docs/adr/116-regras-permanentes-do-dono-valem-em-toda-pasta.md": "11b3ce533e56a7d2a432e49d89e4cc19f75db0d7",
+    "docs/specs/plano-modo-planejado/PLANO.md": "b8e40fd1103bfeb84de45196ca46bb4d9fceb0cf",
+    "tools/check_rules_parity.py": "fbb83a4e90fae65f1bef09ed37f651f42d80407f"
+  }
+}

@@ -35,4 +35,14 @@
   workspace.** Os projetos vivem fora dessa raiz, e link relativo abre o arquivo errado ou nenhum.
 - Vale também para comandos: `cd C:\Users\<usuario>\projeto`, nunca `cd projeto`.
 - Nunca cite um arquivo só pelo nome nem por número de seção ("ver §4"). Diga o que está lá.
+
+## 3. Código: escada anti-excesso antes de escrever
+
+- Antes de escrever código, pare no **primeiro degrau que resolve**: precisa existir? → já existe no
+  repositório? → a biblioteca padrão resolve? → a plataforma já faz? → uma dependência já instalada
+  resolve? → cabe em uma linha? → só então o menor código que passa no critério de aceite.
+- Bug se corrige na causa, não no sintoma. Atalho deliberado é declarado no próprio código, com o
+  limite e o que muda quando ele for atingido.
+- A revisão adversarial cobra: alternativa mais simples demonstrável é achado. Detalhe na skill
+  `developer` do metacognition-framework.
 <!-- framework:global:fim -->
