@@ -126,7 +126,7 @@ auditoria-log · ambiente-execução · formato-saída. **Postura consultiva, n�
 dimensão, **recomendar um default sênior com o trade-off** e pedir confirmação (*"vai a decisão de
 gente não-técnica e é auditável → recomendo GUI + log; confirma, ou prefere outro caminho?"*) em vez
 de pergunta em aberto (*"qual interface?"*). Registrar a decisão na seção **`## Dimensões de
-elicitação`** do `requirements.md`. **Gate mecânico:** `tools/check_spec_depth.py <requirements.md>`
+elicitação`** do `requirements.md` (ou a Parte A do `spec.md` único — ADR-117). **Gate mecânico:** `tools/check_spec_depth.py <requirements.md | spec.md>`
 deve dar PASS **antes do handoff J1** (discovery→architect) — barra spec rasa que pula produto.
 **Sob sinal de STAKE** (regulado/financeiro/saúde/segurança/decisão — `_shared/discovery/context-signals.txt`,
 **inferido, não só declarado**) `tools/check_context_brief.py` também deve dar PASS em J1: exige o
@@ -199,7 +199,8 @@ no manifesto vira **gap declarado** (não silêncio) nos "Gaps não-bloqueantes"
 Quando há **fonte canônica/normativa citada** no contexto (norma, regulamento, spec oficial, padrão técnico, regra de negócio com peso semântico), carregar `metodo-senior.md` (vizinho) em ADIÇÃO ao sub-modo ativo. Aplica **9 passos auditáveis**: mapeamento + **vigência** + complementações + cross-domain + pertinência + elicitação + classificação + adversarial + **coherence pass (RRC, ADR-010 §ii)**. Domain-agnóstico (dev/BI/BPM/regulado/qualquer). NÃO é sub-modo; é reforço transversal. Output ganha **3 seções obrigatórias**: **Antecipações** + **Backlog de elicitação** + **Gaps não-bloqueantes** (ADR-010 §i — flagar mesmo gap não-bloqueante; silenciar = perda de assertividade sênior).
 
 ## Output obrigatório
-Entrega um **`requirements.md` de nível sênior** (clonar `docs/specs/_template/`
+Entrega os **requisitos de nível sênior** na Parte A do `spec.md` único (copiar
+`docs/specs/_template-spec-unico/spec.md` — ADR-117) ou num `requirements.md` (clonar `docs/specs/_template/`
 para modo universal/revisar; `docs/specs/_template-process/` para mapeamento de
 processo), com cada requisito classificado. Resumo ao orquestrador:
 ```yaml

@@ -5,6 +5,34 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-117 — Especificação em arquivo único, sem quebrar gate nem perder informação (25/09/2026)
+
+- **Decisão do dono, condicional:** um arquivo só **se nenhum mecanismo quebrar e nenhuma informação
+  se perder**; senão 3 arquivos + espelho. As duas condições viraram prova executável, e passaram.
+- **`spec.md` único** (marca `<!-- spec-unico:v1 -->`): painel, resumo executivo, "quem precisa / o
+  quê / para quê", crítica do pedido, **Partes A–E** (requisitos, aceite, contexto, missão,
+  dicionário), decisões, tarefas com checklist, mapa de impacto, replanejamento, revisões. Modelo em
+  `docs/specs/_template-spec-unico/spec.md`, gerado do modelo antigo pelo conversor.
+- **`tools/spec_fonte.py`**, leitor único das partes. `check_spec_depth`, `check_completeness`,
+  `check_field_mapping` e `check_context_brief` passaram a ler por ele, sem mudar a lógica de
+  verificação. `qa_evidence` (J3) recusa `spec.md` único sem Parte B — Aceite.
+- **`tools/spec_unificar.py`** converte uma especificação antiga sob demanda, sem apagar a original.
+- **Prova:** fotografia dos 4 gates nas 11 especificações antigas antes e depois — 0 diferenças na
+  saída inteira. `tools/test_spec_unico.py`: mesmo veredito nos dois formatos (11 reais + casos
+  sintéticos que reprovam em cada gate), **igualdade exata parte por parte** (perda zero), partes
+  isoladas, cerca aberta e parte repetida **recusadas**, título com recuo, coexistência dos dois
+  formatos contada uma vez, Parte C como fonte, recusa do conversor, J3; 6 sabotagens, 6 pegas.
+- **Regras que a revisão fez nascer:** forma que faria uma parte engolir outra (cerca aberta, parte
+  repetida) é recusada, não aceita; pasta com os dois formatos tem **uma** fonte (o arquivo único);
+  no arquivo único, a Parte C é o context-brief e o gate diz quando ignora o arquivo ao lado.
+- Workflows e skills ajustados para aceitar os dois formatos: `feature-plan` (grau completo cria o
+  arquivo único; `--quick` não muda), `readiness-gate` (R1 **bloqueava** sem `requirements.md`),
+  `discovery`, `architect`, `developer`, `qa-critic`, `implement`, `handoff`, regra 04.
+- QA: rodada 1 (Sonnet isolado) FAIL com 1 CRÍTICO — a prova de "perda zero" aceitava linha perdida
+  que existisse igual em outra parte — e 3 ALTO; os 7 achados corrigidos. Detalhe no ADR-117.
+- Registro `spec-arquivo-unico` (fail-closed, com mutação declarada); site com 103 capacidades, 62
+  provadas por sabotagem, 90 canários.
+
 ### Escada anti-excesso de código no developer e no qa-critic (25/09/2026)
 
 - **Origem:** estudo do projeto `DietrichGebert/ponytail` (licença MIT) a pedido do dono. Decisão:

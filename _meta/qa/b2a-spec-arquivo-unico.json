@@ -1,0 +1,140 @@
+{
+  "bloco": "b2a-spec-arquivo-unico",
+  "papel": "qa_critic",
+  "rodada": 3,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "veredito": "aprovar",
+  "escopo_paths": [
+    ".agent/rules/04-confidence-routing.md",
+    ".agent/skills/architect/SKILL.md",
+    ".agent/skills/developer/SKILL.md",
+    ".agent/skills/discovery/SKILL.md",
+    ".agent/skills/qa-critic/SKILL.md",
+    ".agent/skills/readiness-gate/SKILL.md",
+    ".agent/workflows/feature-plan.md",
+    ".agent/workflows/handoff.md",
+    ".agent/workflows/implement.md",
+    "CAPABILITIES.md",
+    "CHANGELOG.md",
+    "capabilities.json",
+    "docs/adr/117-especificacao-em-arquivo-unico.md",
+    "docs/specs/_template-spec-unico/spec.md",
+    "docs/specs/plano-modo-planejado/PLANO.md",
+    "guia/web/index.html",
+    "tools/check_completeness.py",
+    "tools/check_context_brief.py",
+    "tools/check_field_mapping.py",
+    "tools/check_spec_depth.py",
+    "tools/qa_evidence.py",
+    "tools/spec_fonte.py",
+    "tools/spec_unificar.py",
+    "tools/test_spec_unico.py",
+    "_meta/qa/b2a-spec-arquivo-unico.json",
+    "_meta/qa/b2a-spec-arquivo-unico.md"
+  ],
+  "atestacao": {
+    "agentId": "a74c0e86e3b3f53f1",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic isolado, degrau canonico sonnet um abaixo do autor opus, rodada 3 em PRIMEIRO PLANO sobre o indice exato do commit na worktree C:/Users/fabriciosouza/wt-b2a. Rodadas anteriores tambem em primeiro plano: 1 (a41d703b634555df3) FAIL com 7 achados; 2 (aedaee34f341cd3d7) PASS-COM-RESSALVAS com 1 ALTO novo. Nenhuma violacao de so-leitura declarada nas 3 rodadas; experimentos em copias temporarias."
+  },
+  "postura": {
+    "discovery": "inline: condicao do dono (um arquivo so se nenhum mecanismo quebrar e nenhuma informacao se perder) transformada em prova executavel antes do codigo; fotografia dos gates antes da mudanca",
+    "rrc": "PASSA",
+    "metodo_senior": "N/A: mecanismo do proprio framework, sem fonte canonica regulada"
+  },
+  "resumo": "Especificacao em arquivo unico (spec.md, partes A-E) lida pelos 4 gates de spec via leitor unico tools/spec_fonte.py; formato antigo aceito sem migracao; conversor sem perda; forma invalida recusada; uma fonte por pasta; J3 recusa spec sem aceite ou malformado. Condicao do dono provada: 0 diferencas nos gates no formato antigo e igualdade exata parte a parte nas 11 especificacoes reais.",
+  "verificacoes_executadas": [
+    "fotografia dos 4 gates nas 11 specs antigas antes/depois (autor) -> 0 diferencas na saida inteira, repetida apos as correcoes",
+    "python tools/test_spec_unico.py -> PASS (autor e revisora, rodadas 1-3)",
+    "sabotagens do autor: partes nao isoladas, cerca aberta aceita, parte repetida aceita, recuo nao reconhecido, conversor perde linha, varredura em dobro, J3 sem tratamento -> 7 de 7 vermelhas com o achado certo",
+    "revisora r2: mutacao registrada em capabilities.json aplicada numa copia -> PASS vira FAIL(11)",
+    "revisora r3: CLI qa_evidence --junction J3 com spec malformado numa copia isolada -> RECUSADO com motivo, exit 1, nenhum ledger",
+    "test_spec_depth, test_completeness, test_context_brief, test_qa_evidence, test_capabilities, test_consistency_closing, test_marketing_claims -> PASS"
+  ],
+  "problemas": [
+    {
+      "severidade": "CRITICO",
+      "estado": "corrigido",
+      "local": "tools/test_spec_unico.py perda_de_linhas",
+      "descricao": "r1: a prova de perda zero buscava cada linha no arquivo inteiro; perda na Parte A escondida por linha igual na Parte D. Agora igualdade exata parte a parte, com caso (c2) que reproduz a mutacao da revisora."
+    },
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "tools/spec_fonte.py",
+      "descricao": "r1: cerca de codigo nao fechada engolia a Parte B; agora SpecInvalida (recusa)."
+    },
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "tools/spec_fonte.py",
+      "descricao": "r1: titulo de parte com recuo de ate 3 espacos nao era reconhecido; regex corrigida."
+    },
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "4 gates + check_completeness._resolve",
+      "descricao": "r1: pasta com os dois formatos contada duas vezes na varredura; sombreado_por_unico."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/check_context_brief.py",
+      "descricao": "r1: Parte C incompleta calava o context-brief.md ao lado; regra de fonte unica declarada e mensagem explicita."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/spec_fonte.py",
+      "descricao": "r1: parte repetida descartada em silencio; agora SpecInvalida."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": ".agent/skills/architect/SKILL.md",
+      "descricao": "r1: consumes sem o arquivo unico."
+    },
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "tools/qa_evidence.py append_junction",
+      "descricao": "r2: spec.md malformado na J3 subia SpecInvalida sem tratamento; agora recusa ValueError com motivo, caso (f2)."
+    }
+  ],
+  "nao_verificado": [
+    "A prova de mutacao declarada em capabilities.json (audit_enforcement --provar) so roda contra HEAD: sera executada apos o commit, antes do merge.",
+    "Uso real do arquivo unico numa especificacao nova de ponta a ponta (discovery -> architect -> developer): nenhuma feature nova passou pelo fluxo ainda."
+  ],
+  "recomendacao_do_critico": "aprovar na rodada 3",
+  "nota_do_autor": "A rodada 1 derrubou a garantia central que eu anunciava: a prova de perda zero tinha um furo que eu mesmo nao testei — a busca no arquivo inteiro. Trocar por igualdade exata era o obvio desde o inicio; so ficou claro quando alguem tentou quebrar.",
+  "data": "2026-09-26T02:27:27Z",
+  "sha_revisado": "71224d383a1dccd8ed5d1ab50d76937479985462",
+  "blobs_revisados": {
+    ".agent/rules/04-confidence-routing.md": "86699d4635d1702ddd24466e7210368e2f14ee56",
+    ".agent/skills/architect/SKILL.md": "424f90454d92329a3c204a54be63442a60398dde",
+    ".agent/skills/developer/SKILL.md": "0d171b11b9b617260aeec42ae7f9f72627c6b6d4",
+    ".agent/skills/discovery/SKILL.md": "84df18a36ce4700cb7d422f3da779939a02a1b24",
+    ".agent/skills/qa-critic/SKILL.md": "e4f91a1a1e5d7552f9fcf8b9c6427b09234dfd05",
+    ".agent/skills/readiness-gate/SKILL.md": "0e946bbafc833d3d5d9bac33b5ae908533930dff",
+    ".agent/workflows/feature-plan.md": "d87e09821c25fa045e15a27198520db7aaac3ae5",
+    ".agent/workflows/handoff.md": "d49037a4ad11c3921427e8fa1e3fdbda62d76cd1",
+    ".agent/workflows/implement.md": "cc87c3842b5827951358fd0eb83df8b2778a9bac",
+    "CAPABILITIES.md": "a3ac089b5fce250d9d7c2974cbcdede3d8497c20",
+    "CHANGELOG.md": "a4a014d514a18cdf4ac59bedfe988d1a25dd88ff",
+    "capabilities.json": "93b03a20c7bf1c75cedb81a27dff0ad8a19d4972",
+    "docs/adr/117-especificacao-em-arquivo-unico.md": "d27ace542c70a37d1e6553da3da7e239a99ef09c",
+    "docs/specs/_template-spec-unico/spec.md": "3f3aaf50809575dae677d0b9ec69797b7512584e",
+    "docs/specs/plano-modo-planejado/PLANO.md": "a88d097eef5249693ddafc7015667d72307054a5",
+    "guia/web/index.html": "b1561b5ad065c36f446749baad5620ffa4373a58",
+    "tools/check_completeness.py": "e5954bf81afb18e435a17dd0f2ffcb71979f917a",
+    "tools/check_context_brief.py": "d512974495a9d6c2d9585cdbce932aeb896b42e0",
+    "tools/check_field_mapping.py": "ec53c7726cef47aaacfd0df9d6615e855e43eb43",
+    "tools/check_spec_depth.py": "f6a9492725c67cf945cd7c0af6601436bcf06456",
+    "tools/qa_evidence.py": "1e37378876287909758489eaa5a1ae87923b210c",
+    "tools/spec_fonte.py": "8e48bee0efea0c8d8f5d8ec8f44f0c300f5e2db1",
+    "tools/spec_unificar.py": "ef9a83f90ed9052918aa2d55b6cb39216ceffdf1",
+    "tools/test_spec_unico.py": "8416dedb399d57dabae6f1dfd413d4fbb00b4793"
+  }
+}

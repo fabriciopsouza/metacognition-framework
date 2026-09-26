@@ -26,6 +26,8 @@ import sys
 import unicodedata
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import spec_fonte  # noqa: E402  (leitor único das partes da especificação — ADR-117)
 SIGNALS_PATH = os.path.join(ROOT, "_shared", "discovery", "context-signals.txt")
 
 
@@ -96,11 +98,19 @@ def brief_ok(text):
     return (not faltas), faltas
 
 
-def check_spec(path, signals):
-    """(ok, motivo, detalhe)."""
+def check_spec(path, signals, parte=None):
+    """(ok, motivo, detalhe). `parte` só vem preenchida para o arquivo único (ADR-117): o texto
+    avaliado é aquela parte ('requisitos' ou 'missao') e o brief é a Parte C do mesmo arquivo.
+    Regra de fonte única: havendo Parte C, ELA é o brief — um `context-brief.md` ao lado não a
+    substitui (duas fontes divergem); sem Parte C, vale a busca de sempre pelo arquivo irmão. O
+    conversor traz o brief irmão para a Parte C, então especificação convertida dá o mesmo veredito.
+    Com `parte=None` o fluxo é o de sempre, byte a byte."""
     try:
-        with open(path, encoding="utf-8-sig") as fh:
-            text = fh.read()
+        if parte:
+            text = spec_fonte.ler_parte(path, parte) or ""
+        else:
+            with open(path, encoding="utf-8-sig") as fh:
+                text = fh.read()
     except OSError as e:
         return False, f"erro io: {e}", []
     stake = spec_has_stake(text, signals)
@@ -110,13 +120,21 @@ def check_spec(path, signals):
     # framework) pode dispensar o brief com razão registrada — `context-brief: nao-aplicavel — <razão>`.
     if re.search(r"context[- ]brief\s*:\s*(nao[- ]aplicavel|n/?a|isento)", _norm(text)):
         return True, "exceção consciente registrada (sem entidade externa)", []
-    brief = find_brief(path)
-    if not brief:
-        return False, f"stake detectado ({', '.join(stake[:4])}…) e context-brief.md AUSENTE", stake
-    with open(brief, encoding="utf-8-sig") as fh:
-        ok, faltas = brief_ok(fh.read())
+    brief_texto = spec_fonte.ler_parte(path, "contexto") if parte else None
+    da_parte_c = brief_texto is not None
+    if brief_texto is None:
+        brief = find_brief(path)
+        if not brief:
+            return False, f"stake detectado ({', '.join(stake[:4])}…) e context-brief.md AUSENTE", stake
+        with open(brief, encoding="utf-8-sig") as fh:
+            brief_texto = fh.read()
+    ok, faltas = brief_ok(brief_texto)
     if ok:
         return True, "context-brief presente e estruturado", []
+    if da_parte_c and find_brief(path):
+        return False, ("context-brief INCOMPLETO na Parte C — o context-brief.md ao lado é "
+                       "ignorado: no arquivo único a fonte é a Parte C (complete-a ou traga o "
+                       "conteúdo do arquivo para ela)"), faltas
     return False, "context-brief INCOMPLETO", faltas
 
 
@@ -141,17 +159,29 @@ def main(argv):
                             recursive=True)
         targets += glob.glob(os.path.join(ROOT, "docs", "specs", "**", "mission.md"),
                              recursive=True)
-        targets = [t for t in targets if "_template" not in t]
+        targets += spec_fonte.alvos_unicos(ROOT)
+        targets = [t for t in targets if "_template" not in t and not spec_fonte.sombreado_por_unico(t)]
     if not targets:
         print("nenhum requirements.md/mission.md para checar (gate só dispara com spec).")
         return 0
+    # arquivo único (ADR-117) vira 1 alvo por parte avaliada, como antes eram 2 arquivos
+    alvos = []
+    for t in targets:
+        if spec_fonte.eh_unico(t):
+            alvos.append((t, "requisitos"))
+            if spec_fonte.ler_parte(t, "missao") is not None:
+                alvos.append((t, "missao"))
+        else:
+            alvos.append((t, None))
     any_fail = False
-    for path in targets:
+    for path, parte in alvos:
         try:
             rel = os.path.relpath(path, ROOT)
         except ValueError:
             rel = path
-        ok, motivo, detalhe = check_spec(path, signals)
+        if parte:
+            rel = f"{rel} [{parte}]"
+        ok, motivo, detalhe = check_spec(path, signals, parte)
         if ok:
             print(f"PASS {rel}  — {motivo}")
         else:

@@ -28,6 +28,8 @@ import sys
 import unicodedata
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import spec_fonte  # noqa: E402  (leitor único das partes da especificação — ADR-117)
 
 
 def _norm(s):
@@ -109,14 +111,23 @@ def _resolve(targets):
     pairs = []
     if not targets:
         for d in glob.glob(os.path.join(ROOT, "docs", "specs", "*")):
-            if os.path.isdir(d) and "_template" not in d:
+            if os.path.isdir(d) and "_template" not in d \
+                    and not spec_fonte.eh_unico(os.path.join(d, spec_fonte.ARQUIVO_UNICO)):
                 r = os.path.join(d, "requirements.md")
                 v = os.path.join(d, "validation.md")
                 if os.path.isfile(r) and os.path.isfile(v):
                     pairs.append((r, v))
+        # arquivo único (ADR-117): o mesmo spec.md fornece as duas partes
+        pairs += [(u, u) for u in spec_fonte.alvos_unicos(ROOT) if "_template" not in u]
     elif len(targets) == 1 and os.path.isdir(targets[0]):
-        pairs.append((os.path.join(targets[0], "requirements.md"),
-                      os.path.join(targets[0], "validation.md")))
+        unico = os.path.join(targets[0], spec_fonte.ARQUIVO_UNICO)
+        if spec_fonte.eh_unico(unico):
+            pairs.append((unico, unico))
+        else:
+            pairs.append((os.path.join(targets[0], "requirements.md"),
+                          os.path.join(targets[0], "validation.md")))
+    elif len(targets) == 1 and spec_fonte.eh_unico(targets[0]):
+        pairs.append((targets[0], targets[0]))
     elif len(targets) == 2:
         pairs.append((targets[0], targets[1]))
     return pairs
@@ -130,10 +141,15 @@ def main(argv):
     any_fail = False
     for r, v in pairs:
         try:
-            req = open(r, encoding="utf-8-sig").read()
-            val = open(v, encoding="utf-8-sig").read()
+            req = spec_fonte.ler_parte(r, "requisitos")  # formato antigo ou arquivo único (ADR-117)
+            val = spec_fonte.ler_parte(v, "aceite")
         except OSError as e:
             print(f"FAIL {r}: {e}")
+            any_fail = True
+            continue
+        if req is None or val is None:
+            falta = "Requisitos" if req is None else "Aceite"
+            print(f"FAIL {r}: parte '{falta}' ausente no arquivo único")
             any_fail = True
             continue
         quant, miss_cov, miss_val = check(req, val)

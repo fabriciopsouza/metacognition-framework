@@ -460,6 +460,20 @@ def append_junction(bloco, junction, artefato, evidencia,
         if not ok_val and not (justificativa and str(justificativa).strip()):
             raise ValueError("J3 exige --validation <validation.md existente> OU --justificativa "
                              "explicita (P4/ADR-077: 'se aplicavel' sem registro = REPROVADO)")
+        # ADR-117: arquivo unico so vale como evidencia de J3 se TEM a Parte B — Aceite; um spec.md
+        # sem aceite passaria so' por existir, que e' o "se aplicavel" silencioso de novo.
+        if ok_val:
+            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+            import spec_fonte  # noqa: E402
+            vpath = validation if os.path.isfile(validation) else os.path.join(ROOT, validation)
+            if spec_fonte.eh_unico(vpath):
+                try:
+                    aceite = spec_fonte.ler_parte(vpath, "aceite")
+                except spec_fonte.SpecInvalida as e:  # recusa LIMPA, nao traceback (QA 25/09)
+                    raise ValueError(f"J3: o spec.md unico informado e' invalido ({e})")
+                if aceite is None:
+                    raise ValueError("J3: o spec.md unico informado nao tem a 'Parte B — Aceite' — "
+                                     "escreva o aceite binario antes de registrar J3")
     led_dir = os.path.join(QA_DIR, "junctions")
     os.makedirs(led_dir, exist_ok=True)
     path = os.path.join(led_dir, _slug(bloco) + ".jsonl")

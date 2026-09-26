@@ -31,7 +31,7 @@ enforcement:
 1. FILE-FIRST: ler todo arquivo a editar.
 2. GLOSSÁRIO-FIRST: nomes EXATOS de 00-glossario.md.
 3. ADR-FIRST: ler o ADR que motiva (se houver).
-4. SPEC-FIRST: implementar contra `validation.md`.
+4. SPEC-FIRST: implementar contra o aceite — Parte B do `spec.md` único ou `validation.md`.
 Impossível cumprir → escalar ao PMO.
 
 ## Escada anti-excesso — antes de escrever qualquer linha

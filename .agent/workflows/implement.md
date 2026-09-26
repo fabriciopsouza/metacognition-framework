@@ -1,7 +1,7 @@
 # /implement <tarefa> — Implementação supervisionada (v1.2)
 
 ## Pré-requisito
-ADR aceito + `docs/specs/<feature>/validation.md` com critérios binários
+ADR aceito + aceite com critérios binários (Parte B de `docs/specs/<feature>/spec.md`, ou `validation.md`)
 OU tarefa trivial confirmada pelo usuário.
 
 ## Roteamento por confiança (NOVO — `rules/04`)

@@ -30,6 +30,8 @@ import sys
 import unicodedata
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import spec_fonte  # noqa: E402  (leitor único das partes da especificação — ADR-117)
 
 CONFIRM_RX = re.compile(
     r"\[\s*confirmado\b|confirmad[oa]\s+pelo\s+dono|decis[aã]o\s+do\s+dono|"
@@ -93,9 +95,11 @@ def check_text(text):
 
 def check_spec(path):
     try:
-        text = open(path, encoding="utf-8-sig").read()
+        text = spec_fonte.ler_parte(path, "requisitos")  # formato antigo ou arquivo único (ADR-117)
     except OSError as e:
         return False, True, [(f"<io {e}>", ["io"])]
+    if text is None:
+        return False, True, [("<parte 'Requisitos' ausente no arquivo único>", ["parte"])]
     has_sec, bad = check_text(text)
     return (len(bad) == 0), has_sec, bad
 
@@ -104,7 +108,8 @@ def main(argv):
     targets = argv[1:]
     if not targets:
         targets = [t for t in glob.glob(os.path.join(ROOT, "docs", "specs", "**", "requirements.md"),
-                                        recursive=True) if "_template" not in t]
+                                        recursive=True) + spec_fonte.alvos_unicos(ROOT)
+                   if "_template" not in t and not spec_fonte.sombreado_por_unico(t)]
     if not targets:
         print("nenhum requirements.md para checar (gate só dispara quando há mapeamento).")
         return 0
