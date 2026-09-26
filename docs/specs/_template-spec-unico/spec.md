@@ -171,7 +171,7 @@ Dimensões/dados sabidos ausentes mas não impedem entrega?
 
 ## Regra de transição
 Tarefa = **FINALIZADA** somente quando **todos** os critérios acima = VERDADEIRO.
-Qualquer FALSO → volta ao Developer (limite: 3 reprovações → escalar, reabrir spec/ADR).
+Qualquer FALSO → volta ao Developer. Limite: circuit breaker de QA (ADR-118); grave toda rodada, inclusive reprovação.
 
 # Parte C — Contexto e âncoras
 > _(opcional — só quando há sinal de stake (ADR-051); apague a parte se não se aplica)_

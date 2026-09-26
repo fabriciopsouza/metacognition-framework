@@ -5,6 +5,25 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-118 — Circuit breaker de QA, comandos de sessão, estilo corporativo, plano que não expira (26/09/2026)
+
+- **Circuit breaker** em `tools/qa_evidence.py`: 3 rodadas seguidas sem aprovação, ou 2 com os mesmos
+  achados, travam a próxima gravação; aprovação sempre entra; destrava com `--redesenho` (≥ 20
+  caracteres e 4 palavras distintas) ou `--override-dono` (frase com data real), registrados no artefato; ao armar, declara débito em
+  `tools/trabalhos.py`. Toda rodada de QA passa a ser gravada (processo; a regra antiga em prosa, em 5
+  lugares, virou 1 linha de referência ao ADR-118). QA: rodada 1 FAIL (1 CRÍTICA — o breaker recusava a
+  aprovação); rodada 2 PASS-COM-RESSALVAS (destravamento aceitava data impossível e texto repetido);
+  rodada 3 PASS-COM-RESSALVAS (frase duplicada em 5 arquivos).
+- **Regra global, seções 4–6:** estilo corporativo direto acima do estilo explicativo do editor
+  (emenda 1 do ADR-028); fontes sempre em arquivo; plano aprovado não expira com a sessão; comandos
+  `economia de tokens`, `sem circuit breaker`, `sem limite de rodadas de QA` valem só na sessão.
+  `check_rules_parity`: 14 cláusulas.
+- **`check_field_mapping`:** "confirmação: pendente" (e outros estados de espera) deixa de contar como
+  confirmação — PASS falso achado ao usar o gate no plano B3.
+- Registro `qa-circuit-breaker` (fail-closed, mutação declarada); site: 104 capacidades, 63 provadas.
+- Prova: `test_qa_evidence` (14 casos do breaker), `test_spec_unico` (i), `test_rules_parity` (14/14);
+  4 gates de especificação nas 11 especificações antigas: 0 diferenças.
+
 ### ADR-117 — Especificação em arquivo único, sem quebrar gate nem perder informação (25/09/2026)
 
 - **Decisão do dono, condicional:** um arquivo só **se nenhum mecanismo quebrar e nenhuma informação

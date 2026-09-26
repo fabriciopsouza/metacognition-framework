@@ -112,6 +112,93 @@ def _test_junction_ledger():
     return not fails
 
 
+def _test_circuit_breaker():
+    """Circuit breaker do laço de QA (ADR-118) — tempdir, não toca o repo nem o registro de trabalhos
+    (`write_artifact` não declara débito; quem declara é o `main` da linha de comando)."""
+    import tempfile
+    sys.path.insert(0, os.path.join(ROOT, "tools"))
+    import qa_evidence
+    fails = []
+
+    def veredito(bloco, rec, rodada, achados=("ALTA|a.py",), **extra):
+        v = {"bloco": bloco, "passou": rec in qa_evidence.APPROVING, "recomendacao": rec,
+             "rodada": rodada, "data": f"2026-09-25T0{rodada}:00:00Z", "verificacoes_executadas": ["x"],
+             "problemas": [{"severidade": a.split("|")[0], "local": a.split("|")[1],
+                            "descricao": f"achado {i}", "estado": "aberto"}
+                           for i, a in enumerate(achados)]}
+        v.update(extra)
+        return v
+
+    def grava(v):
+        try:
+            qa_evidence.write_artifact(v)
+            return "ok"
+        except ValueError as e:
+            return str(e)
+
+    with tempfile.TemporaryDirectory() as td:
+        saved = qa_evidence.QA_DIR
+        qa_evidence.QA_DIR = td
+        try:
+            # D1: 3 reprovações seguidas (achados diferentes) -> a 4ª é recusada
+            for r, a in ((1, "ALTA|a.py"), (2, "ALTA|b.py"), (3, "ALTA|c.py")):
+                if grava(veredito("d1", "corrigir", r, (a,))) != "ok":
+                    fails.append(f"D1: rodada {r} recusada antes do limite")
+            if "CIRCUIT BREAKER" not in grava(veredito("d1", "corrigir", 4, ("ALTA|d.py",))):
+                fails.append("D1: 4ª rodada após 3 reprovações foi ACEITA")
+            if grava(veredito("d1", "corrigir", 4, ("ALTA|d.py",), redesenho="uma implementação só, os instaladores só chamam")) != "ok":
+                fails.append("D1: rodada com redesenho registrado foi recusada")
+            if grava(veredito("d1", "corrigir", 5, ("ALTA|e.py",))) != "ok":
+                fails.append("D1: o redesenho não reiniciou a contagem")
+            # D2: 2 reprovações seguidas com os MESMOS achados -> a 3ª é recusada
+            grava(veredito("d2", "corrigir", 1, ("ALTA|x.py",)))
+            grava(veredito("d2", "corrigir", 2, ("ALTA|x.py",)))
+            if "sem progresso" not in grava(veredito("d2", "corrigir", 3, ("ALTA|y.py",))):
+                fails.append("D2: 3ª rodada após 2 rodadas sem progresso foi ACEITA")
+            if grava(veredito("d2", "corrigir", 3, ("ALTA|y.py",),
+                              override_dono="sem limite de rodadas de QA, 25/09/2026")) != "ok":
+                fails.append("D2: ordem do dono registrada foi recusada")
+            # aprovação SEMPRE entra, mesmo com o breaker armado (achado CRÍTICO de 26/09)
+            for r in (1, 2, 3):
+                grava(veredito("ap2", "corrigir", r, (f"ALTA|{r}.py",)))
+            if grava(veredito("ap2", "aprovar", 4, ())) != "ok":
+                fails.append("aprovação recusada com o breaker armado (ela é que encerra o laço)")
+            # destravar exige conteúdo: 'x' não é redesenho nem ordem do dono
+            for r in (1, 2, 3):
+                grava(veredito("tri", "corrigir", r, (f"ALTA|{r}.py",)))
+            if "CIRCUIT BREAKER" not in grava(veredito("tri", "corrigir", 4, ("ALTA|z.py",), override_dono="x")):
+                fails.append("override_dono='x' (sem data) destravou o breaker")
+            if "CIRCUIT BREAKER" not in grava(veredito("tri", "corrigir", 4, ("ALTA|z.py",), redesenho="mudei")):
+                fails.append("redesenho trivial destravou o breaker")
+            if "CIRCUIT BREAKER" not in grava(veredito("tri", "corrigir", 4, ("ALTA|z.py",), redesenho="x" * 25)):
+                fails.append("redesenho de uma palavra repetida destravou o breaker")
+            if "CIRCUIT BREAKER" not in grava(veredito("tri", "corrigir", 4, ("ALTA|z.py",),
+                                                       override_dono="ordem do dono, 99/99/9999")):
+                fails.append("override com data impossível (99/99/9999) destravou o breaker")
+            # LIMITE DECLARADO (ADR-118): o destravamento prova forma, não conteúdo. Estes passam de
+            # propósito; se um dia deixarem de passar, o ADR tem de ser atualizado junto.
+            for r in (1, 2, 3):
+                grava(veredito("lim", "corrigir", r, (f"ALTA|{r}.py",)))
+            if grava(veredito("lim", "corrigir", 4, ("ALTA|z.py",), redesenho="ab cd ef gh ab cd ef gh")) != "ok":
+                fails.append("limite declarado mudou: redesenho de tokens curtos passou a ser recusado (atualize o ADR-118)")
+            # aprovação no meio zera a sequência
+            grava(veredito("ap", "corrigir", 1, ("ALTA|a.py",)))
+            grava(veredito("ap", "corrigir", 2, ("ALTA|b.py",)))
+            grava(veredito("ap", "aprovar_com_ressalvas", 3, ("BAIXA|c.py",)))
+            if grava(veredito("ap", "corrigir", 4, ("ALTA|d.py",))) != "ok":
+                fails.append("aprovação no meio não zerou a sequência de reprovações")
+            # a reprovação que dispara é GRAVADA (nunca se perde)
+            hist = json.load(open(os.path.join(td, "d1.json"), encoding="utf-8")).get("substitui") or []
+            if len(hist) < 4:
+                fails.append(f"histórico de d1 com {len(hist)} rodadas (reprovações sumiram)")
+        finally:
+            qa_evidence.QA_DIR = saved
+    for f in fails:
+        print("  - [circuit-breaker]", f)
+    print(f"circuit-breaker (ADR-118): {'OK (14 casos)' if not fails else 'FAIL'}")
+    return not fails
+
+
 def conferir_cadeia():
     """A cadeia do ledger acumula atraves de VARIAS regravacoes? (falhas).
 
@@ -327,9 +414,10 @@ def main():
         print(f"release atual v{latest}: SEM artefato qa-critic aprovativo (release==v{latest} + "
               f"recomendacao em {sorted(APPROVING)}) em _meta/qa/")
     ledger_ok = _test_junction_ledger()
-    ok = ok and ledger_ok
+    breaker_ok = _test_circuit_breaker()
+    ok = ok and ledger_ok and breaker_ok
     print("-" * 50)
-    print("RESULTADO:", f"PASS (release v{latest} tem evidencia qa-critic; junction-ledger OK)" if ok
+    print("RESULTADO:", f"PASS (release v{latest} tem evidencia qa-critic; junction-ledger e circuit breaker OK)" if ok
           else f"FAIL (release v{latest}: evidencia qa-critic ausente OU junction-ledger quebrado — "
                f"qa-critic e processo, nao opt-in)")
     return 0 if ok else 1

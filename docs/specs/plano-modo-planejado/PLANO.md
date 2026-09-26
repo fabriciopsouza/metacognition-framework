@@ -11,7 +11,7 @@
 > Acumula as decisões de **todas** as respostas, inclusive as que já saíram da tela. A resposta no
 > chat traz só um status curto e aponta para cá.
 
-**Avanço:** B1 ✅ (PR #154; falta só a verificação manual B1.8) · B1.9 ✅ (PR #155) · S12 ✅ (PR #156 em canários) · B2a em revisão · B2b a fazer · B3 0%
+**Avanço:** B1 ✅ (PR #154; falta só a verificação manual B1.8) · B1.9 ✅ (PR #155) · S12 ✅ (PR #156) · B2a ✅ (PR #157) · B2b a fazer · B3 plano em 3ª revisão, aguarda D1–D8 · B4 em revisão
 
 | # | Assunto | Situação | Quem age | Resultado / próximo |
 |---|---|---|---|---|
@@ -23,6 +23,8 @@
 | S6 | Link e caminho relativo | ✅ ordem do dono: sempre absoluto · **feito** | — | mesma regra global |
 | S7 | Painel acumulado + status curto por resposta | ✅ pedido do dono · em uso | agente | vira item B2.6 |
 | S8 | 1 arquivo × 3 de especificação + plano espelho | ✅ **decidido pelo dono (25/09), condicional:** "se um arquivo não quebrar os mecanismos e não houver perda de especificação/informação, então UM. Se provocar perda, 3 + espelho" | agente | B2 vai com **1 arquivo**, e a condição vira critério de aceite binário: prova antes = depois nos gates + nenhuma seção dos 2 modelos atuais sem destino. Falhou a prova → volta para 3 + espelho, sem nova consulta |
+| S15 | Princípios sempre aplicados + circuit breaker padrão entre agentes + débitos declarados + comandos de sessão ("sem circuit breaker", "sem limite de rodadas de QA", "economia de tokens") + estilo corporativo direto sobrepondo o modo explicativo + fontes sempre em arquivo | ✅ aprovado (25/09, D1–D3) · 🔄 B4 em revisão (ADR-118) | agente | reaproveita ADR-073, `trabalhos.py`, ADR-087, ADR-028; novo: contador de rodadas no ledger + regra global de estilo e comandos |
+| S14 | B3 em ambiente REGULADO: enxuto, ágil, mas completo e conforme — o que uma auditoria (ex.: ANVISA) exige? cronograma, E2E, checklists como os do MRP (`Checklist_Validacao_Cadastros_MRP_v1_1_TREPLICA-v3.xlsx`, `DEFINICOES-PCP-para-confirmacao_v2.xlsx`) | 🔄 discovery em andamento (25/09) · **admitido:** o "kit de 4" do B3 foi proposto SEM pesquisa regulatória, sem crítica e sem QA — não segue assim | agente → **dono** | pesquisa de fontes canônicas (ANVISA/GAMP, com link e data) em andamento; os 2 arquivos do MRP lidos e mapeados como modelos (confirmação de requisitos com assinatura; protocolo de verificação com evidência e versão); núcleo neutro + perfil farma/ANVISA como pacote de aplicação |
 | S13 | Documentos que ficam na simplificação (B3) | ✅ **decidido pelo dono (25/09):** "os necessários são ERU (quando for sistema novo), Testes E2E, Evidências dos Testes" | agente | entram no kit do B3 ao lado de TAP, especificação, HANDOFF e glossário. Interpretação a confirmar: E2E e evidências valem para toda entrega testada; ERU só para sistema novo |
 | S9 | Toda mudança considera hooks, scripts, gates, README, site, links | ✅ ordem do dono | agente | vira item B1.7 (regra global) e o "mapa de impacto" do B2 |
 | S10 | Haiku como autor? | ✅ confirmado: nunca; só tarefa mecânica conferida por script | — | escrito na regra global |

@@ -2121,7 +2121,7 @@
     "caminho-absoluto",
     "regras"
    ],
-   "note": "A ordem do dono vivia so no CLAUDE.md deste repo; em outra pasta o agente lia a instrucao generica do harness (nao chamar subagente sem pedido; link relativo a raiz do workspace) e nada em contrario. Fonte versionada instalada por UMA implementacao (bootstrap.py --regras-globais), chamada por sync-global.ps1, bootstrap.sh e bootstrap.py, em ~/.claude/CLAUDE.md por marcadores (texto do usuario fora do bloco fica intacto). Marcadores fora do par exato = instalador recusa escrever. check_rules_parity reprova clausula apagada (10 de 10, provado em test_rules_parity) e instalador cuja linha de codigo sumiu.",
+   "note": "A ordem do dono vivia so no CLAUDE.md deste repo; em outra pasta o agente lia a instrucao generica do harness (nao chamar subagente sem pedido; link relativo a raiz do workspace) e nada em contrario. Fonte versionada instalada por UMA implementacao (bootstrap.py --regras-globais), chamada por sync-global.ps1, bootstrap.sh e bootstrap.py, em ~/.claude/CLAUDE.md por marcadores (texto do usuario fora do bloco fica intacto). Marcadores fora do par exato = instalador recusa escrever. check_rules_parity reprova clausula apagada (14 de 14, provado em test_rules_parity; secoes 4-6 do ADR-118: estilo, fontes em arquivo, plano e comandos de sessao) e instalador cuja linha de codigo sumiu.",
    "mutacao": {
     "arquivo": ".claude/global/CLAUDE-global.md",
     "de": "Autocrítica não substitui a revisão.",
@@ -2171,6 +2171,31 @@
     "para": "                pass",
     "canario": "tools/test_spec_unico.py",
     "espera": "(a) veredito difere"
+   }
+  },
+  {
+   "id": "qa-circuit-breaker",
+   "title": "Circuit breaker do laco autor-revisor: 3 rodadas sem aprovacao ou 2 com os mesmos achados travam a proxima gravacao ate redesenho ou ordem do dono",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/qa_evidence.py",
+   "test": "tools/test_qa_evidence.py",
+   "adr": "docs/adr/118-circuit-breaker-de-qa-comandos-de-sessao-e-estilo.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "qa",
+    "gate",
+    "fail-closed",
+    "anti-loop"
+   ],
+   "note": "Le o historico de rodadas ja gravado (substitui). A rodada que dispara e' gravada; a seguinte so' entra com --redesenho ou --override-dono (frase literal do dono + data), registrados no artefato. Ao armar, declara debito em trabalhos.py. Decisoes do dono de 25/09/2026 (D1-D3).",
+   "mutacao": {
+    "arquivo": "tools/qa_evidence.py",
+    "de": "    if len(seq) >= LIMITE_REPROVACOES_SEGUIDAS:",
+    "para": "    if False:",
+    "canario": "tools/test_qa_evidence.py",
+    "espera": "D1: 4ª rodada após 3 reprovações foi ACEITA"
    }
   }
  ],

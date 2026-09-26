@@ -244,6 +244,73 @@ def _blob_indexado(p):
     return None
 
 
+# Circuit breaker do laço de QA (ADR-118, decisões do dono de 25/09/2026).
+LIMITE_REPROVACOES_SEGUIDAS = 3   # D1: 3 rodadas não-aprovativas seguidas -> redesenho ou decisão do dono
+RODADAS_SEM_PROGRESSO = 2          # D2: 2 rodadas não-aprovativas seguidas com os MESMOS achados
+
+
+def _achados_fp(v):
+    """Impressão digital dos achados de uma rodada: severidade + local. Duas rodadas com a mesma
+    impressão = o autor não mudou nada que o revisor tenha visto."""
+    fp = set()
+    for p in (v.get("problemas") or []):
+        if isinstance(p, dict):
+            fp.add(f"{str(p.get('severidade', '')).strip().upper()}|"
+                   f"{str(p.get('local', '')).strip().lower()[:60]}")
+    return sorted(fp)
+
+
+MIN_REDESENHO = 20          # "x" não descreve redesenho nenhum
+MIN_PALAVRAS_REDESENHO = 4  # "x" * 20 também não (QA de 26/09, rodada 2)
+
+
+def _tem_data_real(texto):
+    """True se o texto contém uma data de calendário válida dd/mm/aaaa (99/99/9999 não é data)."""
+    import datetime
+    for d, m, a in re.findall(r"\b(\d{1,2})/(\d{1,2})/(\d{4})\b", texto):
+        try:
+            datetime.date(int(a), int(m), int(d))
+            return True
+        except ValueError:
+            continue
+    return False
+
+
+def destrava_breaker(verdict):
+    """True se a rodada traz redesenho descrito (≥ MIN_REDESENHO caracteres e ≥ MIN_PALAVRAS_REDESENHO
+    palavras distintas) ou ordem do dono com data real dd/mm/aaaa. Prova forma, não autoria — o
+    limite está declarado no ADR-118."""
+    red = str(verdict.get("redesenho") or "").strip()
+    dono = str(verdict.get("override_dono") or "").strip()
+    redesenho_ok = len(red) >= MIN_REDESENHO and len(set(red.lower().split())) >= MIN_PALAVRAS_REDESENHO
+    return redesenho_ok or _tem_data_real(dono)
+
+
+def motivo_circuit_breaker(historico):
+    """Motivo do disparo, ou "" — lido do histórico de rodadas JÁ gravadas do bloco (mais antiga
+    primeiro). Conta a sequência final de rodadas não-aprovativas; uma rodada gravada com redesenho
+    ou ordem do dono (`reinicio`) recomeça a contagem."""
+    seq = []
+    for h in historico:
+        if not isinstance(h, dict):
+            continue
+        if h.get("reinicio"):
+            seq = []
+        if str(h.get("recomendacao", "")).lower() in APPROVING:
+            seq = []
+        else:
+            seq.append(h)
+    if len(seq) >= LIMITE_REPROVACOES_SEGUIDAS:
+        return (f"{len(seq)} rodadas seguidas sem aprovação (limite "
+                f"{LIMITE_REPROVACOES_SEGUIDAS}) — repetir a revisão não converge")
+    if len(seq) >= RODADAS_SEM_PROGRESSO:
+        ult = seq[-RODADAS_SEM_PROGRESSO:]
+        fps = [h.get("achados_fp") for h in ult]
+        if all(f for f in fps) and all(f == fps[0] for f in fps):
+            return (f"{RODADAS_SEM_PROGRESSO} rodadas seguidas com os mesmos achados — sem progresso")
+    return ""
+
+
 def write_artifact(verdict, when=None):
     missing = [k for k in REQUIRED if k not in verdict]
     if missing:
@@ -377,6 +444,9 @@ def write_artifact(verdict, when=None):
                 "sha_revisado": anterior.get("sha_revisado"),
                 "agentId": (anterior.get("atestacao") or {}).get("agentId"),
                 "escopo_paths": list(anterior.get("escopo_paths") or []),
+                # circuit breaker (ADR-118): o que o breaker precisa ler da rodada anterior
+                "achados_fp": _achados_fp(anterior),
+                "reinicio": destrava_breaker(anterior),
             }
             if assinatura not in historico:
                 historico.append(assinatura)
@@ -386,6 +456,18 @@ def write_artifact(verdict, when=None):
             if str(decisao_anterior).lower() in ("reprovar", "corrigir") and \
                     not verdict.get("substitui_reprovacao"):
                 verdict["substitui_reprovacao"] = True
+            # CIRCUIT BREAKER (ADR-118): recusa ANTES de gravar a rodada que continuaria um laço
+            # autor <-> revisor já estourado. A rodada que dispara foi gravada; a seguinte só entra
+            # com `redesenho` ou `override_dono` (registrados no artefato, no momento do ato).
+            # Aprovação SEMPRE entra: é ela que encerra o laço (QA de 26/09: o breaker recusava a
+            # aprovação e obrigava a inventar um "redesenho" só para registrar o PASS).
+            motivo = motivo_circuit_breaker(historico)
+            aprova = str(verdict.get("recomendacao", "")).lower() in APPROVING
+            if motivo and not aprova and not destrava_breaker(verdict):
+                raise ValueError(f"CIRCUIT BREAKER em '{verdict['bloco']}': {motivo}. Pare o laço: "
+                                 f"registre o redesenho (--redesenho \"o que mudou no desenho\", "
+                                 f"≥ {MIN_REDESENHO} caracteres) ou a ordem do dono (--override-dono "
+                                 f"\"frase literal, dd/mm/aaaa\")")
 
     json.dump(verdict, open(jpath, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
     open(mpath, "w", encoding="utf-8").write(render_md(verdict))
@@ -533,6 +615,10 @@ def main(argv=None):
     ap.add_argument("--validation", help="path do validation.md (exigido em J3, ou --justificativa)")
     ap.add_argument("--justificativa", help="justificativa explicita quando J3 sem validation.md")
     ap.add_argument("--rewind", action="store_true", help="declara rewind cascata (permite voltar juncao)")
+    ap.add_argument("--redesenho", help="circuit breaker (ADR-118): o que mudou no DESENHO depois das "
+                                        "rodadas reprovadas; reinicia a contagem")
+    ap.add_argument("--override-dono", help="circuit breaker (ADR-118): frase LITERAL do dono + data "
+                                            "(ex.: 'sem limite de rodadas de QA, 25/09/2026')")
     args = ap.parse_args(argv)
 
     if args.junction:
@@ -565,8 +651,38 @@ def main(argv=None):
         ap.error("informe --from-json <f|-> ou --list")
     raw = sys.stdin.read() if args.from_json == "-" else open(args.from_json, encoding="utf-8").read()
     verdict = json.loads(raw)
-    jpath, mpath = write_artifact(verdict)
+    if args.redesenho:
+        verdict["redesenho"] = args.redesenho
+    if args.override_dono:
+        verdict["override_dono"] = args.override_dono
+    try:
+        jpath, mpath = write_artifact(verdict)
+    except ValueError as e:
+        print(f"[qa-evidence] RECUSADO: {e}")
+        return 3 if "CIRCUIT BREAKER" in str(e) else 1
     print(f"[qa-evidence] gravado: {os.path.relpath(jpath, ROOT)} + {os.path.relpath(mpath, ROOT)}")
+    # Avisa AGORA se esta gravação encheu o breaker (a próxima rodada será recusada) e declara o
+    # débito, para que o laço interrompido não suma quando a sessão acabar.
+    gravado = json.load(open(jpath, encoding="utf-8"))
+    atual = {"recomendacao": gravado.get("recomendacao"), "achados_fp": _achados_fp(gravado),
+             "reinicio": destrava_breaker(gravado)}
+    motivo = motivo_circuit_breaker(list(gravado.get("substitui") or []) + [atual])
+    if motivo:
+        print(f"[qa-evidence] CIRCUIT BREAKER armado em '{gravado['bloco']}': {motivo}. A próxima "
+              f"rodada exige --redesenho ou --override-dono.")
+        slug = "circuit-breaker-" + _slug(gravado["bloco"])
+        proc = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "trabalhos.py"), "registrar",
+                               "--slug", slug, "--repo", os.path.basename(ROOT),
+                               "--nome", f"Circuit breaker de QA disparado em {gravado['bloco']}",
+                               "--objetivo", "Decidir redesenho ou ordem do dono antes de nova rodada de QA",
+                               "--pendente", motivo,
+                               "--proximo", "Redesenhar (registrar com --redesenho) ou levar ao dono"],
+                              capture_output=True, text=True)
+        if proc.returncode == 0:
+            print(f"[qa-evidence] débito declarado: trabalho '{slug}' (reaparece em toda sessão).")
+        else:  # não afirmar débito que não foi gravado (QA de 26/09)
+            print(f"[qa-evidence] AVISO: débito NÃO declarado ({(proc.stdout + proc.stderr).strip()[:200]}). "
+                  f"Registre à mão: python tools/trabalhos.py registrar --slug {slug} ...")
     return 0
 
 

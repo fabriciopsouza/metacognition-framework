@@ -19,7 +19,7 @@ PMO → Developer → QA-Critic → [correção] → DocOps
   validar **contra `validation.md`** (cada critério VERDADEIRO/FALSO) +
   checklist de `_shared/output-format`. Emitir JSON: aprovar | aprovar_com_ressalvas
   | corrigir | reverter. Qualquer critério FALSO → corrigir.
-- Limite: 3 reprovações → pausar, escalar, reabrir spec/ADR.
+- Limite: circuit breaker de QA (ADR-118); grave toda rodada, inclusive reprovação.
 - **DocOps:** CHANGELOG + dicionário + ADR status; atualizar a spec se decisões
   mudaram (anti-drift); "Salvar como Knowledge Item?".
 - **PMO:** atualizar `history.md` (compaction + structured note-taking — `_shared/metacognition-core`).
