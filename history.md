@@ -13,6 +13,46 @@
 > **Poda de contexto (ADR-107):** este arquivo quente mantem os ultimos **10** checkpoints + `## Em aberto` + `## Aprendizado`. **56** checkpoints mais antigos estao em [`docs/history/history-archive.md`](docs/history/history-archive.md) (nada deletado — so realocado). Rotacao: `python tools/rotate_history.py`.
 <!-- history-archive-pointer -->
 
+## 2026-09-26 — plano B3: kit regulado, biblioteca de conhecimento e método único de projeto na main
+
+**Entregue (8 PRs mesclados, todos com revisão isolada aprovada e `canarios-local` verde):**
+- **#154 e #156, ADR-116:** regras do dono valendo em toda pasta.
+- **#157, ADR-117:** especificação em arquivo único.
+- **#158, ADR-118:** circuit breaker de QA, comandos de sessão e estilo corporativo.
+- **#159:** plano B3.
+- **#161, ADR-119:** kit regulado com motor neutro e perfil declarado por projeto.
+- **#163, ADR-120:** biblioteca de conhecimento. É o método de construir e consultar; o conteúdo de cada empresa é
+  das sessões de domínio.
+- **#165, emenda 2 do ADR-033:** dimensão `escopo-e-prazo`, nascida do dogfood de pesquisa confirmatória.
+- **#168, ADR-121:** método único de projeto (`guia/METODO-DE-PROJETO.md`), desenho do processo gerado da Parte H e
+  manifesto de evidência.
+
+Suíte ao fim: 94 canários.
+
+**Decisões do dono (26/09):**
+- não há perfil regulado padrão;
+- biblioteca por empresa → área de negócio → assunto, em `docs/_private/conhecimento/`, commitada (as bibliotecas do
+  mantenedor são commitadas; o repositório é privado);
+- "status" é sempre a tabela com % por bloco + 3 linhas;
+- ordem: B3d → B3a → B3c → B2b → B3b (ANVISA por último);
+- desenho com raias por papel; acima de 15 passos, agrupar em macroações e detalhar cada uma;
+- a área responde na planilha de confirmação (Excel).
+
+**Cobranças do dono que viraram regra:**
+- responder às perguntas antes de executar ("saiu fazendo como web chat");
+- criticar antes de fazer;
+- trabalhar só no agnóstico nesta sessão (MRP é de outra sessão).
+
+**Próximo passo:** B3a-2, planilhas de confirmação e de verificação. Depende das decisões 1 a 3 do dono sobre a
+origem das linhas: Parte nova "Definições a confirmar", Parte nova "Roteiro de verificação" separada dos testes E2E, e
+categorias obrigatórias do perfil acrescentadas pelo gerador. Depois: B3a-3, B3c, B2b e B3b.
+
+**Pendências registradas em `tools/trabalhos.py`:** `regra-global-instalar-apos-merge`, `subagente-revisor-so-leitura`,
+`plano-b3-documentacao-regulada`, `biblioteca-de-consultas-compartilhada` (parte agnóstica quitada).
+
+Relatório: `docs/_private/_intake/execution-report-2026-09-26-framework-b3.md`.
+
+
 ## 2026-09-23 — v1.91.0: cinco sessões viram uma, e o site público era servido pela fonte privada
 
 O release fechou **36 dias** de trabalho que não lançava: três seções não lançadas empilhadas com
