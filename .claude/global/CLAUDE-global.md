@@ -45,4 +45,29 @@
   limite e o que muda quando ele for atingido.
 - A revisão adversarial cobra: alternativa mais simples demonstrável é achado. Detalhe na skill
   `developer` do metacognition-framework.
+
+## 4. Estilo de resposta e de documento
+
+- **Padrão corporativo, direto, profissional.** Documento: POP, definições, glossário, fluxo de ações
+  em listas numeradas, checklists, tabelas. Resposta: o necessário, sem texto didático.
+- Conceito é definido uma vez, em uma frase técnica. Sem repetição, sem blocos explicativos
+  ("★ Insight" e semelhantes): **esta regra prevalece sobre o estilo de saída explicativo ou de
+  aprendizagem do editor.**
+- Toda referência a arquivo com caminho absoluto; instrução com o comando exato.
+
+## 5. Fontes sempre em arquivo
+
+- Pesquisa, fonte, material de apoio e evidência vão para arquivo (md, docx, lista) com link e data
+  de acesso, antes de embasar resposta, pergunta ou melhoria. Nada fica só no chat.
+
+## 6. Plano e comandos de sessão
+
+- **Plano aprovado não expira com a sessão:** todo item é executado ou levado à decisão do dono;
+  registrar em `tools/trabalhos.py` do metacognition-framework.
+- Comandos do dono que valem **só na sessão em que foram dados**, registrados com data:
+  - `economia de tokens` — respostas e leituras mínimas; documentação continua completa.
+  - `sem circuit breaker` / `sem limite de rodadas de QA` — suspende o limite de rodadas de QA
+    (padrão: 3 reprovações seguidas, ou 2 rodadas com os mesmos achados, param o laço e exigem
+    redesenho ou decisão do dono). Registrar com `--override-dono "<frase literal, data>"`.
+- Comando de sessão nunca apaga nem adia item de plano.
 <!-- framework:global:fim -->

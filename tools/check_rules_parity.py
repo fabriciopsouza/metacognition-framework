@@ -72,6 +72,10 @@ GLOBAL_RULES = [
     ("alvo-file-uri", r"file:///"),
     ("vence-link-relativo", r"link relativo"),
     ("escada-anti-excesso", r"primeiro degrau que resolve"),
+    ("estilo-sobre-output-style", r"prevalece sobre o estilo de sa[ií]da"),
+    ("fontes-em-arquivo", r"Nada fica s[oó] no chat"),
+    ("plano-nao-expira", r"Plano aprovado n[aã]o expira"),
+    ("comando-nao-apaga-plano", r"Comando de sess[aã]o nunca apaga"),
 ]
 
 

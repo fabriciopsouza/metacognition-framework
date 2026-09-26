@@ -1,0 +1,137 @@
+{
+  "bloco": "b4-circuit-breaker-estilo",
+  "papel": "qa_critic",
+  "rodada": 3,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "escopo_paths": [
+    ".agent/skills/qa-critic/SKILL.md",
+    ".agent/workflows/implement.md",
+    ".claude/agents/qa-critic.md",
+    ".claude/global/CLAUDE-global.md",
+    "CAPABILITIES.md",
+    "CHANGELOG.md",
+    "capabilities.json",
+    "docs/adr/028-precedencia-output-style-versus-processo.md",
+    "docs/adr/118-circuit-breaker-de-qa-comandos-de-sessao-e-estilo.md",
+    "docs/specs/_template-spec-unico/spec.md",
+    "docs/specs/_template/validation.md",
+    "docs/specs/plano-modo-planejado/PLANO.md",
+    "guia/web/index.html",
+    "tools/check_field_mapping.py",
+    "tools/check_rules_parity.py",
+    "tools/qa_evidence.py",
+    "tools/test_qa_evidence.py",
+    "tools/test_spec_unico.py",
+    "_meta/qa/b4-circuit-breaker-estilo.json",
+    "_meta/qa/b4-circuit-breaker-estilo.md"
+  ],
+  "atestacao": {
+    "agentId": "a79731900e69330f2",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic isolado, degrau canonico sonnet um abaixo do autor opus, rodada 3 em PRIMEIRO PLANO sobre o indice da worktree C:/Users/fabriciosouza/wt-b4. Rodadas 1 (aa6d78150a6035586, FAIL) e 2 (ab67c3c3bc4cbf5b7, corrigir) gravadas neste mesmo artefato (historico em substitui). Nenhuma violacao de so-leitura declarada."
+  },
+  "postura": {
+    "discovery": "inline: pedido do dono de 25/09 (circuit breaker, debitos, comandos de sessao, estilo, fontes em arquivo) + conciliacao 'plano aprovado nao expira'; plano B4 aprovado com D1-D3",
+    "rrc": "PASSA",
+    "metodo_senior": "N/A: mecanismo do proprio framework"
+  },
+  "resumo": "Circuit breaker do laco de QA no qa_evidence (D1 3 rodadas sem aprovacao; D2 2 rodadas com os mesmos achados; aprovacao sempre entra; destravar exige redesenho com 4+ palavras ou ordem do dono com data real; debito declarado ao armar); regra global secoes 4-6; check_field_mapping sem PASS falso para 'pendente'; ADR-118 e emenda do ADR-028.",
+  "verificacoes_executadas": [
+    "test_qa_evidence (14 casos do breaker), test_spec_unico, test_rules_parity (14/14), test_capabilities, test_consistency_closing, test_marketing_claims -> PASS (revisora r3 e autor)",
+    "revisora r3: bypasses da r2 (99/99/9999, 'x'*20) recusados; casos legitimos gravam; aprovacao entra com breaker armado",
+    "revisora r2: mutacao registrada qa-circuit-breaker aplicada numa copia -> canario falha com a string esperada; 101 artefatos reais lidos sem erro",
+    "autor: 4 sabotagens (D1, D2, regex do mapeamento, clausula plano-nao-expira) pegas pelo motivo declarado",
+    "fotografia dos 4 gates de especificacao nas 11 especificacoes antigas: 0 diferencas"
+  ],
+  "problemas": [
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "5 arquivos com a frase do limite",
+      "descricao": "r3: frase identica duplicada em 5 arquivos; reduzida a 1 linha de referencia ao ADR-118 (edicao pos-rodada: so texto, sem codigo)."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "aceito",
+      "local": "tools/qa_evidence.py destrava_breaker",
+      "descricao": "r3: tokens curtos e data real antiga destravam; limite declarado no ADR-118 e fixado em teste (14o caso)."
+    }
+  ],
+  "nao_verificado": [
+    "Edicao pos-rodada 3 (dedupe da frase em 5 arquivos + 14o caso de teste) nao passou por nova rodada isolada: so texto e teste, canarios verdes pelo autor.",
+    "Efeito real da regra de estilo sobre o output-style do editor: verificacao manual."
+  ],
+  "recomendacao_do_critico": "aprovar_com_ressalvas na rodada 3",
+  "nota_do_autor": "O breaker foi usado no proprio bloco: rodadas 1 e 2 gravadas como nao aprovativas; uma 3a reprovacao teria armado o mecanismo. A rodada 1 achou que ele recusava a propria aprovacao — o defeito que mais custaria em uso real.",
+  "data": "2026-09-26T03:28:22Z",
+  "sha_revisado": "f481329f84f9b6e74d758223b48af6504b3f62ee",
+  "blobs_revisados": {
+    ".agent/skills/qa-critic/SKILL.md": "4b1a3da6726b2a680170d8dab85a98ec757ab2c9",
+    ".agent/workflows/implement.md": "43964362fcac5d3311c749b703f3291cf2895645",
+    ".claude/agents/qa-critic.md": "262301d430c38e934a124b3dcf9e41effc69f9dd",
+    ".claude/global/CLAUDE-global.md": "4a960035802952213acd84c18378cf0f391a765d",
+    "CAPABILITIES.md": "992229b8ab4a7c4f83f33cf3db10a73fca4f2725",
+    "CHANGELOG.md": "89fc59ceb820bf25f2d806cfc4d8521915fbfaa1",
+    "capabilities.json": "8c468d9a3f511e40258943b14570bb500235ca8d",
+    "docs/adr/028-precedencia-output-style-versus-processo.md": "38dcf3679b23888f29c612d245127c7c6a4fc25f",
+    "docs/adr/118-circuit-breaker-de-qa-comandos-de-sessao-e-estilo.md": "237f1bef37b80c0349c8e1f7e10203177a6cdd45",
+    "docs/specs/_template-spec-unico/spec.md": "1d1a9b64e80c69a83483b1ec47f68d3d0157a56e",
+    "docs/specs/_template/validation.md": "d43a0fd08f5777bfc051bdbceb60e41f8f4395f0",
+    "docs/specs/plano-modo-planejado/PLANO.md": "7d0be854a547d54ce0ec2fcfebf9d464e08809c6",
+    "guia/web/index.html": "2af1fad8b366d82a2b97d1567c9585547ed256e7",
+    "tools/check_field_mapping.py": "37e04e51b4dd5edf71a88d8a9895a19f87961369",
+    "tools/check_rules_parity.py": "cc013894340c5d539675d9373fe3c5e2ea73ae81",
+    "tools/qa_evidence.py": "70a676f4120040777bb69583c7f713b0217d773a",
+    "tools/test_qa_evidence.py": "1add769702194f0c4cb3472385598e2809f4c4f8",
+    "tools/test_spec_unico.py": "a150e2917c8a1c525d306a019a533774a539b33b"
+  },
+  "substitui": [
+    {
+      "rodada": 1,
+      "data": "2026-09-26T03:14:39Z",
+      "recomendacao": "corrigir",
+      "sha_revisado": "f481329f84f9b6e74d758223b48af6504b3f62ee",
+      "agentId": "aa6d78150a6035586",
+      "escopo_paths": [
+        ".claude/global/CLAUDE-global.md",
+        "tools/qa_evidence.py",
+        "tools/test_qa_evidence.py",
+        "tools/check_field_mapping.py",
+        "tools/check_rules_parity.py",
+        "tools/test_spec_unico.py"
+      ],
+      "achados_fp": [
+        "BAIXA|.agent/skills/qa-critic/skill.md",
+        "BAIXA|docs/adr/118",
+        "CRITICO|tools/qa_evidence.py write_artifact",
+        "MEDIA|tools/check_field_mapping.py confirm_rx",
+        "MEDIA|tools/qa_evidence.py main",
+        "MEDIA|tools/qa_evidence.py override"
+      ],
+      "reinicio": false
+    },
+    {
+      "rodada": 2,
+      "data": "2026-09-26T03:22:33Z",
+      "recomendacao": "corrigir",
+      "sha_revisado": "f481329f84f9b6e74d758223b48af6504b3f62ee",
+      "agentId": "ab67c3c3bc4cbf5b7",
+      "escopo_paths": [
+        "tools/qa_evidence.py",
+        "tools/test_qa_evidence.py",
+        "tools/check_field_mapping.py",
+        "docs/adr/118-circuit-breaker-de-qa-comandos-de-sessao-e-estilo.md"
+      ],
+      "achados_fp": [
+        "BAIXA|docs/adr/118 limites",
+        "MEDIA|tools/qa_evidence.py destrava_breaker data",
+        "MEDIA|tools/qa_evidence.py destrava_breaker redesenho"
+      ],
+      "reinicio": false
+    }
+  ],
+  "substitui_reprovacao": true
+}

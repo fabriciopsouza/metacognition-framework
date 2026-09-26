@@ -35,7 +35,11 @@ import spec_fonte  # noqa: E402  (leitor único das partes da especificação �
 
 CONFIRM_RX = re.compile(
     r"\[\s*confirmado\b|confirmad[oa]\s+pelo\s+dono|decis[aã]o\s+do\s+dono|"
-    r"registrad[oa]\s+pelo\s+dono|dono\s+confirmou|confirma[cç][aã]o\s*:\s*\S",
+    r"registrad[oa]\s+pelo\s+dono|dono\s+confirmou|"
+    # "confirmação: <qualquer coisa>" aceitava "confirmação: pendente" como confirmado — PASS falso
+    # achado ao usar o gate num plano real (25/09/2026, ADR-118). Estado de espera não é confirmação.
+    r"confirma[cç][aã]o\s*:\s*(?!\(?\s*(?:pendente|a\s+confirmar|aguardando|n[aã]o\b|n/?a\b|nenhuma|tbd|todo|"
+    r"\?|<|-|—))\S",
     re.IGNORECASE)
 JUSTIFY_RX = re.compile(r"porqu[eê]\s*[:=]\s*\S|justificativa\s*[:=]\s*\S|raz[aã]o\s*[:=]\s*\S",
                         re.IGNORECASE)

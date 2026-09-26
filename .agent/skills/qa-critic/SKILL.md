@@ -96,7 +96,7 @@ no companion (método-audit ≥2 ocorrências ou gap high-signal), e a contagem 
   "problemas": [{"severidade":"critico|alto|medio|baixo","descricao":"... com local"}],
   "recomendacao": "reverter|corrigir|aprovar_com_ressalvas|aprovar" }
 ```
-Critério FALSO → corrigir. Limite 3 reprovações → escalar, reabrir spec/ADR.
+Critério FALSO → corrigir. Limite: circuit breaker de QA (ADR-118); grave toda rodada, inclusive reprovação.
 
 ## Artefato OBRIGATÓRIO de evidência (ADR-074 emenda 2 — prosa→mecanismo)
 O subagente qa-critic é **read-only** (sem Write); o **orquestrador** canaliza o JSON do veredito

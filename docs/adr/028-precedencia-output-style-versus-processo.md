@@ -45,3 +45,13 @@ re-validar se a Anthropic introduzir um style que mude semântica de execução 
 
 - Ponteiro: branch `feat/v1.22.0-entrada-deterministica` · `2026-05-31` · grep `ADR-028` em `_shared/metacognition-core/SKILL.md`
 - Artefato: `_shared/metacognition-core/SKILL.md` §Precedência de instruções — **nível 7** + nota inviolável "Output-style ≠ processo"; frontmatter `version: 1.2.0`. O route-gate (ADR-027) já injeta o lembrete operacional correspondente.
+
+## Emenda 1 — 26/09/2026 (ADR-118): o estilo do dono também prevalece sobre o output-style
+
+- **Antes:** o output-style governava o TOM; só o processo (rota, gates) prevalecia sobre ele.
+- **Agora:** a exigência de estilo do dono (padrão corporativo, direto, sem texto didático, sem blocos
+  explicativos) também prevalece sobre o output-style explicativo/aprendizagem do editor.
+- **Onde:** seção 4 da regra global (`.claude/global/CLAUDE-global.md` → `~/.claude/CLAUDE.md`),
+  vigiada pelo `check_rules_parity` (cláusula `estilo-sobre-output-style`).
+- **Limite:** o output-style vem do prompt do harness; a regra global tem precedência de instrução do
+  usuário, mas o efeito é verificado manualmente, não por gate.

@@ -253,6 +253,19 @@ def main():
         if rh[0] is not False or "ignorado" not in rh[1]:
             falhas.append(f"(h) Parte C incompleta com brief ao lado: esperado reprovar avisando, veio {rh}")
 
+        # (i) mapeamento de campo com confirmação PENDENTE reprova (PASS falso achado em 25/09, ADR-118)
+        for estado in ("pendente (D6)", "a confirmar", "aguardando o dono", "não", "?"):
+            linha = f"- total -> coluna VALOR | confirmação: {estado} | porque: coluna do modelo\n"
+            pasta_i = os.path.join(tmp, "mapa-" + str(abs(hash(estado))))
+            escrever(pasta_i, "spec.md", f"{m}\n# Parte A — Requisitos\n## Mapeamento de campo-fonte\n{linha}")
+            if cfm.check_spec(os.path.join(pasta_i, "spec.md"))[0] is not False:
+                falhas.append(f"(i) mapeamento com 'confirmação: {estado}' passou como confirmado")
+        ok_i = os.path.join(tmp, "mapa-ok")
+        escrever(ok_i, "spec.md", f"{m}\n# Parte A — Requisitos\n## Mapeamento de campo-fonte\n"
+                                  f"- total -> coluna VALOR | confirmação: [CONFIRMADO] pelo dono em 25/09 | porque: x\n")
+        if cfm.check_spec(os.path.join(ok_i, "spec.md"))[0] is not True:
+            falhas.append("(i) mapeamento confirmado de verdade foi recusado (falso negativo)")
+
         # (f) a junção J3 não aceita um spec.md único SEM a parte Aceite como evidência (ele passaria
         # só por existir). Só o caso de recusa: ele falha antes de gravar, então não suja o ledger real.
         import qa_evidence  # noqa: E402
