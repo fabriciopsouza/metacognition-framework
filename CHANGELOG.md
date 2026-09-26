@@ -5,6 +5,17 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### Emenda 2 do ADR-033 — dimensão `escopo-e-prazo` (26/09/2026)
+
+- Banco de dimensões ganha `escopo-e-prazo`, obrigatória no arquivo único de especificação: o marco que governa
+  e a posição no caminho crítico, e um nível de escopo acima e um abaixo do pedido, com custo e se cabe no marco.
+  Origem: dogfood de 26/09 (a pesquisa fechou o escopo sem mostrar a alternativa de custo baixo; o marco já
+  documentado não entrou no entregável; a regra existia em prosa em 4 skills e nenhum gate a cobrava). Aprovada
+  pelo dono em 26/09.
+- A emenda também registra o valor `obr=unico` e a dimensão `biblioteca-consultada` do ADR-120.
+- Prova: `test_spec_unico` (j), com o conjunto esperado escrito literalmente: apagar a linha do banco deixa o
+  canário vermelho. Plano B3 e modelo atualizados.
+
 ### ADR-120 — Biblioteca de conhecimento: método de construir e consultar, modelo e verificador (26/09/2026)
 
 - **Modelo agnóstico** `exemplos/conhecimento/_modelo/`: empresa → área de negócio → assunto; dicionário por perfil
