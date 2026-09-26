@@ -66,8 +66,8 @@
 | P24 | Verificar as regras globais numa pasta nova | ⏳ manual | trabalho `plano-b1-8-verificacao-em-pasta-nova` |
 | P25 | Revisor em só-leitura de verdade (bloqueio, não prosa) | ⏳ | trabalho `subagente-revisor-so-leitura` |
 | P26 | Relatório de execução ao fim da sessão | ⏳ no encerramento | memória `always-execution-report-end` |
-| P27 | Biblioteca de consultas compartilhada entre projetos (sql, runbook, xlsx), com README para pessoas e IAs e regra de quando refazer | ⏳ levantamento feito em leitura · crítica e plano em conversa · decisão do dono | trabalho `biblioteca-de-consultas-compartilhada` |
-| P28 | Projetos do dono: todo arquivo vai para o git do repo de domínio privado; para usuários, não é padrão | ✅ registrado · ⏳ entra no plano da P27 | memória `tudo-vai-pro-git-privado-do-dominio` |
+| P27 | Biblioteca de consultas compartilhada entre projetos (sql, runbook, xlsx), com README para pessoas e IAs e regra de quando refazer | ✅ método, modelo, verificador e busca (B3e, ADR-120) · ⏳ merge · conteúdo de cada empresa: sessões de domínio | trabalho `biblioteca-de-consultas-compartilhada`; `exemplos\conhecimento\_modelo\README.md` |
+| P28 | Projetos do dono: todo arquivo vai para o git do repo de domínio privado; para usuários, não é padrão | ✅ registrado; no modelo agnóstico o local da biblioteca é decisão de quem a mantém (usuário não é obrigado a git) | memória `tudo-vai-pro-git-privado-do-dominio` |
 
 ---
 

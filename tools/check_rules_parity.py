@@ -78,6 +78,9 @@ GLOBAL_RULES = [
     ("comando-nao-apaga-plano", r"Comando de sess[aã]o nunca apaga"),
     ("mapa-de-impacto", r"Mapa de impacto em toda mudan[çc]a"),
     ("sem-perfil-regulado-padrao", r"N[ãa]o existe perfil regulado padr[ãa]o"),
+    ("biblioteca-consultar-antes", r"Consultar antes de pesquisar, perguntar ou escrever consulta"),
+    ("biblioteca-registrar-ao-fechar", r"Registrar ao fechar o bloco"),
+    ("comando-status-tabela", r"Comando permanente `status`"),
 ]
 
 

@@ -2222,6 +2222,31 @@
     "canario": "tools/test_regulado.py",
     "espera": "V1 requisito sem teste"
    }
+  },
+  {
+   "id": "biblioteca-de-conhecimento",
+   "title": "Biblioteca de conhecimento reutilizavel por empresa: metodo de construir e consultar, modelo, verificador de forma e validade, busca unica pelo knowledge_catalog",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/conhecimento.py",
+   "test": "tools/test_conhecimento.py",
+   "adr": "docs/adr/120-biblioteca-de-conhecimento-metodo-e-verificador.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "conhecimento",
+    "discovery",
+    "reuso",
+    "semantica"
+   ],
+   "note": "B3e do plano B3 (D9) com o debito DB1 incorporado. Modelo agnostico em exemplos/conhecimento/_modelo/; instancia do dono vazia em docs/_private/conhecimento/. Validade por classe: estrutura ate mudar a versao do sistema, configuracao 6 meses, regra de negocio e conceito 12, retrato nao vence e sai com data. Consultar antes e cobrado pela dimensao biblioteca-consultada (obr=unico) e pela regra global secao 9.",
+   "mutacao": {
+    "arquivo": "tools/conhecimento.py",
+    "de": "            elif alvo and alvo.lower() not in termos:",
+    "para": "            elif False:",
+    "canario": "tools/test_conhecimento.py",
+    "espera": "relação para termo inexistente"
+   }
   }
  ],
  "registry_waivers": [

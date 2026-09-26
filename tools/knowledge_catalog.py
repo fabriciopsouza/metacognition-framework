@@ -461,14 +461,30 @@ def cmd_build(intake_dir: str, out_dir: str) -> int:
     return 0
 
 
-def cmd_recall(context: str, out_dir: str, top_n: int) -> int:
+def cmd_recall(context: str, out_dir: str, top_n: int, conhecimento_dir: str = "") -> int:
     entries = _catalog_load(out_dir)
-    if not entries:
+    # Biblioteca de conhecimento (ADR-120): mesma busca, lida ao vivo (muda a cada bloco; não é persistida aqui).
+    base: List[dict] = []
+    if conhecimento_dir:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import conhecimento  # noqa: E402  (import tardio: só quem pede a biblioteca paga o custo)
+        base = conhecimento.carregar_entradas(conhecimento_dir)
+    if not entries and not base:
+        if conhecimento_dir:
+            # biblioteca vazia é resultado válido (empresa nova): responde, não é erro
+            print(f"## Biblioteca de conhecimento\nnada encontrado em `{conhecimento_dir}` — registre "
+                  f"'biblioteca-consultada: nada encontrado' e, ao fechar o bloco, o que for reutilizável.")
+            return 0
         print("[knowledge-catalog] catálogo vazio — rode '--build' primeiro.", file=sys.stderr)
         return 2
-    top = recall(entries, context, top_n=top_n)
     label = context[:60].replace("\n", " ")
-    print(render_insights_md(top, header=f"## Insights Relevantes (query: `{label}`)"))
+    if entries:
+        top = recall(entries, context, top_n=top_n)
+        print(render_insights_md(top, header=f"## Insights Relevantes (query: `{label}`)"))
+    if base:
+        print(f"## Biblioteca de conhecimento (query: `{label}`)")
+        for e in recall(base, context, top_n=top_n):
+            print(conhecimento.rotulo(e))
     return 0
 
 
@@ -507,6 +523,8 @@ def main() -> None:
                     help=f"Dir de saída do catálogo (default: {DEFAULT_OUT})")
     ap.add_argument("--top-n", type=int, default=TOP_N_RECALL,
                     help=f"Insights retornados por --recall (default: {TOP_N_RECALL})")
+    ap.add_argument("--conhecimento", default="", metavar="RAIZ",
+                    help="Inclui no --recall a biblioteca de conhecimento em RAIZ (ADR-120)")
 
     args = ap.parse_args()
 
@@ -521,7 +539,7 @@ def main() -> None:
             print("[knowledge-catalog] --recall requer --context ou --from-briefing com conteúdo.",
                   file=sys.stderr)
             sys.exit(1)
-        sys.exit(cmd_recall(ctx, args.out_dir, args.top_n))
+        sys.exit(cmd_recall(ctx, args.out_dir, args.top_n, args.conhecimento))
 
     if args.patterns:
         sys.exit(cmd_patterns(args.out_dir))

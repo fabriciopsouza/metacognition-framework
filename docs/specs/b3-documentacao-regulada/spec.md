@@ -8,7 +8,7 @@
 
 ## Painel
 
-**Avanço:** discovery ✅ · requisitos aprovados pelo dono (26/09) · execução: B3a-1 (T1–T3) feito, em revisão · B3a-2, B3a-3, B3b, B3d, B3e, B3c a fazer
+**Avanço:** discovery ✅ · requisitos aprovados pelo dono (26/09) · execução: B3a-1 ✅ (PR #161) · B3e (com a biblioteca DB1 incorporada) feito, em revisão · B3a-2, B3a-3, B3b, B3d, B3c a fazer
 
 | # | Assunto | Situação | Quem age | Resultado / próximo |
 |---|---|---|---|---|
@@ -103,6 +103,7 @@ barraria (requisito sem teste, risco alto sem mitigação, teste sem evidência,
 - auditoria-log: histórico do git + seção "o que mudou" + nome e data em cada confirmação e execução
 - ambiente-execucao: Python sem dependência obrigatória (openpyxl opcional para gerar planilha), máquina corporativa Windows
 - formato-saida: planilhas no padrão dos arquivos do MRP; relatório e matriz em md/docx/pdf; pptx executivo
+- biblioteca-consultada: nada encontrado — a biblioteca de conhecimento nasce neste plano (B3e, ADR-120)
 - contexto-entidade: indústria farmacêutica regulada pela ANVISA; sistemas SAP S/4HANA configurados, sistemas de pesagem e automações
 - verificacao-ancora: tabela de âncoras na Parte C, com vigência, pertinência, confiança e fonte datada
 
@@ -259,10 +260,10 @@ barraria (requisito sem teste, risco alto sem mitigação, teste sem evidência,
 - [ ] T11 Manifesto de evidência de desenvolvimento (REQ-15) com `tools/doc_intake.py`; verificador de existência e sha256.
 
 ### B3e — Conhecimento contextual reutilizável (D9)
-- [ ] T12 Estrutura `docs\_private\conhecimento\` (perfis, empresas, `INDICE-PROJETOS.md`) e modelo de `DICIONARIO.md`.
-- [ ] T13 Verificador do dicionário e do índice (critérios 17 e 18), com sabotagem.
-- [ ] T14 `knowledge_catalog` indexa o conhecimento (critério 19).
-- [ ] T15 Discovery pergunta empresa e perfil regulado sem padrão (REQ-08) e grava termo confirmado no nível certo; semente a partir do `DICIONARIO-SEMANTICO.md` do OPEX, dos glossários dos projetos e de `fontes.md` (referência de método; nada de domínio no núcleo).
+- [x] T12 Estrutura `docs\_private\conhecimento\` (perfis, empresas, `INDICE-PROJETOS.md`) e modelo de `DICIONARIO.md`. — ADR-120: modelo agnóstico em `exemplos\conhecimento\_modelo\` (termo, consulta, fato, pesquisa, runbook; empresa → área de negócio → assunto); instância vazia em `docs\_private\conhecimento\`.
+- [x] T13 Verificador do dicionário e do índice (critérios 17 e 18), com sabotagem. — `tools\conhecimento.py verificar | vencidos`; prova: `tools\test_conhecimento.py` e 38/38 mutações mortas.
+- [x] T14 `knowledge_catalog` indexa o conhecimento (critério 19). — `--recall --conhecimento <raiz>`, lido ao vivo; sem a opção nada é carregado; retrato sai com a data. Prova: `test_conhecimento` (e).
+- [x] T15 Discovery pergunta empresa e perfil regulado sem padrão (REQ-08) e grava termo confirmado no nível certo. — discovery (item 0 do método), docops (passo 7), regra global §9, dimensão `biblioteca-consultada` cobrada no arquivo único. `[~]` A semente a partir de conteúdo de projetos foi retirada desta sessão (ver Replanejamento).
 
 ### B3c — Skill `project-docs`
 - [ ] T7 A tabela de 15 documentos vira: kit essencial (TAP, arquivo único, HANDOFF, glossário, cronograma gerado) + kit regulado escalonado por risco.
@@ -285,6 +286,8 @@ barraria (requisito sem teste, risco alto sem mitigação, teste sem evidência,
 | Data | Item | O que mudou | Por quê | Quem aprovou |
 |---|---|---|---|---|
 | 25/09/2026 | B3 inteiro | "kit de 4 documentos" substituído por kit escalonado por risco para ambiente regulado | a proposta anterior não tinha pesquisa, crítica nem revisão; o dono cobrou | dono (cobrança de 25/09) |
+| 26/09/2026 | B3e + débito DB1 | a biblioteca de consultas reutilizáveis (pedido do dono, débito DB1) entra no B3e em vez de plano próprio: tipos consulta, fato, pesquisa e runbook ao lado do termo; empresa → área de negócio → assunto; validade por classe (estrutura até mudar a versão do sistema; configuração 6 meses; regra de negócio e conceito 12; retrato não vence e é citado com data); qualquer fonte, não só um sistema; local continua o do D9 | pedido do dono (26/09) e respostas D1–D6; "siga no plano" após o autor apontar que o DB1 duplicava o D9 | dono (26/09) |
+| 26/09/2026 | T15 (semente) | semear a biblioteca com conteúdo dos projetos sai desta sessão; o framework entrega só modelo, verificador e método | ordem do dono: "você está trabalhando APENAS no que é agnóstico" | dono (26/09) |
 | 26/09/2026 | Recorte, critério 6, T1 | campo "impacto em BPF" passa a `**Impacto regulado:**` no motor e no modelo; "BPF" fica no perfil farma | BPF é termo sanitário; com perfil por projeto (D1: ANP e outros) o termo no núcleo seria errado | decorre de D1 (dono, 26/09); a confirmar pelo dono na entrega do B3a-1 |
 | 26/09/2026 | T1, Parte G | coluna **Categoria** acrescentada à Parte G | o REQ-06 exige as categorias de teste obrigatórias do perfil; sem a coluna o verificador não as vê | autor; a confirmar pelo dono na entrega do B3a-1 |
 | 26/09/2026 | REQ-04 | `verificar` estrito na liberação e `--planejamento` durante o projeto | o REQ-04 reprova teste sem resultado; aplicado sempre, o verificador reprovaria todo projeto em andamento | autor; a confirmar pelo dono na entrega do B3a-1 |

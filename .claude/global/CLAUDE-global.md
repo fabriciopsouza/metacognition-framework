@@ -70,6 +70,10 @@
     (padrão: 3 reprovações seguidas, ou 2 rodadas com os mesmos achados, param o laço e exigem
     redesenho ou decisão do dono). Registrar com `--override-dono "<frase literal, data>"`.
 - Comando de sessão nunca apaga nem adia item de plano.
+- **Comando permanente `status`:** responder ANTES de continuar o trabalho, só com a **tabela
+  checklist/cronograma** do plano ativo (bloco · situação ✅/⏳/☐ · % de avanço · onde está · o que
+  falta), seguida de 3 linhas: onde estamos · o que falta · próximo passo, e o link do painel. Sem
+  narrativa do que foi feito.
 
 ## 7. Mapa de impacto em toda mudança
 
@@ -83,4 +87,13 @@
   qual órgão e perfil (sanitário, petróleo, outro)? qual empresa? Sem resposta registrada, não
   aplique kit regulado nem presuma norma.
 - Norma citada tem fonte em arquivo, com vigência conferida (regra de fontes acima).
+
+## 9. Biblioteca de conhecimento: consultar antes, registrar ao fechar
+
+- **Consultar antes de pesquisar, perguntar ou escrever consulta:** buscar na biblioteca da empresa
+  do projeto (`python {{FRAMEWORK_ROOT}}\tools\knowledge_catalog.py --recall --context "<termos>" --conhecimento <raiz>`)
+  e registrar o que foi reusado ou "nada encontrado". Entrada vencida é
+  refeita; número guardado é citado com a data, nunca como valor atual.
+- **Registrar ao fechar o bloco:** termo confirmado, consulta rodada, número medido, pesquisa ou
+  runbook reutilizável entra na biblioteca; ou declarar "nada a registrar". Credencial nunca entra.
 <!-- framework:global:fim -->
