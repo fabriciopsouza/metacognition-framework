@@ -303,6 +303,11 @@ def main():
 
         # (j) dimensão `obr=unico` (ADR-120): obrigatória no arquivo único, recomendada no formato antigo
         so_unico = [d["key"] for d in DIMS if d["obr"] == "unico"]
+        # literal, não lido do banco: apagar a linha de uma delas no banco tem de deixar este canário vermelho
+        # (ADR-120 e emenda 2 do ADR-033, decisão do dono de 26/09/2026)
+        esperadas = {"biblioteca-consultada", "escopo-e-prazo"}
+        if not esperadas <= set(so_unico):
+            falhas.append(f"(j) dimensões obr=unico esperadas {sorted(esperadas)}, banco tem {sorted(so_unico)}")
         if not so_unico:
             falhas.append("(j) nenhuma dimensão obr=unico no banco — o caso não prova nada")
         else:
