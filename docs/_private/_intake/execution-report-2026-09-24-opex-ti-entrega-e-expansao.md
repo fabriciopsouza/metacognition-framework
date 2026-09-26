@@ -1,6 +1,6 @@
 # Execution report — OPEX de TI: entrega validada e medição da expansão
 
-**Sessão de 23 e 24/09/2026** · repositório de domínio `budget-ti-thanner` (privado)
+**Sessão de 23 e 24/09/2026** · repositório de domínio `budget-opex` (privado)
 · nenhuma escrita no núcleo do framework
 
 ---
@@ -142,7 +142,7 @@ número sairia certo e ninguém saberia o tamanho do que ficava de fora.
 
 ## Estado ao fechar
 
-- `budget-ti-thanner`: `main` sincronizada, árvore limpa, sete guardas verdes.
+- `budget-opex`: `main` sincronizada, árvore limpa, sete guardas verdes.
 - `metacognition-framework`: nenhuma escrita no núcleo. Duas sessões-irmãs foram
   respondidas confirmando que este trabalho é de domínio.
 - **Pendente com o dono:** enviar o arquivo à diretoria e reenviar a cópia ao SharePoint,
