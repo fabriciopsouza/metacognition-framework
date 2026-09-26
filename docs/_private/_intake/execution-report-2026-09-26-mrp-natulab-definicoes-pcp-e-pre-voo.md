@@ -55,6 +55,10 @@ errado do QA.
 - **Gerador de documento para fora: guarda `__main__`, recusa sobrescrever respostas, e conferidor de
   "o que mudou" contra a versão enviada** — os três provados por sabotagem nesta sessão.
 Todas fundem ou substituem comportamento em prosa por mecanismo (régua §0 b/c).
+- **Débito DB1 registrado** em `docs/_backlog/gaps-otimizacao.md`: biblioteca de consultas reutilizáveis entre
+  projetos. Instância de domínio criada em 26/09 em `C:\Users\fabriciosouza\biblioteca-consultas-sap\`
+  (README, REGRAS-SQL, INDICE, SEMANTICA). Achado de campo: busca por `SELECT ... FROM` ou `DBACOCKPIT` achou 78 arquivos em 4 pastas
+  (Downloads, Datasphere, budget, pesagem; parte deles não é SAP), sem índice comum.
 
 ## Boas práticas
 - Conferir campo SAP no dicionário (DD03L) pelo Datasphere antes de entregar SQL; usar a descrição do campo
