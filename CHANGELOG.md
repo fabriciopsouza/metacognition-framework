@@ -5,6 +5,26 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-119 — Kit regulado: motor neutro, perfil declarado por projeto (26/09/2026)
+
+- **`tools/regulado.py`** sobre o arquivo único: `verificar` (requisito sem teste, risco alto sem
+  mitigação ou teste, teste sem resultado, resultado sem evidência, execução ou confirmação sem nome e
+  data, norma revogada, impacto e perfil registrados, categoria de software, referência inexistente;
+  `--planejamento` aceita teste ainda não executado), `matriz` (requisito → risco → teste →
+  evidência) e `kit` (peças por categoria; recusa sem registro). Regras vêm do perfil do projeto;
+  não há perfil padrão.
+- **Lista de neutralidade:** atos normativos (RDC, IN) por sigla em maiúsculas e por extenso entram na
+  `agnostic-denylist.txt`. QA: rodada 1 FAIL (1 CRÍTICA — requisito com `*` sumia e passava; 1 ALTA —
+  Parte F vazia passava), corrigida.
+- **Partes F (Riscos) e G (Testes e evidências)** no `spec.md` e no modelo; campos de enquadramento
+  regulado na Parte A.
+- **Primeiro perfil:** `exemplos/dominio-regulado/compliance-profile-farma-anvisa.json`.
+- **Regra global, seções 7 e 8:** mapa de impacto em toda mudança; sem perfil regulado padrão.
+  `check_rules_parity`: 16 cláusulas.
+- Registro `kit-regulado` (fail-closed, mutação declarada); site: 105 capacidades, 64 provadas, 91
+  canários. Prova: `test_regulado` (32 sabotagens, 6 exceções legítimas; 32 de 32 mutações do motor
+  mortas), `test_spec_unico`, `test_rules_parity` (16/16), `test_core_agnostic`.
+
 ### ADR-118 — Circuit breaker de QA, comandos de sessão, estilo corporativo, plano que não expira (26/09/2026)
 
 - **Circuit breaker** em `tools/qa_evidence.py`: 3 rodadas seguidas sem aprovação, ou 2 com os mesmos

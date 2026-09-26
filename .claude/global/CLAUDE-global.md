@@ -70,4 +70,17 @@
     (padrão: 3 reprovações seguidas, ou 2 rodadas com os mesmos achados, param o laço e exigem
     redesenho ou decisão do dono). Registrar com `--override-dono "<frase literal, data>"`.
 - Comando de sessão nunca apaga nem adia item de plano.
+
+## 7. Mapa de impacto em toda mudança
+
+- Antes de fechar um bloco, liste o que mais muda junto e a situação de cada item: hooks, scripts e
+  gates, canários, README e guias, site, CHANGELOG, índice de capacidades, links e caminhos.
+  Item afetado e não atualizado é pendência declarada, nunca silêncio.
+
+## 8. Projeto em ambiente regulado
+
+- **Não existe perfil regulado padrão.** No discovery, pergunte e registre: há impacto regulado?
+  qual órgão e perfil (sanitário, petróleo, outro)? qual empresa? Sem resposta registrada, não
+  aplique kit regulado nem presuma norma.
+- Norma citada tem fonte em arquivo, com vigência conferida (regra de fontes acima).
 <!-- framework:global:fim -->

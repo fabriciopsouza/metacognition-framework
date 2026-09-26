@@ -46,6 +46,21 @@
 - **Recorte:** <ano | regional | total | n/a>
 - **Confiança da tarefa:** ALTA | MÉDIA | BAIXA  → governa o roteamento (ver `rules/04`)
 
+### Enquadramento regulado (ADR-119 — lido por `tools/regulado.py`)
+> Não há perfil padrão: o projeto declara o seu. Sem ambiente regulado: `**Impacto regulado:** não` e
+> `**Perfil regulado:** nenhum`, e as Partes F e G podem ser apagadas.
+- **Impacto regulado:** sim | não — <por quê, em meia frase; ex.: afeta boas práticas de fabricação, qualidade do produto ou dado regulado>
+- **Perfil regulado:** <nome do perfil em `exemplos/dominio-regulado/compliance-profile-<nome>.json`> | nenhum
+- **Sistema:** <sistema afetado>
+- **Categoria de software:** 1 | 3 | 4 | 5
+- **Categoria decidida por:** <nome, dd/mm/aaaa — motivo> _(obrigatório quando diverge do padrão do perfil para o sistema)_
+- **Requisitos confirmados por:** <nome da área, dd/mm/aaaa>
+> Verificação: `python tools/regulado.py verificar <spec.md> --planejamento` durante o projeto;
+> sem `--planejamento` na liberação (todo teste executado, com evidência, nome e data).
+
+### Requisitos numerados
+- REQ-01: <requisito verificável>
+
 ## Spec Kernel — HEAD (opcional; ADR-081 / padrão bmad-spec)
 
 > 5 campos compactos consumidos por skills downstream (architect, developer, qa-critic) sem precisar ler o requirements inteiro. Preencher ao fechar a elicitação. **Não substitui o requirements completo** — é um resumo executável.
@@ -301,6 +316,23 @@ product_type: <ide-code | executable | gui-app | data-notebook | data-pipeline |
 > coluna *após* tratamento; nunca a bruta") — isto alimenta também o `## Mapeamento de campo-fonte`
 > (ADR-035). **Alerta de join:** toda chave de junção deve ter regra de normalização declarada (o
 > anti-pattern recorrente é inteiro lido como float → join retorna zero match silencioso).
+
+# Parte F — Riscos
+> _(obrigatória com impacto regulado; apague se não se aplica)_ Uma linha por risco. Classe: alto |
+> médio | baixo. Risco alto exige mitigação e teste. `python tools/regulado.py verificar <spec.md>`.
+
+| Risco | Requisito | Falha | Impacto | Probabilidade | Detecção | Classe | Mitigação | Teste |
+|---|---|---|---|---|---|---|---|---|
+| RISCO-01 | REQ-01 | <o que pode falhar> | <efeito no produto, no paciente ou no dado> | <alta/média/baixa> | <como a falha é percebida> | alto | <controle> | TESTE-01 |
+
+# Parte G — Testes e evidências
+> _(obrigatória com impacto regulado; apague se não se aplica)_ Todo requisito tem teste. Resultado
+> preenchido exige evidência (caminho do arquivo: print, xlsx, consulta, log) e nome e data de quem
+> executou. Matriz de rastreabilidade: `python tools/regulado.py matriz <spec.md>`.
+
+| Teste | Requisito | Categoria | Roteiro | Esperado | Resultado | Evidência | Nome e data |
+|---|---|---|---|---|---|---|---|
+| TESTE-01 | REQ-01 | <funcional \| integridade de dados \| trilha de auditoria \| ...> | <passos> | <resultado esperado> | pendente | pendente | pendente |
 
 # Decisões
 | # | Decisão | Alternativas | Recomendação | Resposta do dono |

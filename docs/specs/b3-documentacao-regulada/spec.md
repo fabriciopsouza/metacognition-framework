@@ -8,7 +8,7 @@
 
 ## Painel
 
-**Avanço:** discovery ✅ · requisitos aprovados pelo dono (26/09) · Parte B aguardando ratificação do revisor isolado · execução 0%
+**Avanço:** discovery ✅ · requisitos aprovados pelo dono (26/09) · execução: B3a-1 (T1–T3) feito, em revisão · B3a-2, B3a-3, B3b, B3d, B3e, B3c a fazer
 
 | # | Assunto | Situação | Quem age | Resultado / próximo |
 |---|---|---|---|---|
@@ -242,9 +242,9 @@ barraria (requisito sem teste, risco alto sem mitigação, teste sem evidência,
 # Tarefas
 
 ### B3a — Kit neutro e ferramentas
-- [ ] T1 Partes novas no modelo de arquivo único: **F — Riscos** (identificador, requisito, falha, impacto em produto/paciente/dado, probabilidade, detecção, classe, mitigação, teste) e **G — Testes e evidências** (identificador, requisito, roteiro, esperado, resultado, evidência, nome e data); regra de escalonamento por categoria.
-- [ ] T2 `tools/regulado.py verificar`: os 5 casos do REQ-04, com canário e sabotagem.
-- [ ] T3 `tools/regulado.py matriz`: requisito → risco → teste → evidência, gerada.
+- [x] T1 (B3a-1, ADR-119 — prova: `tools/test_regulado.py`; modelo `docs/specs/_template-spec-unico/spec.md`; campo de impacto renomeado, ver Replanejamento) Partes novas no modelo de arquivo único: **F — Riscos** (identificador, requisito, falha, impacto em produto/paciente/dado, probabilidade, detecção, classe, mitigação, teste) e **G — Testes e evidências** (identificador, requisito, roteiro, esperado, resultado, evidência, nome e data); regra de escalonamento por categoria.
+- [x] T2 `tools/regulado.py verificar`: os 5 casos do REQ-04, com canário e sabotagem. — prova: `test_regulado` (32 sabotagens, 6 exceções) e 32/32 mutações mortas; `--planejamento` para uso durante o projeto.
+- [x] T3 `tools/regulado.py matriz`: requisito → risco → teste → evidência, gerada. — prova: `test_regulado` (d), projeto de 3 REQ, 2 RISCO, 4 TESTE (critério 8).
 - [ ] T4 Geração das duas planilhas no padrão do MRP e importação da resposta da área.
 - [ ] T5 Relatório de validação e checklist de prontidão para operação, gerados.
 - [ ] T5b ERU gerada da Parte A (REQ-11) e registros de mudança e versão (REQ-12).
@@ -285,6 +285,9 @@ barraria (requisito sem teste, risco alto sem mitigação, teste sem evidência,
 | Data | Item | O que mudou | Por quê | Quem aprovou |
 |---|---|---|---|---|
 | 25/09/2026 | B3 inteiro | "kit de 4 documentos" substituído por kit escalonado por risco para ambiente regulado | a proposta anterior não tinha pesquisa, crítica nem revisão; o dono cobrou | dono (cobrança de 25/09) |
+| 26/09/2026 | Recorte, critério 6, T1 | campo "impacto em BPF" passa a `**Impacto regulado:**` no motor e no modelo; "BPF" fica no perfil farma | BPF é termo sanitário; com perfil por projeto (D1: ANP e outros) o termo no núcleo seria errado | decorre de D1 (dono, 26/09); a confirmar pelo dono na entrega do B3a-1 |
+| 26/09/2026 | T1, Parte G | coluna **Categoria** acrescentada à Parte G | o REQ-06 exige as categorias de teste obrigatórias do perfil; sem a coluna o verificador não as vê | autor; a confirmar pelo dono na entrega do B3a-1 |
+| 26/09/2026 | REQ-04 | `verificar` estrito na liberação e `--planejamento` durante o projeto | o REQ-04 reprova teste sem resultado; aplicado sempre, o verificador reprovaria todo projeto em andamento | autor; a confirmar pelo dono na entrega do B3a-1 |
 
 # Revisões adversariais
 | Rodada | Revisor (modelo, agentId) | Veredito | Achados | O que mudou |

@@ -1,0 +1,36 @@
+{
+ "profile": "farma-anvisa",
+ "_doc": "Perfil regulado de sistemas computadorizados com impacto em BPF de medicamentos (Brasil). Clonado do padrão do ADR-043; lido por tools/regulado.py (ADR-119). Fontes, datas e marcas de confiança: docs/specs/b3-documentacao-regulada/fontes.md. Andaime, não certificação.",
+ "orgao": "ANVISA",
+ "norms_typical": [
+  "RDC nº 658/2022 (BPF de medicamentos)",
+  "IN nº 134/2022 (sistemas computadorizados)",
+  "IN nº 138/2022 (qualificação e validação)",
+  "Guia nº 33/2020 v1 (validação de sistemas computadorizados; não vinculante)"
+ ],
+ "normas_revogadas": [
+  {"padrao": "RDC\\s*(n[ºo°.]*\\s*)?301\\s*/\\s*2019", "substituida_por": "RDC nº 658/2022"},
+  {"padrao": "IN\\s*(n[ºo°.]*\\s*)?43\\s*/\\s*2019", "substituida_por": "IN nº 134/2022"},
+  {"padrao": "IN\\s*(n[ºo°.]*\\s*)?47\\s*/\\s*2019", "substituida_por": "IN nº 138/2022"}
+ ],
+ "categorias_software": {
+  "_doc": "Categorias de software (classificação de mercado GAMP, Guia 33/2020 §7) -> peças exigidas. 'kit_comum' vale para todo projeto; as demais somam a ele.",
+  "kit_comum": ["TAP", "especificacao", "HANDOFF", "glossario", "cronograma"],
+  "1": ["inventario", "gestao-de-mudanca"],
+  "3": ["ERU", "analise-de-risco", "matriz-requisito-teste", "roteiro-de-testes", "relatorio-de-testes", "descricao-do-sistema", "gestao-de-mudanca", "relatorio-de-validacao"],
+  "4": ["ERU", "analise-de-risco", "especificacao-de-configuracao", "matriz-requisito-risco-teste", "roteiro-de-testes", "relatorio-de-testes", "descricao-do-sistema", "gestao-de-mudanca", "relatorio-de-validacao"],
+  "5": ["ERU", "analise-de-risco", "especificacao-funcional", "especificacao-de-projeto", "matriz-requisito-risco-teste", "roteiro-de-testes", "relatorio-de-testes", "descricao-do-sistema", "gestao-de-mudanca", "relatorio-de-validacao"]
+ },
+ "categoria_padrao_por_sistema": {"SAP": "4"},
+ "testes_obrigatorios_com_impacto": ["integridade de dados", "trilha de auditoria", "controle de acesso", "backup/restauração"],
+ "controls": {
+  "audit_trail": {"required": true, "fields": ["quem", "quando", "o-que", "valor-anterior", "valor-novo"], "immutable": true},
+  "hitl": {"sufficient_when": "liberação do sistema e mudança com impacto em BPF aprovadas pelo dono do processo e pela Qualidade"},
+  "retention": {"min_period": "definir-por-norma", "default_hint": "confirmar com a Qualidade"},
+  "e_signature": {"required": true, "binds": ["identidade", "intencao", "timestamp"]},
+  "data_integrity": {"principles_hint": "dado atribuível, legível, contemporâneo, original e exato — a sigla ALCOA+ não foi localizada no texto oficial (fontes.md, lacuna 3)"},
+  "validation": {"risk_based": true, "evidence": ["ERU", "análise de risco", "roteiro de testes", "resultado com evidência", "aprovação"]}
+ },
+ "wires_to": ["high-stakes-gate", "tools/regulado.py"],
+ "note": "Primeiro perfil do kit regulado, não o padrão (D1, 26/09/2026): cada projeto declara o seu. A norma concreta e o código de documento controlado vêm da Qualidade da empresa."
+}

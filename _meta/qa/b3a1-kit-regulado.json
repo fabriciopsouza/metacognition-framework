@@ -1,0 +1,157 @@
+{
+  "bloco": "b3a1-kit-regulado",
+  "papel": "qa_critic",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "veredito": "aprovar",
+  "escopo_paths": [
+    "tools/regulado.py",
+    "tools/test_regulado.py",
+    "tools/spec_fonte.py",
+    "tools/spec_unificar.py",
+    "tools/agnostic-denylist.txt",
+    "tools/test_core_agnostic.py",
+    "tools/check_rules_parity.py",
+    ".claude/global/CLAUDE-global.md",
+    "exemplos/dominio-regulado/compliance-profile-farma-anvisa.json",
+    "docs/specs/_template-spec-unico/spec.md",
+    "docs/specs/b3-documentacao-regulada/spec.md",
+    "docs/specs/plano-modo-planejado/PLANO.md",
+    "docs/adr/119-kit-regulado-motor-neutro-perfil-por-projeto.md",
+    "CHANGELOG.md",
+    "capabilities.json",
+    "CAPABILITIES.md",
+    "guia/web/index.html",
+    "_meta/qa/b3a1-kit-regulado.json",
+    "_meta/qa/b3a1-kit-regulado.md"
+  ],
+  "atestacao": {
+    "agentId": "a432bb828bb3807f1",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic isolado, sessao nova, primeiro plano, so leitura; git status identico antes e depois. Rodada 1 (FAIL): a88a6036673e80027."
+  },
+  "postura": {
+    "discovery": "docs/specs/b3-documentacao-regulada/spec.md (plano aprovado, criterios 1, 2, 4, 5, 6, 8) e fontes.md",
+    "rrc": "PASSA",
+    "metodo_senior": "aplicado: cada achado reproduzido em copia isolada"
+  },
+  "resumo": "B3a-1 (ADR-119): motor regulado.py, partes F e G, perfil farma-anvisa, regra global secoes 7 e 8, denylist RDC/IN. Rodada 2 aprovada: as 6 correcoes da rodada 1 reproduzidas; nenhum bypass novo nem falso positivo.",
+  "verificacoes_executadas": [
+    "reproducao dos 6 cenarios da rodada 1 em copia isolada: todos acusados",
+    "bypass novo: '- REQ-01 - ver REQ-02', REQ em tabela e citacao, IDs colados, bullet duplo -> sem achado",
+    "(?-i:...) compila e funciona com o re.IGNORECASE do check_core_agnostic; denylist lida em utf-8; 28 regras compilam",
+    "template preenchido passa em --planejamento; spec sem impacto passa",
+    "test_regulado, test_core_agnostic, check_core_agnostic, test_spec_unico, test_rules_parity (16/16), test_marketing_claims, audit_enforcement -> PASS"
+  ],
+  "problemas": [
+    {
+      "severidade": "CRITICA",
+      "estado": "corrigido",
+      "local": "tools/regulado.py:111",
+      "descricao": "requisito escrito com '*' em vez de '-' some do conjunto de requisitos e, sem teste, verificar devolve PASS",
+      "cenario_de_falha": "Parte A com '* REQ-01: ...' sem teste e '- REQ-02' testado -> verificar() == []"
+    },
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "tools/regulado.py:159-173",
+      "descricao": "Parte F vazia passa com impacto regulado; categoria 4 exige analise de risco",
+      "cenario_de_falha": "Parte F so com cabecalho, Parte G cobrindo as 4 categorias obrigatorias -> verificar() == []"
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/agnostic-denylist.txt:20-22",
+      "descricao": "'Instrucao Normativa' por extenso nao casa com nenhum padrao",
+      "cenario_de_falha": "'Instrucao Normativa n 134/2022' no nucleo -> linter PASS"
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/agnostic-denylist.txt:22",
+      "descricao": "falso positivo em ingles: IGNORECASE faz 'in 45/2020' casar com o padrao de IN",
+      "cenario_de_falha": "'documented in 45/2020 filings' no nucleo -> linter FAIL"
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "tools/regulado.py:45-47",
+      "descricao": "campo duplicado nao e acusado; o motor usa a primeira ocorrencia",
+      "cenario_de_falha": "placeholder de 'Impacto regulado' esquecido acima da resposta real -> achado 'nao registrado' sem dizer por que"
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "tools/regulado.py",
+      "descricao": "perfil futuro sem testes_obrigatorios_com_impacto generaliza o achado da Parte F vazia para zero requisitos, zero riscos e zero testes passando",
+      "cenario_de_falha": "perfil sem a chave + especificacao sem requisitos, riscos e testes -> verificar() == []"
+    }
+  ],
+  "nao_verificado": [
+    "Leitura primaria da IN 134/2022 (fica no B3b)."
+  ],
+  "recomendacao_do_critico": "PASS - aprovar",
+  "data": "2026-09-26T06:20:00Z",
+  "sha_revisado": "464de0bd652b91ce1c17db0d9ab8ada173a929f4",
+  "blobs_revisados": {
+    "tools/regulado.py": "00bb19ad0de1863987d51ddb0e898267239b6ea0",
+    "tools/test_regulado.py": "0794505c81c528d840dce4e82c05c765f6667fd9",
+    "tools/spec_fonte.py": "5a114898b360bb696a74172f8cc8daa2c7890a15",
+    "tools/spec_unificar.py": "e8df1af9e2ff1f8f3b36317224ca3439e1c52ecc",
+    "tools/agnostic-denylist.txt": "6d17d8479f34ddf947b11bef3bb945def626c647",
+    "tools/test_core_agnostic.py": "7bc29cd82afd7cb6a60d5c77d3d2e28c953a8cfe",
+    "tools/check_rules_parity.py": "2c3f2562fcbad03dc38f45d7ef32b5c6cc3a4940",
+    ".claude/global/CLAUDE-global.md": "67620958f12480e977ff818fdb5d1639906032a7",
+    "exemplos/dominio-regulado/compliance-profile-farma-anvisa.json": "794727debf043d6ac62f98bac8b9b23a3b1dbf91",
+    "docs/specs/_template-spec-unico/spec.md": "eeec031678d15c9ae00343a1f9e6eeb9f907b07d",
+    "docs/specs/b3-documentacao-regulada/spec.md": "99056a0a693b135ca097f11e55cc2fa2b9f77605",
+    "docs/specs/plano-modo-planejado/PLANO.md": "e2ad6aab2cd3978f93e89a8465944bc57c475c33",
+    "docs/adr/119-kit-regulado-motor-neutro-perfil-por-projeto.md": "6f4faaf4fdc83bf891bf87399079852673505f9e",
+    "CHANGELOG.md": "babdb85e2f11e5dc1975112ab944994a7629d2cb",
+    "capabilities.json": "3cc78b68e13f4ccf984396b13f2903990d9e7eff",
+    "CAPABILITIES.md": "db0a7a0619c3a77acf61539679d097f0efc8f1bf",
+    "guia/web/index.html": "69d9d6d112478e86ecbb6e50eeeb83643fda79c7"
+  },
+  "substitui": [
+    {
+      "rodada": 1,
+      "data": "2026-09-26T05:10:00Z",
+      "recomendacao": "corrigir",
+      "sha_revisado": "464de0bd652b91ce1c17db0d9ab8ada173a929f4",
+      "agentId": "a88a6036673e80027",
+      "escopo_paths": [
+        "tools/regulado.py",
+        "tools/test_regulado.py",
+        "tools/spec_fonte.py",
+        "tools/spec_unificar.py",
+        "tools/agnostic-denylist.txt",
+        "tools/test_core_agnostic.py",
+        "tools/check_rules_parity.py",
+        ".claude/global/CLAUDE-global.md",
+        "exemplos/dominio-regulado/compliance-profile-farma-anvisa.json",
+        "docs/specs/_template-spec-unico/spec.md",
+        "docs/specs/b3-documentacao-regulada/spec.md",
+        "docs/specs/plano-modo-planejado/PLANO.md",
+        "docs/adr/119-kit-regulado-motor-neutro-perfil-por-projeto.md",
+        "CHANGELOG.md",
+        "capabilities.json",
+        "CAPABILITIES.md",
+        "guia/web/index.html",
+        "_meta/qa/b3a1-kit-regulado.json",
+        "_meta/qa/b3a1-kit-regulado.md"
+      ],
+      "achados_fp": [
+        "ALTA|tools/regulado.py:159-173",
+        "BAIXA|tools/regulado.py",
+        "BAIXA|tools/regulado.py:45-47",
+        "CRITICA|tools/regulado.py:111",
+        "MEDIA|tools/agnostic-denylist.txt:20-22",
+        "MEDIA|tools/agnostic-denylist.txt:22"
+      ],
+      "reinicio": false
+    }
+  ],
+  "substitui_reprovacao": true
+}

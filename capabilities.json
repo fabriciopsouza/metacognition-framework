@@ -2197,6 +2197,31 @@
     "canario": "tools/test_qa_evidence.py",
     "espera": "D1: 4ª rodada após 3 reprovações foi ACEITA"
    }
+  },
+  {
+   "id": "kit-regulado",
+   "title": "Kit regulado sobre o arquivo unico: verifica rastreabilidade requisito-risco-teste-evidencia, gera a matriz e o kit de pecas pelo perfil declarado no projeto",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/regulado.py",
+   "test": "tools/test_regulado.py",
+   "adr": "docs/adr/119-kit-regulado-motor-neutro-perfil-por-projeto.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "regulado",
+    "spec",
+    "rastreabilidade",
+    "evidencia"
+   ],
+   "note": "Motor neutro: normas revogadas, pecas por categoria de software, testes obrigatorios e categoria padrao por sistema vem do perfil exemplos/dominio-regulado/compliance-profile-<nome>.json declarado na Parte A. Sem perfil padrao (decisao do dono D1, 26/09/2026). Partes F (Riscos) e G (Testes e evidencias) no spec.md. Primeiro perfil: farma-anvisa.",
+   "mutacao": {
+    "arquivo": "tools/regulado.py",
+    "de": "        ach.append(f\"{r} sem teste\")",
+    "para": "        pass",
+    "canario": "tools/test_regulado.py",
+    "espera": "V1 requisito sem teste"
+   }
   }
  ],
  "registry_waivers": [

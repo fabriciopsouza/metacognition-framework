@@ -16,6 +16,13 @@
 \bALCOA(?:\+|\b)
 \bANVISA\b
 \bANP\b
+# Atos normativos brasileiros (ADR-119, critério 5 do plano B3): RDC e Instrução Normativa, sigla e
+# por extenso. Siglas com (?-i:...) = só em MAIÚSCULAS: o linter roda IGNORECASE e "in 45/2020" é inglês.
+(?-i:\bRDC)\s*(n[º°o.]*\s*)?\d+
+(?-i:\bIN)\s*n[º°]\s*\d+
+(?-i:\bIN)\s+\d+\s*/\s*\d{4}\b
+\bInstru[çc][ãa]o\s+Normativa\b
+\bResolu[çc][ãa]o\s+da\s+Diretoria\s+Colegiada\b
 \bFDA\b
 \bBACEN\b
 \bGAMP\b

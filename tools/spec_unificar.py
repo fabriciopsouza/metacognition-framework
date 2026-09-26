@@ -26,6 +26,8 @@ class ConversaoRecusada(Exception):
 
 def _fonte_da_parte(pasta, parte):
     antigo = spec_fonte.PARTES[parte][2]
+    if antigo is None:  # parte sem equivalente no formato antigo (F, G): nada a converter
+        return None
     if parte == "contexto":
         req = os.path.join(pasta, "requirements.md")
         return find_brief(req) if os.path.isfile(req) else None

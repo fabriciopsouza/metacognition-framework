@@ -32,6 +32,9 @@ PARTES = {
     "contexto": ("C", "Contexto e âncoras", "context-brief.md"),
     "missao": ("D", "Missão", "mission.md"),
     "dicionario": ("E", "Dicionário de dados", "data-dictionary.md"),
+    # Partes do kit regulado (B3, ADR-119). Não existem no formato antigo: arquivo equivalente None.
+    "riscos": ("F", "Riscos", None),
+    "testes": ("G", "Testes e evidências", None),
 }
 _CERCA = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 _PARTE = re.compile(r"^ {0,3}#\s+Parte\s+([A-Z])\b")
@@ -123,6 +126,8 @@ def ler_parte(caminho, parte):
         unico = os.path.join(caminho, ARQUIVO_UNICO)
         if eh_unico(unico):
             return ler_parte(unico, parte)
+        if antigo is None:  # parte que só existe no arquivo único
+            return None
         alvo = os.path.join(caminho, antigo)
         return _ler(alvo) if os.path.isfile(alvo) else None
     if eh_unico(caminho):
