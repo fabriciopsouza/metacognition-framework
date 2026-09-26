@@ -17,11 +17,11 @@
 
 **Entregue (8 PRs mesclados, todos com revisão isolada aprovada e `canarios-local` verde):**
 - **#154 e #156, ADR-116:** regras do dono valendo em toda pasta.
-- **#157, ADR-117:** especificação em arquivo único.
+- **#157, ADR-117:** a especificação passou a caber num arquivo único, lido pelos mesmos gates.
 - **#158, ADR-118:** circuit breaker de QA, comandos de sessão e estilo corporativo.
-- **#159:** plano B3.
+- **#159:** o plano B3, de documentação enxuta para ambiente regulado, aprovado pelo dono.
 - **#161, ADR-119:** kit regulado com motor neutro e perfil declarado por projeto.
-- **#163, ADR-120:** biblioteca de conhecimento. É o método de construir e consultar; o conteúdo de cada empresa é
+- **#163, ADR-120:** a biblioteca de conhecimento reutilizável entre projetos. É o método de construir e consultar; o conteúdo de cada empresa é
   das sessões de domínio.
 - **#165, emenda 2 do ADR-033:** dimensão `escopo-e-prazo`, nascida do dogfood de pesquisa confirmatória.
 - **#168, ADR-121:** método único de projeto (`guia/METODO-DE-PROJETO.md`), desenho do processo gerado da Parte H e

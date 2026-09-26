@@ -22,9 +22,10 @@
 | Regra global nova não instalada na máquina após o merge | sessão MRP (outra sessão) | nenhum: lacuna registrada (`regra-global-instalar-apos-merge`) |
 
 ## Detecção: framework × humano (quem pegou o quê — mecanismo vs. revisão humana)
-- Mecanismo: revisão isolada (Sonnet) pegou 100% dos defeitos de código antes do merge; mutação do autor achou 8
-  sobreviventes ao longo dos blocos (teste que reprovava pelo motivo errado, regra redundante, legenda mascarando o
-  retorno), todos convertidos em caso de teste ou remoção.
+- Mecanismo: todo defeito de código registrado nos blocos desta sessão foi pego pela revisão isolada (Sonnet)
+  antes do merge — não há como provar que não sobrou nenhum. A mutação do autor deixou 6 sobreviventes na primeira
+  passada (B3a-1: 1, ADR-119; B3e: 2, ADR-120; B3d: 3, ADR-121): teste que reprovava pelo motivo errado, regra
+  redundante, legenda mascarando o retorno. Todos viraram caso de teste ou remoção.
 - Humano (dono): pegou que o autor executava sem criticar e sem responder às perguntas feitas ("saiu fazendo como
   web chat"), que o DB1 duplicava o D9 já aprovado, e que o formato de "status" pedido várias vezes não era seguido.
 
