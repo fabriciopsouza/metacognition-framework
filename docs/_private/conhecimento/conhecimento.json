@@ -1,5 +1,12 @@
 {
- "_doc": "Configuração da biblioteca do dono (ADR-120). Preencher versoes_atuais ao registrar a primeira entrada de classe estrutura de cada sistema.",
- "versoes_atuais": {},
- "validade_meses": {"configuração": 6, "regra de negócio": 12, "conceito": 12}
+ "_doc": "Configuração da biblioteca do dono (ADR-120). Preencher versoes_atuais ao registrar a primeira entrada de classe estrutura de cada sistema. SAP Datasphere é SaaS, sem versão fixa: 'SaaS' marca isso; revisar as entradas dele pelo prazo da classe.",
+ "versoes_atuais": {
+  "SAP S/4HANA (DBACOCKPIT, HANA nativo)": "2023 SP03",
+  "SAP Datasphere": "SaaS"
+ },
+ "validade_meses": {
+  "configuração": 6,
+  "regra de negócio": 12,
+  "conceito": 12
+ }
 }
