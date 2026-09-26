@@ -76,6 +76,8 @@ GLOBAL_RULES = [
     ("fontes-em-arquivo", r"Nada fica s[oó] no chat"),
     ("plano-nao-expira", r"Plano aprovado n[aã]o expira"),
     ("comando-nao-apaga-plano", r"Comando de sess[aã]o nunca apaga"),
+    ("mapa-de-impacto", r"Mapa de impacto em toda mudan[çc]a"),
+    ("sem-perfil-regulado-padrao", r"N[ãa]o existe perfil regulado padr[ãa]o"),
 ]
 
 

@@ -1,0 +1,278 @@
+#!/usr/bin/env python3
+"""regulado.py — motor do kit regulado sobre o arquivo único de especificação (ADR-119).
+
+Neutro: não conhece nenhuma norma. As regras (normas revogadas, peças por categoria de software,
+testes obrigatórios, categoria padrão por sistema) vêm do PERFIL declarado no próprio projeto
+(`**Perfil regulado:** <nome>`), em `exemplos/dominio-regulado/compliance-profile-<nome>.json`.
+Sem perfil padrão (decisão do dono, 26/09/2026): sem impacto e perfil registrados, nada é liberado.
+
+Campos da Parte A:  **Impacto regulado:** sim|não · **Perfil regulado:** <nome>|nenhum · **Sistema:** <nome>
+                    **Categoria de software:** <categoria do perfil> · **Categoria decidida por:** <nome, dd/mm/aaaa — motivo>
+                    **Requisitos confirmados por:** <nome, dd/mm/aaaa> · linhas `- REQ-nn: ...`
+Parte F — Riscos:   | Risco | Requisito | Falha | Impacto | Probabilidade | Detecção | Classe | Mitigação | Teste |
+Parte G — Testes e evidências:
+                    | Teste | Requisito | Categoria | Roteiro | Esperado | Resultado | Evidência | Nome e data |
+
+Uso:
+    python tools/regulado.py verificar <spec.md>                  # liberação: tudo executado (exit 1 com achado)
+    python tools/regulado.py verificar <spec.md> --planejamento   # durante o projeto: aceita teste não executado
+    python tools/regulado.py matriz <spec.md>                     # requisito -> risco -> teste -> evidência (md)
+    python tools/regulado.py kit <spec.md>                        # peças exigidas (exit 1 sem registro)
+"""
+import datetime
+import json
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import spec_fonte  # noqa: E402
+
+PERFIS_DIR = os.path.join(ROOT, "exemplos", "dominio-regulado")
+KIT_COMUM_SEM_PERFIL = ["TAP", "especificacao", "HANDOFF", "glossario", "cronograma"]
+COLS_RISCO = ["risco", "requisito", "falha", "impacto", "probabilidade", "detecção", "classe", "mitigação", "teste"]
+COLS_TESTE = ["teste", "requisito", "categoria", "roteiro", "esperado", "resultado", "evidência", "nome e data"]
+CLASSES = {"alto", "médio", "medio", "baixo"}
+CAMPOS = ["Impacto regulado", "Perfil regulado", "Sistema", "Categoria de software",
+          "Categoria decidida por", "Requisitos confirmados por"]
+# Definição de requisito: "- REQ-01:", "* REQ-01:", "1. REQ-01 —", "- **REQ-01:**". Toda outra menção a
+# REQ-nn na Parte A sem definição é acusada: formato desconhecido não pode sumir em silêncio.
+_DEF_REQ = re.compile(r"(?m)^\s*(?:[-*+]|\d+[.)])?\s*(?:\*\*)?\s*(REQ-\d+)\s*(?:\*\*)?\s*[:—–-]")
+_DATA = re.compile(r"\b(\d{1,2})/(\d{1,2})/(\d{4})\b")
+_VAZIO = {"", "-", "—", "n/a", "pendente", "<pendente>"}
+
+
+class Recusa(Exception):
+    """Falta o registro que decide se o kit regulado se aplica (impacto e perfil)."""
+
+
+def _campo(texto, nome):
+    m = re.search(rf"(?im)^\s*[-*]?\s*\*\*{re.escape(nome)}:\*\*\s*(.+?)\s*$", texto or "")
+    return m.group(1).strip() if m else ""
+
+
+def _valor(texto, nome):
+    """Valor do campo sem o ' — motivo'. Placeholder ('sim | não', '<...>') não casa com valor válido."""
+    return re.split(r"\s+[—–-]\s+", _campo(texto, nome))[0].strip()
+
+
+def _vazio(v):
+    return str(v or "").strip().lower() in _VAZIO
+
+
+def _tem_data(v):
+    for d, m, a in _DATA.findall(str(v or "")):
+        try:
+            datetime.date(int(a), int(m), int(d))
+            return True
+        except ValueError:
+            pass
+    return False
+
+
+def _nome_e_data(v):
+    """Assinatura mínima: data de calendário válida E um nome além dela."""
+    return _tem_data(v) and bool(re.sub(_DATA, "", str(v or "")).strip(" ,;-—"))
+
+
+def _tabela(texto, cols, prefixo):
+    """Linhas da tabela cujo 1º campo é <prefixo>-nn, como dicts pelas colunas do modelo."""
+    linhas, erros = [], []
+    for ln in (texto or "").splitlines():
+        s = ln.strip()
+        if not s.startswith("|"):
+            continue
+        cel = [c.strip().replace("\\|", "|") for c in re.split(r"(?<!\\)\|", s.strip("|"))]
+        if not re.fullmatch(rf"{prefixo}-\d+", cel[0]):
+            continue
+        if len(cel) != len(cols):
+            erros.append(f"{cel[0]}: {len(cel)} colunas, o modelo tem {len(cols)}")
+            continue
+        linhas.append(dict(zip(cols, cel)))
+    return linhas, erros
+
+
+def _refs(v, prefixo):
+    return set(re.findall(rf"\b{prefixo}-\d+\b", str(v or "")))
+
+
+def carregar(spec):
+    """Tudo que os comandos usam, lido pelo leitor único (spec_fonte)."""
+    req = spec_fonte.ler_parte(spec, "requisitos") or ""
+    riscos, e1 = _tabela(spec_fonte.ler_parte(spec, "riscos"), COLS_RISCO, "RISCO")
+    testes, e2 = _tabela(spec_fonte.ler_parte(spec, "testes"), COLS_TESTE, "TESTE")
+    perfil_nome = _valor(req, "Perfil regulado")
+    if perfil_nome and not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", perfil_nome):
+        perfil_nome = ""  # caminho, espaço ou placeholder não é nome de perfil = não registrado
+    perfil = None
+    if perfil_nome and perfil_nome.lower() != "nenhum":
+        caminho = os.path.join(PERFIS_DIR, f"compliance-profile-{perfil_nome.lower()}.json")
+        if os.path.isfile(caminho):
+            with open(caminho, encoding="utf-8") as fh:
+                perfil = json.load(fh)
+    duplicados = [c for c in CAMPOS if len(re.findall(
+        rf"(?im)^\s*[-*]?\s*\*\*{re.escape(c)}:\*\*", req)) > 1]
+    return {
+        "texto": open(spec, encoding="utf-8-sig").read(),
+        "reqs": _DEF_REQ.findall(req),
+        "reqs_citados": set(re.findall(r"\bREQ-\d+\b", req)),
+        "duplicados": duplicados,
+        "impacto": _valor(req, "Impacto regulado").lower(),
+        "perfil_nome": perfil_nome, "perfil": perfil,
+        "categoria": _valor(req, "Categoria de software"),
+        "sistema": _campo(req, "Sistema"),
+        "decidida_por": _campo(req, "Categoria decidida por"),
+        "confirmados_por": _campo(req, "Requisitos confirmados por"),
+        "riscos": riscos, "testes": testes, "erros_tabela": e1 + e2,
+    }
+
+
+def registro(d):
+    """Achados do registro de enquadramento. Vazio = o projeto disse se o kit regulado se aplica e sob
+    qual perfil. Sem isso nenhum comando libera nada (critério 6 do plano B3)."""
+    ach = [f"campo **{c}:** aparece mais de uma vez — deixe só a resposta" for c in d["duplicados"]]
+    if d["impacto"] not in ("sim", "não", "nao"):
+        ach.append("impacto regulado não registrado (campo **Impacto regulado:** sim|não)")
+    if not d["perfil_nome"]:
+        ach.append("perfil regulado não registrado (campo **Perfil regulado:** <nome>|nenhum) — não há perfil padrão")
+    elif d["perfil_nome"].lower() != "nenhum" and d["perfil"] is None:
+        ach.append(f"perfil '{d['perfil_nome']}' sem arquivo compliance-profile-{d['perfil_nome'].lower()}.json")
+    if d["impacto"] == "sim" and d["perfil_nome"].lower() == "nenhum":
+        ach.append("projeto com impacto regulado declarado sem perfil regulado")
+    return ach
+
+
+def verificar(spec, planejamento=False):
+    d = carregar(spec)
+    ach = registro(d)
+    if ach or d["impacto"] != "sim":
+        return ach  # sem impacto regulado registrado, o kit regulado não se aplica
+    ach += d["erros_tabela"]
+    if not d["reqs"]:
+        ach.append("nenhum requisito numerado na Parte A (formato `- REQ-01: ...`)")
+    for r in sorted(d["reqs_citados"] - set(d["reqs"])):
+        ach.append(f"{r} citado na Parte A sem linha de definição (`- {r}: ...`)")
+    for r in sorted({r for r in d["reqs"] if d["reqs"].count(r) > 1}):
+        ach.append(f"{r} definido mais de uma vez na Parte A")
+    if not d["riscos"]:
+        ach.append("Parte F sem risco registrado")
+    if not d["testes"]:
+        ach.append("Parte G sem teste registrado")
+    perfil = d["perfil"]
+    cats = perfil.get("categorias_software") or {}
+    if d["categoria"] not in [k for k in cats if not k.startswith("_") and k != "kit_comum"]:
+        ach.append(f"categoria de software '{d['categoria']}' ausente ou fora do perfil")
+    for sist, padrao in (perfil.get("categoria_padrao_por_sistema") or {}).items():
+        if sist.lower() in d["sistema"].lower() and d["categoria"] and d["categoria"] != padrao:
+            if not _nome_e_data(d["decidida_por"]):
+                ach.append(f"sistema {sist} com categoria {d['categoria']} (padrão {padrao}) sem registro "
+                           f"de quem decidiu e quando (**Categoria decidida por:**)")
+    if not planejamento and not _nome_e_data(d["confirmados_por"]):
+        ach.append("confirmação dos requisitos sem nome e data (**Requisitos confirmados por:**)")
+    reqs = set(d["reqs"])
+    ids_teste = {t["teste"] for t in d["testes"]}
+    testados = set().union(*[_refs(t["requisito"], "REQ") for t in d["testes"]]) if d["testes"] else set()
+    for r in sorted(reqs - testados):
+        ach.append(f"{r} sem teste")
+    for x in d["riscos"] + d["testes"]:
+        for r in sorted(_refs(x["requisito"], "REQ") - reqs):
+            ach.append(f"{x.get('risco') or x.get('teste')} aponta para {r}, que não existe na Parte A")
+    for r in d["riscos"]:
+        classe = r["classe"].strip().lower()
+        if classe not in CLASSES:
+            ach.append(f"{r['risco']} com classe '{r['classe']}' — use alto, médio ou baixo")
+        refs = _refs(r["teste"], "TESTE")
+        for t in sorted(refs - ids_teste):
+            ach.append(f"{r['risco']} aponta para {t}, que não existe na Parte G")
+        if classe == "alto":
+            if _vazio(r["mitigação"]):
+                ach.append(f"{r['risco']} (alto) sem mitigação")
+            if not refs:
+                ach.append(f"{r['risco']} (alto) sem teste")
+    for t in d["testes"]:
+        executado = not _vazio(t["resultado"])
+        if not executado and not planejamento:
+            ach.append(f"{t['teste']} sem resultado")
+        if executado and _vazio(t["evidência"]):
+            ach.append(f"{t['teste']} com resultado e sem evidência")
+        if executado and not _nome_e_data(t["nome e data"]):
+            ach.append(f"{t['teste']} com resultado sem nome e data de quem executou")
+    cats_testadas = " | ".join(t["categoria"].lower() for t in d["testes"])
+    for obrig in perfil.get("testes_obrigatorios_com_impacto") or []:
+        if obrig.lower() not in cats_testadas:
+            ach.append(f"categoria de teste obrigatória ausente: {obrig}")
+    for ln in d["texto"].splitlines():
+        if "revogad" in ln.lower():
+            continue  # citação que declara a revogação é permitida
+        for nr in perfil.get("normas_revogadas") or []:
+            if re.search(nr["padrao"], ln, re.I):
+                ach.append(f"cita norma revogada (usar {nr['substituida_por']}): {ln.strip()[:80]}")
+    return ach
+
+
+def kit(spec):
+    d = carregar(spec)
+    faltas = registro(d)
+    if faltas:
+        raise Recusa("; ".join(faltas))
+    cats = (d["perfil"] or {}).get("categorias_software") or {}
+    pecas = list(cats.get("kit_comum") or KIT_COMUM_SEM_PERFIL)
+    if d["impacto"] == "sim":
+        pecas += [p for p in cats.get(d["categoria"], []) if p not in pecas]
+    return pecas
+
+
+def matriz(spec):
+    d = carregar(spec)
+    out = ["| Requisito | Riscos | Testes | Resultado | Evidência | Lacuna |", "|---|---|---|---|---|---|"]
+    for r in d["reqs"]:
+        rs = [x["risco"] for x in d["riscos"] if r in _refs(x["requisito"], "REQ")]
+        ts = [x for x in d["testes"] if r in _refs(x["requisito"], "REQ")]
+        res = "; ".join(x["resultado"] for x in ts if not _vazio(x["resultado"]))
+        ev = "; ".join(x["evidência"] for x in ts if not _vazio(x["evidência"]))
+        lac = "sem teste" if not ts else ("não executado" if not res else ("sem evidência" if not ev else ""))
+        out.append(f"| {r} | {', '.join(rs) or '—'} | {', '.join(x['teste'] for x in ts) or '—'} | "
+                   f"{res or '—'} | {ev or '—'} | {lac} |")
+    return "\n".join(out)
+
+
+def main(argv):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
+    flags = [a for a in argv[1:] if a.startswith("--")]
+    args = [a for a in argv[1:] if not a.startswith("--")]
+    if (len(args) != 2 or args[0] not in ("verificar", "matriz", "kit")
+            or any(f != "--planejamento" for f in flags) or (flags and args[0] != "verificar")):
+        print(__doc__)
+        return 2
+    cmd, spec = args
+    if not spec_fonte.eh_unico(spec):
+        print(f"RECUSADO: {spec} não é um arquivo único de especificação (marca {spec_fonte.MARCA})")
+        return 2
+    try:
+        if cmd == "kit":
+            print("\n".join(f"- {p}" for p in kit(spec)))
+            return 0
+        if cmd == "matriz":
+            print(matriz(spec))
+            return 0
+        ach = verificar(spec, planejamento=bool(flags))
+    except Recusa as e:
+        print(f"RECUSADO: {e}")
+        return 1
+    except OSError as e:
+        print(f"FAIL {spec}: {e}")
+        return 1
+    for a in ach:
+        print(f"  - {a}")
+    print("-" * 50)
+    modo = " (planejamento: testes não executados aceitos)" if flags else ""
+    print("RESULTADO:", f"FAIL ({len(ach)})" if ach else f"PASS{modo}")
+    return 1 if ach else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

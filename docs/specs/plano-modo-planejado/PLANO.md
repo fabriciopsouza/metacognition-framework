@@ -32,6 +32,43 @@
 | S12 | A escada anti-excesso vale também na regra global (toda pasta)? | ✅ decidido (sim, 25/09) · feito | agente | seção 3 da regra global + 10ª cláusula do canário; marcador de dívida fica para depois |
 | D1–D6 | Decisões de desenho do B2/B3 | ✅ decididas (25/09, "sim todos"): D1 barra aqui/avisa fora · D2 tarefas no arquivo (ou `estado.json` quando existir) · D3 tabela de decisões, ADR só para arquitetura · D4 mantém `/feature-plan` · D6 markdown agora | — | B2 aprovado e em execução |
 
+
+## Checklist dos pedidos do dono (25–26/09/2026)
+
+> Um item por pedido. Nenhum pedido sai desta lista sem estar feito (com prova) ou decidido pelo dono.
+> Item aberto também está em `tools/trabalhos.py` (reaparece em toda sessão).
+
+| # | Pedido | Situação | Onde / prova |
+|---|---|---|---|
+| P1 | Resposta executiva: onde estamos · o que falta · próximos passos | ✅ | memória `formato-executivo-conciso`; regra global §4 |
+| P2 | Pendências recorrentes e débitos ordenados por ganho × esforço | ✅ respondido · débitos rápidos adiados (S4) | trabalhos `adr-108-*`, `canario-*`, `ledger-*` |
+| P3 | Revisão adversarial em subagente isolado em qualquer projeto | ✅ | ADR-116, PR #154; regra global §1 |
+| P4 | Caminho e link sempre absolutos | ✅ | ADR-116; regra global §2 |
+| P5 | Modo planejado: plano-documento com checklist, backlog, aceite | ✅ B2a (arquivo único, PR #157) · ⏳ B2b verificador | trabalho `plano-b2b-verificador-do-plano` |
+| P6 | 1 arquivo × 3 + espelho: só unificar sem quebrar mecanismo nem perder informação | ✅ unificado com prova (0 diferenças, perda zero) | ADR-117 |
+| P7 | Painel acumulado + status curto por resposta | ✅ em uso · ⏳ verificador (B2.6) | este painel; trabalho B2b |
+| P8 | Hooks, scripts, gates, README, site, links considerados em toda mudança | ✅ regra global §7 + `check_rules_parity` (B3a-1, ADR-119) · ⏳ merge | trabalho `plano-b1-7-mapa-de-impacto-global` |
+| P9 | Estudar o ponytail e trazer se valer | ✅ escada anti-excesso (PR #155) e na regra global (PR #156) · ⏳ marcador de atalho deliberado | trabalho `plano-marcador-atalho-deliberado` |
+| P10 | Haiku nunca autor; escada de modelos | ✅ | regra global §1 |
+| P11 | Pasta aninhada | ✅ apagada após conferência | S3 |
+| P12 | Princípios sempre: ganho líquido, pesquisa, crítica, QA isolado, determinismo, integrações sem quebrar | ✅ regra global + gates · aplicado em cada bloco | ADR-116/117/118 |
+| P13 | Circuit breaker padrão, débitos declarados, comandos de sessão | ✅ | ADR-118, PR #158 |
+| P14 | Estilo corporativo direto acima do modo explicativo | ✅ | regra global §4; emenda 1 do ADR-028 |
+| P15 | Fontes e pesquisas sempre em arquivo | ✅ | regra global §5; `docs\specs\b3-documentacao-regulada\fontes.md` |
+| P16 | Plano aprovado não expira com a sessão | ✅ | regra global §6; `trabalhos.py`; memória `plano-aprovado-sobrevive-a-sessao` |
+| P17 | Documentação mínima = formalização do projeto, enxuta mas conforme (ANVISA e outros) | ✅ plano B3 aprovado (PR #159) · ⏳ execução | trabalho `plano-b3-documentacao-regulada` |
+| P18 | Cronograma, testes E2E, checklists por área (modelos do MRP) | ⏳ B3 (REQ-05, REQ-06, REQ-07) | plano B3 |
+| P19 | ERU, análise de risco, matriz de rastreabilidade | ⏳ B3 (REQ-03, REQ-04, REQ-11) | plano B3 |
+| P20 | Desenho do processo no padrão do de CAPA; método único fácil de achar | ⏳ B3d (REQ-13, REQ-14) | plano B3 |
+| P21 | Consultas, xlsx, runbooks, passo a passo como evidência (OPEX e MRP como referência) | ⏳ B3 (REQ-15) | plano B3 |
+| P22 | Sem perfil regulado padrão; perfil por projeto (ANVISA, ANP...) | ✅ decidido (D1) · ✅ motor neutro + regra global §8 (B3a-1) · ⏳ discovery pergunta empresa (B3e) | plano B3; ADR-119 |
+| P23 | Dicionário semântico/dados + ontologia + índice de projetos | ✅ decidido (D9) · ⏳ B3e (REQ-16 a REQ-18) | plano B3 |
+| P24 | Verificar as regras globais numa pasta nova | ⏳ manual | trabalho `plano-b1-8-verificacao-em-pasta-nova` |
+| P25 | Revisor em só-leitura de verdade (bloqueio, não prosa) | ⏳ | trabalho `subagente-revisor-so-leitura` |
+| P26 | Relatório de execução ao fim da sessão | ⏳ no encerramento | memória `always-execution-report-end` |
+| P27 | Biblioteca de consultas compartilhada entre projetos (sql, runbook, xlsx), com README para pessoas e IAs e regra de quando refazer | ⏳ levantamento feito em leitura · crítica e plano em conversa · decisão do dono | trabalho `biblioteca-de-consultas-compartilhada` |
+| P28 | Projetos do dono: todo arquivo vai para o git do repo de domínio privado; para usuários, não é padrão | ✅ registrado · ⏳ entra no plano da P27 | memória `tudo-vai-pro-git-privado-do-dominio` |
+
 ---
 
 ## Resumo executivo

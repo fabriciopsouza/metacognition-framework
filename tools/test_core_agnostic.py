@@ -55,6 +55,10 @@ check("[3b] sentinela nao isenta linhas vizinhas", scan_text(two) == 1)
 # (4) cada padrão da denylist é detectável por um exemplar canônico
 SAMPLES = {
     r"\bALCOA(?:\+|\b)": "ALCOA+", r"\bANVISA\b": "ANVISA", r"\bANP\b": "ANP", r"\bFDA\b": "FDA",
+    r"(?-i:\bRDC)\s*(n[º°o.]*\s*)?\d+": "RDC nº 658/2022", r"(?-i:\bIN)\s*n[º°]\s*\d+": "IN nº 134/2022",
+    r"(?-i:\bIN)\s+\d+\s*/\s*\d{4}\b": "IN 134/2022",
+    r"\bInstru[çc][ãa]o\s+Normativa\b": "Instrução Normativa nº 134/2022",
+    r"\bResolu[çc][ãa]o\s+da\s+Diretoria\s+Colegiada\b": "Resolução da Diretoria Colegiada nº 658",
     r"\bBACEN\b": "BACEN", r"\bGAMP\b": "GAMP", r"\bHIPAA\b": "HIPAA", r"\bLGPD\b": "LGPD",
     r"\bGDPR\b": "GDPR", r"\bGxP\b": "GxP", r"21\s*CFR": "21 CFR", r"\bPCI-?DSS\b": "PCI-DSS",
     # Expansão v1.30.0 (ADR-043) — famílias reguladas comuns:
@@ -74,6 +78,9 @@ for src in sources:
 # (5) texto agnóstico genuíno NÃO dispara falso-positivo
 clean = "Em dominios regulados, rastreabilidade e validacao costumam ser mandatorias.\n"
 check("[5] texto agnostico (sem norma nomeada) nao dispara falso-positivo", scan_text(clean) == 0)
+# (5b) siglas de ato normativo só em maiúsculas: preposição inglesa "in" com número não é norma (ADR-119)
+ingles = "documented in 45/2020 filings\nreleased in 3/2024\nin no case\nrdc 5 units\n"
+check("[5b] 'in 45/2020', 'in no case', 'rdc 5' em minusculas nao disparam", scan_text(ingles) == 0)
 
 # (5b) regressão (qa-critic round 2): 'ALCOA' como subpalavra NÃO dispara; 'ALCOA' norma E 'ALCOA+' SIM
 check("[5b] 'alcoacorp' NAO e falso-positivo (boundary correto)", scan_text("empresa alcoacorp ltda\n") == 0)
