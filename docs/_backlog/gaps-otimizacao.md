@@ -88,6 +88,25 @@
 
 ---
 
+## Débitos registrados pelo dono
+
+### DB1. Biblioteca de artefatos reutilizáveis entre projetos (consultas, com índice semântico)
+- **Origem:** pedido do dono em 26/09/2026, numa sessão de domínio: consultas a um sistema corporativo escritas,
+  testadas e medidas num projeto eram reescritas do zero em outro, porque cada uma vivia só na pasta do projeto
+  que a criou.
+- **Descrição:** lugar único fora dos projetos, com índice (pergunta que a consulta responde, fonte, onde roda,
+  última execução com evidência), regras de escrita aprendidas com erro e um dicionário semântico de tabelas e
+  campos com fonte e data. O projeto referencia a biblioteca, e a biblioteca aponta para a consulta no projeto
+  enquanto ela está em uso lá, sem cópia. A consulta se muda para a biblioteca quando um segundo projeto a reusa.
+  Leitura obrigatória antes de escrever consulta nova.
+- **Instância de domínio:** a primeira foi criada a pedido do dono em 26/09/2026, fora deste repositório. A referência
+  está no execution-report privado da sessão. O núcleo não foi alterado.
+- **Gatilho para promover ao núcleo:** um segundo domínio ou ferramenta reusar uma consulta pela biblioteca, ou
+  uma consulta ser reescrita apesar de a biblioteca já tê-la.
+- **Status:** registrado; núcleo agnóstico intocado.
+
+---
+
 ## Princípio de uso deste backlog
 
 1. Não promover item sem **gatilho disparado em campo** (não em hipótese).
