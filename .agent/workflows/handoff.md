@@ -21,11 +21,11 @@ pmo | architect | developer | qa-critic | docops | explorer
 | # | Junção | Artefato-gate | Critério binário | Quem aplica |
 |---|---|---|---|---|
 | **J0** | PMO → discovery | STATUS-line PMO + (opcional) UMA pergunta de desambiguação | natureza nomeada + dimensão escolhida + ambiguidade resolvida (Sim/Não) | PMO adversarial |
-| **J1** | discovery → architect | `requirements.md` OU `research-brief.md` | requisitos classificados + critério de aceite binário + (se reforço sênior) §7+§8+§7.1 ADR-009/010 preenchidas + **(produto recorrente) `check_spec_depth.py` PASS — dimensões de elicitação decididas (ADR-033)** + **(sob sinal de stake) `check_context_brief.py` PASS — context-brief com verificação de âncora, ou exceção consciente (ADR-051)** | PMO adversarial |
+| **J1** | discovery → architect | `requirements.md` OU Parte A do `spec.md` único (ADR-117) OU `research-brief.md` | requisitos classificados + critério de aceite binário + (se reforço sênior) §7+§8+§7.1 ADR-009/010 preenchidas + **(produto recorrente) `check_spec_depth.py` PASS — dimensões de elicitação decididas (ADR-033)** + **(sob sinal de stake) `check_context_brief.py` PASS — context-brief com verificação de âncora, ou exceção consciente (ADR-051)** | PMO adversarial |
 | **J2** | architect → developer | ADR `Status: Aceito` | Aceito + ponteiro + alternativas + consequências | PMO adversarial |
 | **J3** | developer → qa-critic | commits + diff + testes (se aplicável) | cobre TODOS REQ + sem regressão + RRC self-applied (ADR-010 §ii) | PMO adversarial |
 | **J4** | qa-critic → docops | resultado adversarial subagente | `APROVADO_LIMPO` (não `_COM_RESSALVAS` nem `REPROVADO`) | qa-critic subagente isolado |
-| **J5** | docops → release | `validation.md` do release | TODOS V1-Vn = PASSA | PMO + dono (revisão humana) |
+| **J5** | docops → release | `validation.md` (ou Parte B do `spec.md` único) do release | TODOS V1-Vn = PASSA | PMO + dono (revisão humana) |
 | **PC** | **process-critic FINAL** | revisão adversarial do bloco completo | LIMPO → merge/tag; ELSE → rewind cascata J_i + iterações até re-PASS | qa-critic subagente isolado (mesma instância expandida em escopo) |
 | **J6** | **PMO re-orquestração de bloco** (ADR-045) | `RE-ORQUESTRAÇÃO:` no `history.md` | após PC `APROVADO_LIMPO`, PMO registra **1** decisão: `prosseguir \| re-priorizar X \| rewind J_i \| injetar escopo Y \| reativar estágio Z` (`tools/check_reorchestration.py`) | PMO (maestro) |
 
@@ -52,7 +52,7 @@ critério binário: [PASSA] — <evidência objetiva>
 python tools/qa_evidence.py --junction <J_n> --bloco <id-do-bloco> --artefato <path> --evidencia "<critério + prova>"
 ```
 O ledger (`_meta/qa/junctions/<bloco>.jsonl`) valida forward-only na escrita (regressão exige
-`--rewind` explícito — rewind cascata do PC) e **J3 exige `--validation <validation.md>` OU
+`--rewind` explícito — rewind cascata do PC) e **J3 exige `--validation <validation.md | spec.md>` OU
 `--justificativa`** (P4 — fecha o "se aplicável" silencioso). O process-critic audita a dim (iv)
 "process compliance" contra este ledger, não contra prosa.
 

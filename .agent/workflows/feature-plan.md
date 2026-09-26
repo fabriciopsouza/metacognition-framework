@@ -22,12 +22,15 @@ caiu (a "mudança de 2 arquivos" virou 5), escalar ali — não terminar em quic
 ## Sequência — grau COMPLETO (default)
 1. **PMO:** confirmar escopo, sinais de complexidade e **classe de confiança**
    (governa o roteamento — `rules/04`).
-2. **Criar spec atômica:** clonar `docs/specs/_template/` →
-   `docs/specs/<feature>/` e preencher `requirements.md` + `validation.md`
-   (critério de aceite **binário**). Sem `validation.md` → não avança.
+2. **Criar spec atômica — arquivo único (ADR-117):** copiar
+   `docs/specs/_template-spec-unico/spec.md` → `docs/specs/<feature>/spec.md` e preencher a
+   Parte A — Requisitos; **depois** que o dono aprovar os requisitos, escrever a Parte B — Aceite
+   (critério **binário**) e fazê-la ratificar pelo revisor isolado. Sem Parte B ratificada → não
+   avança. O formato antigo (`_template/` → `requirements.md` + `validation.md`) continua aceito
+   pelos gates; `python tools/spec_unificar.py <pasta>` converte sem perda.
 3. `/handoff architect`
 4. **Architect:** 3 alternativas + recomendação + ADR rascunho. O ADR **referencia
-   a spec** (vincular decisão → `requirements.md`).
+   a spec** (vincular decisão → Parte A do `spec.md`, ou `requirements.md`).
 5. **PMO:** apresentar ADR + spec ao usuário — aguardar aprovação.
 6. ADR aceito → `/implement`.
 7. `/handoff docops` — salvar ADR em `docs/adr/NNN-titulo.md`.
@@ -51,8 +54,8 @@ Depois: implementar → **qa-critic adversarial, 1 rodada, modelo um degrau abai
 
 **O que `--quick` NÃO corta, e não é negociável:**
 - o **critério de aceite binário escrito ANTES do código** (seção 3). É ele que impede o
-  requisito de se auto-aprovar — a mesma razão pela qual o grau completo separa
-  `requirements.md` de `validation.md`;
+  requisito de se auto-aprovar — a mesma razão pela qual o grau completo exige a Parte B
+  escrita depois da aprovação da Parte A, e ratificada pelo revisor;
 - a **rodada de qa-critic**. Um grau que dispensa o crítico é `--no-verify` com nome bonito;
 - o **process-critic do ADR-011**, que é obrigatório ao fim de todo BLOCO entregue — e uma
   feature `--quick` é um bloco entregue. Aqui ele não é cortado, é **fundido**: a única rodada
@@ -72,6 +75,7 @@ do PMO (ADR-045), que é outra coisa: J6 roda *depois* do process-critic (ADR-01
 > dúvida rode as duas rodadas.
 
 ## Critério de saída
-- **completo:** ADR com Status "Aceito" + `validation.md` com critérios binários definidos.
+- **completo:** ADR com Status "Aceito" (se houve decisão de arquitetura) + Parte B — Aceite do
+  `spec.md` (ou `validation.md`) com critérios binários definidos e ratificados.
 - **`--quick`:** `spec.md` com as 3 seções + veredito do qa-critic registrado + todo critério
   de aceite da seção 3 medido como VERDADEIRO.

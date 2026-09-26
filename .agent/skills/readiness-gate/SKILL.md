@@ -48,11 +48,15 @@ qa-critic
 
 ## Checklist de prontidão
 
-### Grupo 1 — Spec (requirements.md)
+### Grupo 1 — Spec (requirements.md ou arquivo único)
+
+> **Dois formatos valem (ADR-117):** `requirements.md` + `validation.md`, ou o arquivo único
+> `spec.md` (marca `<!-- spec-unico:v1 -->`). No arquivo único, leia **Parte A — Requisitos** onde
+> este checklist diz `requirements.md`, e **Parte B — Aceite** onde diz `validation.md`.
 
 | # | Critério | Verificação |
 |---|---|---|
-| R1 | `requirements.md` existe em `docs/specs/<feature>/` | arquivo presente |
+| R1 | `requirements.md` **ou** `spec.md` único com Parte A existe em `docs/specs/<feature>/` | arquivo/parte presente |
 | R2 | Seção `## Identificação` preenchida (caso/feature + confiança da tarefa) | não tem `<placeholder>` |
 | R3 | Escopo IN e Escopo OUT declarados (ou `## Fora de escopo` preenchida) | explícito |
 | R4 | Pelo menos 1 critério de aceite binário declarado (`## Escopo funcional` ou `validation.md`) | verificável T/F |
@@ -89,7 +93,7 @@ qa-critic
 ### Passo 1 — Coletar artefatos
 
 - Localizar `docs/specs/<feature>/requirements.md` e a ADR relevante
-- Se requirements.md não existe: BLOQUEADO imediatamente (R1 = FALSO)
+- Se não existe `requirements.md` NEM `spec.md` único com Parte A: BLOQUEADO imediatamente (R1 = FALSO)
 - Ler os artefatos antes de avaliar (file-first)
 
 ### Passo 2 — Avaliar checklist

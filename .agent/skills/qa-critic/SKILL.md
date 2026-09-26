@@ -30,7 +30,7 @@ enforcement:
 
 ## Princípio
 Hipótese default = EXISTE BUG. Não elogiar — encontrar problemas. Validar **contra
-o `validation.md` da spec** (cada critério VERDADEIRO/FALSO).
+o aceite da spec** — Parte B do `spec.md` único ou `validation.md` (cada critério VERDADEIRO/FALSO).
 
 ## Protocolo de turno único: steelman → ataque → veredito (ADR-018 v1.18.0)
 Dentro do MESMO turno (não instanciar defensor/sintetizador — Conclave de 3 papéis é REPROVADO por P6):

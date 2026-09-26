@@ -11,7 +11,7 @@
 > Acumula as decisões de **todas** as respostas, inclusive as que já saíram da tela. A resposta no
 > chat traz só um status curto e aponta para cá.
 
-**Avanço:** B1 ✅ (PR #154; falta só a verificação manual B1.8) · B1.9 ✅ (PR #155) · S12 em revisão · B2 aprovado, em execução · B3 0%
+**Avanço:** B1 ✅ (PR #154; falta só a verificação manual B1.8) · B1.9 ✅ (PR #155) · S12 ✅ (PR #156 em canários) · B2a em revisão · B2b a fazer · B3 0%
 
 | # | Assunto | Situação | Quem age | Resultado / próximo |
 |---|---|---|---|---|
@@ -155,14 +155,18 @@ Legenda: `[ ]` a fazer · `[x]` feito, com prova · `[~]` replanejado, com motiv
 - [ ] B1.9 Escada anti-excesso de código (estudo do ponytail, S11): 7 degraus na skill `developer` (não precisa existir → já existe no repo → biblioteca padrão → recurso nativo → dependência já instalada → uma linha → código mínimo) e checagem de excesso no `qa-critic`. Texto próprio, sem copiar o pacote; atribuição à ideia original (MIT). Aceite: a skill `developer` tem a escada; a skill `qa-critic` e o subagente `.claude/agents/qa-critic.md` conferem contra ela; registro PARTIAL/prosa honesto; `test_capabilities`, `test_marketing_claims` e `test_audit_enforcement` verdes. Não há canário de conteúdo das skills: é prosa, cobrada em revisão.
 - [ ] B1.8 Verificação comportamental numa pasta virgem: pedir uma mudança de código → o revisor roda sem pedido e os links saem absolutos.
 
-### B2 — Modo planejado (escrito para a opção B; se o dono escolher A, B2.1 vira "gerador do espelho")
+### B2 — Modo planejado (opção decidida: arquivo único — S8)
 
-- [ ] B2.1 Modelo de arquivo único de especificação: painel e resumo executivo no topo; contexto e requisitos (profundidade do `requirements.md` atual); aceite (tabela do `validation.md` atual); decisões; tarefas com checklist; mapa de impacto; replanejamento; revisões.
-- [ ] B2.2 `tools/plano.py verificar`: reprova seção obrigatória ausente, decisão pendente sem "quem age", critério ☑ sem prova, % que não bate com a contagem, mapa de impacto ausente, aceite datado antes da aprovação dos requisitos.
-- [ ] B2.2b Os 5 scripts leem também o arquivo único, por seção; prova antes = depois nas 16 especificações existentes (ver condição de aceite da opção B).
-- [ ] B2.3 `/feature-plan` gera o espelho ao fim do desenho, e a regra de confirmação aponta para ele.
-- [ ] B2.4 Ordem das etapas no modelo: pesquisa e elicitação → crítica → decisões em conversa → requisitos aprovados → aceite escrito e ratificado pelo revisor → execução → revisão → fechamento.
-- [ ] B2.5 ADR-117 + CHANGELOG + índice de capacidades.
+**B2a — arquivo único + gates + prova** (em revisão)
+- [x] B2.1 Modelo `docs/specs/_template-spec-unico/spec.md`: painel, resumo executivo, quem/o quê/para quê, crítica; Partes A–E com todo o conteúdo do modelo antigo (gerado pelo conversor); decisões, tarefas, mapa de impacto, replanejamento, revisões. Prova: o leitor resolve as 5 partes do modelo.
+- [x] B2.2b Os gates leem o arquivo único pelo leitor `tools/spec_fonte.py`; formato antigo aceito. Prova: fotografia dos 4 gates nas **11** especificações antigas (eram "16 pastas"; 11 têm `requirements.md`) — 0 diferenças na saída inteira; `tools/test_spec_unico.py` PASS (mesmo veredito + perda zero) e 3 sabotagens pegas.
+- [x] B2.3a `/feature-plan` (grau completo) cria o arquivo único; `readiness-gate`, `discovery`, `developer`, `qa-critic`, `implement`, `handoff` e regra 04 aceitam os dois formatos. `--quick` não muda.
+- [x] B2.4 Ordem das etapas escrita no topo do modelo.
+- [x] B2.5a ADR-117 + CHANGELOG + índice de capacidades (`spec-arquivo-unico`, fail-closed) + site (103).
+
+**B2b — verificador do plano e painel** (depois do B2a)
+- [ ] B2.2 `tools/plano.py verificar`: reprova seção obrigatória ausente, decisão pendente sem "quem age", item `[x]` sem prova, % que não bate com a contagem, mapa de impacto ausente, aceite datado antes da aprovação dos requisitos. Barra o fechamento neste repo; avisa nos outros (D1).
+- [ ] B2.3b A regra de confirmação (regra 06) aponta para o painel do arquivo único.
 - [ ] B2.6 Painel acumulado + status curto por resposta: toda resposta com a frente aberta termina com avanço, decisões pendentes pelo número e link absoluto para o painel.
 - [ ] B2.7 (depende de D6) Página visual gerada do painel.
 

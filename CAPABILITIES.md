@@ -1,7 +1,7 @@
 <!-- GERADO por tools/build_capabilities.py a partir de capabilities.json — NAO editar a mao -->
 # CAPABILITIES — indice de capacidades (nivel 1: id + title)
 
-> **102 capacidades** — 90 ✅ PROVIDES · 12 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
+> **103 capacidades** — 91 ✅ PROVIDES · 12 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
 > **Como usar (file-first, boot):** leia esta lista p/ achar o `id`; o registro completo (mecanismo · canario · ADR · doc) vem por **`python tools/build_capabilities.py --show <id>`** ou `grep -A8 '"<id>"' capabilities.json`. Nao reexplore o repo antes disto.
 > **Manutencao:** feature nova -> +1 registro em `capabilities.json` + `python tools/build_capabilities.py`. Canario barra canario orfao (cobertura).
 
@@ -104,6 +104,7 @@
 - ✅ `shadow-sync` — Hook que auto-casa o espelho publicado com origin no boot (reset --hard mecanico, so em shadow)
 - ✅ `shadow-write-guard` — Write-isolation: NEGA push de shadow E push pra remote != canonical (escreve so no proprio repo; read livre)
 - 🟡 `skill-contract` — Valida o contrato minimo de frontmatter das skills (ADR-013)
+- ✅ `spec-arquivo-unico` — Especificacao em arquivo unico (spec.md) lida pelos 4 gates de spec, com prova de mesmo veredito e perda zero frente ao formato antigo
 - ✅ `spec-depth-gate` — Profundidade minima de spec (linter anti-spec-rasa)
 - ✅ `squad-enforcement-gate` — Enforcement deterministico do squad: manifesto de papeis + gate com atestacao de isolamento — ADVISORY no CI (ativacao desacoplada, ADR-104)
 - ✅ `squad-gate-git-hook` — Instalador do pre-commit que faz o squad-gate rodar sozinho, com escapatoria declarada

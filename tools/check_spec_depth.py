@@ -25,6 +25,8 @@ import sys
 import unicodedata
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import spec_fonte  # noqa: E402  (leitor único das partes da especificação — ADR-117)
 BANK_PATH = os.path.join(ROOT, "_shared", "discovery", "elicitation-dimensions.md")
 
 # Decisões que NÃO contam como "endereçada" (placeholder/lacuna não-decidida).
@@ -118,10 +120,11 @@ def is_addressed(decision):
 def check_spec(path, dims):
     """Retorna (ok, faltando_obr, avisos_rec)."""
     try:
-        with open(path, encoding="utf-8-sig") as fh:
-            text = fh.read()
+        text = spec_fonte.ler_parte(path, "requisitos")  # formato antigo ou arquivo único (ADR-117)
     except OSError as e:
         return False, [f"<erro io: {e}>"], []
+    if text is None:
+        return False, ["<parte 'Requisitos' ausente no arquivo único>"], []
     section = extract_dim_section(text)
     rows = parse_rows(section)
     covered = set()
@@ -149,7 +152,8 @@ def main(argv):
     targets = argv[1:]
     if not targets:
         targets = glob.glob(os.path.join(ROOT, "docs", "specs", "**", "requirements.md"), recursive=True)
-        targets = [t for t in targets if "_template" not in t]
+        targets += spec_fonte.alvos_unicos(ROOT)
+        targets = [t for t in targets if "_template" not in t and not spec_fonte.sombreado_por_unico(t)]
     if not targets:
         print("nenhum requirements.md para checar (gate só dispara quando há spec).")
         return 0

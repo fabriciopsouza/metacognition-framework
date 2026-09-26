@@ -2147,6 +2147,31 @@
     "ganho-liquido"
    ],
    "note": "A regua de ganho liquido (ADR-007) valia para mudancas do proprio framework; o codigo escrito para um projeto so tinha 'diff minimo' solto. Adaptado da ideia de DietrichGebert/ponytail (MIT) sem as dependencias dele (Node.js, ~20 adaptadores). Cobrado na revisao: o qa-critic (skill e subagente) confere cada adicao contra a escada. Nao e' gate: prosa, declarada como tal."
+  },
+  {
+   "id": "spec-arquivo-unico",
+   "title": "Especificacao em arquivo unico (spec.md) lida pelos 4 gates de spec, com prova de mesmo veredito e perda zero frente ao formato antigo",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/spec_fonte.py",
+   "test": "tools/test_spec_unico.py",
+   "adr": "docs/adr/117-especificacao-em-arquivo-unico.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "spec",
+    "discovery",
+    "gate",
+    "documentacao"
+   ],
+   "note": "Decisao do dono (25/09/2026): um arquivo so, desde que nenhum mecanismo quebre e nenhuma informacao se perca; senao 3 + espelho. spec_fonte e' o leitor unico das partes (A Requisitos, B Aceite, C Contexto, D Missao, E Dicionario); check_spec_depth, check_completeness, check_field_mapping e check_context_brief passaram a ler por ele. O canario converte as 11 especificacoes reais e exige o mesmo veredito dos 4 gates e toda linha de origem no destino; foto antes/depois dos gates no formato antigo: 0 diferencas. Formato antigo continua aceito.",
+   "mutacao": {
+    "arquivo": "tools/spec_fonte.py",
+    "de": "                break  # próximo título de nível 1 encerra a parte",
+    "para": "                pass",
+    "canario": "tools/test_spec_unico.py",
+    "espera": "(a) veredito difere"
+   }
   }
  ],
  "registry_waivers": [

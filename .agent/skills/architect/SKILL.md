@@ -6,7 +6,7 @@ source: "SQUAD v1.1.0 (architect) — enxuto"
 last_review: 2026-05-23
 role_order: 2
 consumes:
-  - "docs/specs/<feature>/requirements.md"
+  - "docs/specs/<feature>/spec.md (Parte A — Requisitos; ADR-117) ou requirements.md"
 produces:
   - "docs/adr/NNN-titulo.md (status Proposto->Aceito)"
 pass_criteria: "PASS sse o ADR lista >=3 alternativas com trade-offs, recomenda 1 com justificativa, e referencia a spec — decisão rastreável, não opinião."
