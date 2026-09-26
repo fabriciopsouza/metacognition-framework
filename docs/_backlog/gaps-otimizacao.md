@@ -91,6 +91,8 @@
 ## Débitos registrados pelo dono
 
 ### DB1. Biblioteca de artefatos reutilizáveis entre projetos (consultas, com índice semântico)
+- **Situação (26/09/2026):** parte agnóstica **quitada** pelo ADR-120 (B3e do plano B3): modelo, método, verificador,
+  busca única e regra global. Migrar e preencher a biblioteca de cada empresa é trabalho das sessões de domínio.
 - **Origem:** pedido do dono em 26/09/2026, numa sessão de domínio: consultas a um sistema corporativo escritas,
   testadas e medidas num projeto eram reescritas do zero em outro, porque cada uma vivia só na pasta do projeto
   que a criou.

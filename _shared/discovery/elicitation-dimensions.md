@@ -44,9 +44,11 @@ cada chave obrigatória (`obr=sim`). Aliases permitem que a spec use o vocabulá
 | formato-saida | saida, relatorio, export, entrega, artefato | sim | Formato final — relatório formatado, exportável, faixas/metas visíveis? | export legível + números rastreáveis à fonte |
 | contexto-entidade | contexto, entidade, cliente, perfil-entidade, pesquisa-de-contexto | nao | Quem é a entidade/cliente (setor, porte, modelo, escopo, posição) e o domínio foi PESQUISADO além do artefato dado? | quando há stake → pesquisar perfil+domínio e registrar em context-brief |
 | verificacao-ancora | ancora, vigencia, pertinencia, fonte-aplicavel | nao | Cada norma/benchmark citado é VIGENTE e PERTINENTE a ESTE tipo de entidade (acusar mesmo se deliberado)? | verificar vigência+pertinência de toda âncora; registrar no context-brief |
+| biblioteca-consultada | biblioteca, conhecimento-consultado, reuso-de-conhecimento | unico | O que a biblioteca de conhecimento da empresa já tinha sobre isto — o que foi reusado, ou "nada encontrado"? | consultar antes de pesquisar: `knowledge_catalog --recall --conhecimento <raiz>` (ADR-120) |
 
 > **Editável:** novas dimensões universais podem entrar (régua §0: só se universais e não-domínio).
-> Marcar `obr=nao` cria dimensão **recomendada** (linter avisa, não barra). A coluna `aliases` é o que
+> Marcar `obr=nao` cria dimensão **recomendada** (linter avisa, não barra); `obr=unico` a torna obrigatória
+> só no arquivo único de especificação (ADR-117/120), sem reprovar o formato antigo. A coluna `aliases` é o que
 > permite ao banco ser agnóstico e a spec falar a língua do seu próprio domínio.
 >
 > **`contexto-entidade` e `verificacao-ancora` (ADR-051):** recomendadas aqui (advisory no

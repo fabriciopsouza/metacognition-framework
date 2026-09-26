@@ -37,6 +37,9 @@ except (AttributeError, ValueError):
     pass
 
 DIMS = csd.load_bank()
+# A equivalência entre formatos vale para o contrato comum. Dimensão `obr=unico` (ADR-120) é, por desenho,
+# obrigatória só no arquivo único; ela tem caso próprio em (j), não entra na comparação (a)/(b).
+DIMS_COMUNS = [d for d in DIMS if d["obr"] != "unico"]
 SINAIS = ccb.load_signals()
 
 
@@ -47,7 +50,7 @@ def _ler(p):
 
 def veredito_antigo(pasta):
     req, val = os.path.join(pasta, "requirements.md"), os.path.join(pasta, "validation.md")
-    v = {"profundidade": csd.check_spec(req, DIMS), "mapeamento": cfm.check_spec(req),
+    v = {"profundidade": csd.check_spec(req, DIMS_COMUNS), "mapeamento": cfm.check_spec(req),
          "contexto": ccb.check_spec(req, SINAIS)}
     try:
         v["completude"] = cc.check(_ler(req), _ler(val))
@@ -60,7 +63,7 @@ def veredito_antigo(pasta):
 
 
 def veredito_unico(spec):
-    v = {"profundidade": csd.check_spec(spec, DIMS), "mapeamento": cfm.check_spec(spec),
+    v = {"profundidade": csd.check_spec(spec, DIMS_COMUNS), "mapeamento": cfm.check_spec(spec),
          "contexto": ccb.check_spec(spec, SINAIS, "requisitos")}
     rq, vl = spec_fonte.ler_parte(spec, "requisitos"), spec_fonte.ler_parte(spec, "aceite")
     v["completude"] = "sem-arquivo" if rq is None or vl is None else cc.check(rq, vl)
@@ -297,6 +300,26 @@ def main():
             falhas.append("(e) o conversor aceitou dois títulos de nível 1 (perderia a separação)")
         except spec_unificar.ConversaoRecusada:
             pass
+
+        # (j) dimensão `obr=unico` (ADR-120): obrigatória no arquivo único, recomendada no formato antigo
+        so_unico = [d["key"] for d in DIMS if d["obr"] == "unico"]
+        if not so_unico:
+            falhas.append("(j) nenhuma dimensão obr=unico no banco — o caso não prova nada")
+        else:
+            comuns = "\n".join(f"- {d['key']}: decidido pelo dono" for d in DIMS_COMUNS)
+            antigo = os.path.join(tmp, "j-antigo")
+            escrever(antigo, "requirements.md", f"# r\n\n## Dimensões de elicitação\n{comuns}\n")
+            if csd.check_spec(os.path.join(antigo, "requirements.md"), DIMS)[0] is not True:
+                falhas.append("(j) formato antigo reprovado por dimensão exclusiva do arquivo único")
+            novo = os.path.join(tmp, "j-unico")
+            escrever(novo, "spec.md", f"{spec_fonte.MARCA}\n# Parte A — Requisitos\n## Dimensões de elicitação\n{comuns}\n")
+            r = csd.check_spec(os.path.join(novo, "spec.md"), DIMS)
+            if r[0] is not False or set(r[1]) != set(so_unico):
+                falhas.append(f"(j) arquivo único sem {so_unico} não reprovou por elas: {r}")
+            completo = comuns + "\n" + "\n".join(f"- {k}: nada encontrado" for k in so_unico)
+            escrever(novo, "spec.md", f"{spec_fonte.MARCA}\n# Parte A — Requisitos\n## Dimensões de elicitação\n{completo}\n")
+            if csd.check_spec(os.path.join(novo, "spec.md"), DIMS)[0] is not True:
+                falhas.append("(j) arquivo único com a dimensão registrada foi reprovado")
 
     print(f"{conferidas} especificações reais conferidas (mesmo veredito + perda zero); "
           f"casos sintéticos por gate que reprovam: {reprovados}")

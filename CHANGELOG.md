@@ -5,6 +5,24 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-120 — Biblioteca de conhecimento: método de construir e consultar, modelo e verificador (26/09/2026)
+
+- **Modelo agnóstico** `exemplos/conhecimento/_modelo/`: empresa → área de negócio → assunto; dicionário por perfil
+  e empresa com relações; tipos termo, consulta, fato, pesquisa, runbook; README é o método (consultar antes,
+  construir no ato, quando refazer). Instância do dono vazia em `docs/_private/conhecimento/` (D9 do plano B3).
+- **`tools/conhecimento.py verificar | vencidos`:** campos por tipo, relações, termo em dois níveis, validade por
+  classe (versão do sistema, 6 e 12 meses; retrato não vence), contestação, ponteiro quebrado, credencial e
+  documento de identificação, índice de projetos contra `trabalhos.py`.
+- **Uma busca só:** `knowledge_catalog --recall --conhecimento <raiz>`; retrato sai com a data.
+- **Método nas peças existentes:** discovery (item 0), docops (passo 7), regra global §9, dimensão
+  `biblioteca-consultada` com `obr=unico` (obrigatória só no arquivo único).
+- **Regra global §6: comando permanente `status`** — tabela checklist com % por bloco + 3 linhas (pedido repetido do
+  dono). `check_rules_parity`: 19 cláusulas.
+- Débito DB1 incorporado ao B3e. QA: rodada 1 PASS-COM-RESSALVAS (2 ALTA — campos sem `##` e entrada com `###`
+  sumiam em silêncio); rodada 2 PASS-COM-RESSALVAS (1 ALTA — falso positivo com campo depois do SQL); ambas
+  corrigidas. Prova: `test_conhecimento` (34 sabotagens, 8 exceções; 38/38 mutações mortas),
+  `test_spec_unico` (j). Site: contagens atualizadas.
+
 ### ADR-119 — Kit regulado: motor neutro, perfil declarado por projeto (26/09/2026)
 
 - **`tools/regulado.py`** sobre o arquivo único: `verificar` (requisito sem teste, risco alto sem

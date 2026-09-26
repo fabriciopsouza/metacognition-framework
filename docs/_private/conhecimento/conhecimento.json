@@ -1,0 +1,5 @@
+{
+ "_doc": "Configuração da biblioteca do dono (ADR-120). Preencher versoes_atuais ao registrar a primeira entrada de classe estrutura de cada sistema.",
+ "versoes_atuais": {},
+ "validade_meses": {"configuração": 6, "regra de negócio": 12, "conceito": 12}
+}

@@ -1,0 +1,6 @@
+{
+ "_doc": "Configuração da biblioteca (ADR-120). versoes_atuais: versão em uso de cada sistema citado em entrada de classe estrutura; ao mudar, as entradas daquele sistema aparecem em `conhecimento.py vencidos`. validade_meses: prazo por classe (retrato não vence).",
+ "empresa": "empresa-exemplo",
+ "versoes_atuais": {"SISTEMA-X": "2024"},
+ "validade_meses": {"configuração": 6, "regra de negócio": 12, "conceito": 12}
+}

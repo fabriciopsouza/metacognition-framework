@@ -56,6 +56,10 @@ def load_bank(path=BANK_PATH):
                 continue
             aliases = {_norm(a) for a in cells[1].split(",") if a.strip()}
             obr = _norm(cells[2]) in ("sim", "s", "yes", "true", "obrigatoria", "obrigatória")
+            # "unico": obrigatória só no arquivo único de especificação (ADR-117), o formato de todo trabalho
+            # novo; no formato antigo vira recomendada. Evita reprovar o passado por regra que não existia (ADR-120).
+            if _norm(cells[2]) in ("unico", "único"):
+                obr = "unico"
             dims.append({"key": key, "aliases": aliases | {key}, "obr": obr})
     return dims
 
@@ -136,11 +140,14 @@ def check_spec(path, dims):
             # 'saida'⊂'recortes-saida' creditavam dimensões erradas — process-critic ADR-011)
             if label in d["aliases"]:
                 covered.add(d["key"])
-    faltando_obr = [d["key"] for d in dims if d["obr"] and d["key"] not in covered]
-    avisos_rec = [d["key"] for d in dims if not d["obr"] and d["key"] not in covered]
+    unico = spec_fonte.eh_unico(path) or (os.path.isdir(path) and
+                                          spec_fonte.eh_unico(os.path.join(path, spec_fonte.ARQUIVO_UNICO)))
+    obrig = [d for d in dims if d["obr"] is True or (d["obr"] == "unico" and unico)]
+    faltando_obr = [d["key"] for d in obrig if d["key"] not in covered]
+    avisos_rec = [d["key"] for d in dims if d not in obrig and d["key"] not in covered]
     if not section:
         # nenhuma seção de dimensões → nada coberto (regressão: spec "calcular X" sem elicitação)
-        faltando_obr = [d["key"] for d in dims if d["obr"]]
+        faltando_obr = [d["key"] for d in obrig]
     return (len(faltando_obr) == 0), faltando_obr, avisos_rec
 
 
@@ -157,7 +164,7 @@ def main(argv):
     if not targets:
         print("nenhum requirements.md para checar (gate só dispara quando há spec).")
         return 0
-    obr_total = sum(1 for d in dims if d["obr"])
+    obr_total = sum(1 for d in dims if d["obr"] is True)
     any_fail = False
     for path in targets:
         try:
@@ -165,8 +172,9 @@ def main(argv):
         except ValueError:
             rel = path
         ok, faltando, avisos = check_spec(path, dims)
+        n = obr_total + (sum(1 for d in dims if d["obr"] == "unico") if spec_fonte.eh_unico(path) else 0)
         if ok:
-            print(f"PASS {rel}  ({obr_total}/{obr_total} dimensões obrigatórias decididas)"
+            print(f"PASS {rel}  ({n}/{n} dimensões obrigatórias decididas)"
                   + (f" · recomendadas pendentes: {', '.join(avisos)}" if avisos else ""))
         else:
             any_fail = True
