@@ -46,10 +46,10 @@ FASE 3 · A FIXTURE DA UNIÃO                              (4/5) █████
   [ ]        REGREDIU: em b6c5738 o ubuntu voltou a 36/37, mesma mutação. REABERTO
 
 FASE 4 · INCIDENTE DE EXPOSIÇÃO                          (5/5) ████████████ 100%
-  [✓] 23/09  medido: repo PÚBLICO com 36 arquivos citando Natulab/Vibra/Agidesk/Thanner
+  [✓] 23/09  medido: repo PÚBLICO com 36 arquivos citando Natulab/Vibra/Agidesk/nome do diretor
   [✓] 23/09  25 deles FORA de docs/_private (CHANGELOG, bootstrap.ps1, vereditos)
   [✓] 23/09  o dono decidiu: voltar a privado. forks=0 — ninguém copiou
-  [✓] 23/09  export-clean PROVADO: Natulab/Vibra/Thanner = 0 nas distribuições
+  [✓] 23/09  export-clean PROVADO: Natulab/Vibra/nome do diretor = 0 nas distribuições
   [✓] 23/09  Pages da fonte REMOVIDO — repo privado NÃO desativa o Pages dele
 
 FASE 5 · RELEASE v1.91.0                                 (7/7) ████████████ 100%
