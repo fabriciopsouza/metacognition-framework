@@ -58,7 +58,7 @@ exit 0.
 do ADR-115: ela consultava o git por caminho. Validado nas três plataformas em `f64cbd4`.
 
 **E o incidente que inverteu a pauta.** O repositório-fonte estava **público**, com **36 arquivos
-rastreados** citando Natulab, Vibra, Agidesk e Thanner — **25 deles fora de `docs/_private/`**,
+rastreados** citando Natulab, Vibra, Agidesk e o nome do diretor — **25 deles fora de `docs/_private/`**,
 incluindo `CHANGELOG.md`, `bootstrap.ps1` e vereditos de QA. Entre eles,
 `INCIDENTE-VAZAMENTO-2026-05-31.md`, que se descreve como *"PRIVADO · NÃO DISTRIBUIR"* e *"a chave
 para reverter"* a anonimização. Fechado no mesmo bloco, com `forks=0` — ninguém copiou.
@@ -86,7 +86,7 @@ de `href`. **Os 3 foram consertados neste release**, na fonte `guia/web/index.ht
 estava errado: o docstring de `rewrite_repo_urls` declara que o site fica em `-public`; a fonte é que
 contrariava a própria doutrina.
 
-**O que o `export-clean.py` provou:** Natulab, Vibra e Thanner dão **zero** nas distribuições
+**O que o `export-clean.py` provou:** Natulab, Vibra e o nome do diretor dão **zero** nas distribuições
 públicas, embora existam na fonte. Não era suposição — foi medido nos repos-sombra.
 
 **Quatro pendências fechadas** (`adr-113`, `canario-para-workflows`, `uniao-por-caminho`,

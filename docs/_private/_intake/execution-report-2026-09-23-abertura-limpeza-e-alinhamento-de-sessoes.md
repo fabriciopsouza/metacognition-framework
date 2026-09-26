@@ -56,7 +56,7 @@ FASE 4 · ALINHAMENTO DAS 5 SESSÕES VIVAS                 (9/9) █████
   [✓] 23/09  `da`  → NÚCLEO: canário de workflows (test_skill_contract.py, +215/-3)
   [✓] 23/09  `c4`  → NÚCLEO: RUNBOOK §3.2 em _shared/project-docs/SKILL.md
   [✓] 23/09  `5e`  → DOMÍNIO: CAPA GQ (capa-sharepoint)
-  [✓] 23/09  `67`  → DOMÍNIO: budget-ti-thanner (OPEX, entregável a diretor hoje)
+  [✓] 23/09  `67`  → DOMÍNIO: budget-opex (OPEX, entregável a diretor hoje)
   [✓] 23/09  escopo corrigido PELO DONO: unificar só quem MELHORA o framework
   [✓] 23/09  ordem dos PRs acordada: o meu primeiro (squash reescreveria o SHA)
   [✓] 23/09  bastão do núcleo aceito por esta sessão, após `da` fechar o canário

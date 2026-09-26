@@ -1,7 +1,7 @@
 # Andamento — 24/09/2026 (bloco D): OPEX por área, e o vazio que não provava nada
 
 > Execution-report de encerramento de bloco (ADR-038/052/062 · tier **OWNER** · privado,
-> não distribuído). Domínio: `C:\Users\fabriciosouza\budget-ti-thanner`, branch
+> não distribuído). Domínio: `C:\Users\fabriciosouza\budget-opex`, branch
 > `feat/areas-bloco-47-preenchimento`, PR #2 (não mergeado). **Não commitado neste repo**:
 > a árvore do framework estava na branch de outra sessão (`docs/ritos-2026-09-24-c-mrp`),
 > e trocar de branch ou commitar por cima dela violaria a regra de sessões simultâneas.
@@ -52,5 +52,5 @@ caiu: a consulta só conseguia enxergar 1 documento em 421.
 
 ## Handoff
 
-`C:\Users\fabriciosouza\budget-ti-thanner\RETOMADA-PROXIMA-SESSAO.md` — prompt para colar em
+`C:\Users\fabriciosouza\budget-opex\RETOMADA-PROXIMA-SESSAO.md` — prompt para colar em
 outra IDE, com o framework carregado em modo NON-ADMIN e o QA isolado em modelo diferente.

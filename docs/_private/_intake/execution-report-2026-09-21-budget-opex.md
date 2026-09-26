@@ -1,7 +1,7 @@
-# Execution report — 21/09/2026 — budget-ti-thanner (OPEX de TI em regime de caixa)
+# Execution report — 21/09/2026 — budget-opex (OPEX de TI em regime de caixa)
 
-**Projeto:** `C:\Users\fabriciosouza\budget-ti-thanner` (repo privado)
-**Estado do projeto:** [`ESTADO-ATUAL.md`](../../../../budget-ti-thanner/ESTADO-ATUAL.md)
+**Projeto:** `C:\Users\fabriciosouza\budget-opex` (repo privado)
+**Estado do projeto:** [`ESTADO-ATUAL.md`](../../../../budget-opex/ESTADO-ATUAL.md)
 **Entregue:** `OPEX TI 2026.xlsx`, 2 abas · 21 commits · 12 gates · 5 guardas · 2 rodadas de QA adversarial
 
 ---
