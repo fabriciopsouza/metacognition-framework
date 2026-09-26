@@ -24,8 +24,10 @@ ANTES de codificar, pergunte ao dono as decisões ainda abertas (recomendação 
     da Parte G; cada rodada da área volta como subseção datada (sim);
  3. em projeto com impacto regulado, o gerador acrescenta as categorias obrigatórias do perfil que faltarem (sim);
  e os pontos do desenho do processo (Parte H) viram linhas da planilha de confirmação (decisão do dono de 26/09).
-Modelos reais só para leitura: C:\Users\fabriciosouza\Downloads\2026-09-11-MRP\Checklist_Validacao_Cadastros_MRP_v1_1_TREPLICA-v3.xlsx
-e DEFINICOES-PCP-para-confirmacao.xlsx (conferir colunas com openpyxl read_only).
+Modelos reais só para leitura (o projeto MRP foi migrado de Downloads para o repositório sap-mrp-natulab em 26/09):
+C:\Users\fabriciosouza\sap-mrp-natulab\checklist-cadastro\Checklist_Validacao_Cadastros_MRP_v1_1_TREPLICA-v3.xlsx
+e C:\Users\fabriciosouza\sap-mrp-natulab\pcp\DEFINICOES-PCP-para-confirmacao_v1.xlsx (conferir colunas com
+openpyxl read_only; os caminhos citados no plano B3 ainda apontam para Downloads e precisam ser corrigidos).
 
 Depois: B3a-3 (ERU gerada da Parte A, relatório de validação, mudança e versão), B3c (skill project-docs enxuta),
 B2b (verificador do plano), B3b (perfil ANVISA + mapa peça→artigo + leitura primária da IN 134).
