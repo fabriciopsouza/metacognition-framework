@@ -104,6 +104,7 @@ barraria (requisito sem teste, risco alto sem mitigação, teste sem evidência,
 - ambiente-execucao: Python sem dependência obrigatória (openpyxl opcional para gerar planilha), máquina corporativa Windows
 - formato-saida: planilhas no padrão dos arquivos do MRP; relatório e matriz em md/docx/pdf; pptx executivo
 - biblioteca-consultada: nada encontrado — a biblioteca de conhecimento nasce neste plano (B3e, ADR-120)
+- escopo-e-prazo: sem marco declarado para o framework; acima: kit completo do guia de validação (cerca de 20 documentos por sistema), descartado por excesso — o próprio guia manda escalonar pelo risco; abaixo: kit comum sem verificador, descartado por não passar em inspeção (fontes.md)
 - contexto-entidade: indústria farmacêutica regulada pela ANVISA; sistemas SAP S/4HANA configurados, sistemas de pesagem e automações
 - verificacao-ancora: tabela de âncoras na Parte C, com vigência, pertinência, confiança e fonte datada
 

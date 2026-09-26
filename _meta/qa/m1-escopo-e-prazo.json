@@ -1,0 +1,51 @@
+{
+  "bloco": "m1-escopo-e-prazo",
+  "papel": "qa_critic",
+  "rodada": 1,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "veredito": "aprovar",
+  "escopo_paths": [
+    "CHANGELOG.md",
+    "_shared/discovery/elicitation-dimensions.md",
+    "docs/_private/_intake/dogfood-2026-09-26-pesquisa-confirmatoria-e-prazo.md",
+    "docs/adr/033-elicitacao-consultiva-banco-agnostico-linter-de-spec.md",
+    "docs/specs/_template-spec-unico/spec.md",
+    "docs/specs/b3-documentacao-regulada/spec.md",
+    "tools/test_spec_unico.py",
+    "_meta/qa/m1-escopo-e-prazo.json",
+    "_meta/qa/m1-escopo-e-prazo.md"
+  ],
+  "atestacao": {
+    "agentId": "a38bc5d98f5ec4c70",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic isolado, so leitura; mutacoes em copia temporaria"
+  },
+  "postura": {
+    "discovery": "docs/_private/_intake/dogfood-2026-09-26-pesquisa-confirmatoria-e-prazo.md (secoes 3 e 4, aprovadas pelo dono em 26/09)",
+    "rrc": "PASSA",
+    "metodo_senior": "aplicado: linha preenchida no plano B3 conferida contra fontes.md"
+  },
+  "resumo": "Emenda 2 do ADR-033: dimensao escopo-e-prazo obrigatoria so no arquivo unico. PASS sem achados.",
+  "verificacoes_executadas": [
+    "load_bank le obr=unico; aliases sem colisao",
+    "arquivo unico sem a linha reprova, com ela passa, placeholder reprova",
+    "mutacao: apagar a linha do banco deixa test_spec_unico vermelho",
+    "test_spec_unico, test_spec_depth, test_discovery_eval, check_core_agnostic -> PASS"
+  ],
+  "problemas": [],
+  "nao_verificado": [],
+  "recomendacao_do_critico": "PASS",
+  "data": "2026-09-26T19:00:00Z",
+  "sha_revisado": "6dc7e59c815fcdb4a5d8a6e81f62a874d1540e98",
+  "blobs_revisados": {
+    "CHANGELOG.md": "261c69a0c7bc97b53418b273999ed70548004796",
+    "_shared/discovery/elicitation-dimensions.md": "60b2e93664280c2973d2037898c22054cf1996fb",
+    "docs/_private/_intake/dogfood-2026-09-26-pesquisa-confirmatoria-e-prazo.md": "79a1ed5fb4c044078b5f87b7108152d80e8b4a1d",
+    "docs/adr/033-elicitacao-consultiva-banco-agnostico-linter-de-spec.md": "e27900ac3cee66989a39df00623f6faa2b81030c",
+    "docs/specs/_template-spec-unico/spec.md": "709974cab222016683861e52698ad40519e669f5",
+    "docs/specs/b3-documentacao-regulada/spec.md": "58d35d7de7aa2f6db5dcace22febd720ec420480",
+    "tools/test_spec_unico.py": "ddb81c0adfc1ea055efba4b8b219629dc6800323"
+  }
+}
