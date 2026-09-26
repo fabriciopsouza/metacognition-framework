@@ -7,15 +7,15 @@
 
 O dono assumiu a construção do F1; o processo foi redesenhado sobre o BPMN dele (CAPA ↔ BAU, só por
 mensagem), e o projeto ganhou runbooks do processo inteiro, glossário, ontologia, dicionário de dados,
-ponto de retomada e pastas limpas — publicado por PR após QA isolado aprovado com ressalvas.
+ponto de retomada e pastas limpas — publicado pelo PR #3 do capa-sharepoint (merge `2408433`, 26/09) após QA isolado aprovado com ressalvas.
 
 ## Métricas
 
 | Métrica | Valor |
 |---|---|
 | Tokens | **NÃO MEDIDO** |
-| Commits no domínio publicados neste PR | 23 (medido: `git rev-list --count origin/main..main`) |
-| Rodadas de QA isolado (Sonnet, autor Opus) | 18, em 7 blocos; 8 reprovações |
+| Commits no domínio publicados | 24 no PR #3 (23 medidos com `git rev-list --count origin/main..main` antes do QA de fechamento, +1 da correção dele) |
+| Rodadas de QA isolado (Sonnet, autor Opus) | 18, em 7 blocos; 8 reprovações — **contagem da sessão** (chamadas ao revisor), `INFERIDO` quanto ao registro: o git guarda 15 commits "QA rN", porque rodada aprovada sem correção não gera commit. Mais 1 rodada no fechamento (reprovou: este report afirmava a publicação antes de ela acontecer) |
 | Correções de rumo pelo dono | 3 no mesmo assunto (sentido CAPA ↔ BAU) |
 
 ## O que aconteceu
@@ -57,7 +57,7 @@ ponto de retomada e pastas limpas — publicado por PR após QA isolado aprovado
 
 ## Procedência
 
-- Domínio: `C:\Users\fabriciosouza\capa-sharepoint`, publicado por PR em 26/09.
+- Domínio: `C:\Users\fabriciosouza\capa-sharepoint` — PR https://github.com/fabriciopsouza/capa-sharepoint/pull/3, merge `2408433`, 26/09.
 - Fontes lidas, só leitura: `C:\Users\fabriciosouza\OneDrive - Natulab Laboratorio S.A\Documents\CAPA-BAU.bpm`;
   `C:\Users\fabriciosouza\excelencia-master-plan` (referência de estilo).
 - A reunião que o dono citou **não foi encontrada** no disco; a única transcrição (02/09) não menciona o BAU.
