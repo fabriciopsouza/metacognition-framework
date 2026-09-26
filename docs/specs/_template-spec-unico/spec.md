@@ -114,6 +114,7 @@ Dimensões/dados sabidos ausentes mas não impedem entrega?
 - ambiente-execucao: <instala/roda em máquina limpa? entry-point não-interativo?>
 - formato-saida: <relatório/export; faixas/metas visíveis; rastreável à fonte?>
 - biblioteca-consultada: <o que a biblioteca da empresa já tinha e foi reusado, ou "nada encontrado"; `python tools/knowledge_catalog.py --recall --context "<termos>" --conhecimento <raiz>`>
+- escopo-e-prazo: <marco que governa (ou "sem marco") e posição no caminho crítico; acima: <escopo maior, custo, cabe no marco?>; abaixo: <escopo menor, custo>>
 
 ## Mapeamento de campo-fonte (ADR-035 — obrigatório quando há colunas-irmãs ambíguas)
 

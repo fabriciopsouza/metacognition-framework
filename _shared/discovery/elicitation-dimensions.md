@@ -44,6 +44,7 @@ cada chave obrigatória (`obr=sim`). Aliases permitem que a spec use o vocabulá
 | formato-saida | saida, relatorio, export, entrega, artefato | sim | Formato final — relatório formatado, exportável, faixas/metas visíveis? | export legível + números rastreáveis à fonte |
 | contexto-entidade | contexto, entidade, cliente, perfil-entidade, pesquisa-de-contexto | nao | Quem é a entidade/cliente (setor, porte, modelo, escopo, posição) e o domínio foi PESQUISADO além do artefato dado? | quando há stake → pesquisar perfil+domínio e registrar em context-brief |
 | verificacao-ancora | ancora, vigencia, pertinencia, fonte-aplicavel | nao | Cada norma/benchmark citado é VIGENTE e PERTINENTE a ESTE tipo de entidade (acusar mesmo se deliberado)? | verificar vigência+pertinência de toda âncora; registrar no context-brief |
+| escopo-e-prazo | prazo, marco, caminho-critico, escopo-alternativo | unico | Qual o marco que governa e onde este entregável fica no caminho crítico? Um nível de escopo acima e um abaixo do pedido, com custo e se cabe no marco? | declarar o marco (ou "sem marco") e as duas alternativas antes de convergir; o prazo decide entre elas |
 | biblioteca-consultada | biblioteca, conhecimento-consultado, reuso-de-conhecimento | unico | O que a biblioteca de conhecimento da empresa já tinha sobre isto — o que foi reusado, ou "nada encontrado"? | consultar antes de pesquisar: `knowledge_catalog --recall --conhecimento <raiz>` (ADR-120) |
 
 > **Editável:** novas dimensões universais podem entrar (régua §0: só se universais e não-domínio).
