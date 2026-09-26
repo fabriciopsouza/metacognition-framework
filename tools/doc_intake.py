@@ -283,7 +283,138 @@ def build_manifest(target: str, chunk_chars: int, overlap: int, with_text: bool)
     }
 
 
+# ── Manifesto de evidência de desenvolvimento (B3d, ADR-121) ─────────────────────────────────────────────
+# Consulta, extração em planilha, runbook e passo a passo viram evidência rastreável: caminho absoluto, sha256,
+# data, origem (consulta ou passo que gerou) e o requisito ou teste que embasam. Conteúdo mudou = nome novo;
+# arquivo marcado sensível não pode estar no git.
+#   python doc_intake.py evidencia registrar <arquivo> --manifesto M --origem "<...>" --liga "REQ-01, TESTE-02"
+#                                   [--data dd/mm/aaaa] [--sensivel]
+#   python doc_intake.py evidencia verificar <M>       (exit 1 com achado)
+
+def _ev_ler(manifesto):
+    if not os.path.isfile(manifesto):
+        return {"manifest_version": "evidencia-1", "entradas": []}
+    with open(manifesto, encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+def _ev_sha(caminho):
+    with open(caminho, "rb") as fh:
+        return sha256_bytes(fh.read())
+
+
+def _ev_data_valida(txt):
+    import datetime
+    import re
+    m = re.fullmatch(r"(\d{1,2})/(\d{1,2})/(\d{4})", (txt or "").strip())
+    if not m:
+        return False
+    try:
+        datetime.date(int(m.group(3)), int(m.group(2)), int(m.group(1)))
+        return True
+    except ValueError:
+        return False
+
+
+def evidencia_registrar(arquivo, manifesto, origem, liga, data, sensivel):
+    """Registra ou confirma um arquivo. Devolve (ok, mensagem). Mesmo caminho com sha diferente é recusado."""
+    if not os.path.isfile(arquivo):
+        return False, f"arquivo não existe: {arquivo}"
+    if not (origem or "").strip() or not (liga or "").strip():
+        return False, "--origem e --liga são obrigatórios (o que gerou o arquivo e o requisito ou teste que ele embasa)"
+    if not _ev_data_valida(data):
+        return False, f"data inválida: {data!r} (use dd/mm/aaaa)"
+    caminho = os.path.abspath(arquivo)
+    sha = _ev_sha(caminho)
+    try:
+        m = _ev_ler(manifesto)
+    except (OSError, ValueError) as ex:
+        return False, f"manifesto ilegível ({ex}): corrija ou restaure {manifesto} antes de registrar"
+    for e in m["entradas"]:
+        if os.path.normcase(e["caminho"]) == os.path.normcase(caminho):
+            if e["sha256"] == sha:
+                return True, f"já registrado: {caminho}"
+            return False, (f"conteúdo de {caminho} mudou: grave com nome novo e mova a versão anterior para "
+                           f"_obsoleto/ com o motivo no nome")
+    m["entradas"].append({"caminho": caminho, "sha256": sha, "bytes": os.path.getsize(caminho), "data": data,
+                          "origem": origem.strip(), "liga": liga.strip(), "sensivel": bool(sensivel)})
+    os.makedirs(os.path.dirname(os.path.abspath(manifesto)) or ".", exist_ok=True)
+    with open(manifesto, "w", encoding="utf-8") as fh:
+        json.dump(m, fh, ensure_ascii=False, indent=2)
+    return True, f"registrado: {caminho}"
+
+
+def _ev_no_git(caminho):
+    """True se o arquivo está rastreado pelo git do repositório que o contém."""
+    import subprocess
+    pasta = os.path.dirname(caminho)
+    r = subprocess.run(["git", "-C", pasta, "ls-files", "--error-unmatch", os.path.basename(caminho)],
+                       capture_output=True, text=True)
+    return r.returncode == 0
+
+
+def evidencia_verificar(manifesto):
+    """Achados: arquivo sumiu; conteúdo mudou sem nome novo; sensível rastreado pelo git; entrada incompleta."""
+    ach = []
+    try:
+        m = _ev_ler(manifesto)
+    except (OSError, ValueError) as ex:
+        return [f"manifesto ilegível: {ex}"]
+    if not os.path.isfile(manifesto):
+        return [f"manifesto não existe: {manifesto}"]
+    for e in m.get("entradas", []):
+        c = e.get("caminho", "")
+        for k in ("caminho", "sha256", "data", "origem", "liga"):
+            if not str(e.get(k, "")).strip():
+                ach.append(f"{c or '?'}: falta {k}")
+        if not os.path.isabs(c):
+            ach.append(f"{c}: caminho não é absoluto")
+            continue
+        if not os.path.isfile(c):
+            ach.append(f"{c}: arquivo não existe mais")
+            continue
+        if _ev_sha(c) != e.get("sha256"):
+            ach.append(f"{c}: conteúdo mudou sem nome novo (sha256 diferente do registrado)")
+        if e.get("sensivel") and _ev_no_git(c):
+            ach.append(f"{c}: marcado sensível e está rastreado pelo git")
+    return ach
+
+
+def evidencia_main(argv):
+    import datetime
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
+    if not argv or argv[0] not in ("registrar", "verificar"):
+        sys.stderr.write("uso: doc_intake.py evidencia registrar|verificar ... (ver cabeçalho do bloco)\n")
+        return 2
+    if argv[0] == "verificar":
+        if len(argv) != 2:
+            sys.stderr.write("uso: doc_intake.py evidencia verificar <manifesto.json>\n")
+            return 2
+        ach = evidencia_verificar(argv[1])
+        for a in ach:
+            print(f"  - {a}")
+        print("RESULTADO:", f"FAIL ({len(ach)})" if ach else "PASS (evidência íntegra)")
+        return 1 if ach else 0
+    ap = argparse.ArgumentParser(prog="doc_intake.py evidencia registrar")
+    ap.add_argument("arquivo")
+    ap.add_argument("--manifesto", required=True)
+    ap.add_argument("--origem", required=True)
+    ap.add_argument("--liga", required=True)
+    ap.add_argument("--data", default=datetime.date.today().strftime("%d/%m/%Y"))
+    ap.add_argument("--sensivel", action="store_true")
+    a = ap.parse_args(argv[1:])
+    ok, msg = evidencia_registrar(a.arquivo, a.manifesto, a.origem, a.liga, a.data, a.sensivel)
+    print(("" if ok else "RECUSADO: ") + msg)
+    return 0 if ok else 1
+
+
 def main(argv=None):
+    argv = sys.argv[1:] if argv is None else argv
+    if argv and argv[0] == "evidencia":
+        return evidencia_main(argv[1:])
     ap = argparse.ArgumentParser(description="Parse determinístico + chunk + manifesto (ADR-029).")
     ap.add_argument("target", help="arquivo ou pasta a ingerir")
     ap.add_argument("--out", default="", help="caminho do manifesto JSON (default: stdout)")

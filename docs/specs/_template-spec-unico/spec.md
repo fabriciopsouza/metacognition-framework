@@ -336,6 +336,29 @@ product_type: <ide-code | executable | gui-app | data-notebook | data-pipeline |
 |---|---|---|---|---|---|---|---|
 | TESTE-01 | REQ-01 | <funcional \| integridade de dados \| trilha de auditoria \| ...> | <passos> | <resultado esperado> | pendente | pendente | pendente |
 
+# Parte H — Processo
+> _(quando o projeto muda ou cria um processo; apague se não se aplica)_ Fonte do desenho do processo:
+> `python tools/desenho_processo.py <spec.md> --out-dir <pasta>` gera o HTML de revisão e o docx — nunca
+> edite os gerados. Uma linha por passo, em ordem. **Próximo:** `P-02`, ou em decisão `sim: P-03; não: P-05`
+> (vazio = fim). Mais de 15 passos: agrupe em **Macroação** (o desenho sai em dois níveis) ou registre
+> `--aceito-mais-de-15 "<frase do dono, dd/mm/aaaa>"`. A área responde na planilha de confirmação, não no HTML.
+
+| Passo | Macroação | Descrição | Papel | Gatilho | Saída | Próximo | Regra | Controle |
+|---|---|---|---|---|---|---|---|---|
+| P-01 | <macroação> | <o que se faz> | <papel> | <o que dispara> | <o que sai> | P-02 | <regra de negócio> | <ponto de controle> |
+| P-02 | <macroação> | <decisão> | <papel> | — | — | sim: P-03; não: P-01 | — | — |
+| P-03 | <macroação> | <o que se faz> | <papel> | — | <o que sai> | | — | — |
+
+### Pontos para aprovação
+| # | Ponto | Por que importa |
+|---|---|---|
+| 1 | <o que a área precisa aprovar> | <consequência> |
+
+### Perguntas em aberto
+| # | Pergunta | Quem decide |
+|---|---|---|
+| 1 | <pergunta> | <papel> |
+
 # Decisões
 | # | Decisão | Alternativas | Recomendação | Resposta do dono |
 |---|---|---|---|---|

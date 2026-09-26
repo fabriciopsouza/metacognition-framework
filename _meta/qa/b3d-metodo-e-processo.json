@@ -1,0 +1,179 @@
+{
+  "bloco": "b3d-metodo-e-processo",
+  "papel": "qa_critic",
+  "rodada": 3,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "veredito": "aprovar",
+  "escopo_paths": [
+    ".agent/workflows/start-session.md",
+    "CAPABILITIES.md",
+    "CHANGELOG.md",
+    "CLAUDE.md",
+    "capabilities.json",
+    "docs/adr/121-metodo-de-projeto-desenho-do-processo-e-evidencia.md",
+    "docs/specs/_template-spec-unico/spec.md",
+    "docs/specs/b3-documentacao-regulada/spec.md",
+    "docs/specs/plano-modo-planejado/PLANO.md",
+    "guia/METODO-DE-PROJETO.md",
+    "guia/web/index.html",
+    "tools/desenho_processo.py",
+    "tools/doc_intake.py",
+    "tools/spec_fonte.py",
+    "tools/test_desenho_processo.py",
+    "tools/test_evidencia.py",
+    "_meta/qa/b3d-metodo-e-processo.json",
+    "_meta/qa/b3d-metodo-e-processo.md"
+  ],
+  "atestacao": {
+    "agentId": "a0137d1c08f2408b9",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic isolado, primeiro plano, so leitura; experimentos em %TEMP% Rodadas anteriores: a49653d3ca8d24d01 (1), aff590f529ac52cce (2)."
+  },
+  "postura": {
+    "discovery": "docs/specs/b3-documentacao-regulada/spec.md (REQ-13 a 15, criterios 14 a 16) e decisoes do dono de 26/09",
+    "rrc": "PASSA",
+    "metodo_senior": "aplicado: renderizacao conferida no Edge; comandos do metodo conferidos"
+  },
+  "resumo": "B3d (ADR-121): metodo unico, desenho do processo gerado, manifesto de evidencia. Rodada 3 PASS sem achados.",
+  "verificacoes_executadas": [
+    "falha na escrita reproduzida: tres anteriores intactos, sem .anterior, sem traceback",
+    "primeira geracao com falha e docx nao gerado: pasta limpa, rc=1",
+    "correcoes das rodadas 1 e 2 de pe",
+    "7 canarios PASS"
+  ],
+  "problemas": [
+    {
+      "severidade": "CRITICA",
+      "estado": "corrigido",
+      "local": "tools/doc_intake.py:evidencia_registrar",
+      "descricao": "manifesto corrompido derruba o registrar com traceback",
+      "cenario_de_falha": "manifesto com JSON invalido -> JSONDecodeError nao tratado"
+    },
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "tools/desenho_processo.py:main",
+      "descricao": "docx aberto no Word derruba a regravacao e deixa html/md/docx inconsistentes",
+      "cenario_de_falha": "handle aberto no docx -> PermissionError; md ja apagado"
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/desenho_processo.py:_papeis",
+      "descricao": "papel com caixa ou acento diferente vira raia separada",
+      "cenario_de_falha": "Comprador/comprador/COMPRADOR -> 3 raias"
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "tools/doc_intake.py:evidencia_main",
+      "descricao": "acentos corrompidos no console Windows",
+      "cenario_de_falha": "mensagem 'j? registrado' em cp1252"
+    },
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "tools/desenho_processo.py:main (fase de escrita)",
+      "descricao": "falha ao escrever os novos gerados nao volta ao estado anterior",
+      "cenario_de_falha": "erro no open do .md dentro do export -> traceback; html novo escrito; md/docx validos so como .anterior"
+    }
+  ],
+  "nao_verificado": [
+    "mutacoes 20/20 (script de sessao)"
+  ],
+  "recomendacao_do_critico": "PASS",
+  "data": "2026-09-26T21:20:00Z",
+  "sha_revisado": "3e387610b3fa97d67075916bf5e39738fbca43b1",
+  "blobs_revisados": {
+    ".agent/workflows/start-session.md": "9311bd88a531db487ae905e706ee50c13f569afd",
+    "CAPABILITIES.md": "f2a414827385757b642bf8e9faab248ef341785d",
+    "CHANGELOG.md": "6b64e691e75e9317d6bfcc0fed4ec0b9800ca011",
+    "CLAUDE.md": "b1c0306febd8c603ee408ddb146fa597fff32fca",
+    "capabilities.json": "30537e25d45380a2af61ddb1b62ea08af9c1edc4",
+    "docs/adr/121-metodo-de-projeto-desenho-do-processo-e-evidencia.md": "b83de93cf08c86f6d31b10f7bdfeff2a9f9f69f6",
+    "docs/specs/_template-spec-unico/spec.md": "39041960411c90883cc10d64cb2059d890a3f803",
+    "docs/specs/b3-documentacao-regulada/spec.md": "0d8553c631849a962f47ebd717df85774f58dc93",
+    "docs/specs/plano-modo-planejado/PLANO.md": "1b83dc8115d15aca97dd4c865593c300a3a0b368",
+    "guia/METODO-DE-PROJETO.md": "b7d4961a0e8fc3d9bd2f3005e2e904f29b818767",
+    "guia/web/index.html": "84b65cfc2606af998c0ad77205e525535711b345",
+    "tools/desenho_processo.py": "d12dc44a657b1b719c3245c876f6ff78812ff872",
+    "tools/doc_intake.py": "f75301a6f63893b43d4f958074d11c87964f16a0",
+    "tools/spec_fonte.py": "e421d3fb64b9ccbd1277adf5b501fa3603dfcd38",
+    "tools/test_desenho_processo.py": "dfa8c507532c6b297de0f96590b0594b2b181f26",
+    "tools/test_evidencia.py": "418c1bccb5d66a2de73d61f1497f47558cceee4b"
+  },
+  "substitui": [
+    {
+      "rodada": 1,
+      "data": "2026-09-26T20:00:00Z",
+      "recomendacao": "corrigir",
+      "sha_revisado": "3e387610b3fa97d67075916bf5e39738fbca43b1",
+      "agentId": "a49653d3ca8d24d01",
+      "escopo_paths": [
+        ".agent/workflows/start-session.md",
+        "CAPABILITIES.md",
+        "CHANGELOG.md",
+        "CLAUDE.md",
+        "capabilities.json",
+        "docs/adr/121-metodo-de-projeto-desenho-do-processo-e-evidencia.md",
+        "docs/specs/_template-spec-unico/spec.md",
+        "docs/specs/b3-documentacao-regulada/spec.md",
+        "docs/specs/plano-modo-planejado/PLANO.md",
+        "guia/METODO-DE-PROJETO.md",
+        "guia/web/index.html",
+        "tools/desenho_processo.py",
+        "tools/doc_intake.py",
+        "tools/spec_fonte.py",
+        "tools/test_desenho_processo.py",
+        "tools/test_evidencia.py",
+        "_meta/qa/b3d-metodo-e-processo.json",
+        "_meta/qa/b3d-metodo-e-processo.md"
+      ],
+      "achados_fp": [
+        "ALTA|tools/desenho_processo.py:main",
+        "BAIXA|tools/doc_intake.py:evidencia_main",
+        "CRITICA|tools/doc_intake.py:evidencia_registrar",
+        "MEDIA|tools/desenho_processo.py:_papeis"
+      ],
+      "reinicio": false
+    },
+    {
+      "rodada": 2,
+      "data": "2026-09-26T20:40:00Z",
+      "recomendacao": "corrigir",
+      "sha_revisado": "3e387610b3fa97d67075916bf5e39738fbca43b1",
+      "agentId": "aff590f529ac52cce",
+      "escopo_paths": [
+        ".agent/workflows/start-session.md",
+        "CAPABILITIES.md",
+        "CHANGELOG.md",
+        "CLAUDE.md",
+        "capabilities.json",
+        "docs/adr/121-metodo-de-projeto-desenho-do-processo-e-evidencia.md",
+        "docs/specs/_template-spec-unico/spec.md",
+        "docs/specs/b3-documentacao-regulada/spec.md",
+        "docs/specs/plano-modo-planejado/PLANO.md",
+        "guia/METODO-DE-PROJETO.md",
+        "guia/web/index.html",
+        "tools/desenho_processo.py",
+        "tools/doc_intake.py",
+        "tools/spec_fonte.py",
+        "tools/test_desenho_processo.py",
+        "tools/test_evidencia.py",
+        "_meta/qa/b3d-metodo-e-processo.json",
+        "_meta/qa/b3d-metodo-e-processo.md"
+      ],
+      "achados_fp": [
+        "ALTA|tools/desenho_processo.py:main",
+        "ALTA|tools/desenho_processo.py:main (fase de escrita)",
+        "BAIXA|tools/doc_intake.py:evidencia_main",
+        "CRITICA|tools/doc_intake.py:evidencia_registrar",
+        "MEDIA|tools/desenho_processo.py:_papeis"
+      ],
+      "reinicio": false
+    }
+  ],
+  "substitui_reprovacao": true
+}

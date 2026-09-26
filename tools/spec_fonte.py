@@ -35,6 +35,8 @@ PARTES = {
     # Partes do kit regulado (B3, ADR-119). Não existem no formato antigo: arquivo equivalente None.
     "riscos": ("F", "Riscos", None),
     "testes": ("G", "Testes e evidências", None),
+    # Desenho do processo (B3d, ADR-121): tabela de passos que gera o HTML de revisão e o docx.
+    "processo": ("H", "Processo", None),
 }
 _CERCA = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 _PARTE = re.compile(r"^ {0,3}#\s+Parte\s+([A-Z])\b")
