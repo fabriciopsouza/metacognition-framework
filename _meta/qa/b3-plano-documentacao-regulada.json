@@ -1,0 +1,50 @@
+{
+  "bloco": "b3-plano-documentacao-regulada",
+  "papel": "qa_critic",
+  "rodada": 4,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "escopo_paths": [
+    "docs/specs/b3-documentacao-regulada/spec.md",
+    "docs/specs/b3-documentacao-regulada/fontes.md",
+    "_meta/qa/b3-plano-documentacao-regulada.json",
+    "_meta/qa/b3-plano-documentacao-regulada.md"
+  ],
+  "atestacao": {
+    "agentId": "a6e29bb1bb764020e",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic isolado, primeiro plano, ratificacao da Parte B (ADR-117). Rodadas anteriores do plano (todas PASS-COM-RESSALVAS, achados corrigidos): ac87255d7a82c79af, a4289d562f1499e00, aa60851910274dd28."
+  },
+  "postura": {
+    "discovery": "docs/specs/b3-documentacao-regulada/fontes.md (pesquisa ANVISA com fonte e data) + leitura dos modelos do dono (planilhas do MRP, projeto OPEX, desenho de processo de CAPA)",
+    "rrc": "PASSA",
+    "metodo_senior": "aplicado: fontes canonicas com marca de confianca e lacunas declaradas em fontes.md"
+  },
+  "resumo": "Plano B3 (formalizacao de projeto enxuta para ambiente regulado, metodo unico de projeto, desenho de processo gerado, evidencia de desenvolvimento, conhecimento contextual): 18 requisitos aprovados pelo dono em 26/09 (D1-D9), 22 criterios de aceite ratificados. Plano, sem implementacao.",
+  "verificacoes_executadas": [
+    "check_spec_depth, check_completeness, check_context_brief, check_field_mapping -> PASS (revisora e autor)",
+    "colunas das planilhas do dono conferidas com openpyxl read_only (revisoras r2 e r3)",
+    "ratificacao da Parte B: cada criterio binario, mede o requisito citado, implementacao errada reprova"
+  ],
+  "problemas": [
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "Parte B",
+      "descricao": "ratificacao: 8 ajustes (criterio 1 media diferenca qualquer; 3 fundia dois requisitos e omitia as 4 categorias GxP; 5 sem comando; 6 no requisito errado; 16 sem dado sensivel fora do git; faltavam D1 e D2; ordem)"
+    }
+  ],
+  "nao_verificado": [
+    "Execucao: nenhum requisito implementado ainda — este veredito cobre o plano."
+  ],
+  "recomendacao_do_critico": "RATIFICADO-COM-AJUSTES; ajustes aplicados pelo autor",
+  "nota_do_autor": "Plano refeito depois da cobranca do dono: a primeira versao do B3 nao tinha pesquisa, critica nem revisao.",
+  "data": "2026-09-26T03:40:41Z",
+  "sha_revisado": "7a9a6ae2124c684e33bd64285ed2de7877a010ee",
+  "blobs_revisados": {
+    "docs/specs/b3-documentacao-regulada/spec.md": "c7c1d90128323415abed8c71e3efeaef46395aea",
+    "docs/specs/b3-documentacao-regulada/fontes.md": "bbbde8747e041d0ebea949fef23c059148242865"
+  }
+}
