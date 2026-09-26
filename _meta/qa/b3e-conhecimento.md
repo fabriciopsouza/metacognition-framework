@@ -11,11 +11,11 @@
 
 ## Substitui vereditos anteriores deste bloco
 
-> **ATENCAO: este veredito substitui uma REPROVACAO.** Leia os antecedentes antes de tratar o bloco como aprovado.
-
 - rodada 1 · 2026-09-26T16:40:00Z · **corrigir** · sha `6f247369cbdc` · agentId `ae8eb988d9d5e2a16`
   - cobria 31 caminho(s): .agent/skills/discovery/SKILL.md, .agent/skills/docops/SKILL.md, .claude/global/CLAUDE-global.md, CAPABILITIES.md …
 - rodada 2 · 2026-09-26T17:30:00Z · **corrigir** · sha `6f247369cbdc` · agentId `ab523c78962d0b793`
+  - cobria 31 caminho(s): .agent/skills/discovery/SKILL.md, .agent/skills/docops/SKILL.md, .claude/global/CLAUDE-global.md, CAPABILITIES.md …
+- rodada 3 · 2026-09-26T18:10:00Z · **aprovar** · sha `6f247369cbdc` · agentId `a1c73b1fdf84cdf66`
   - cobria 31 caminho(s): .agent/skills/discovery/SKILL.md, .agent/skills/docops/SKILL.md, .claude/global/CLAUDE-global.md, CAPABILITIES.md …
 
 ## Problemas

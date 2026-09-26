@@ -29,7 +29,8 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   `biblioteca-consultada` com `obr=unico` (obrigatória só no arquivo único).
 - **Regra global §6: comando permanente `status`** — tabela checklist com % por bloco + 3 linhas (pedido repetido do
   dono). `check_rules_parity`: 19 cláusulas.
-- Débito DB1 incorporado ao B3e. QA: rodada 1 PASS-COM-RESSALVAS (2 ALTA — campos sem `##` e entrada com `###`
+- A biblioteca de consultas reutilizáveis pedida pelo dono em 26/09 (débito DB1) passou a ser parte do B3e, sem
+  plano nem estrutura próprios. QA: rodada 1 PASS-COM-RESSALVAS (2 ALTA — campos sem `##` e entrada com `###`
   sumiam em silêncio); rodada 2 PASS-COM-RESSALVAS (1 ALTA — falso positivo com campo depois do SQL); ambas
   corrigidas. Prova: `test_conhecimento` (34 sabotagens, 8 exceções; 38/38 mutações mortas),
   `test_spec_unico` (j). Site: contagens atualizadas.
