@@ -119,13 +119,14 @@
   ],
   "recomendacao_do_critico": "PASS",
   "data": "2026-09-26T18:10:00Z",
-  "sha_revisado": "6f247369cbdcf83762898e603a21bc02d5b1497d",
+  "nota_do_autor": "Pos-veredito: o canario test_escrita_padrao (norma de escrita, A.0) reprovou 1 frase do CHANGELOG ('Debito DB1 incorporado ao B3e.' so com codigos). Frase reescrita com a explicacao; sem mudanca de codigo nem de numero. Carimbo refeito sobre o indice atual.",
+  "sha_revisado": "6dc7e59c815fcdb4a5d8a6e81f62a874d1540e98",
   "blobs_revisados": {
     ".agent/skills/discovery/SKILL.md": "625004f4f007306d382a0eae8a8e747d9bc0148e",
     ".agent/skills/docops/SKILL.md": "48867858a8e954e035e23cc5ced70f9d459efc82",
     ".claude/global/CLAUDE-global.md": "10ed451af7a971819c9d4adc8da83cd0d0640561",
     "CAPABILITIES.md": "3425fcac54f866f54788a47af9c9d33896662531",
-    "CHANGELOG.md": "225025b58c5d29e951adc39c65686be27637e598",
+    "CHANGELOG.md": "a00d99932ce33c3d82c963a48ab250685984badc",
     "_shared/discovery/elicitation-dimensions.md": "24f4c553666967cfece40601289c0ccec6dc4229",
     "capabilities.json": "fc4ed0e3cbb86d48d8889413613c57a82c4a7c00",
     "docs/_backlog/gaps-otimizacao.md": "22087944c529059ffde4cfd9541f0eb477a9894a",
@@ -135,7 +136,7 @@
     "docs/_private/conhecimento/conhecimento.json": "eeebc969378c85d1995925280e702718c3c114b5",
     "docs/adr/120-biblioteca-de-conhecimento-metodo-e-verificador.md": "057ac3da40684cd0727f854ef4f7bbecdd99898b",
     "docs/specs/_template-spec-unico/spec.md": "18bb1355e9160f21bffc72d10fdaeece355a9802",
-    "docs/specs/b3-documentacao-regulada/spec.md": "6ac2e038bdadbe90c9af63441cfd4ea187e13d97",
+    "docs/specs/b3-documentacao-regulada/spec.md": "6e91f9aea728b5a079eacde010422c076d161272",
     "docs/specs/plano-modo-planejado/PLANO.md": "54b68be47b75c1eaa5abf248cfe410fc20cc1d3e",
     "exemplos/conhecimento/_modelo/INDICE-PROJETOS.md": "6cd295ef94d680af0d8ba46ada08f8a578e3aa94",
     "exemplos/conhecimento/_modelo/README.md": "aa6ffd185ffa8aeaf6a16969055c148e65ae2170",
@@ -248,7 +249,55 @@
         "MEDIA|tools/knowledge_catalog.py:cmd_recall"
       ],
       "reinicio": false
+    },
+    {
+      "rodada": 3,
+      "data": "2026-09-26T18:10:00Z",
+      "recomendacao": "aprovar",
+      "sha_revisado": "6f247369cbdcf83762898e603a21bc02d5b1497d",
+      "agentId": "a1c73b1fdf84cdf66",
+      "escopo_paths": [
+        ".agent/skills/discovery/SKILL.md",
+        ".agent/skills/docops/SKILL.md",
+        ".claude/global/CLAUDE-global.md",
+        "CAPABILITIES.md",
+        "CHANGELOG.md",
+        "_shared/discovery/elicitation-dimensions.md",
+        "capabilities.json",
+        "docs/_backlog/gaps-otimizacao.md",
+        "docs/_private/_intake/dogfood-2026-09-26-pesquisa-confirmatoria-e-prazo.md",
+        "docs/_private/conhecimento/INDICE-PROJETOS.md",
+        "docs/_private/conhecimento/README.md",
+        "docs/_private/conhecimento/conhecimento.json",
+        "docs/adr/120-biblioteca-de-conhecimento-metodo-e-verificador.md",
+        "docs/specs/_template-spec-unico/spec.md",
+        "docs/specs/b3-documentacao-regulada/spec.md",
+        "docs/specs/plano-modo-planejado/PLANO.md",
+        "exemplos/conhecimento/_modelo/INDICE-PROJETOS.md",
+        "exemplos/conhecimento/_modelo/README.md",
+        "exemplos/conhecimento/_modelo/conhecimento.json",
+        "exemplos/conhecimento/_modelo/empresas/empresa-exemplo/DICIONARIO.md",
+        "exemplos/conhecimento/_modelo/empresas/empresa-exemplo/area-exemplo/assunto-exemplo.md",
+        "exemplos/conhecimento/_modelo/perfis/perfil-exemplo/DICIONARIO.md",
+        "guia/web/index.html",
+        "tools/check_rules_parity.py",
+        "tools/check_spec_depth.py",
+        "tools/conhecimento.py",
+        "tools/knowledge_catalog.py",
+        "tools/test_conhecimento.py",
+        "tools/test_spec_unico.py",
+        "_meta/qa/b3e-conhecimento.json",
+        "_meta/qa/b3e-conhecimento.md"
+      ],
+      "achados_fp": [
+        "ALTA|tools/conhecimento.py:_blocos",
+        "ALTA|tools/conhecimento.py:_ler_entradas",
+        "BAIXA|.claude/global/claude-global.md secao 9",
+        "MEDIA|tools/check_spec_depth.py:main",
+        "MEDIA|tools/conhecimento.py:proibidos",
+        "MEDIA|tools/knowledge_catalog.py:cmd_recall"
+      ],
+      "reinicio": false
     }
-  ],
-  "substitui_reprovacao": true
+  ]
 }
