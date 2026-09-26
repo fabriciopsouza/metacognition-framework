@@ -255,10 +255,10 @@ barraria (requisito sem teste, risco alto sem mitigação, teste sem evidência,
 - [ ] T6 Clonar `exemplos\dominio-regulado\compliance-profile-saude-dispositivo.json` para `compliance-profile-farma-anvisa.json` (ADR-043) e preencher: normas (RDC 658/2022, IN 134/2022, IN 138/2022, Guia 33/2020), controles, e o mapa peça do kit → artigo num arquivo ao lado, `exemplos\dominio-regulado\farma-anvisa-mapa-normas.md` (o schema do perfil não tem campo para isso; não estender o schema), com a marca de confiança de cada citação; leitura primária da IN 134/2022 antes de marcar CONFIRMADO.
 
 ### B3d — Método único de projeto (depende de D7/D8)
-- [ ] T8 `guia\METODO-DE-PROJETO.md`: fluxo numerado (elicitação → confirmação da área → especificação → desenho do processo → testes e evidências → liberação → operação), onde mora cada peça; citado no `CLAUDE.md` e no início de sessão.
-- [ ] T9 Parte Processo na especificação (passos, papéis, regras, gatilhos), a partir do mapeamento de processo existente.
-- [ ] T10 Gerador especificação → desenho do processo em HTML de revisão, no padrão do modelo de CAPA, com papéis genéricos no núcleo; o docx controlado sai do `tools/gen_exec_doc.py` existente.
-- [ ] T11 Manifesto de evidência de desenvolvimento (REQ-15) com `tools/doc_intake.py`; verificador de existência e sha256.
+- [x] T8 (ADR-121; prova: `tools\test_desenho_processo.py` (e)) `guia\METODO-DE-PROJETO.md`: fluxo numerado (elicitação → confirmação da área → especificação → desenho do processo → testes e evidências → liberação → operação), onde mora cada peça; citado no `CLAUDE.md` e no início de sessão.
+- [x] T9 (Parte H do arquivo único, ADR-121) Parte Processo na especificação (passos, papéis, regras, gatilhos), a partir do mapeamento de processo existente.
+- [x] T10 (`tools\desenho_processo.py`; prova: `test_desenho_processo` e 20/20 mutações mortas; raias verticais por papel e macroações acima de 15 passos, decisões do dono de 26/09) Gerador especificação → desenho do processo em HTML de revisão, no padrão do modelo de CAPA, com papéis genéricos no núcleo; o docx controlado sai do `tools/gen_exec_doc.py` existente.
+- [x] T11 (`tools\doc_intake.py evidencia registrar | verificar`; prova: `tools\test_evidencia.py`) Manifesto de evidência de desenvolvimento (REQ-15) com `tools/doc_intake.py`; verificador de existência e sha256.
 
 ### B3e — Conhecimento contextual reutilizável (D9)
 - [x] T12 Estrutura `docs\_private\conhecimento\` (perfis, empresas, `INDICE-PROJETOS.md`) e modelo de `DICIONARIO.md`. — ADR-120: modelo agnóstico em `exemplos\conhecimento\_modelo\` (termo, consulta, fato, pesquisa, runbook; empresa → área de negócio → assunto); instância vazia em `docs\_private\conhecimento\`.

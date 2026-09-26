@@ -59,8 +59,8 @@
 | P17 | Documentação mínima = formalização do projeto, enxuta mas conforme (ANVISA e outros) | ✅ plano B3 aprovado (PR #159) · ⏳ execução | trabalho `plano-b3-documentacao-regulada` |
 | P18 | Cronograma, testes E2E, checklists por área (modelos do MRP) | ⏳ B3 (REQ-05, REQ-06, REQ-07) | plano B3 |
 | P19 | ERU, análise de risco, matriz de rastreabilidade | ⏳ B3 (REQ-03, REQ-04, REQ-11) | plano B3 |
-| P20 | Desenho do processo no padrão do de CAPA; método único fácil de achar | ⏳ B3d (REQ-13, REQ-14) | plano B3 |
-| P21 | Consultas, xlsx, runbooks, passo a passo como evidência (OPEX e MRP como referência) | ⏳ B3 (REQ-15) | plano B3 |
+| P20 | Desenho do processo no padrão do de CAPA; método único fácil de achar | ✅ B3d (ADR-121): `guia\METODO-DE-PROJETO.md` + `tools\desenho_processo.py` | plano B3 |
+| P21 | Consultas, xlsx, runbooks, passo a passo como evidência (OPEX e MRP como referência) | ✅ manifesto de evidência (ADR-121): `tools\doc_intake.py evidencia` | plano B3 |
 | P22 | Sem perfil regulado padrão; perfil por projeto (ANVISA, ANP...) | ✅ decidido (D1) · ✅ motor neutro + regra global §8 (B3a-1) · ⏳ discovery pergunta empresa (B3e) | plano B3; ADR-119 |
 | P23 | Dicionário semântico/dados + ontologia + índice de projetos | ✅ decidido (D9) · ⏳ B3e (REQ-16 a REQ-18) | plano B3 |
 | P24 | Verificar as regras globais numa pasta nova | ⏳ manual | trabalho `plano-b1-8-verificacao-em-pasta-nova` |

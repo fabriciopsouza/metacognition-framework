@@ -2247,6 +2247,55 @@
     "canario": "tools/test_conhecimento.py",
     "espera": "relação para termo inexistente"
    }
+  },
+  {
+   "id": "desenho-do-processo",
+   "title": "Metodo unico de projeto e desenho do processo gerado da especificacao: HTML de revisao com raias por papel e docx controlado, reprovando passo solto, destino inexistente e desenho maior que a tela",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/desenho_processo.py",
+   "test": "tools/test_desenho_processo.py",
+   "adr": "docs/adr/121-metodo-de-projeto-desenho-do-processo-e-evidencia.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "processo",
+    "metodo",
+    "documentacao",
+    "regulado"
+   ],
+   "note": "Parte H do arquivo unico -> desenho-processo.html (SVG autonomo, raias verticais, decisao, retorno) + docx via gen_exec_doc. Mais de 15 passos: macroacoes em dois niveis ou aceite do dono com data. Entrada unica do metodo: guia/METODO-DE-PROJETO.md, apontada pelo CLAUDE.md e pelo inicio de sessao.",
+   "mutacao": {
+    "arquivo": "tools/desenho_processo.py",
+    "de": "            if alvo not in ids:",
+    "para": "            if False:",
+    "canario": "tools/test_desenho_processo.py",
+    "espera": "destino inexistente"
+   }
+  },
+  {
+   "id": "manifesto-de-evidencia",
+   "title": "Manifesto de evidencia de desenvolvimento: caminho absoluto, sha256, data, origem e requisito ou teste; acusa arquivo alterado sem nome novo, apagado ou sensivel no git",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/doc_intake.py",
+   "test": "tools/test_evidencia.py",
+   "adr": "docs/adr/121-metodo-de-projeto-desenho-do-processo-e-evidencia.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "evidencia",
+    "regulado",
+    "rastreabilidade"
+   ],
+   "note": "Subcomando `doc_intake.py evidencia registrar | verificar`. Conteudo mudou = nome novo, anterior em _obsoleto/. Uso antigo (ingestao com chunks) intacto.",
+   "mutacao": {
+    "arquivo": "tools/doc_intake.py",
+    "de": "        if _ev_sha(c) != e.get(\"sha256\"):",
+    "para": "        if False:",
+    "canario": "tools/test_evidencia.py",
+    "espera": "arquivo alterado sem nome novo reprova"
+   }
   }
  ],
  "registry_waivers": [

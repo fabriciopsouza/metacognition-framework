@@ -15,6 +15,7 @@
 ## Primeira ação obrigatória em toda sessão
 /start-session **(ou diga "iniciar")** — abre pelo PMO (rules + briefing + history; ADR-024).
 Por projeto preencha só `docs/briefing.md` + `.agent/rules/00-glossario.md`.
+Método de projeto, da abertura à operação, em uma página: `guia/METODO-DE-PROJETO.md` (ADR-121).
 
 ## Regras invioláveis (de _shared/, não redefinir)
 1. Classificar afirmação relevante: CONFIRMADO | INFERIDO | DESCONHECIDO.

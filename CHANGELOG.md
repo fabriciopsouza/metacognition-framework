@@ -5,6 +5,21 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-121 — Método único de projeto, desenho do processo gerado e manifesto de evidência (26/09/2026)
+
+- **`guia/METODO-DE-PROJETO.md`:** fluxo de 8 etapas, da abertura à operação, com o que sai, onde mora e como se
+  verifica cada etapa; apontado pelo `CLAUDE.md` e pelo início de sessão.
+- **Parte H — Processo** no arquivo único e **`tools/desenho_processo.py`**: HTML autônomo para revisão das áreas
+  (raias verticais por papel, decisão, retorno, papéis, gatilhos, regras, controles, pontos para aprovação e perguntas
+  em aberto, que a área responde na planilha de confirmação) e docx controlado pelo `gen_exec_doc`. Reprova passo
+  solto, destino inexistente, passo repetido, mais de 15 passos sem macroação e desenho mais largo que a tela.
+- **Manifesto de evidência:** `tools/doc_intake.py evidencia registrar | verificar` (caminho absoluto, sha256, data,
+  origem, requisito ou teste; conteúdo mudou pede nome novo; sensível não pode estar no git).
+- QA isolado: rodada 1 FAIL (1 CRÍTICA — manifesto corrompido derrubava o registro; 1 ALTA — docx aberto no Word
+  deixava os gerados inconsistentes), corrigida. Prova: `test_desenho_processo` (renderização conferida no Edge),
+  `test_evidencia`; 20/20 mutações mortas. Rodada 2 FAIL (1 ALTA — falha durante a escrita não voltava ao estado
+  anterior), corrigida: a gravação dos três gerados é tudo ou nada.
+
 ### Emenda 2 do ADR-033 — dimensão `escopo-e-prazo` (26/09/2026)
 
 - Banco de dimensões ganha `escopo-e-prazo`, obrigatória no arquivo único de especificação: o marco que governa
