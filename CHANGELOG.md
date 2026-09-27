@@ -5,6 +5,23 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### Emenda 1 do ADR-120 — isolamento entre empresas na biblioteca de conhecimento (27/09/2026)
+
+- **Regra do dono:** o conhecimento de uma empresa nunca aparece no trabalho de outra; só o saber puro de assunto é
+  compartilhado, em `assuntos/<assunto>/`.
+- **`--empresa <e>|nenhuma|todas`** em `conhecimento.py verificar | vencidos` e em `knowledge_catalog --recall`:
+  - só `empresas/<e>/`, `assuntos/` e `perfis/` são lidos;
+  - sem `--empresa`, a empresa sai do `INDICE-PROJETOS.md` pelo diretório atual;
+  - sem resolução, o comando recusa sem ler nada.
+- **Achados bloqueantes:**
+  - relação ou caminho de projeto que cruza empresa;
+  - identificador de empresa em `assuntos/`: nome, `## Identificadores`, caminho e repositório do índice, Z*/Y*,
+    ZZ*/YY*, tipo de movimento 9xx ou X/Y/Z, caminho de usuário.
+- O caminho inexistente de outra empresa (outra máquina) deixa de reprovar a biblioteca de quem trabalha.
+- Pendentes com o dono: separação física por repositório (D1), identificadores de empresa ausente (D2), relatórios
+  de sessão no `--recall` (D3), versões de sistema no `conhecimento.json` da raiz (D5).
+- Prova: `test_conhecimento_isolamento` (duas empresas falsas).
+
 ### ADR-122 — Planilhas de confirmação e de verificação geradas do arquivo único (27/09/2026)
 
 - **Partes I — Definições a confirmar e J — Roteiro de verificação** no modelo de arquivo único, com colunas neutras

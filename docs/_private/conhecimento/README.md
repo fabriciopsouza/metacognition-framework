@@ -5,7 +5,10 @@ Estrutura, formato e método: `exemplos\conhecimento\_modelo\README.md` (ADR-120
 
 - **Conteúdo** (termos, consultas, fatos, pesquisas, runbooks de cada empresa): registrado pelas sessões de domínio,
   no ato, conforme o método. Esta pasta nasce vazia de conteúdo.
-- **Verificar:** `python tools\conhecimento.py verificar docs\_private\conhecimento --trabalhos %USERPROFILE%\.claude\trabalhos`
-  (enquanto o índice estiver vazio, a checagem com `--trabalhos` acusa cada projeto de domínio com trabalho aberto:
-  é a pendência de preenchimento, não defeito).
-- **Buscar:** `python tools\knowledge_catalog.py --recall --context "<termos>" --conhecimento docs\_private\conhecimento`
+- **Verificar uma empresa:** `python tools\conhecimento.py verificar docs\_private\conhecimento --empresa <empresa>`
+  (dentro da pasta de um projeto do índice, `--empresa` pode ser omitido).
+- **Manutenção da biblioteca inteira:** `python tools\conhecimento.py verificar docs\_private\conhecimento --empresa todas --trabalhos %USERPROFILE%\.claude\trabalhos`
+  (só aqui a checagem com `--trabalhos` acusa projeto de domínio com trabalho aberto e sem linha no índice).
+- **Buscar:** `python tools\knowledge_catalog.py --recall --context "<termos>" --conhecimento docs\_private\conhecimento --empresa <empresa>`
+- **Isolamento entre empresas:** o conhecimento de uma empresa nunca aparece no trabalho de outra; saber puro de
+  assunto vai para `assuntos\<assunto>\` (método no README do modelo, seção 2).

@@ -10,16 +10,25 @@ Estrutura (fora dela = achado):
     <raiz>/conhecimento.json                          prazos de validade e versão atual de cada sistema
     <raiz>/INDICE-PROJETOS.md                         uma linha por projeto
     <raiz>/perfis/<perfil>/DICIONARIO.md              termos do perfil regulado
-    <raiz>/empresas/<empresa>/DICIONARIO.md           termos da empresa
+    <raiz>/assuntos/<assunto>/DICIONARIO.md           termos de saber puro de assunto, sem dado de empresa
+    <raiz>/assuntos/<assunto>/<tema>.md               consultas, fatos, pesquisas, runbooks de assunto
+    <raiz>/empresas/<empresa>/DICIONARIO.md           termos da empresa (+ entrada `## Identificadores`)
     <raiz>/empresas/<empresa>/<area>/<assunto>.md     consultas, fatos, pesquisas, runbooks
 Termo de projeto mora no projeto; o índice aponta para ele.
+
+Isolamento entre empresas (regra do dono, 27/09/2026): o conhecimento de uma empresa nunca aparece no trabalho de
+outra. Com `--empresa <e>`, só `empresas/<e>/`, `assuntos/` e `perfis/` são lidos; `--empresa nenhuma` lê só
+`assuntos/` e `perfis/`; `--empresa todas` é a manutenção da biblioteca inteira. Sem `--empresa`, a empresa sai do
+`INDICE-PROJETOS.md` pelo diretório atual (projeto cujo Caminho o contém); sem resolução, o comando RECUSA.
+Empresa aponta para assunto e perfil; assunto e perfil não apontam para empresa; empresa não aponta para outra.
+Entrada em `assuntos/` com identificador de empresa reprova (padrões de cliente e identificadores das empresas).
 
 Entrada = bloco `## <nome>` com campos `- **Campo:** valor` (formato no README do modelo).
 
 Uso:
-    python tools/conhecimento.py verificar [<raiz>] [--trabalhos <dir>] [--hoje dd/mm/aaaa]
-    python tools/conhecimento.py vencidos  [<raiz>] [--hoje dd/mm/aaaa]
-Raiz padrão: docs/_private/conhecimento. Exit 1 com achado (verificar) ou com vencido (vencidos).
+    python tools/conhecimento.py verificar [<raiz>] [--empresa <e>|nenhuma|todas] [--trabalhos <dir>] [--hoje dd/mm/aaaa]
+    python tools/conhecimento.py vencidos  [<raiz>] [--empresa <e>|nenhuma|todas] [--hoje dd/mm/aaaa]
+Raiz padrão: docs/_private/conhecimento. Exit 1 com achado (verificar) ou com vencido (vencidos); 2 = recusado.
 """
 import datetime
 import json
@@ -30,7 +39,22 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RAIZ_PADRAO = os.path.join(ROOT, "docs", "_private", "conhecimento")
 
-TIPOS = {"termo", "consulta", "fato", "pesquisa", "runbook"}
+TIPOS = {"termo", "consulta", "fato", "pesquisa", "runbook", "identificadores"}
+TODAS, NENHUMA = "todas", "nenhuma"
+# Padrões de dado de cliente que não dependem de empresa (REQ-04): valem em qualquer máquina. Objeto de cliente:
+# Z/Y + letra e mais 2 (ZMARA, ZMM001), Z/Y + dígito (Z1ABC) ou Z/Y + sublinhado (Z_MRP); só letras Z/Y ("YYYY") e
+# palavras comuns em maiúsculas ficam fora — lista não exaustiva, limite declarado no ADR. Tipo de movimento só com
+# rótulo ao lado (número de 3 dígitos solto é preço, página, quantidade). Caminho de usuário ignora o placeholder.
+_PALAVRAS_ZY = r"ZERO|ZONA|ZONAS|ZONE|ZONES|ZOOM|YEAR|YEARS|YELLOW|YIELD|YOUR|YOUTUBE"
+PADROES_DE_CLIENTE = [
+    (re.compile(rf"\b(?![YZ]+\b)(?!(?:{_PALAVRAS_ZY})\b)[ZY](?:[A-Z][A-Z0-9_]{{2,29}}|[0-9][A-Z0-9_]*|_[A-Z0-9_]+)\b"),
+     "objeto no namespace de cliente (Z*/Y*)"),
+    (re.compile(r"\b(?:ZZ|YY)(?![YZ]*\b)[A-Z0-9_]{2,}\b"), "campo de cliente (ZZ*/YY*)"),
+    (re.compile(r"(?i)\b(?:tipo(?:s)? de movimento|movimento|mov\.|bwart)\s*[:=]?\s*(?-i:9\d\d|[XYZ][A-Z0-9]{2})\b"),
+     "tipo de movimento de cliente (9xx, X/Y/Z)"),
+    (re.compile(r"(?i)\b[A-Z]:[\\/]Users[\\/](?!<)[^\\/\s]+[\\/]|(?:/home|/Users)/(?!<)[^/\s]+/"),
+     "caminho de usuário ou de projeto"),
+]
 CLASSES = {"estrutura", "configuração", "regra de negócio", "conceito", "retrato"}
 RELACOES = {"é um", "parte de", "regulado por", "medido por", "sinônimo de"}
 COMUNS = {"Tipo", "Fonte", "Verificado em", "Confiança"}
@@ -40,9 +64,10 @@ OBRIGATORIOS = {
     "fato": {"Classe"},
     "pesquisa": {"Pergunta"},
     "runbook": {"Pergunta"},
+    "identificadores": {"Valores"},
 }
 OPCIONAIS = {"Relações", "Campo", "Classe", "Sistema", "Versão", "Pergunta", "Evidência", "Aponta para",
-             "Contestado em", "Definição"}
+             "Contestado em", "Definição", "Valores"}
 PRAZO_PADRAO = {"configuração": 6, "regra de negócio": 12, "conceito": 12}
 CLASSE_DO_TIPO = {"termo": "conceito", "consulta": "estrutura", "pesquisa": "conceito", "runbook": "configuração"}
 # Nunca entram: credencial e documento de identificação de pessoa. Valor de negócio entra (repositório privado).
@@ -142,7 +167,15 @@ def _validar_entrada(e, nivel):
         return [f"{onde}: formato não reconhecido (sem **Tipo:**)"]
     if tipo not in TIPOS:
         return [f"{onde}: tipo '{tipo}' desconhecido (use {', '.join(sorted(TIPOS))})"]
-    if nivel == "dicionario" and tipo != "termo":
+    if tipo == "identificadores" and not (nivel == "dicionario" and e.get("escopo", "").startswith("empresas/")):
+        ach.append(f"{onde}: **Tipo:** identificadores só mora no DICIONARIO.md de uma empresa")
+    elif tipo == "identificadores":
+        curtos = [v.strip() for v in re.split(r"\s*[;,]\s*", c.get("Valores", "")) if v.strip()
+                  and not _identificador_util(v)]
+        if curtos:
+            ach.append(f"{onde}: **Valores:** curtos demais para identificar a empresa ({', '.join(curtos)}): use 4+ "
+                       f"caracteres ou com dígito — sigla de módulo reprovaria saber puro de assunto")
+    elif nivel == "dicionario" and tipo not in ("termo", "identificadores"):
         ach.append(f"{onde}: só termo mora no DICIONARIO.md")
     if nivel == "assunto" and tipo == "termo":
         ach.append(f"{onde}: termo mora no DICIONARIO.md do nível dele, não em arquivo de assunto")
@@ -194,8 +227,88 @@ def _caminho_existe(v, raiz):
     return os.path.exists(alvo)
 
 
-def carregar(raiz):
-    """Lê a biblioteca inteira. Devolve (config, entradas, achados de estrutura)."""
+class Recusa(Exception):
+    """Empresa não informada nem resolvida pelo índice: o comando não lê nada (falha fechada)."""
+
+
+def empresas_presentes(raiz):
+    p = os.path.join(raiz, "empresas")
+    return sorted(d for d in os.listdir(p) if os.path.isdir(os.path.join(p, d))) if os.path.isdir(p) else []
+
+
+def _visivel(escopo, empresa):
+    """Escopo 'empresas/x', 'assuntos/y' ou 'perfis/z' é lido no recorte `empresa`?"""
+    if empresa in (None, TODAS) or not escopo.startswith("empresas/"):
+        return True
+    return empresa != NENHUMA and escopo == f"empresas/{empresa}"
+
+
+def _norm_caminho(p):
+    return os.path.normcase(os.path.normpath(os.path.abspath(p.strip().strip("`"))))
+
+
+def linhas_indice(raiz):
+    """Linhas do INDICE-PROJETOS.md como dicts pelas colunas; ([], achados de forma)."""
+    p = os.path.join(raiz, "INDICE-PROJETOS.md")
+    if not os.path.isfile(p):
+        return [], []
+    out, ach = [], []
+    for ln in open(p, encoding="utf-8-sig").read().splitlines():
+        s = ln.strip()
+        if not s.startswith("|") or set(s) <= set("|-: "):
+            continue
+        cel = [c.strip() for c in s.strip("|").split("|")]
+        if [c.lower() for c in cel] == COLS_INDICE:
+            continue
+        if len(cel) != len(COLS_INDICE):
+            ach.append(f"INDICE-PROJETOS.md: linha com {len(cel)} colunas, o modelo tem {len(COLS_INDICE)}: {s[:60]}")
+            continue
+        out.append(dict(zip(COLS_INDICE, cel)))
+    return out, ach
+
+
+def _projetos(raiz):
+    """[(caminho normalizado, empresa, repositório)] dos projetos do índice com caminho."""
+    out = []
+    for linha in linhas_indice(raiz)[0]:
+        v = linha["caminho"]
+        if v and v not in ("—", "-"):
+            out.append((_norm_caminho(v), linha["empresa"].strip().lower(),
+                        os.path.basename(linha["repositório"].strip("`/\\ ")).lower()))
+    return out
+
+
+def resolver_empresa(raiz, cwd=None):
+    """(empresa, como) pelo projeto do índice cujo Caminho contém `cwd` (o mais específico). Levanta Recusa
+    quando nenhum projeto contém o diretório ou quando dois de empresas diferentes empatam."""
+    alvo = _norm_caminho(cwd or os.getcwd())
+    cands = [(len(c), e) for c, e, _r in _projetos(raiz) if alvo == c or alvo.startswith(c.rstrip(os.sep) + os.sep)]
+    if not cands:
+        raise Recusa(f"a empresa não foi informada e o diretório atual ({alvo}) não está no Caminho de nenhum projeto "
+                     f"do INDICE-PROJETOS.md. Informe --empresa <empresa> (ou --empresa nenhuma, só assuntos e "
+                     f"perfis). Nada foi lido.")
+    maior = max(n for n, _ in cands)
+    topo = {e for n, e in cands if n == maior}
+    if len(topo) > 1:
+        raise Recusa(f"o diretório atual está em projetos de mais de uma empresa no índice; informe --empresa. "
+                     f"Nada foi lido.")
+    e = topo.pop()
+    return e, f"resolvida pelo INDICE-PROJETOS.md a partir de {alvo}"
+
+
+def escolher_empresa(raiz, empresa=None, cwd=None):
+    """(empresa, como). `empresa` explícita vale como está (validada); senão, resolve pelo índice."""
+    if empresa:
+        e = empresa.strip().lower()
+        if e not in (TODAS, NENHUMA) and not re.fullmatch(r"[a-z0-9][a-z0-9_.-]*", e):
+            raise Recusa(f"--empresa '{empresa}' inválida")
+        return e, "informada por --empresa"
+    return resolver_empresa(raiz, cwd)
+
+
+def carregar(raiz, empresa=None):
+    """Lê a biblioteca no recorte `empresa` (None ou 'todas' = inteira). Devolve (config, entradas, achados).
+    Arquivo de outra empresa não é aberto."""
     ach, ents = [], []
     cfg_path = os.path.join(raiz, "conhecimento.json")
     cfg = {}
@@ -216,27 +329,126 @@ def carregar(raiz):
             partes = rel.split("/")
             if rel in ("README.md", "INDICE-PROJETOS.md"):
                 continue
-            if len(partes) == 3 and partes[0] in ("perfis", "empresas") and partes[2] == "DICIONARIO.md":
+            if len(partes) >= 2 and partes[0] == "empresas" and not _visivel(f"empresas/{partes[1].lower()}", empresa):
+                continue  # outra empresa: nem é aberta
+            if len(partes) == 3 and partes[0] in ("perfis", "empresas", "assuntos") and partes[2] == "DICIONARIO.md":
                 nivel = "dicionario"
             elif len(partes) == 4 and partes[0] == "empresas" and partes[3] != "DICIONARIO.md":
                 nivel = "assunto"
+            elif len(partes) == 3 and partes[0] == "assuntos":
+                nivel = "assunto"
             else:
-                ach.append(f"{rel}: fora da estrutura (perfis/<p>/DICIONARIO.md, empresas/<e>/DICIONARIO.md, "
-                           f"empresas/<e>/<area>/<assunto>.md)")
+                ach.append(f"{rel}: fora da estrutura (perfis/<p>/DICIONARIO.md, assuntos/<a>/DICIONARIO.md, "
+                           f"assuntos/<a>/<tema>.md, empresas/<e>/DICIONARIO.md, empresas/<e>/<area>/<assunto>.md)")
                 continue
+            if partes[1] != partes[1].lower():
+                ach.append(f"{rel}: pasta '{partes[1]}' com maiúscula — use minúsculas (o recorte por empresa compara "
+                           f"em minúsculas)")
             lidas, a2 = _ler_entradas(os.path.join(base, nome), rel)
             ach += a2
             for e in lidas:
                 e["nivel"] = nivel
-                e["escopo"] = f"{partes[0]}/{partes[1]}"
+                e["escopo"] = f"{partes[0]}/{partes[1].lower()}"  # empresa sempre minúscula (--empresa também é)
             ents += lidas
     return cfg, ents, ach
 
 
-def verificar(raiz, trabalhos_dir=None, hoje=None):
+def _termos_de_outras(raiz, empresa):
+    """Nomes de termo (minúsculos) de empresas FORA do recorte — só para dizer que a relação cruza empresa.
+    Nada delas é impresso."""
+    nomes = set()
+    if empresa in (None, TODAS):
+        return nomes
+    for outra in empresas_presentes(raiz):
+        if _visivel(f"empresas/{outra}", empresa):
+            continue
+        p = os.path.join(raiz, "empresas", outra, "DICIONARIO.md")
+        if os.path.isfile(p):
+            for e in _ler_entradas(p, "")[0]:
+                nomes.add(e["nome"].strip().lower())
+    return nomes
+
+
+def cfg_do_escopo(raiz, cfg, escopo):
+    """Configuração que vale para uma entrada: a da raiz (assuntos e perfis) mais, para entrada de empresa, o
+    `empresas/<e>/conhecimento.json` dela, que prevalece. Versão de sistema de uma empresa é dado dela."""
+    if not escopo.startswith("empresas/"):
+        return cfg
+    p = os.path.join(raiz, *escopo.split("/"), "conhecimento.json")
+    if not os.path.isfile(p):
+        return cfg
+    try:
+        prop = json.load(open(p, encoding="utf-8"))
+    except (OSError, ValueError):
+        return cfg
+    out = dict(cfg)
+    for chave in ("versoes_atuais", "validade_meses"):
+        out[chave] = dict(cfg.get(chave) or {}, **(prop.get(chave) or {}))
+    return out
+
+
+def _identificador_util(v):
+    """Identificador que não vira falso positivo em saber puro: 4+ caracteres ou com dígito ("1001", "ZNAT").
+    Sigla curta só de letras ("MM", "PP", "SD") é nome de módulo, não de empresa."""
+    v = v.strip()
+    return len(v) >= 4 or (len(v) >= 2 and any(ch.isdigit() for ch in v))
+
+
+def _pode_apontar(de, para):
+    """Empresa → própria, assunto, perfil. Assunto e perfil → assunto, perfil. Nunca empresa → outra empresa."""
+    if para.startswith("empresas/"):
+        return de == para
+    return True
+
+
+def identificadores_de_empresa(raiz):
+    """{valor normalizado: empresa} — nome da pasta de cada empresa presente, **Valores:** da entrada
+    `## Identificadores` do DICIONARIO.md dela, e caminho e repositório de cada projeto dela no índice."""
+    out = {}
+    for emp in empresas_presentes(raiz):
+        out[emp.lower()] = emp
+        p = os.path.join(raiz, "empresas", emp, "DICIONARIO.md")
+        if os.path.isfile(p):
+            for e in _ler_entradas(p, "")[0]:
+                if e["campos"].get("Tipo", "").strip().lower() == "identificadores":
+                    for v in re.split(r"\s*[;,]\s*", e["campos"].get("Valores", "")):
+                        if _identificador_util(v):
+                            out[v.strip().lower()] = emp
+    for caminho, emp, repo in _projetos(raiz):
+        out[caminho] = emp
+        if repo:
+            out[repo] = emp
+    return out
+
+
+def verificar_assunto(texto, idents, empresa):
+    """Achados de identificador de empresa num texto de `assuntos/`. O valor só aparece na mensagem quando é da
+    própria empresa do recorte (ou na manutenção 'todas'); senão sai a linha, sem o valor."""
+    ach = []
+    for n, ln in enumerate(texto.splitlines(), 1):
+        for rx, rotulo in PADROES_DE_CLIENTE:
+            m = rx.search(ln)
+            if m:
+                ach.append(f"linha {n}: {rotulo} ('{m.group(0)}')")
+        baixo = ln.lower()
+        norm = os.path.normcase(ln)
+        for valor, emp in idents.items():
+            achou = (valor in norm) if (os.sep in valor or "/" in valor) else \
+                re.search(rf"(?<![\w-]){re.escape(valor)}(?![\w-])", baixo)
+            if achou:
+                mostra = empresa in (None, TODAS) or emp == empresa
+                ach.append(f"linha {n}: identificador de empresa" + (f" ('{valor}', {emp})" if mostra else
+                                                                    " (de empresa fora do recorte; valor omitido)"))
+    return ach
+
+
+def verificar(raiz, trabalhos_dir=None, hoje=None, empresa=None):
+    """Achados no recorte `empresa` (None ou 'todas' = biblioteca inteira)."""
     hoje = hoje or datetime.date.today()
-    cfg, ents, ach = carregar(raiz)
-    termos = {}
+    cfg, ents, ach = carregar(raiz, empresa)
+    termos = {}  # nome minúsculo -> [escopos que o definem]
+    vistos = {}
+    projetos = _projetos(raiz)
     for e in ents:
         ach += _validar_entrada(e, e["nivel"])
         d = _data(e["campos"].get("Verificado em"))
@@ -244,31 +456,61 @@ def verificar(raiz, trabalhos_dir=None, hoje=None):
             ach.append(f"{e['arquivo']} · {e['nome']}: **Verificado em:** no futuro")
         if e["campos"].get("Tipo", "").strip().lower() == "termo":
             chave = e["nome"].strip().lower()
-            if chave in termos:
-                antes = termos[chave]
+            for antes in vistos.get(chave, []):
                 if antes["escopo"] == e["escopo"]:
                     ach.append(f"termo '{e['nome']}' definido duas vezes em {e['escopo']}")
                 elif antes["escopo"].split("/")[0] != e["escopo"].split("/")[0]:
+                    # perfil × assunto × empresa; duas empresas com o mesmo termo NÃO é achado (cada uma o seu)
                     ach.append(f"termo '{e['nome']}' definido em dois níveis ({antes['escopo']} e {e['escopo']})")
-            termos.setdefault(chave, e)
+            vistos.setdefault(chave, []).append(e)
+            termos.setdefault(chave, []).append(e["escopo"])
         for k in ("Evidência", "Aponta para"):
             v = e["campos"].get(k)
-            if v and not re.fullmatch(r"<[^>]*>", v.strip()) and not _caminho_existe(v, raiz):
+            if not v or re.fullmatch(r"<[^>]*>", v.strip()):
+                continue
+            bruto = v.strip().strip("`")
+            alvo = _norm_caminho(bruto) if (os.path.isabs(bruto) or re.match(r"^[A-Za-z]:[\\/]", bruto)) else None
+            dono = next((emp for c, emp, _r in projetos if alvo and (alvo == c or alvo.startswith(c.rstrip(os.sep) + os.sep))), None)
+            if dono and e["escopo"] != f"empresas/{dono}":
+                ach.append(f"{e['arquivo']} · {e['nome']}: **{k}:** aponta para caminho de projeto de outra empresa "
+                           f"ou de empresa a partir de {e['escopo'].split('/')[0]} — bloqueante (isolamento entre empresas)")
+            elif not _caminho_existe(v, raiz):
                 ach.append(f"{e['arquivo']} · {e['nome']}: **{k}:** aponta para caminho que não existe ({v.strip()})")
         tipo_estrutura = (e["campos"].get("Classe", "").strip().lower()
                           or CLASSE_DO_TIPO.get(e["campos"].get("Tipo", "").strip().lower())) == "estrutura"
         sist = e["campos"].get("Sistema", "").strip()
-        if tipo_estrutura and sist and sist not in (cfg.get("versoes_atuais") or {}):
+        if tipo_estrutura and sist and sist not in (cfg_do_escopo(raiz, cfg, e["escopo"]).get("versoes_atuais") or {}):
             ach.append(f"{e['arquivo']} · {e['nome']}: versão atual do sistema '{sist}' não declarada em "
-                       f"conhecimento.json (versoes_atuais)")
+                       f"conhecimento.json (versoes_atuais) da raiz ou da empresa")
+    outras = _termos_de_outras(raiz, empresa)
     for e in ents:
         for rel, alvo in _relacoes(e["campos"].get("Relações", "")):
             if rel not in RELACOES:
                 ach.append(f"{e['arquivo']} · {e['nome']}: relação '{rel}' desconhecida (use {', '.join(sorted(RELACOES))})")
-            elif alvo and alvo.lower() not in termos:
+                continue
+            if not alvo:
+                continue
+            escopos = termos.get(alvo.lower(), [])
+            if any(_pode_apontar(e["escopo"], s) for s in escopos):
+                continue
+            if escopos or alvo.lower() in outras:
+                ach.append(f"{e['arquivo']} · {e['nome']}: relação '{rel}' aponta para termo de empresa fora do escopo "
+                           f"de {e['escopo']} — bloqueante (isolamento entre empresas)")
+            else:
                 ach.append(f"{e['arquivo']} · {e['nome']}: relação '{rel}' aponta para termo inexistente '{alvo}'")
-    ach += _verificar_indice(raiz, trabalhos_dir)
+    idents = identificadores_de_empresa(raiz)
+    for base, _d, arquivos in os.walk(os.path.join(raiz, "assuntos")):
+        for nome in sorted(arquivos):
+            if nome.lower().endswith(".md"):
+                p = os.path.join(base, nome)
+                rel_p = os.path.relpath(p, raiz).replace("\\", "/")
+                for a in verificar_assunto(open(p, encoding="utf-8-sig", errors="replace").read(), idents, empresa):
+                    ach.append(f"{rel_p}: {a} — assunto não guarda dado de empresa (bloqueante)")
+    ach += _verificar_indice(raiz, trabalhos_dir, empresa)
     for base, _d, arquivos in os.walk(raiz):
+        rel_base = os.path.relpath(base, raiz).replace("\\", "/").split("/")
+        if len(rel_base) >= 2 and rel_base[0] == "empresas" and not _visivel(f"empresas/{rel_base[1]}", empresa):
+            continue
         for nome in arquivos:
             if nome.lower().endswith((".md", ".json")):
                 p = os.path.join(base, nome)
@@ -284,28 +526,24 @@ FRAMEWORK_REPOS = {"metacognition-framework", os.path.basename(ROOT).lower()}
 COLS_INDICE = ["projeto", "empresa", "perfil regulado", "caminho", "repositório", "estado", "especificação", "dicionário"]
 
 
-def _verificar_indice(raiz, trabalhos_dir):
-    p = os.path.join(raiz, "INDICE-PROJETOS.md")
-    if not os.path.isfile(p):
+def _verificar_indice(raiz, trabalhos_dir, empresa=None):
+    """Caminhos conferidos só nas linhas da empresa do recorte: projeto de outra empresa mora em outra máquina e
+    não reprova esta. A lista de repositórios (para os trabalhos abertos) usa todas as linhas."""
+    if not os.path.isfile(os.path.join(raiz, "INDICE-PROJETOS.md")):
         return []
-    ach, repos = [], set()
-    for ln in open(p, encoding="utf-8-sig").read().splitlines():
-        s = ln.strip()
-        if not s.startswith("|") or set(s) <= set("|-: "):
-            continue
-        cel = [c.strip() for c in s.strip("|").split("|")]
-        if [c.lower() for c in cel] == COLS_INDICE:
-            continue
-        if len(cel) != len(COLS_INDICE):
-            ach.append(f"INDICE-PROJETOS.md: linha com {len(cel)} colunas, o modelo tem {len(COLS_INDICE)}: {s[:60]}")
-            continue
-        linha = dict(zip(COLS_INDICE, cel))
+    linhas, ach = linhas_indice(raiz)
+    repos = set()
+    for linha in linhas:
         repos.add(os.path.basename(linha["repositório"].strip("`/\\ ")).lower())
+        if not _visivel(f"empresas/{linha['empresa'].strip().lower()}", empresa):
+            continue
         for k in ("caminho", "especificação", "dicionário"):
             v = linha[k]
             if v and v not in ("—", "-") and not _caminho_existe(v, raiz):
                 ach.append(f"INDICE-PROJETOS.md · {linha['projeto']}: {k} não existe ({v})")
-    if trabalhos_dir and os.path.isdir(trabalhos_dir):
+    # Trabalho aberto sem linha no índice: o trabalho não diz a empresa e a mensagem traz o nome do repositório;
+    # por isso só na manutenção da biblioteca inteira (sem recorte), nunca no recorte de uma empresa.
+    if trabalhos_dir and os.path.isdir(trabalhos_dir) and empresa in (None, TODAS):
         for nome in sorted(os.listdir(trabalhos_dir)):
             if not nome.endswith(".md"):
                 continue
@@ -322,14 +560,15 @@ def _verificar_indice(raiz, trabalhos_dir):
     return ach
 
 
-def vencidos(raiz, hoje=None):
+def vencidos(raiz, hoje=None, empresa=None):
     """[(entrada, motivo)] a reverificar: contestada, versão do sistema mudou, ou prazo da classe vencido."""
     hoje = hoje or datetime.date.today()
-    cfg, ents, _ = carregar(raiz)
-    prazos = dict(PRAZO_PADRAO, **(cfg.get("validade_meses") or {}))
-    versoes = cfg.get("versoes_atuais") or {}
+    cfg0, ents, _ = carregar(raiz, empresa)
     out = []
     for e in ents:
+        cfg = cfg_do_escopo(raiz, cfg0, e["escopo"])
+        prazos = dict(PRAZO_PADRAO, **(cfg.get("validade_meses") or {}))
+        versoes = cfg.get("versoes_atuais") or {}
         c = e["campos"]
         if "Contestado em" in c:
             out.append((e, f"contestado em {c['Contestado em'].strip()}"))
@@ -347,11 +586,13 @@ def vencidos(raiz, hoje=None):
     return out
 
 
-def carregar_entradas(raiz=RAIZ_PADRAO):
-    """Entradas no formato do `knowledge_catalog.recall` (campo `_tokens_full`). Biblioteca ausente = []."""
+def carregar_entradas(raiz=RAIZ_PADRAO, empresa=None):
+    """Entradas do recorte `empresa` no formato do `knowledge_catalog.recall` (campo `_tokens_full`). Biblioteca
+    ausente = []. A lista de identificadores não é conhecimento de busca: fica fora."""
     if not os.path.isdir(raiz):
         return []
-    _cfg, ents, _ = carregar(raiz)
+    _cfg, ents, _ = carregar(raiz, empresa)
+    ents = [e for e in ents if e["campos"].get("Tipo", "").strip().lower() != "identificadores"]
     for e in ents:
         e["_tokens_full"] = " ".join([e["nome"], *e["campos"].values(), e["corpo"]])
     return ents
@@ -380,7 +621,7 @@ def main(argv):
         return 2
     cmd, resto = args[0], args[1:]
     opts = {}
-    for flag in ("--trabalhos", "--hoje"):
+    for flag in ("--trabalhos", "--hoje", "--empresa"):
         if flag in resto:
             i = resto.index(flag)
             if i + 1 >= len(resto):
@@ -396,14 +637,20 @@ def main(argv):
     if not os.path.isdir(raiz):
         print(f"RECUSADO: {raiz} não existe")
         return 2
+    try:
+        empresa, como = escolher_empresa(raiz, opts.get("--empresa"))
+    except Recusa as e:
+        print(f"RECUSADO: {e}")
+        return 2
+    print(f"empresa: {empresa} ({como})")
     if cmd == "vencidos":
-        itens = vencidos(raiz, hoje)
+        itens = vencidos(raiz, hoje, empresa)
         for e, motivo in itens:
             print(f"  - {e['arquivo']} · {e['nome']}: {motivo}")
         print("-" * 50)
         print("RESULTADO:", f"{len(itens)} a reverificar" if itens else "nada vencido")
         return 1 if itens else 0
-    ach = verificar(raiz, opts.get("--trabalhos"), hoje)
+    ach = verificar(raiz, opts.get("--trabalhos"), hoje, empresa)
     for a in ach:
         print(f"  - {a}")
     print("-" * 50)

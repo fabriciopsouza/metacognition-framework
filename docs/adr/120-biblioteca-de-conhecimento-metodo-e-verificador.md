@@ -101,3 +101,62 @@ Critério (c): o banco de dimensões e o `knowledge_catalog`, que já existiam, 
 | 3 | Sonnet isolado, segundo plano (a1c73b1fdf84cdf66) | PASS | nenhum: correções da rodada 2 reproduzidas; rodada 1 não reaberta; sem falso positivo de credencial em prosa ("o campo senha: definido pelo usuário (obrigatório)", "token: veja o manual # seção 3") | — |
 | 2 | Sonnet isolado, segundo plano (ab523c78962d0b793) | PASS-COM-RESSALVAS | as 6 correções da rodada 1 confirmadas. 1 ALTA nova: campo depois do bloco de código da consulta era acusado e descartado (falso positivo criado pela correção da rodada 1). 1 MÉDIA: "senha: abc123 (trocar)" e "Authorization: Bearer" escapavam | só prosa marca o corpo (código não); credencial aceita comentário/anotação à direita e cabeçalho de autorização; limite declarado; 3 casos novos |
 | 1 | Sonnet isolado, primeiro plano (ae8eb988d9d5e2a16) | PASS-COM-RESSALVAS | 2 ALTA: campos antes do 1º `##` sumiam sem achado; entrada com `###` se fundia à anterior. 3 MÉDIA: prosa "o campo token: armazena…" acusada como credencial; rótulo "9/9" no arquivo único com 10 obrigatórias; busca com biblioteca vazia dava erro e mandava rodar `--build`. 1 BAIXA: caminho relativo na seção 9 da regra global | campos no topo da entrada, campo depois do corpo e campo antes do 1º `##` acusados; credencial = valor único no fim da linha ou parâmetro de URL; contagem por especificação; biblioteca vazia responde "nada encontrado" (exit 0); `{{FRAMEWORK_ROOT}}` na seção 9. 6 casos novos no canário |
+
+## Emenda 1 — isolamento entre empresas (27/09/2026)
+
+- **Status:** Aceita nos itens a–e do pedido do dono; decisões D1–D5 pendentes (`docs/specs/isolamento-empresas-biblioteca/spec.md`).
+- **Origem:** pedido do dono de 27/09/2026, com a regra: "conhecimento de uma empresa (processo, centros, códigos,
+  valores, consultas, nomes) nunca aparece no trabalho de outra. Só o saber puro de assunto pode ser compartilhado".
+- **Problema:** `--recall` e `verificar` liam a raiz inteira; relações resolvidas num dicionário global; caminho de
+  outra empresa, guardado em outra máquina, reprovava a biblioteca de quem trabalhava.
+
+### Decisão
+1. **Camada `assuntos/<assunto>/`** (`DICIONARIO.md` e `<tema>.md`), compartilhada, sem dado de empresa.
+2. **Recorte por empresa** em `conhecimento.py verificar | vencidos` e `knowledge_catalog --recall`:
+   - `--empresa <e>` lê só `empresas/<e>/`, `assuntos/` e `perfis/`; os arquivos de outra empresa não são abertos;
+   - `--empresa nenhuma` lê só `assuntos/` e `perfis/`; `--empresa todas` é a manutenção;
+   - sem `--empresa`, vale o projeto do `INDICE-PROJETOS.md` cujo Caminho contém o diretório atual: o mais
+     específico, com separador de pasta, sem diferença de maiúsculas;
+   - sem projeto, ou com projetos de duas empresas no mesmo caminho, o comando RECUSA (exit 2) sem ler nada.
+3. **Relações e caminhos:**
+   - empresa aponta para a própria, para assunto e para perfil;
+   - assunto e perfil não apontam para empresa;
+   - relação para termo de outra empresa e caminho de projeto de outra empresa são achados bloqueantes;
+   - a mensagem não cita a outra empresa;
+   - o mesmo termo em duas empresas não é achado.
+4. **`assuntos/` sem dado de empresa.** Reprovam:
+   - nome de empresa presente;
+   - **Valores:** da entrada `## Identificadores` (tipo novo, só no DICIONARIO.md da empresa, fora da busca);
+   - caminho e repositório de projeto do índice;
+   - objeto Z*/Y*, campo ZZ*/YY*, tipo de movimento 9xx ou X/Y/Z com rótulo, caminho de usuário.
+
+   O valor de empresa fora do recorte não aparece na mensagem.
+5. **Fica no recorte:**
+   - caminhos do índice conferidos só nas linhas da empresa;
+   - trabalho aberto sem linha no índice só na manutenção (a mensagem traz o nome do repositório);
+   - `empresas/<e>/conhecimento.json` opcional, com as versões de sistema da empresa, que prevalece sobre o da raiz.
+
+### Limites
+- **Filtro não é isolamento físico:** a biblioteca inteira continua no repositório clonado em toda máquina (D1).
+- **Empresa ausente da máquina:** o verificador de `assuntos/` só conhece as empresas presentes nela (D2). Os padrões
+  de cliente valem em qualquer máquina.
+- A lista de palavras comuns em maiúsculas que não são objeto de cliente não é exaustiva. Objeto de cliente escrito
+  em minúsculas escapa.
+- **Relatórios de sessão:** entram no `--recall` sem recorte (D3).
+- **Identificador de empresa:** precisa de 4 ou mais caracteres, ou de um dígito, para não reprovar sigla de módulo
+  ("MM"). Um código real de 3 letras sem dígito (ex.: "ABC") não é protegido em `assuntos/`; declare um alias mais
+  longo.
+- **Pasta com maiúscula:** é achado. Enquanto não for renomeada, em sistema de arquivos que diferencia maiúsculas o
+  `conhecimento.json` próprio da empresa não é encontrado e vale o da raiz, nunca o de outra empresa.
+
+### Prova
+- `tools/test_conhecimento_isolamento.py`, com duas empresas falsas, alfa e beta.
+- `tools/test_conhecimento.py`, com os comandos atualizados.
+- Suíte completa: 95 PASS, 1 SKIP, 0 FAIL de 96.
+
+### Estado do QA da emenda
+| Rodada | Revisor | Veredito | Achados | Destino |
+|---|---|---|---|---|
+| plano | Sonnet isolado (a222cd5cfd0828201) | PASS-COM-RESSALVAS | 1 ALTA (`conhecimento.json` global), 3 MÉDIA, 1 BAIXA; aceite RATIFICADO-COM-AJUSTES | `conhecimento.json` por empresa, D5, critérios 3, 6 e 8 |
+| código 1 | Sonnet isolado (a45475faecd088181) | PASS-COM-RESSALVAS | sem vazamento. 1 ALTA: pasta com maiúscula dava falso PASS. 2 MÉDIA: sem caso alfa/alfa2; sigla "MM" reprovava assunto | escopo em minúsculas e achado de pasta; caso alfa2; identificador de 4+ caracteres ou com dígito |
+| código 2 | Sonnet isolado (addd6d7a6db4e5278) | PASS-COM-RESSALVAS | correções conferidas; 3 mutações e a declarada, mortas. 1 MÉDIA e 1 BAIXA: limites não declarados | declarados em Limites |

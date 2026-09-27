@@ -2,7 +2,7 @@
 
 Procedimento para construir e consultar, durante o trabalho, o conhecimento que um projeto descobriu e outro não
 deve refazer. Este diretório é o **modelo**. A biblioteca de cada empresa é uma cópia dele, mantida pelos projetos
-daquela empresa. Verificação: `python tools/conhecimento.py verificar <raiz>`.
+daquela empresa. Verificação: `python tools/conhecimento.py verificar <raiz> --empresa <empresa>`.
 
 ## 1. Definições
 
@@ -21,21 +21,37 @@ daquela empresa. Verificação: `python tools/conhecimento.py verificar <raiz>`.
   conhecimento.json                         prazos de validade e versão atual de cada sistema
   INDICE-PROJETOS.md                        uma linha por projeto
   perfis/<perfil>/DICIONARIO.md             termos do perfil regulado (quando houver)
-  empresas/<empresa>/DICIONARIO.md          termos da empresa
+  assuntos/<assunto>/DICIONARIO.md          termos de saber puro de assunto, compartilhados entre empresas
+  assuntos/<assunto>/<tema>.md              consultas, fatos, pesquisas e runbooks de assunto
+  empresas/<empresa>/DICIONARIO.md          termos da empresa e a entrada `## Identificadores`
+  empresas/<empresa>/conhecimento.json      versões de sistema da empresa (opcional; prevalece sobre o da raiz)
   empresas/<empresa>/<area>/<assunto>.md    consultas, fatos, pesquisas e runbooks
 ```
 
-1. Nível: perfil regulado → empresa → projeto. O termo de projeto mora no glossário do projeto, e o índice aponta
-   para ele.
+1. Nível: perfil regulado → assunto → empresa → projeto. O termo de projeto mora no glossário do projeto, e o índice
+   aponta para ele.
 2. Dentro da empresa: área de negócio → assunto.
 3. O sistema-fonte é campo da entrada, não pasta.
+4. **Isolamento entre empresas (regra do dono, 27/09/2026):** o conhecimento de uma empresa (processo, centros,
+   códigos, valores, consultas, nomes) nunca aparece no trabalho de outra. Só o saber puro de assunto (sistema no
+   padrão, sem customização) vai para `assuntos/`.
+   - Busca e verificação leem só `empresas/<empresa>/`, `assuntos/` e `perfis/`. Sem `--empresa`, a empresa sai do
+     `INDICE-PROJETOS.md` pelo diretório atual; sem resolução, o comando recusa. `--empresa nenhuma` = só assuntos e
+     perfis; `--empresa todas` = manutenção da biblioteca inteira.
+   - Empresa aponta para assunto e perfil; assunto e perfil não apontam para empresa; empresa não aponta para outra
+     (relação ou caminho de projeto): achado bloqueante.
+   - Entrada em `assuntos/` com identificador de empresa reprova: nome da empresa, **Valores:** da entrada
+     `## Identificadores` (tipo `identificadores`, só no DICIONARIO.md da empresa), caminho e repositório de projeto do
+     índice, objeto Z*/Y*, campo ZZ*/YY*, tipo de movimento 9xx ou X/Y/Z, caminho de usuário.
 
 ## 3. Método
 
 ### 3.1 Consultar (antes de pesquisar, perguntar ou escrever consulta)
-1. Buscar: `python tools/knowledge_catalog.py --recall --context "<palavras>" --conhecimento <raiz>`.
+1. Buscar: `python tools/knowledge_catalog.py --recall --context "<palavras>" --conhecimento <raiz> --empresa <empresa>`
+   (dentro da pasta de um projeto do índice, `--empresa` pode ser omitido).
 2. Achou e está válido: reusar e citar o nome da entrada.
-3. Achou e está vencido (`python tools/conhecimento.py vencidos <raiz>`): refazer só aquilo e atualizar a entrada.
+3. Achou e está vencido (`python tools/conhecimento.py vencidos <raiz> --empresa <empresa>`): refazer só aquilo e
+   atualizar a entrada.
 4. Não achou: registrar "nada encontrado" na especificação e seguir.
 
 ### 3.2 Construir (no ato, não no fim do projeto)
@@ -58,7 +74,7 @@ daquela empresa. Verificação: `python tools/conhecimento.py verificar <raiz>`.
 
 ```
 ## <nome>
-- **Tipo:** termo | consulta | fato | pesquisa | runbook
+- **Tipo:** termo | consulta | fato | pesquisa | runbook | identificadores
 - **Fonte:** <arquivo e linha, documento ou pessoa, com data>
 - **Verificado em:** dd/mm/aaaa
 - **Confiança:** CONFIRMADO por <quem> | INFERIDO | REFUTADO
@@ -70,6 +86,7 @@ daquela empresa. Verificação: `python tools/conhecimento.py verificar <raiz>`.
 | consulta | **Pergunta:**, **Sistema:**, **Versão:** e um bloco de código com o texto pronto | **Evidência:**, **Aponta para:** |
 | fato | **Classe:** (estrutura exige **Sistema:** e **Versão:**) | **Evidência:** |
 | pesquisa · runbook | **Pergunta:** | **Classe:**, **Evidência:**, **Aponta para:** |
+| identificadores | **Valores:** (separados por `;`), só no DICIONARIO.md da empresa; fica fora da busca | — |
 
 Todos aceitam **Contestado em:**. Caminho em **Evidência:** ou **Aponta para:** tem de existir.
 

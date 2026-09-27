@@ -48,7 +48,8 @@ conjunto completo num projeto pequeno viola a régua §0 tanto quanto não docum
 6. Sincronizar a spec se decisões mudaram (anti-drift).
 7. Biblioteca de conhecimento (ADR-120): registrar o que o bloco produziu e é reutilizável — termo confirmado,
    consulta rodada, número medido (como `retrato`, com data), pesquisa, runbook — ou declarar "nada a registrar";
-   depois `python tools/conhecimento.py verificar <raiz>`. Método: `exemplos/conhecimento/_modelo/README.md`.
+   depois `python tools/conhecimento.py verificar <raiz> --empresa <empresa>`. Saber puro de assunto, sem dado da
+   empresa, vai para `assuntos/<assunto>/`. Método: `exemplos/conhecimento/_modelo/README.md`.
 
 ## Encerramento
 Sem CHANGELOG + dicionário (se aplicável) + ADR aceito (se havia) → não fecha.
