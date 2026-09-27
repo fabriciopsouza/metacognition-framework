@@ -686,6 +686,17 @@ def _artefato_do_proprio_veredito(v, p) -> bool:
     return alvo in ("_meta/qa/" + base + ".json", "_meta/qa/" + base + ".md")
 
 
+OID_REMOVIDO = "0" * 40  # carimbo de remoção revisada (gêmeo em qa_evidence.py)
+
+
+def _removido_no_indice(p):
+    """True se `p` existia no HEAD e saiu do índice e do disco: a remoção é o que será commitado."""
+    p = str(p).replace("\\", "/")
+    return (_git("cat-file", "-e", "HEAD:" + p) is not None
+            and not _eh_sha_hex(_git("rev-parse", "--verify", "-q", ":" + p) or "")
+            and not os.path.exists(os.path.join(ROOT, p)))
+
+
 def _blob_indexado(p):
     """Hash do blob de `p` COMO ESTA' NO INDICE, ou None se o git nao responder.
 
@@ -822,6 +833,11 @@ def _recente_o_bastante(v, paths) -> bool:
                 # pratico e' empurrar para `--no-verify`. Entao a excecao e' EXPLICITA e
                 # ESTREITA: vale so' para os dois arquivos do PROPRIO veredito, nunca para
                 # o artefato de outro, e nunca para codigo. [37a rodada]
+                continue
+            if gravado == OID_REMOVIDO:
+                # remoção revisada: vale só se o caminho existia no HEAD e saiu do índice e do disco
+                if not _removido_no_indice(p):
+                    return False
                 continue
             if not _eh_sha_hex(gravado):
                 return False      # path avaliado que o veredito nao carimbou: fail-closed

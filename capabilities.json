@@ -2290,7 +2290,7 @@
    "note": "Emenda 1 do ADR-120 (27/09/2026). --empresa <e>|nenhuma|todas em conhecimento.py e knowledge_catalog --recall; sem --empresa, INDICE-PROJETOS pelo cwd (mais especifico); sem resolucao, exit 2. Limites: filtro nao e isolamento fisico (D1); empresa ausente da maquina (D2); relatorios de sessao (D3).",
    "mutacao": {
     "arquivo": "tools/conhecimento.py",
-    "de": "            if len(partes) >= 2 and partes[0] == \"empresas\" and not _visivel(f\"empresas/{partes[1].lower()}\", empresa):",
+    "de": "                if len(partes) >= 2 and partes[0] == \"empresas\" and not _visivel(f\"empresas/{partes[1].lower()}\", empresa):",
     "para": "            if False:",
     "canario": "tools/test_conhecimento_isolamento.py",
     "espera": "não devolve nada da beta"

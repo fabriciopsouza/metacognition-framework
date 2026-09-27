@@ -12,3 +12,9 @@ Estrutura, formato e método: `exemplos\conhecimento\_modelo\README.md` (ADR-120
 - **Buscar:** `python tools\knowledge_catalog.py --recall --context "<termos>" --conhecimento docs\_private\conhecimento --empresa <empresa>`
 - **Isolamento entre empresas:** o conhecimento de uma empresa nunca aparece no trabalho de outra; saber puro de
   assunto vai para `assuntos\<assunto>\` (método no README do modelo, seção 2).
+- **Bibliotecas das empresas (27/09/2026):** fora deste repositório, em `C:\Users\fabriciosouza\conhecimento-negocio\`
+  (repositório privado `conhecimento-negocio`, um submódulo por empresa; aqui, só o da empresa desta máquina).
+  - Natulab: `empresas\natulab` = `conhecimento-natulab`.
+  - Registrar conhecimento: commit dentro do submódulo, depois atualizar o ponteiro no pai.
+  - Mudou `## Identificadores` ou o índice da empresa:
+    `python tools\conhecimento.py publicar docs\_private\conhecimento --empresa <empresa>` e commit aqui.

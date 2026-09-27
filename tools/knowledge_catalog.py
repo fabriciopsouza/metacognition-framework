@@ -475,7 +475,18 @@ def cmd_recall(context: str, out_dir: str, top_n: int, conhecimento_dir: str = "
             print(f"[knowledge-catalog] RECUSADO: {e}", file=sys.stderr)
             return 2
         print(f"empresa: {emp} ({como})")
+        if emp not in (conhecimento.TODAS, conhecimento.NENHUMA) and emp not in conhecimento.empresas_presentes(conhecimento_dir):
+            print(f"AVISO: a biblioteca de {emp} não está nesta máquina (submódulo não inicializado ou empresa nova): "
+                  f"só assuntos e perfis foram lidos")
         base = conhecimento.carregar_entradas(conhecimento_dir, emp)
+        # D3 (emenda 2 do ADR-120): relatório de sessão que cita outra empresa sai da busca no recorte.
+        cita_outra = conhecimento.mencao_de_outra_empresa(conhecimento_dir, emp)
+        antes = len(entries)
+        # o nome do arquivo também sai na tela (ex.: execution-report-...-natulab-....md): entra no teste
+        entries = [e for e in entries if not cita_outra(" ".join([e.get("_tokens_full", ""), str(e.get("report_id", "")),
+                                                                   os.path.basename(str(e.get("source", "")))]))]
+        if len(entries) < antes:
+            print(f"relatórios de sessão fora do recorte: {antes - len(entries)} omitido(s)")
     if not entries and not base:
         if conhecimento_dir:
             # biblioteca vazia é resultado válido (empresa nova): responde, não é erro

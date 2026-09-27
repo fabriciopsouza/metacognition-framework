@@ -1,0 +1,62 @@
+{
+  "bloco": "gate-remocao-revisada",
+  "papel": "qa_critic",
+  "rodada": 1,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "veredito": "aprovar",
+  "escopo_paths": [
+    "tools/qa_evidence.py",
+    "tools/squad_gate.py",
+    "tools/test_squad_gate.py",
+    "_meta/qa/gate-remocao-revisada.json",
+    "_meta/qa/gate-remocao-revisada.md"
+  ],
+  "atestacao": {
+    "agentId": "a977c5c692ad12d2b",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic isolado, segundo plano, so leitura; mutacoes em copia do repo em %TEMP%."
+  },
+  "postura": {
+    "discovery": "arquivo apagado nao tinha como ser coberto por veredito (sem blob); so --no-verify passava",
+    "rrc": "PASSA",
+    "metodo_senior": "aplicado: vetores de burla testados (novo, modificado, git rm --cached, git mv, barra invertida, repo sem HEAD); mutacoes"
+  },
+  "resumo": "Remocao revisada: OID nulo (40 zeros) em blobs_revisados cobre so caminho que existia no HEAD e saiu do indice e do disco. sha_revisado e escopo_paths continuam obrigatorios.",
+  "verificacoes_executadas": [
+    "test_squad_gate 98 PASS / 0 FAIL; test_qa_evidence PASS; test_mutacao_squad_gate 37/37",
+    "mutacao 1 (aceitar qualquer nulo): morta; mutacao 2 (inverter checagem de disco): morta",
+    "vetores: arquivo novo, modificado, git rm --cached, git mv, barra invertida, repo sem HEAD: sem burla"
+  ],
+  "problemas": [],
+  "nao_verificado": [
+    "git mv fim a fim via _recente_o_bastante (coberto por analise, nao por teste)"
+  ],
+  "recomendacao_do_critico": "PASS",
+  "data": "2026-09-27T17:00:00Z",
+  "sha_revisado": "5b43c887b04472596c00c7272c3a91fd8b58f0de",
+  "blobs_revisados": {
+    "tools/qa_evidence.py": "a7ded1c68e8a9187254873fcbfd400361dff76e5",
+    "tools/squad_gate.py": "985e548d6cea24e6a853189f339fbc730797cc66",
+    "tools/test_squad_gate.py": "77a293f9a49689ad7067ea6138b231fa4174eaa4"
+  },
+  "substitui": [
+    {
+      "rodada": 1,
+      "data": "2026-09-27T17:00:00Z",
+      "recomendacao": "aprovar",
+      "sha_revisado": null,
+      "agentId": "a977c5c692ad12d2b",
+      "escopo_paths": [
+        "tools/qa_evidence.py",
+        "tools/squad_gate.py",
+        "tools/test_squad_gate.py",
+        "_meta/qa/gate-remocao-revisada.json",
+        "_meta/qa/gate-remocao-revisada.md"
+      ],
+      "achados_fp": [],
+      "reinicio": false
+    }
+  ]
+}

@@ -43,6 +43,16 @@ daquela empresa. Verificação: `python tools/conhecimento.py verificar <raiz> -
    - Entrada em `assuntos/` com identificador de empresa reprova: nome da empresa, **Valores:** da entrada
      `## Identificadores` (tipo `identificadores`, só no DICIONARIO.md da empresa), caminho e repositório de projeto do
      índice, objeto Z*/Y*, campo ZZ*/YY*, tipo de movimento 9xx ou X/Y/Z, caminho de usuário.
+5. **Biblioteca da empresa fora do framework (emenda 2 do ADR-120):** cada empresa num repositório privado próprio,
+   submódulo `empresas/<empresa>` de um repositório-pai. Em cada máquina, só o submódulo da empresa daquela máquina é
+   inicializado (nunca `--recursive`).
+   - O repositório da empresa tem o marcador `.conhecimento-empresa`, o `DICIONARIO.md`, as áreas, o
+     `INDICE-PROJETOS.md` e o `conhecimento.json` dela.
+   - A raiz aponta para o pai em `conhecimento.json` → `"bibliotecas": ["<pasta>"]`; pasta ausente é ignorada.
+   - `python tools/conhecimento.py publicar <raiz> --empresa <empresa>` grava em `assuntos/_identificadores/` o
+     sha256 dos identificadores da empresa. A máquina que não tem a biblioteca dela ainda reprova esses
+     identificadores em `assuntos/`, sem ver o texto. O `verificar` acusa a lista desatualizada.
+   - O `--recall` omite relatório de sessão que cita outra empresa.
 
 ## 3. Método
 

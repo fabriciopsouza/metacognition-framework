@@ -1534,6 +1534,46 @@ def test_blobs_path_avaliado_SEM_carimbo_NAO_cobre():
     assert sg._recente_o_bastante(ev, [alvo, "tools/qa_evidence.py"]) is False
 
 
+def test_remocao_carimbo_nulo_NAO_vale_para_arquivo_que_existe():
+    """O OID nulo (40 zeros) só cobre remoção real: arquivo presente no índice reprova."""
+    alvo = "tools/squad_gate.py"
+    if not _hash_do_indice_independente(alvo):
+        return
+    ev = _ev(agentId="a1", modelo="sonnet", autor="opus", escopo=(alvo,))
+    ev["blobs_revisados"] = {alvo: "0" * 40}
+    assert sg._recente_o_bastante(ev, [alvo]) is False
+
+
+def test_remocao_carimbo_nulo_cobre_remocao_real_e_so_ela():
+    """Repositório temporário: arquivo commitado e removido com `git rm` = remoção real (True); arquivo que nunca
+    existiu no HEAD e arquivo ainda presente = False. ROOT é trocado só durante o teste."""
+    import shutil
+    import subprocess
+    import tempfile
+    d = tempfile.mkdtemp()
+    antes = sg.ROOT
+    try:
+        def g(*a):
+            return subprocess.run(["git", "-C", d, *a], capture_output=True, stdin=subprocess.DEVNULL).returncode
+        if g("init", "-q") != 0:
+            return
+        g("config", "user.email", "t@t")
+        g("config", "user.name", "t")
+        for nome in ("sai.md", "fica.md"):
+            with open(os.path.join(d, nome), "w", encoding="utf-8") as fh:
+                fh.write(nome)
+        g("add", "-A")
+        g("commit", "-q", "-m", "base")
+        g("rm", "-q", "sai.md")
+        sg.ROOT = d
+        assert sg._removido_no_indice("sai.md") is True
+        assert sg._removido_no_indice("fica.md") is False
+        assert sg._removido_no_indice("nunca-existiu.md") is False
+    finally:
+        sg.ROOT = antes
+        shutil.rmtree(d, ignore_errors=True)
+
+
 def test_blobs_NAO_dispensam_sha_revisado_valido():
     """Achado CRITICO da 37a rodada: o atalho pulava a validacao de `sha_revisado`.
 
