@@ -71,9 +71,9 @@
     redesenho ou decisão do dono). Registrar com `--override-dono "<frase literal, data>"`.
 - Comando de sessão nunca apaga nem adia item de plano.
 - **Comando permanente `status`:** responder ANTES de continuar o trabalho, só com a **tabela
-  checklist/cronograma** do plano ativo (bloco · situação ✅/⏳/☐ · % de avanço · onde está · o que
-  falta), seguida de 3 linhas: onde estamos · o que falta · próximo passo, e o link do painel. Sem
-  narrativa do que foi feito.
+  checklist/cronograma** do plano ativo (bloco · **o que é**, uma frase do que o bloco entrega, também
+  nos não iniciados · situação ✅/⏳/☐ · % de avanço · onde está · o que falta), seguida de 3 linhas:
+  onde estamos · o que falta · próximo passo, e o link do painel. Sem narrativa do que foi feito.
 
 ## 7. Mapa de impacto em toda mudança
 

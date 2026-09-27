@@ -5,6 +5,27 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-122 — Planilhas de confirmação e de verificação geradas do arquivo único (27/09/2026)
+
+- **Partes I — Definições a confirmar e J — Roteiro de verificação** no modelo de arquivo único, com colunas neutras
+  para qualquer projeto e sistema e `### Rótulos` para o texto do cabeçalho de cada projeto.
+- **`tools/planilhas_projeto.py verificar | gerar | importar`:** `confirmacao_vN.xlsx` (LEIA, REGRAS com as
+  definições e os pontos para aprovação da Parte H, VALORES POR CATEGORIA opcional) e `verificacao_vN.xlsx` (COMO
+  USAR, ANTES DE COMEÇAR, CHECKLIST com 15 colunas de base e uma rodada padrão repetível, ACHADOS DO AMBIENTE,
+  CORREÇÕES DA BASE, CONTROLE DE VERSÃO). A resposta da área volta ao arquivo único.
+- **Versão comparada:** cada gravação cria vN+1, move a anterior para `_obsoleto/`, compara as respostas e só então
+  apaga a anterior; divergência restaura e reprova. Planilha aberta, versão superada e cabeçalho alterado são
+  recusados.
+- Com impacto regulado, as categorias obrigatórias do perfil entram como blocos da verificação.
+- **Passo executado vira comando** (regra do dono, 27/09: "nada de fiar as capacidades somente em prosa"):
+  - `situacao [--exigir]` mede o que a área respondeu com nome e data e é a prova da etapa 2 do método;
+  - `rodada --data --ids` acrescenta a próxima volta com a área.
+- QA isolado rodada 1: PASS-COM-RESSALVAS.
+  - Achados: 1 ALTA (resposta iniciada por "=" virava fórmula e sumia), 3 MÉDIA (CRLF, `<br>` literal, recusa sem
+    saída), 1 BAIXA.
+  - Todos corrigidos, com caso de teste próprio para cada um.
+- Prova: `test_planilhas_projeto` (68 verificações).
+
 ### ADR-121 — Método único de projeto, desenho do processo gerado e manifesto de evidência (26/09/2026)
 
 - **`guia/METODO-DE-PROJETO.md`:** fluxo de 8 etapas, da abertura à operação, com o que sai, onde mora e como se
