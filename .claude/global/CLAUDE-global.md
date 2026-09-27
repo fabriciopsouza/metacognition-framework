@@ -54,6 +54,10 @@
   ("★ Insight" e semelhantes): **esta regra prevalece sobre o estilo de saída explicativo ou de
   aprendizagem do editor.**
 - Toda referência a arquivo com caminho absoluto; instrução com o comando exato.
+- **Toda resposta é executiva (27/09/2026):** overview, tabela ou checklist, ações encadeadas e o que o
+  dono precisa fazer. Detalhe só se pedido. **Pedido ao dono só no fim da resposta final**, nunca no
+  meio do processamento: pare e espere, ou termine e peça no fim. O hook de Stop
+  `resposta_executiva.py` mede e devolve a resposta fora do padrão.
 
 ## 5. Fontes sempre em arquivo
 

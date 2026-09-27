@@ -13,6 +13,7 @@
 # Garante no ~/.claude/settings.json:
 #   - hooks.SessionStart     contém inject-start-session-global.ps1 (auto-boot, ADR-006)
 #   - hooks.UserPromptSubmit contém route-gate.ps1                  (roteamento, ADR-027)
+#   - hooks.Stop             contém resposta_executiva.py           (formato executivo, regra do dono 27/09/2026)
 #
 # EXIT CODES (consumidos por bootstrap/sync-global p/ transparência ao usuário):
 #   0  = nada a fazer (já wirado)
@@ -47,6 +48,8 @@ try {
         $srcInject = Join-Path $RepoDir '.claude\hooks\inject-start-session-global.template.ps1'
         if (Test-Path $srcRoute)  { Copy-Item $srcRoute  $routeGate    -Force -ErrorAction SilentlyContinue }
         if (Test-Path $srcInject) { Copy-Item $srcInject $injectGlobal -Force -ErrorAction SilentlyContinue }
+        $srcResp = Join-Path $RepoDir 'tools\hooks\resposta_executiva.py'
+        if (Test-Path $srcResp) { Copy-Item $srcResp (Join-Path $hooksDir 'resposta_executiva.py') -Force -ErrorAction SilentlyContinue }
     }
 
     $injectCmd = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$injectGlobal`""
@@ -96,6 +99,16 @@ try {
 
     if (Ensure-HookEvent -Cfg $cfg -EventName 'UserPromptSubmit' -Needle 'route-gate' `
             -Command $routeCmd -StatusMessage 'Roteamento determinístico (route-gate ADR-027)') { $changed = $true }
+
+    # Formato executivo (regra do dono, 27/09/2026): mede a resposta final e devolve uma vez se verborrágica.
+    $respExec = Join-Path $hooksDir 'resposta_executiva.py'
+    # Sem `|| true`: ele engoliria o exit 2 que devolve a resposta. Sem python no PATH o shell sai com 127, que o
+    # Claude Code trata como não bloqueante (docs oficiais de hooks, conferido em 27/09/2026): a sessão segue.
+    $respCmd  = "python `"$respExec`" --hook"
+    if (-not (Test-Path $respExec)) {
+        Log "resposta_executiva.py ausente em $hooksDir — Stop NAO ligado (rode o sync-global ou passe -RepoDir)."
+    } elseif (Ensure-HookEvent -Cfg $cfg -EventName 'Stop' -Needle 'resposta_executiva' `
+            -Command $respCmd -StatusMessage 'Formato executivo da resposta (regra do dono)') { $changed = $true }
 
     if (-not $changed) {
         Log 'wiring ja presente; nada a fazer.'

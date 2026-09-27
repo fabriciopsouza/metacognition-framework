@@ -12,11 +12,11 @@
 
 | # | Assunto | Situação | Quem age | Resultado / próximo |
 |---|---|---|---|---|
-| D1 | Separação física: a biblioteca de cada empresa sai do repositório do framework | ⏳ pendente | **dono** | recomendação (a), ver Decisões |
-| D2 | Identificadores de empresa que outra máquina não tem (verificação de `assuntos/`) | ⏳ pendente | **dono** | recomendação (a), ver Decisões |
-| D3 | Relatórios de sessão no `--recall` | ⏳ pendente | **dono** | recomendação (a), ver Decisões |
+| D1 | Separação física: a biblioteca de cada empresa sai do repositório do framework | ✅ decidido (a), 27/09 | autor | executar (plano próprio) |
+| D2 | Identificadores de empresa que outra máquina não tem (verificação de `assuntos/`) | ✅ decidido (a), 27/09 | autor | executar (plano próprio) |
+| D3 | Relatórios de sessão no `--recall` | ✅ decidido (a), 27/09 | autor | executar (plano próprio) |
 | D4 | Sessão do próprio framework (fora de projeto): `--empresa nenhuma` | ✅ aplicada (reversível) | — | informativa; o dono pode reverter |
-| D5 | Versão de sistema da Natulab no `conhecimento.json` da raiz | ⏳ pendente | **dono** | recomendação (a), ver Decisões |
+| D5 | Versão de sistema da Natulab no `conhecimento.json` da raiz | ✅ decidido (a), 27/09 | autor | executar (plano próprio) |
 
 ## Resumo executivo
 **Onde estamos.** Os três problemas do pedido foram reproduzidos contra o código do `origin/main` (`f9753ae`) com
@@ -208,11 +208,11 @@ por armazenamento separado (D1) `[INFERIDO]`.
 # Decisões
 | # | Decisão | Alternativas | Recomendação | Resposta do dono |
 |---|---|---|---|---|
-| D1 | Separação física | (a) cada empresa em repositório privado próprio (ou no repositório de domínio), o framework guarda só modelo, `assuntos/` e `perfis/`; `--conhecimento` aceita mais de uma raiz · (b) manter tudo no framework e confiar no filtro | **(a)**: o filtro não impede leitura direta nem a cópia do dado na máquina da outra empresa. Custo: migrar a Natulab e reverter a decisão de 26/09 | _pendente_ |
-| D2 | Identificadores de empresa ausente na máquina | (a) cada empresa publica em `assuntos/_identificadores/<hash-da-empresa>.sha256` o sha256 dos identificadores normalizados; o verificador compara hash de cada termo de `assuntos/` · (b) só empresas locais + padrões genéricos | **(a)**: fecha o furo sem expor texto claro. Custo: gerador e o passo de publicar; nome curto tem risco de colisão baixo | _pendente_ |
-| D3 | Relatórios de sessão no `--recall` | (a) com `--empresa`, só relatórios cujo cabeçalho declare a mesma empresa ou nenhuma · (b) deixar como está | **(a)**: é o mesmo vazamento por outro canal. Custo: campo de empresa no relatório de execução | _pendente_ |
+| D1 | Separação física | (a) cada empresa em repositório privado próprio (ou no repositório de domínio), o framework guarda só modelo, `assuntos/` e `perfis/`; `--conhecimento` aceita mais de uma raiz · (b) manter tudo no framework e confiar no filtro | **(a)**: o filtro não impede leitura direta nem a cópia do dado na máquina da outra empresa. Custo: migrar a Natulab e reverter a decisão de 26/09 | ✅ (a) — dono, 27/09/2026: "todas a" |
+| D2 | Identificadores de empresa ausente na máquina | (a) cada empresa publica em `assuntos/_identificadores/<hash-da-empresa>.sha256` o sha256 dos identificadores normalizados; o verificador compara hash de cada termo de `assuntos/` · (b) só empresas locais + padrões genéricos | **(a)**: fecha o furo sem expor texto claro. Custo: gerador e o passo de publicar; nome curto tem risco de colisão baixo | ✅ (a) — dono, 27/09/2026: "todas a" |
+| D3 | Relatórios de sessão no `--recall` | (a) com `--empresa`, só relatórios cujo cabeçalho declare a mesma empresa ou nenhuma · (b) deixar como está | **(a)**: é o mesmo vazamento por outro canal. Custo: campo de empresa no relatório de execução | ✅ (a) — dono, 27/09/2026: "todas a" |
 | D4 | Sessão do framework, fora de projeto | (a) `--empresa nenhuma` = só `assuntos/` e `perfis/` · (b) sem valor especial, sempre exige empresa | **(a)**, aplicada nesta entrega (reversível) | informativa |
-| D5 | Versão de sistema da Natulab no `conhecimento.json` da raiz | (a) a sessão da Natulab move a chave para `empresas/natulab/conhecimento.json`; a raiz fica só com assunto · (b) manter | **(a)**: versão de sistema de uma empresa é dado dela. Custo: 1 chave, feito pela sessão de domínio | _pendente_ |
+| D5 | Versão de sistema da Natulab no `conhecimento.json` da raiz | (a) a sessão da Natulab move a chave para `empresas/natulab/conhecimento.json`; a raiz fica só com assunto · (b) manter | **(a)**: versão de sistema de uma empresa é dado dela. Custo: 1 chave, feito pela sessão de domínio | ✅ (a) — dono, 27/09/2026: "todas a" |
 
 # Tarefas
 - [x] T1 `conhecimento.py`: escopo por empresa em `carregar`, `verificar`, `vencidos`, `carregar_entradas`; nível `assuntos/`; tipo `identificadores`; resolução pelo índice; `conhecimento.json` por empresa. — prova: `test_conhecimento_isolamento`

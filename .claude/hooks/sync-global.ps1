@@ -133,7 +133,8 @@ try {
         # e ensure-global-wiring (self-heal) para a instância global. Pares fonte/binário.
         foreach ($pair in @(
             @{ src = 'tools\hooks\route-gate.ps1';           dst = 'route-gate.ps1' },
-            @{ src = 'tools\hooks\ensure-global-wiring.ps1';  dst = 'ensure-global-wiring.ps1' }
+            @{ src = 'tools\hooks\ensure-global-wiring.ps1';  dst = 'ensure-global-wiring.ps1' },
+            @{ src = 'tools\hooks\resposta_executiva.py';     dst = 'resposta_executiva.py' }
         )) {
             $s = Join-Path $projectRoot $pair.src
             $d = Join-Path $hooksDest   $pair.dst
