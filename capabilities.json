@@ -2249,6 +2249,30 @@
    }
   },
   {
+   "id": "isolamento-entre-empresas",
+   "title": "Isolamento entre empresas na biblioteca de conhecimento: busca e verificacao so da empresa do projeto + assuntos, resolvida pelo indice e com recusa sem resolucao; relacao ou caminho que cruza empresa e identificador de empresa em assuntos reprovam",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/conhecimento.py",
+   "test": "tools/test_conhecimento_isolamento.py",
+   "adr": "docs/adr/120-biblioteca-de-conhecimento-metodo-e-verificador.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "conhecimento",
+    "isolamento",
+    "confidencialidade"
+   ],
+   "note": "Emenda 1 do ADR-120 (27/09/2026). --empresa <e>|nenhuma|todas em conhecimento.py e knowledge_catalog --recall; sem --empresa, INDICE-PROJETOS pelo cwd (mais especifico); sem resolucao, exit 2. Limites: filtro nao e isolamento fisico (D1); empresa ausente da maquina (D2); relatorios de sessao (D3).",
+   "mutacao": {
+    "arquivo": "tools/conhecimento.py",
+    "de": "            if len(partes) >= 2 and partes[0] == \"empresas\" and not _visivel(f\"empresas/{partes[1].lower()}\", empresa):",
+    "para": "            if False:",
+    "canario": "tools/test_conhecimento_isolamento.py",
+    "espera": "não devolve nada da beta"
+   }
+  },
+  {
    "id": "desenho-do-processo",
    "title": "Metodo unico de projeto e desenho do processo gerado da especificacao: HTML de revisao com raias por papel e docx controlado, reprovando passo solto, destino inexistente e desenho maior que a tela",
    "status": "PROVIDES",

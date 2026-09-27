@@ -221,7 +221,7 @@ def main():
     env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1", PYTHONIOENCODING="utf-8")
     kc = os.path.join(ROOT, "tools", "knowledge_catalog.py")
     r = subprocess.run([sys.executable, kc, "--recall", "--context", "lotes bloqueados", "--out-dir", vazio,
-                        "--conhecimento", raiz], capture_output=True, text=True, encoding="utf-8", env=env)
+                        "--conhecimento", raiz, "--empresa", "todas"], capture_output=True, text=True, encoding="utf-8", env=env)
     linha = next((ln for ln in r.stdout.splitlines() if "F-01" in ln), "")
     check("recall com a biblioteca devolve a entrada", r.returncode == 0 and bool(linha), r.stdout + r.stderr)
     check("retrato sai com a data", "em 26/09/2026: 120 lotes" in linha, linha)
@@ -230,7 +230,8 @@ def main():
     check("sem --conhecimento a biblioteca não é lida", r.returncode == 2 and "F-01" not in r.stdout,
           r.stdout + r.stderr)
     vazia = tempfile.mkdtemp()
-    r = subprocess.run([sys.executable, kc, "--recall", "--context", "x", "--out-dir", vazio, "--conhecimento", vazia],
+    r = subprocess.run([sys.executable, kc, "--recall", "--context", "x", "--out-dir", vazio, "--conhecimento", vazia,
+                        "--empresa", "nenhuma"],
                        capture_output=True, text=True, encoding="utf-8", env=env)
     check("biblioteca vazia responde 'nada encontrado' sem erro", r.returncode == 0 and "nada encontrado" in r.stdout,
           r.stdout + r.stderr)

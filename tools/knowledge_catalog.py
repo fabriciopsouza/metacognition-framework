@@ -461,14 +461,21 @@ def cmd_build(intake_dir: str, out_dir: str) -> int:
     return 0
 
 
-def cmd_recall(context: str, out_dir: str, top_n: int, conhecimento_dir: str = "") -> int:
+def cmd_recall(context: str, out_dir: str, top_n: int, conhecimento_dir: str = "", empresa: str = "") -> int:
     entries = _catalog_load(out_dir)
     # Biblioteca de conhecimento (ADR-120): mesma busca, lida ao vivo (muda a cada bloco; não é persistida aqui).
+    # Isolamento entre empresas: só empresas/<e>/ + assuntos/ + perfis/; empresa não resolvida = RECUSA (exit 2).
     base: List[dict] = []
     if conhecimento_dir:
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
         import conhecimento  # noqa: E402  (import tardio: só quem pede a biblioteca paga o custo)
-        base = conhecimento.carregar_entradas(conhecimento_dir)
+        try:
+            emp, como = conhecimento.escolher_empresa(conhecimento_dir, empresa or None)
+        except conhecimento.Recusa as e:
+            print(f"[knowledge-catalog] RECUSADO: {e}", file=sys.stderr)
+            return 2
+        print(f"empresa: {emp} ({como})")
+        base = conhecimento.carregar_entradas(conhecimento_dir, emp)
     if not entries and not base:
         if conhecimento_dir:
             # biblioteca vazia é resultado válido (empresa nova): responde, não é erro
@@ -525,6 +532,9 @@ def main() -> None:
                     help=f"Insights retornados por --recall (default: {TOP_N_RECALL})")
     ap.add_argument("--conhecimento", default="", metavar="RAIZ",
                     help="Inclui no --recall a biblioteca de conhecimento em RAIZ (ADR-120)")
+    ap.add_argument("--empresa", default="", metavar="EMPRESA",
+                    help="Recorte da biblioteca: <empresa> | nenhuma (só assuntos e perfis) | todas (manutenção). "
+                         "Sem ele, resolvida pelo INDICE-PROJETOS a partir do diretório atual; sem resolução, recusa")
 
     args = ap.parse_args()
 
@@ -539,7 +549,7 @@ def main() -> None:
             print("[knowledge-catalog] --recall requer --context ou --from-briefing com conteúdo.",
                   file=sys.stderr)
             sys.exit(1)
-        sys.exit(cmd_recall(ctx, args.out_dir, args.top_n, args.conhecimento))
+        sys.exit(cmd_recall(ctx, args.out_dir, args.top_n, args.conhecimento, args.empresa))
 
     if args.patterns:
         sys.exit(cmd_patterns(args.out_dir))

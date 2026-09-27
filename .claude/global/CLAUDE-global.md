@@ -91,9 +91,13 @@
 ## 9. Biblioteca de conhecimento: consultar antes, registrar ao fechar
 
 - **Consultar antes de pesquisar, perguntar ou escrever consulta:** buscar na biblioteca da empresa
-  do projeto (`python {{FRAMEWORK_ROOT}}\tools\knowledge_catalog.py --recall --context "<termos>" --conhecimento <raiz>`)
+  do projeto (`python {{FRAMEWORK_ROOT}}\tools\knowledge_catalog.py --recall --context "<termos>" --conhecimento <raiz> --empresa <empresa>`)
   e registrar o que foi reusado ou "nada encontrado". Entrada vencida é
   refeita; número guardado é citado com a data, nunca como valor atual.
+- **Isolamento entre empresas:** conhecimento de uma empresa (processo, centros, códigos, valores,
+  consultas, nomes) nunca aparece no trabalho de outra; só saber puro de assunto vai para `assuntos/`.
+  Sem `--empresa`, a empresa sai do INDICE-PROJETOS pelo diretório; sem resolução, o comando recusa:
+  pergunte a empresa ao dono, nunca escolha.
 - **Registrar ao fechar o bloco:** termo confirmado, consulta rodada, número medido, pesquisa ou
   runbook reutilizável entra na biblioteca; ou declarar "nada a registrar". Credencial nunca entra.
 <!-- framework:global:fim -->

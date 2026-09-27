@@ -73,9 +73,11 @@ inventar não é. A diferença é onde a dúvida aparece: na conversa, na hora, 
 ## Método universal (os princípios que dirigem as perguntas)
 0. **Consultar o conhecimento antes de perguntar ou pesquisar (ADR-120).** Pergunte a empresa e o perfil
    regulado do projeto (sem padrão, REQ-08 do ADR-119), busque na biblioteca dela
-   (`python tools/knowledge_catalog.py --recall --context "<termos>" --conhecimento <raiz>`) e registre na
+   (`python tools/knowledge_catalog.py --recall --context "<termos>" --conhecimento <raiz> --empresa <empresa>`;
+   só `empresas/<empresa>/`, `assuntos/` e `perfis/` voltam, nunca outra empresa) e registre na
    dimensão `biblioteca-consultada` o que foi reusado ou "nada encontrado". Entrada vencida
-   (`python tools/conhecimento.py vencidos <raiz>`) é refeita, não reusada. Termo confirmado nesta conversa entra
+   (`python tools/conhecimento.py vencidos <raiz> --empresa <empresa>`) é refeita, não reusada. Recusa por empresa
+   não resolvida = perguntar ao dono. Termo confirmado nesta conversa entra
    no DICIONARIO.md do nível certo no ato (método: `exemplos/conhecimento/_modelo/README.md`).
 1. **Natureza primeiro.** 1ª pergunta sempre: *"que natureza tem este trabalho?"*
    Aceitar QUALQUER resposta. Não encaixar à força numa categoria pré-fixada.

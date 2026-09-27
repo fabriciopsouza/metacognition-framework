@@ -1,0 +1,173 @@
+{
+  "bloco": "isolamento-empresas-biblioteca",
+  "papel": "qa_critic",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "veredito": "aprovar",
+  "escopo_paths": [
+    ".agent/skills/discovery/SKILL.md",
+    ".agent/skills/docops/SKILL.md",
+    ".claude/global/CLAUDE-global.md",
+    "CAPABILITIES.md",
+    "CHANGELOG.md",
+    "_shared/discovery/elicitation-dimensions.md",
+    "capabilities.json",
+    "docs/_private/conhecimento/README.md",
+    "docs/adr/120-biblioteca-de-conhecimento-metodo-e-verificador.md",
+    "docs/specs/_template-spec-unico/spec.md",
+    "docs/specs/isolamento-empresas-biblioteca/spec.md",
+    "exemplos/conhecimento/_modelo/README.md",
+    "exemplos/conhecimento/_modelo/assuntos/assunto-exemplo/DICIONARIO.md",
+    "exemplos/conhecimento/_modelo/empresas/empresa-exemplo/DICIONARIO.md",
+    "guia/METODO-DE-PROJETO.md",
+    "guia/web/index.html",
+    "tools/conhecimento.py",
+    "tools/knowledge_catalog.py",
+    "tools/test_conhecimento.py",
+    "tools/test_conhecimento_isolamento.py",
+    "_meta/qa/isolamento-empresas-biblioteca.json",
+    "_meta/qa/isolamento-empresas-biblioteca.md"
+  ],
+  "atestacao": {
+    "agentId": "addd6d7a6db4e5278",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic isolado, segundo plano, so leitura; mutacoes em copia em %TEMP%. Rodadas anteriores: a222cd5cfd0828201 (plano), a45475faecd088181 (codigo 1)."
+  },
+  "postura": {
+    "discovery": "docs/specs/isolamento-empresas-biblioteca/spec.md (REQ-01 a REQ-05, criterios 1 a 8) e pedido do dono de 27/09/2026",
+    "rrc": "PASSA",
+    "metodo_senior": "aplicado: problemas reproduzidos com duas empresas sinteticas; canais de vazamento testados; mutacoes"
+  },
+  "resumo": "Emenda 1 do ADR-120: busca e verificacao da biblioteca so da empresa do projeto + assuntos + perfis; resolucao pelo indice com recusa; relacao ou caminho que cruza empresa e identificador de empresa em assuntos reprovam. Rodada 2 aprova; ressalvas declaradas como limites.",
+  "verificacoes_executadas": [
+    "plano: afirmacoes reproduzidas; aceite RATIFICADO-COM-AJUSTES",
+    "codigo 1: vazamento testado em recall, verificar, vencidos, mensagens, PROIBIDOS, indice, trabalhos, ../ e alfa/alfa2; nenhum",
+    "codigo 2: 3 mutacoes das correcoes e a mutacao declarada em capabilities.json, mortas",
+    "canarios PASS: test_conhecimento_isolamento, test_conhecimento, test_knowledge_catalog, test_capabilities, check_core_agnostic, check_rules_parity, test_marketing_claims, test_spec_unico",
+    "suite completa (autor): 95 PASS, 1 SKIP, 0 FAIL de 96"
+  ],
+  "problemas": [
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "docs/_private/conhecimento/conhecimento.json",
+      "descricao": "versao de sistema de empresa no arquivo global",
+      "cenario_de_falha": "--empresa vibra enxerga a versao da natulab"
+    },
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "tools/conhecimento.py:carregar",
+      "descricao": "pasta com maiuscula dava falso PASS",
+      "cenario_de_falha": "empresas/Beta + --empresa beta -> zero entradas, PASS"
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/conhecimento.py:_verificar_indice",
+      "descricao": "trabalho aberto citava repositorio de outra empresa",
+      "cenario_de_falha": "--empresa A lista repo de B"
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/test_conhecimento_isolamento.py",
+      "descricao": "sem caso alfa/alfa2",
+      "cenario_de_falha": "_visivel com startswith passava verde"
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/conhecimento.py:identificadores_de_empresa",
+      "descricao": "sigla MM reprovava saber puro",
+      "cenario_de_falha": "Valores: MM -> assunto sap-mm reprovado"
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "docs/adr/120 Limites",
+      "descricao": "codigo de 3 letras sem digito nao protegido, limite nao declarado",
+      "cenario_de_falha": "codigo ABC nao entra na lista"
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "docs/adr/120 Limites",
+      "descricao": "cfg_do_escopo com pasta maiuscula em FS case-sensitive",
+      "cenario_de_falha": "conhecimento.json da empresa ignorado ate renomear"
+    }
+  ],
+  "nao_verificado": [
+    "conteudo real da vibra (esta em outra maquina)"
+  ],
+  "recomendacao_do_critico": "PASS-COM-RESSALVAS",
+  "data": "2026-09-27T05:00:00Z",
+  "sha_revisado": "f9753ae2008bc9550c37691ca7644066b7ca6697",
+  "blobs_revisados": {
+    ".agent/skills/discovery/SKILL.md": "f4d3896c2d064202682c818fa654992f66da04bf",
+    ".agent/skills/docops/SKILL.md": "99252ab3e9d74e24825751b4749bcc02211b9d36",
+    ".claude/global/CLAUDE-global.md": "82a354663fb5a94eceaa56d75e4f119f97d2f008",
+    "CAPABILITIES.md": "04045cfe8365826a130e437379523c3d21e572c3",
+    "CHANGELOG.md": "342a6ae6d3aa423ec3f53289036ae6e2ebfc073e",
+    "_shared/discovery/elicitation-dimensions.md": "863f74fd5ee6db26810d6a876aa0f294b2a508d3",
+    "capabilities.json": "0eaf6b6865432b61dc23d238fe7eb644e8eda2c7",
+    "docs/_private/conhecimento/README.md": "8207dc129b27a71683db12275f5caf77131f1f77",
+    "docs/adr/120-biblioteca-de-conhecimento-metodo-e-verificador.md": "c21431c6a8d825035366d77c4033709c5b55d706",
+    "docs/specs/_template-spec-unico/spec.md": "c158342778415847f768ea9bc95ac2e26f930976",
+    "docs/specs/isolamento-empresas-biblioteca/spec.md": "8a14837fac373d1008125c2c35e959a25bfdf9c3",
+    "exemplos/conhecimento/_modelo/README.md": "1dc895653c7a41aa3ab136b04182c79d6d412a20",
+    "exemplos/conhecimento/_modelo/assuntos/assunto-exemplo/DICIONARIO.md": "d2b46c029aac669513a882a9deea64cd66cd386e",
+    "exemplos/conhecimento/_modelo/empresas/empresa-exemplo/DICIONARIO.md": "462089bcb31d241cc4a3482c527f55eb191e7c7e",
+    "guia/METODO-DE-PROJETO.md": "aed0a6e1088b601ce8d935d49874fa6e338bd1d0",
+    "guia/web/index.html": "ae39efcc0418c4d941ea0baccc12bcc36f68a620",
+    "tools/conhecimento.py": "db3b9e616e2e57712690afb49ce08d113c1abfd5",
+    "tools/knowledge_catalog.py": "ee9f0c63e0f9623d97d2c5c93ef16262f7c079d9",
+    "tools/test_conhecimento.py": "675969c1b7e73b32e434a7ab3e1524fe039dc74a",
+    "tools/test_conhecimento_isolamento.py": "67a44e45cdd7c7d43b2d15cfe7b491810b481ea9"
+  },
+  "substitui": [
+    {
+      "rodada": 2,
+      "data": "2026-09-27T05:00:00Z",
+      "recomendacao": "aprovar",
+      "sha_revisado": null,
+      "agentId": "addd6d7a6db4e5278",
+      "escopo_paths": [
+        ".agent/skills/discovery/SKILL.md",
+        ".agent/skills/docops/SKILL.md",
+        ".claude/global/CLAUDE-global.md",
+        "CAPABILITIES.md",
+        "CHANGELOG.md",
+        "_shared/discovery/elicitation-dimensions.md",
+        "capabilities.json",
+        "docs/_private/conhecimento/README.md",
+        "docs/adr/120-biblioteca-de-conhecimento-metodo-e-verificador.md",
+        "docs/specs/_template-spec-unico/spec.md",
+        "docs/specs/isolamento-empresas-biblioteca/spec.md",
+        "exemplos/conhecimento/_modelo/README.md",
+        "exemplos/conhecimento/_modelo/assuntos/assunto-exemplo/DICIONARIO.md",
+        "exemplos/conhecimento/_modelo/empresas/empresa-exemplo/DICIONARIO.md",
+        "guia/METODO-DE-PROJETO.md",
+        "guia/web/index.html",
+        "tools/conhecimento.py",
+        "tools/knowledge_catalog.py",
+        "tools/test_conhecimento.py",
+        "tools/test_conhecimento_isolamento.py",
+        "_meta/qa/isolamento-empresas-biblioteca.json",
+        "_meta/qa/isolamento-empresas-biblioteca.md"
+      ],
+      "achados_fp": [
+        "ALTA|docs/_private/conhecimento/conhecimento.json",
+        "ALTA|tools/conhecimento.py:carregar",
+        "BAIXA|docs/adr/120 limites",
+        "MEDIA|docs/adr/120 limites",
+        "MEDIA|tools/conhecimento.py:_verificar_indice",
+        "MEDIA|tools/conhecimento.py:identificadores_de_empresa",
+        "MEDIA|tools/test_conhecimento_isolamento.py"
+      ],
+      "reinicio": false
+    }
+  ]
+}
