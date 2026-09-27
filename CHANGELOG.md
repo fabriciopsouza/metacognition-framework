@@ -5,6 +5,17 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-123 — Resposta executiva medida por hook de Stop (27/09/2026)
+
+- **`tools/hooks/resposta_executiva.py`** devolve, uma vez, a resposta que tiver:
+  - mais de 150 palavras de prosa fora de tabela e código, salvo pedido de detalhe;
+  - pedido ao dono no meio do processamento;
+  - bloco "★ Insight".
+- Instalado em toda pasta pelo `sync-global` e pelo `ensure-global-wiring` (`hooks.Stop`).
+- Regra global, seção 4: toda resposta é executiva; o pedido ao dono fica só no fim.
+- Os plugins de estilo explicativo e de aprendizagem foram desligados no `~/.claude/settings.json` do dono.
+- Prova: `test_resposta_executiva`.
+
 ### Emenda 1 do ADR-120 — isolamento entre empresas na biblioteca de conhecimento (27/09/2026)
 
 - **Regra do dono:** o conhecimento de uma empresa nunca aparece no trabalho de outra; só o saber puro de assunto é

@@ -1,0 +1,145 @@
+{
+  "bloco": "resposta-executiva",
+  "papel": "qa_critic",
+  "rodada": 3,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "veredito": "aprovar",
+  "escopo_paths": [
+    ".claude/global/CLAUDE-global.md",
+    ".claude/hooks/sync-global.ps1",
+    "CAPABILITIES.md",
+    "CHANGELOG.md",
+    "capabilities.json",
+    "docs/adr/123-resposta-executiva-medida-por-hook.md",
+    "docs/specs/isolamento-empresas-biblioteca/spec.md",
+    "guia/web/index.html",
+    "tools/hooks/ensure-global-wiring.ps1",
+    "tools/hooks/resposta_executiva.py",
+    "tools/test_resposta_executiva.py",
+    "_meta/qa/resposta-executiva.json",
+    "_meta/qa/resposta-executiva.md"
+  ],
+  "atestacao": {
+    "agentId": "a1739d7a661b1f6ce",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic isolado, segundo plano, so leitura; mutacoes em %TEMP%. Rodadas anteriores: a542a5bd060858b40 (1), ab12af5e903bc8916 (2, FAIL)."
+  },
+  "postura": {
+    "discovery": "pedido do dono de 27/09/2026 (formato executivo; pedido so no fim) e regra 'nada so em prosa'",
+    "rrc": "PASSA",
+    "metodo_senior": "aplicado: contrato do Stop conferido nos docs oficiais (exit 2); medicao contra transcripts reais; mutacoes"
+  },
+  "resumo": "ADR-123: hook de Stop mede a resposta final (prosa > 150 palavras sem pedido de detalhe ou artefato; pedido ao dono no meio do turno; bloco Insight) e devolve uma vez com exit 2. Ligado em toda pasta. Rodada 3 aprova com ressalvas tratadas.",
+  "verificacoes_executadas": [
+    "rodada 1: 4/4 mutacoes mortas; medicao em transcripts reais revelou aviso do sistema lido como pedido",
+    "rodada 2: 5/5 mutacoes mortas; exit 2 propaga no Git Bash; contrato conferido em code.claude.com/docs/en/hooks.md",
+    "rodada 3: ALTA da rodada 2 fechada no transcript real; propostas de correcao aplicadas e testadas",
+    "canarios PASS: test_resposta_executiva, test_capabilities, check_rules_parity, test_marketing_claims, check_core_agnostic",
+    "suite completa (autor, antes das correcoes das rodadas): 96 PASS, 1 SKIP, 0 FAIL de 97"
+  ],
+  "problemas": [
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "tools/hooks/resposta_executiva.py:_prompt_real",
+      "descricao": "aviso do sistema lido como pedido do dono",
+      "cenario_de_falha": "task-notification abre turno e vira pedido"
+    },
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "tools/hooks/resposta_executiva.py:medir",
+      "descricao": "artefato pedido devolvido por ser longo",
+      "cenario_de_falha": "escreva o ADR -> devolvido"
+    },
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "tools/hooks/resposta_executiva.py:_SISTEMA",
+      "descricao": "cross-session-message lido como pedido",
+      "cenario_de_falha": "transcript real a60a2963 linha 277"
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/hooks/ensure-global-wiring.ps1",
+      "descricao": "-RepoDir nao copiava o hook e pulava em silencio",
+      "cenario_de_falha": "wiring isolada sem Stop"
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/hooks/ensure-global-wiring.ps1",
+      "descricao": "sem protecao sem python / contrato do Stop",
+      "cenario_de_falha": "|| true engoliria exit 2; trocado por exit 2 sem || true"
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/hooks/resposta_executiva.py:_TAG_INICIAL",
+      "descricao": "HTML colado lido como envelope",
+      "cenario_de_falha": "<br> no texto? explique"
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/hooks/resposta_executiva.py:_ARTEFATO",
+      "descricao": "conversa sobre artefato isentava resposta longa",
+      "cenario_de_falha": "quero discutir o parecer"
+    }
+  ],
+  "nao_verificado": [
+    "comportamento em producao depois do merge (primeiros turnos reais medidos pelo hook ligado)"
+  ],
+  "recomendacao_do_critico": "PASS-COM-RESSALVAS",
+  "data": "2026-09-27T09:00:00Z",
+  "sha_revisado": "61040a520616b8675a76a5b7ab034bfcf8326d4d",
+  "blobs_revisados": {
+    ".claude/global/CLAUDE-global.md": "687f1193e94ed4c8cbda3d256caa8c79d20fc309",
+    ".claude/hooks/sync-global.ps1": "f48f869c2830e701620fdb601aa8fe9f420b89fa",
+    "CAPABILITIES.md": "a60bdf059af1bbb6d3fb966ea8bc7d785a2d0a9c",
+    "CHANGELOG.md": "c23af5ce5796fa0b81b57d4dc1b08e4686636420",
+    "capabilities.json": "60011ad9c0d9b68c3ef9fb565d5f9f0e51630825",
+    "docs/adr/123-resposta-executiva-medida-por-hook.md": "8b57f226f737661648ec89fc31a68de4f53749b1",
+    "docs/specs/isolamento-empresas-biblioteca/spec.md": "b94c4d682f501ea30df3d33264107673a7ca30ab",
+    "guia/web/index.html": "03b33cdff6f320525f23661b78a0f564b2cea6cb",
+    "tools/hooks/ensure-global-wiring.ps1": "1277d0609b0c00ff992ef99c03da905629161dd7",
+    "tools/hooks/resposta_executiva.py": "4196117d98b6718307cb92595c11fb8613c62e6d",
+    "tools/test_resposta_executiva.py": "ebe50d3dbc44becf1bd4ad7ea604e4c49d73ec97"
+  },
+  "substitui": [
+    {
+      "rodada": 3,
+      "data": "2026-09-27T09:00:00Z",
+      "recomendacao": "aprovar",
+      "sha_revisado": null,
+      "agentId": "a1739d7a661b1f6ce",
+      "escopo_paths": [
+        ".claude/global/CLAUDE-global.md",
+        ".claude/hooks/sync-global.ps1",
+        "CAPABILITIES.md",
+        "CHANGELOG.md",
+        "capabilities.json",
+        "docs/adr/123-resposta-executiva-medida-por-hook.md",
+        "docs/specs/isolamento-empresas-biblioteca/spec.md",
+        "guia/web/index.html",
+        "tools/hooks/ensure-global-wiring.ps1",
+        "tools/hooks/resposta_executiva.py",
+        "tools/test_resposta_executiva.py",
+        "_meta/qa/resposta-executiva.json",
+        "_meta/qa/resposta-executiva.md"
+      ],
+      "achados_fp": [
+        "ALTA|tools/hooks/resposta_executiva.py:_prompt_real",
+        "ALTA|tools/hooks/resposta_executiva.py:_sistema",
+        "ALTA|tools/hooks/resposta_executiva.py:medir",
+        "MEDIA|tools/hooks/ensure-global-wiring.ps1",
+        "MEDIA|tools/hooks/resposta_executiva.py:_artefato",
+        "MEDIA|tools/hooks/resposta_executiva.py:_tag_inicial"
+      ],
+      "reinicio": false
+    }
+  ]
+}

@@ -2249,6 +2249,30 @@
    }
   },
   {
+   "id": "resposta-executiva",
+   "title": "Resposta executiva medida por hook de Stop: prosa longa, pedido ao dono no meio do turno e bloco explicativo devolvem a resposta para reescrita uma vez",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/hooks/resposta_executiva.py",
+   "test": "tools/test_resposta_executiva.py",
+   "adr": "docs/adr/123-resposta-executiva-medida-por-hook.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "formato",
+    "comunicacao",
+    "hook"
+   ],
+   "note": "Regra do dono 27/09/2026. Limite 150 palavras de prosa fora de tabela e codigo, salvo pedido de detalhe; pedido ao dono so no fim; sem laco (stop_hook_active). Instalado em toda pasta por sync-global + ensure-global-wiring (hooks.Stop).",
+   "mutacao": {
+    "arquivo": "tools/hooks/resposta_executiva.py",
+    "de": "    if n > PROSA_MAX and not _DETALHE.search(pedido or \"\") and not _ARTEFATO.search(pedido or \"\"):",
+    "para": "    if False:",
+    "canario": "tools/test_resposta_executiva.py",
+    "espera": "prosa longa na final é devolvida"
+   }
+  },
+  {
    "id": "isolamento-entre-empresas",
    "title": "Isolamento entre empresas na biblioteca de conhecimento: busca e verificacao so da empresa do projeto + assuntos, resolvida pelo indice e com recusa sem resolucao; relacao ou caminho que cruza empresa e identificador de empresa em assuntos reprovam",
    "status": "PROVIDES",
