@@ -216,6 +216,26 @@ def validate_substitui(valor):
     return erros
 
 
+# Remoção revisada: o git usa 40 zeros como OID nulo. Carimbado só quando o caminho existia no HEAD e saiu do
+# índice e do disco (27/09/2026: mover a biblioteca de uma empresa para fora do repositório apaga arquivos, e sem
+# isto o gate só passava com --no-verify).
+OID_REMOVIDO = "0" * 40
+
+
+def _removido_no_indice(p):
+    import subprocess
+    p = str(p).replace("\\", "/")
+
+    def ok(*args):
+        try:
+            return subprocess.run(["git", "-C", ROOT] + list(args), capture_output=True,
+                                  stdin=subprocess.DEVNULL).returncode == 0
+        except (OSError, ValueError):
+            return False
+    return (ok("cat-file", "-e", "HEAD:" + p) and not ok("rev-parse", "--verify", "-q", ":" + p)
+            and not os.path.exists(os.path.join(ROOT, p)))
+
+
 def _blob_indexado(p):
     """Hash do blob de `p` como esta' no INDICE (estagio 0), ou None.
 
@@ -351,7 +371,7 @@ def write_artifact(verdict, when=None):
         for p in (verdict.get("escopo_paths") or []):
             if str(p).replace("\\", "/") in _proprios:
                 continue
-            h = _blob_indexado(p)
+            h = _blob_indexado(p) or (OID_REMOVIDO if _removido_no_indice(p) else None)
             if h:
                 # CHAVE normalizada tambem, nao so' a consulta: o leitor
                 # (`squad_gate._recente_o_bastante`) recebe os paths ja' com barra normal,

@@ -154,9 +154,53 @@ Critério (c): o banco de dimensões e o `knowledge_catalog`, que já existiam, 
 - `tools/test_conhecimento.py`, com os comandos atualizados.
 - Suíte completa: 95 PASS, 1 SKIP, 0 FAIL de 96.
 
+## Emenda 2 — isolamento físico, identificadores em hash e relatórios (27/09/2026)
+
+- **Status:** Aceita.
+- **Decisores:** dono (Fabricio), 27/09/2026:
+  - D1, D2, D3 e D5 do plano do isolamento: "todas a";
+  - forma da separação: "b", repositório-pai com submódulo por empresa (`conhecimento-negocio`);
+  - Vibra: "e o mesmo para o conhecimento vibra, quando ocorrer".
+
+### Decisão
+1. **D1:** a biblioteca de cada empresa sai do framework para um repositório privado próprio, submódulo
+   `empresas/<empresa>` do repositório privado `conhecimento-negocio`.
+   - Em cada máquina, só o submódulo da empresa daquela máquina é inicializado.
+   - O framework acha a biblioteca pelo marcador `.conhecimento-empresa`, nas pastas de `"bibliotecas"` do
+     `conhecimento.json` da raiz; pasta ausente é ignorada.
+   - O índice e a versão de sistema da empresa vão junto com ela.
+   - A Natulab foi movida para `conhecimento-natulab`; a Vibra segue o mesmo caminho quando houver conteúdo dela.
+2. **D2:** `conhecimento.py publicar --empresa <e>` grava em `assuntos/_identificadores/` o sha256 dos identificadores
+   da empresa.
+   - Em `assuntos/`, token cujo hash está na lista de uma empresa ausente da máquina reprova, sem mostrar o valor.
+   - O `verificar` acusa lista não publicada ou desatualizada.
+3. **D3:** no recorte de uma empresa, o `--recall` omite relatório de sessão que cita outra empresa (nome, identificador
+   em claro ou em hash).
+4. **D5:** a versão do S/4HANA da Natulab saiu da raiz para o `conhecimento.json` da biblioteca dela.
+
+### Limites
+- **Histórico:** o git do framework ainda tem a Natulab nos commits anteriores a 27/09. Tirar exige reescrever o
+  histórico com push forçado: decisão do dono.
+- **Hash:** identificador curto (4 dígitos) é adivinhável por força bruta. O hash impede a leitura casual, não um
+  ataque. Identificador de várias palavras só é pego palavra a palavra.
+- **Filtro de relatório:** depende da lista de identificadores publicada; relatório que cita a empresa por
+  apelido escapa.
+- **Caminho relativo:** `"bibliotecas"` supõe o repositório-pai como pasta irmã do framework; em worktree do
+  framework noutro lugar, a biblioteca externa não é achada. Nesse caso o `verificar --empresa <e>` reprova
+  ("biblioteca não encontrada nesta máquina") e o `--recall` avisa que só leu assuntos e perfis.
+
+### Prova
+- `tools/test_conhecimento_isolamento.py`:
+  - biblioteca externa achada pelo marcador e lida só no recorte dela;
+  - lista em hash exigida e aceita depois de publicada;
+  - empresa ausente reprovada por hash, sem valor;
+  - relatórios filtrados.
+
 ### Estado do QA da emenda
 | Rodada | Revisor | Veredito | Achados | Destino |
 |---|---|---|---|---|
 | plano | Sonnet isolado (a222cd5cfd0828201) | PASS-COM-RESSALVAS | 1 ALTA (`conhecimento.json` global), 3 MÉDIA, 1 BAIXA; aceite RATIFICADO-COM-AJUSTES | `conhecimento.json` por empresa, D5, critérios 3, 6 e 8 |
 | código 1 | Sonnet isolado (a45475faecd088181) | PASS-COM-RESSALVAS | sem vazamento. 1 ALTA: pasta com maiúscula dava falso PASS. 2 MÉDIA: sem caso alfa/alfa2; sigla "MM" reprovava assunto | escopo em minúsculas e achado de pasta; caso alfa2; identificador de 4+ caracteres ou com dígito |
 | código 2 | Sonnet isolado (addd6d7a6db4e5278) | PASS-COM-RESSALVAS | correções conferidas; 3 mutações e a declarada, mortas. 1 MÉDIA e 1 BAIXA: limites não declarados | declarados em Limites |
+| emenda 2, 1 | Sonnet isolado (a0421ad803ee9eb90; travou 600 s e foi retomado) | PASS-COM-RESSALVAS | 2 ALTA: filtro D3 não olhava o nome do arquivo do relatório; biblioteca ausente dava PASS sem ler nada. 1 MÉDIA: marcador lido duas vezes | nome do arquivo no filtro; `verificar` reprova e `--recall` avisa; leitura única; 3 casos novos |
+| emenda 2, 2 | Sonnet isolado (aede2a2d99a0f1c53) | PASS-COM-RESSALVAS | ALTAs fechadas; mudança sem perda (9 arquivos idênticos, índice, 27 achados iguais); README do pai confere; mutações 3 de 4 mortas. 1 BAIXA: `_hash` sem teste direto de maiúsculas | caso direto acrescentado |

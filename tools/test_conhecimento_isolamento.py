@@ -15,6 +15,7 @@ assunto é compartilhado. Duas empresas FALSAS (alfa e beta) com o mesmo termo e
 
 Uso: python tools/test_conhecimento_isolamento.py   (exit 0 PASS; 1 FAIL)
 """
+import json
 import os
 import shutil
 import subprocess
@@ -93,6 +94,8 @@ def montar():
              "# beta · estoque\n\n" + consulta("BE-C1 estoque consulta por centro beta",
                                              "estoque consulta por centro na beta?",
                                              f"- **Aponta para:** {os.path.join(proj_b, 'so-na-maquina-da-beta.sql')}\n"))
+    k.publicar_identificadores(raiz, "alfa")
+    k.publicar_identificadores(raiz, "beta")
     return base, raiz, proj_a, proj_b
 
 
@@ -258,6 +261,68 @@ def main():
         check("... e não reprova saber puro que cita o módulo", not any("assuntos/" in a for a in k.verificar(raiz, empresa="alfa")))
         escrever(arq2, orig2)
         escrever(arq, original)
+
+        print("emenda 2: biblioteca externa, hash e relatórios")
+        ext = os.path.join(base, "conhecimento-negocio", "empresas", "gama")
+        escrever(os.path.join(ext, k.MARCADOR), "gama\n")
+        escrever(os.path.join(ext, "DICIONARIO.md"), "# gama\n\n" + termo("silo", "silo da gama")
+                 + "## Identificadores\n- **Tipo:** identificadores\n- **Valores:** GAMA-77; 9911\n" + CAB + "\n")
+        escrever(os.path.join(ext, "logistica", "consultas.md"), "# gama\n\n" + consulta("GA-C1 estoque consulta por centro gama",
+                                                                                   "estoque consulta por centro na gama?"))
+        escrever(os.path.join(ext, "README.md"), "# biblioteca da gama\n")
+        cfg_p = os.path.join(raiz, "conhecimento.json")
+        cfg_orig = open(cfg_p, encoding="utf-8").read()
+        escrever(cfg_p, '{"versoes_atuais": {"ERPX": "1"}, "bibliotecas": ["../conhecimento-negocio"]}')
+        check("biblioteca externa achada pelo marcador", k.bibliotecas_externas(raiz) == {"gama": ext}, k.bibliotecas_externas(raiz))
+        r = recall(raiz, ROOT, "--empresa", "gama")
+        check("--empresa gama lê a biblioteca externa e não a alfa", "GA-C1" in r.stdout and "AL-C1" not in r.stdout, r.stdout)
+        r = recall(raiz, ROOT, "--empresa", "alfa")
+        check("--empresa alfa não lê a biblioteca externa da gama", "GA-C1" not in r.stdout, r.stdout)
+        check("verificar da gama acusa a lista em hash não publicada",
+              any("gama não publicados" in a for a in k.verificar(raiz, empresa="gama")))
+        k.publicar_identificadores(raiz, "gama")
+        check("verificar da gama passa depois de publicar", k.verificar(raiz, empresa="gama") == [], k.verificar(raiz, empresa="gama"))
+        # a gama sai desta máquina: só a lista em hash fica; o assunto que cita o código dela ainda reprova
+        shutil.move(os.path.join(base, "conhecimento-negocio"), os.path.join(base, "fora-da-maquina"))
+        arq = os.path.join(raiz, "assuntos", "erp-estoque", "estoque.md")
+        orig = open(arq, encoding="utf-8").read()
+        escrever(arq, orig + "Na doca GAMA-77 o saldo vira.\n")
+        ach = k.verificar(raiz, empresa="alfa")
+        check("empresa ausente da máquina: identificador em hash reprova o assunto, sem mostrar o valor",
+              any("lista publicada em hash" in a for a in ach) and not any("GAMA-77" in a or "gama-77" in a for a in ach), ach)
+        escrever(arq, orig)
+        pred = k.mencao_de_outra_empresa(raiz, "alfa")
+        check("relatório que cita código de empresa ausente é filtrado", pred("sessão no centro 9911 da outra"))
+        check("relatório que cita outra empresa presente (beta) é filtrado", pred("ajuste feito na Beta ontem"))
+        check("relatório que cita só a própria empresa não é filtrado", not pred("ajuste no centro 7001 da alfa"))
+        check("hash ignora maiúsculas e espaços", k._hash(" GAMA-77 ") == k._hash("gama-77"))
+        check("'todas' não filtra relatório", not k.mencao_de_outra_empresa(raiz, "todas")("centro 9911 da beta"))
+        ach = k.verificar(raiz, empresa="gama")
+        check("empresa sem biblioteca nesta máquina: verificar reprova (sem falso PASS)",
+              any("não encontrada nesta máquina" in a for a in ach), ach)
+        r = recall(raiz, ROOT, "--empresa", "gama")
+        check("... e o --recall avisa que só leu assuntos e perfis", "AVISO: a biblioteca de gama não está" in r.stdout, r.stdout)
+        cat = tempfile.mkdtemp()
+        rel_out = [{"report_id": "r1", "source": "docs/_intake/execution-report-2026-09-12-beta-estrategia.md",
+                    "date": "2026-09-12", "gaps": [], "melhorias": ["estoque consulta por centro melhorou"],
+                    "boas_praticas": [], "detecao": [], "licoes": {}, "placar": []},
+                   {"report_id": "r2", "source": "docs/_intake/execution-report-2026-09-13-geral.md",
+                    "date": "2026-09-13", "gaps": [], "melhorias": ["estoque consulta por centro revisada"],
+                    "boas_praticas": [], "detecao": [], "licoes": {}, "placar": []}]
+        with open(os.path.join(cat, "catalog.json"), "w", encoding="utf-8") as fh:
+            json.dump(rel_out, fh)
+        env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1", PYTHONIOENCODING="utf-8")
+        r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "knowledge_catalog.py"), "--recall", "--context",
+                            "estoque consulta por centro", "--out-dir", cat, "--conhecimento", raiz, "--empresa", "alfa"],
+                           capture_output=True, text=True, encoding="utf-8", env=env, cwd=ROOT)
+        check("relatório cujo NOME de arquivo cita outra empresa é omitido", "beta-estrategia" not in r.stdout
+              and "execution-report-2026-09-13-geral" in r.stdout and "1 omitido" in r.stdout, r.stdout + r.stderr)
+        shutil.rmtree(cat, ignore_errors=True)
+        shutil.move(os.path.join(base, "fora-da-maquina"), os.path.join(base, "conhecimento-negocio"))
+        escrever(cfg_p, cfg_orig)
+        for nome in os.listdir(os.path.join(raiz, k.DIR_HASHES)):
+            if os.path.normcase(os.path.join(raiz, k.DIR_HASHES, nome)) == os.path.normcase(k.arquivo_hashes(raiz, "gama")):
+                os.remove(os.path.join(raiz, k.DIR_HASHES, nome))
 
         print("identificadores")
         arq = os.path.join(raiz, "assuntos", "erp-estoque", "DICIONARIO.md")

@@ -1,0 +1,5 @@
+# sha256 de identificadores normalizados de uma empresa — gerado por `conhecimento.py publicar`; não editar
+10b76db120c0dbeed8593feb8b0bdcbafb82ca101cedf854f237c3d56ffb72d3
+a368b980fdef9bc16e03c3fe1cfd26f321c0e42b42c20fc1e9ff3582ce07037b
+d438d549e9a92b54449393c0e016a8e70fd200a73cdf6f30ea0a6799caded32a
+de8293097217ecd274719b68370f379c8bad763868a39ea3f2d42c03712dc248

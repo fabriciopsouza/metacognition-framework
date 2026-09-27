@@ -12,11 +12,11 @@
 
 | # | Assunto | Situação | Quem age | Resultado / próximo |
 |---|---|---|---|---|
-| D1 | Separação física: a biblioteca de cada empresa sai do repositório do framework | ✅ decidido (a), 27/09 | autor | executar (plano próprio) |
-| D2 | Identificadores de empresa que outra máquina não tem (verificação de `assuntos/`) | ✅ decidido (a), 27/09 | autor | executar (plano próprio) |
-| D3 | Relatórios de sessão no `--recall` | ✅ decidido (a), 27/09 | autor | executar (plano próprio) |
+| D1 | Separação física: a biblioteca de cada empresa sai do repositório do framework | ✅ executado 27/09 (emenda 2 do ADR-120) | — | ver Tarefas T5–T8 |
+| D2 | Identificadores de empresa que outra máquina não tem (verificação de `assuntos/`) | ✅ executado 27/09 (emenda 2 do ADR-120) | — | ver Tarefas T5–T8 |
+| D3 | Relatórios de sessão no `--recall` | ✅ executado 27/09 (emenda 2 do ADR-120) | — | ver Tarefas T5–T8 |
 | D4 | Sessão do próprio framework (fora de projeto): `--empresa nenhuma` | ✅ aplicada (reversível) | — | informativa; o dono pode reverter |
-| D5 | Versão de sistema da Natulab no `conhecimento.json` da raiz | ✅ decidido (a), 27/09 | autor | executar (plano próprio) |
+| D5 | Versão de sistema da Natulab no `conhecimento.json` da raiz | ✅ executado 27/09 (emenda 2 do ADR-120) | — | ver Tarefas T5–T8 |
 
 ## Resumo executivo
 **Onde estamos.** Os três problemas do pedido foram reproduzidos contra o código do `origin/main` (`f9753ae`) com
@@ -218,6 +218,10 @@ por armazenamento separado (D1) `[INFERIDO]`.
 - [x] T1 `conhecimento.py`: escopo por empresa em `carregar`, `verificar`, `vencidos`, `carregar_entradas`; nível `assuntos/`; tipo `identificadores`; resolução pelo índice; `conhecimento.json` por empresa. — prova: `test_conhecimento_isolamento`
 - [x] T2 `knowledge_catalog.py --recall --empresa`. — prova: idem (b)
 - [x] T3 `tools/test_conhecimento_isolamento.py` (duas empresas falsas); mutação declarada em `capabilities.json` morta.
+- [x] T5 D1: Natulab em `conhecimento-natulab`, submódulo de `conhecimento-negocio` (decisão b); marcador e `bibliotecas`. — prova: `test_conhecimento_isolamento` (emenda 2)
+- [x] T6 D2: `publicar` e hash em `assuntos/_identificadores`.
+- [x] T7 D3: `--recall` omite relatório que cita outra empresa.
+- [x] T8 D5: versão do S/4HANA na biblioteca da Natulab.
 - [x] T4 modelo com `assuntos/` e `## Identificadores`; README do modelo e da instância; emenda 1 do ADR-120; regra global §9; skills discovery e docops; guia do método; banco de dimensões; modelo de arquivo único; site.
 
 # Mapa de impacto

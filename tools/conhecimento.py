@@ -28,9 +28,13 @@ Entrada = bloco `## <nome>` com campos `- **Campo:** valor` (formato no README d
 Uso:
     python tools/conhecimento.py verificar [<raiz>] [--empresa <e>|nenhuma|todas] [--trabalhos <dir>] [--hoje dd/mm/aaaa]
     python tools/conhecimento.py vencidos  [<raiz>] [--empresa <e>|nenhuma|todas] [--hoje dd/mm/aaaa]
+    python tools/conhecimento.py publicar  [<raiz>] --empresa <e>   # sha256 dos identificadores em assuntos/_identificadores/
+Bibliotecas de empresa fora da raiz (repositório próprio): `conhecimento.json` → "bibliotecas": [<pasta>], com o
+marcador `.conhecimento-empresa` (nome da empresa) na raiz da biblioteca da empresa.
 Raiz padrão: docs/_private/conhecimento. Exit 1 com achado (verificar) ou com vencido (vencidos); 2 = recusado.
 """
 import datetime
+import hashlib
 import json
 import os
 import re
@@ -231,9 +235,66 @@ class Recusa(Exception):
     """Empresa não informada nem resolvida pelo índice: o comando não lê nada (falha fechada)."""
 
 
+MARCADOR = ".conhecimento-empresa"  # 1ª linha = nome da empresa; marca a raiz da biblioteca de uma empresa
+
+
+def _cfg_raiz(raiz):
+    try:
+        return json.load(open(os.path.join(raiz, "conhecimento.json"), encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def bibliotecas_externas(raiz):
+    """{empresa: pasta} das bibliotecas de empresa FORA da raiz (repositório próprio, D1 — emenda 2 do ADR-120).
+    `conhecimento.json` → `"bibliotecas": [<pasta relativa à raiz ou absoluta>, ...]`; em cada pasta vale o marcador
+    `.conhecimento-empresa` na própria pasta ou em `empresas/<e>/`. Pasta ausente (outra máquina) é ignorada."""
+    out = {}
+    for item in _cfg_raiz(raiz).get("bibliotecas") or []:
+        base = item if os.path.isabs(item) else os.path.normpath(os.path.join(raiz, item))
+        cands = [base] + ([os.path.join(base, "empresas", d) for d in sorted(os.listdir(os.path.join(base, "empresas")))]
+                          if os.path.isdir(os.path.join(base, "empresas")) else [])
+        for d in cands:
+            m = os.path.join(d, MARCADOR)
+            if os.path.isfile(m):
+                with open(m, encoding="utf-8-sig") as fh:
+                    texto = fh.read().strip()
+                nome = texto.splitlines()[0].strip().lower() if texto else ""
+                if re.fullmatch(r"[a-z0-9][a-z0-9_.-]*", nome):
+                    out.setdefault(nome, d)
+    return out
+
+
+def dir_empresa(raiz, empresa):
+    return bibliotecas_externas(raiz).get(empresa) or os.path.join(raiz, "empresas", empresa)
+
+
+def _arquivos(raiz, empresa=None, exts=(".md",)):
+    """(caminho, rel virtual 'empresas/<e>/...', base) de todo arquivo da biblioteca no recorte. A biblioteca externa
+    de uma empresa aparece como se estivesse em `empresas/<e>/`. Arquivo de empresa fora do recorte não é listado."""
+    externas = bibliotecas_externas(raiz)
+    fontes = [(raiz, "")] + [(d, f"empresas/{e}/") for e, d in sorted(externas.items())]
+    for base, prefixo in fontes:
+        if prefixo and not _visivel(prefixo.rstrip("/"), empresa):
+            continue
+        for pasta, dirs, arquivos in os.walk(base):
+            dirs[:] = [x for x in dirs if not x.startswith(".")]
+            for nome in sorted(arquivos):
+                if not nome.lower().endswith(exts):
+                    continue
+                rel = prefixo + os.path.relpath(os.path.join(pasta, nome), base).replace("\\", "/")
+                partes = rel.split("/")
+                if not prefixo and partes[0] == "empresas" and len(partes) >= 2 and partes[1].lower() in externas:
+                    continue  # a biblioteca externa da empresa prevalece sobre uma cópia antiga na raiz
+                if len(partes) >= 2 and partes[0] == "empresas" and not _visivel(f"empresas/{partes[1].lower()}", empresa):
+                    continue
+                yield os.path.join(pasta, nome), rel, base
+
+
 def empresas_presentes(raiz):
     p = os.path.join(raiz, "empresas")
-    return sorted(d for d in os.listdir(p) if os.path.isdir(os.path.join(p, d))) if os.path.isdir(p) else []
+    locais = {d for d in os.listdir(p) if os.path.isdir(os.path.join(p, d))} if os.path.isdir(p) else set()
+    return sorted(locais | set(bibliotecas_externas(raiz)))
 
 
 def _visivel(escopo, empresa):
@@ -248,10 +309,19 @@ def _norm_caminho(p):
 
 
 def linhas_indice(raiz):
-    """Linhas do INDICE-PROJETOS.md como dicts pelas colunas; ([], achados de forma)."""
-    p = os.path.join(raiz, "INDICE-PROJETOS.md")
-    if not os.path.isfile(p):
-        return [], []
+    """Linhas dos INDICE-PROJETOS.md (raiz + o de cada biblioteca externa de empresa presente na máquina)."""
+    arquivos = [os.path.join(raiz, "INDICE-PROJETOS.md")] + \
+        [os.path.join(d, "INDICE-PROJETOS.md") for d in bibliotecas_externas(raiz).values()]
+    out, ach = [], []
+    for p in arquivos:
+        if os.path.isfile(p):
+            o, a = _linhas_de_um_indice(p)
+            out += o
+            ach += a
+    return out, ach
+
+
+def _linhas_de_um_indice(p):
     out, ach = [], []
     for ln in open(p, encoding="utf-8-sig").read().splitlines():
         s = ln.strip()
@@ -321,35 +391,32 @@ def carregar(raiz, empresa=None):
             ach.append(f"conhecimento.json inválido ({e})")
     if not os.path.isfile(os.path.join(raiz, "INDICE-PROJETOS.md")):
         ach.append("falta INDICE-PROJETOS.md na raiz")
-    for base, _dirs, arquivos in os.walk(raiz):
-        for nome in arquivos:
-            if not nome.lower().endswith(".md"):
-                continue
-            rel = os.path.relpath(os.path.join(base, nome), raiz).replace("\\", "/")
-            partes = rel.split("/")
-            if rel in ("README.md", "INDICE-PROJETOS.md"):
-                continue
-            if len(partes) >= 2 and partes[0] == "empresas" and not _visivel(f"empresas/{partes[1].lower()}", empresa):
-                continue  # outra empresa: nem é aberta
-            if len(partes) == 3 and partes[0] in ("perfis", "empresas", "assuntos") and partes[2] == "DICIONARIO.md":
-                nivel = "dicionario"
-            elif len(partes) == 4 and partes[0] == "empresas" and partes[3] != "DICIONARIO.md":
-                nivel = "assunto"
-            elif len(partes) == 3 and partes[0] == "assuntos":
-                nivel = "assunto"
-            else:
-                ach.append(f"{rel}: fora da estrutura (perfis/<p>/DICIONARIO.md, assuntos/<a>/DICIONARIO.md, "
-                           f"assuntos/<a>/<tema>.md, empresas/<e>/DICIONARIO.md, empresas/<e>/<area>/<assunto>.md)")
-                continue
-            if partes[1] != partes[1].lower():
-                ach.append(f"{rel}: pasta '{partes[1]}' com maiúscula — use minúsculas (o recorte por empresa compara "
-                           f"em minúsculas)")
-            lidas, a2 = _ler_entradas(os.path.join(base, nome), rel)
-            ach += a2
-            for e in lidas:
-                e["nivel"] = nivel
-                e["escopo"] = f"{partes[0]}/{partes[1].lower()}"  # empresa sempre minúscula (--empresa também é)
-            ents += lidas
+    for caminho, rel, base in _arquivos(raiz, empresa):
+        partes = rel.split("/")
+        if rel in ("README.md", "INDICE-PROJETOS.md"):
+            continue
+        if len(partes) == 3 and partes[0] == "empresas" and partes[2] in ("README.md", "INDICE-PROJETOS.md"):
+            continue  # README e índice da biblioteca da empresa (repositório próprio)
+        if len(partes) == 3 and partes[0] in ("perfis", "empresas", "assuntos") and partes[2] == "DICIONARIO.md":
+            nivel = "dicionario"
+        elif len(partes) == 4 and partes[0] == "empresas" and partes[3] != "DICIONARIO.md":
+            nivel = "assunto"
+        elif len(partes) == 3 and partes[0] == "assuntos":
+            nivel = "assunto"
+        else:
+            ach.append(f"{rel}: fora da estrutura (perfis/<p>/DICIONARIO.md, assuntos/<a>/DICIONARIO.md, "
+                       f"assuntos/<a>/<tema>.md, empresas/<e>/DICIONARIO.md, empresas/<e>/<area>/<assunto>.md)")
+            continue
+        if partes[1] != partes[1].lower():
+            ach.append(f"{rel}: pasta '{partes[1]}' com maiúscula — use minúsculas (o recorte por empresa compara "
+                       f"em minúsculas)")
+        lidas, a2 = _ler_entradas(caminho, rel)
+        ach += a2
+        for e in lidas:
+            e["_base"] = base  # caminho relativo em Evidência/Aponta para é relativo à biblioteca de origem
+            e["nivel"] = nivel
+            e["escopo"] = f"{partes[0]}/{partes[1].lower()}"  # empresa sempre minúscula (--empresa também é)
+        ents += lidas
     return cfg, ents, ach
 
 
@@ -362,7 +429,7 @@ def _termos_de_outras(raiz, empresa):
     for outra in empresas_presentes(raiz):
         if _visivel(f"empresas/{outra}", empresa):
             continue
-        p = os.path.join(raiz, "empresas", outra, "DICIONARIO.md")
+        p = os.path.join(dir_empresa(raiz, outra), "DICIONARIO.md")
         if os.path.isfile(p):
             for e in _ler_entradas(p, "")[0]:
                 nomes.add(e["nome"].strip().lower())
@@ -374,7 +441,7 @@ def cfg_do_escopo(raiz, cfg, escopo):
     `empresas/<e>/conhecimento.json` dela, que prevalece. Versão de sistema de uma empresa é dado dela."""
     if not escopo.startswith("empresas/"):
         return cfg
-    p = os.path.join(raiz, *escopo.split("/"), "conhecimento.json")
+    p = os.path.join(dir_empresa(raiz, escopo.split("/", 1)[1]), "conhecimento.json")
     if not os.path.isfile(p):
         return cfg
     try:
@@ -407,7 +474,7 @@ def identificadores_de_empresa(raiz):
     out = {}
     for emp in empresas_presentes(raiz):
         out[emp.lower()] = emp
-        p = os.path.join(raiz, "empresas", emp, "DICIONARIO.md")
+        p = os.path.join(dir_empresa(raiz, emp), "DICIONARIO.md")
         if os.path.isfile(p):
             for e in _ler_entradas(p, "")[0]:
                 if e["campos"].get("Tipo", "").strip().lower() == "identificadores":
@@ -421,11 +488,91 @@ def identificadores_de_empresa(raiz):
     return out
 
 
-def verificar_assunto(texto, idents, empresa):
+# Identificadores publicados em hash (D2, emenda 2 do ADR-120): cada empresa publica em
+# `assuntos/_identificadores/<id>.txt` o sha256 dos seus identificadores normalizados; a máquina que não tem a
+# biblioteca daquela empresa ainda reprova o identificador dela em `assuntos/`, sem ver o texto claro.
+DIR_HASHES = os.path.join("assuntos", "_identificadores")
+_TOKEN = re.compile(r"[a-z0-9][a-z0-9_.\-]*[a-z0-9]|[a-z0-9]")
+
+
+def _hash(v):
+    return hashlib.sha256(("id:" + v.strip().lower()).encode("utf-8")).hexdigest()
+
+
+def arquivo_hashes(raiz, empresa):
+    nome = hashlib.sha256(("empresa:" + empresa).encode("utf-8")).hexdigest()[:16]
+    return os.path.join(raiz, DIR_HASHES, f"{nome}.txt")
+
+
+def hashes_esperados(raiz, empresa):
+    """sha256 dos identificadores de `empresa` que cabem num texto (nome, **Valores:**, repositório; caminho não)."""
+    return sorted({_hash(v) for v, e in identificadores_de_empresa(raiz).items()
+                   if e == empresa and os.sep not in v and "/" not in v})
+
+
+def publicar_identificadores(raiz, empresa):
+    p = arquivo_hashes(raiz, empresa)
+    os.makedirs(os.path.dirname(p), exist_ok=True)
+    with open(p, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write("# sha256 de identificadores normalizados de uma empresa — gerado por `conhecimento.py publicar`; "
+                 "não editar\n" + "\n".join(hashes_esperados(raiz, empresa)) + "\n")
+    return p
+
+
+def _ler_hashes(p):
+    try:
+        return {ln.strip() for ln in open(p, encoding="utf-8") if re.fullmatch(r"[0-9a-f]{64}", ln.strip())}
+    except OSError:
+        return set()
+
+
+def hashes_de_ausentes(raiz):
+    """Hashes publicados por empresas cuja biblioteca NÃO está nesta máquina (as presentes são checadas em claro)."""
+    pasta = os.path.join(raiz, DIR_HASHES)
+    presentes = {os.path.normcase(arquivo_hashes(raiz, e)) for e in empresas_presentes(raiz)}
+    out = set()
+    if os.path.isdir(pasta):
+        for nome in os.listdir(pasta):
+            p = os.path.join(pasta, nome)
+            if nome.endswith(".txt") and os.path.normcase(p) not in presentes:
+                out |= _ler_hashes(p)
+    return out
+
+
+def _tokens(texto):
+    out = set()
+    for t in _TOKEN.findall(texto.lower()):
+        out.add(t)
+        out.update(x for x in re.split(r"[.\-]", t) if x)
+    return out
+
+
+def mencao_de_outra_empresa(raiz, empresa):
+    """Predicado texto -> bool: o texto cita empresa fora do recorte (nome, identificador em claro de empresa presente
+    ou em hash de empresa ausente)? 'todas' nunca filtra. Usado pelo --recall nos relatórios de sessão (D3)."""
+    if empresa in (None, TODAS):
+        return lambda _t: False
+    claros = {v for v, e in identificadores_de_empresa(raiz).items()
+              if e != empresa and os.sep not in v and "/" not in v}
+    claros |= {e for e in empresas_presentes(raiz) if e != empresa}
+    claros |= {ln["empresa"].strip().lower() for ln in linhas_indice(raiz)[0]
+               if ln["empresa"].strip().lower() not in ("", "—", "-", empresa)}
+    ocultos = hashes_de_ausentes(raiz) - set(hashes_esperados(raiz, empresa))
+
+    def cita(texto):
+        toks = _tokens(texto or "")
+        return bool(toks & claros) or any(_hash(t) in ocultos for t in toks)
+    return cita
+
+
+def verificar_assunto(texto, idents, empresa, ocultos=frozenset()):
     """Achados de identificador de empresa num texto de `assuntos/`. O valor só aparece na mensagem quando é da
-    própria empresa do recorte (ou na manutenção 'todas'); senão sai a linha, sem o valor."""
+    própria empresa do recorte (ou na manutenção 'todas'); senão sai a linha, sem o valor. `ocultos` = hashes de
+    empresas ausentes da máquina."""
     ach = []
     for n, ln in enumerate(texto.splitlines(), 1):
+        if ocultos and any(_hash(t) in ocultos for t in _tokens(ln)):
+            ach.append(f"linha {n}: identificador de empresa (lista publicada em hash; valor omitido)")
         for rx, rotulo in PADROES_DE_CLIENTE:
             m = rx.search(ln)
             if m:
@@ -446,6 +593,11 @@ def verificar(raiz, trabalhos_dir=None, hoje=None, empresa=None):
     """Achados no recorte `empresa` (None ou 'todas' = biblioteca inteira)."""
     hoje = hoje or datetime.date.today()
     cfg, ents, ach = carregar(raiz, empresa)
+    if empresa not in (None, TODAS, NENHUMA) and empresa not in empresas_presentes(raiz):
+        # sem isto, verificar daria PASS sem ter lido nada (submódulo não inicializado nesta máquina)
+        ach.append(f"biblioteca de {empresa} não encontrada nesta máquina (nem em empresas/{empresa} nem nas "
+                   f"'bibliotecas' do conhecimento.json): nada da empresa foi verificado — inicialize o submódulo "
+                   f"ou crie a biblioteca")
     termos = {}  # nome minúsculo -> [escopos que o definem]
     vistos = {}
     projetos = _projetos(raiz)
@@ -474,7 +626,7 @@ def verificar(raiz, trabalhos_dir=None, hoje=None, empresa=None):
             if dono and e["escopo"] != f"empresas/{dono}":
                 ach.append(f"{e['arquivo']} · {e['nome']}: **{k}:** aponta para caminho de projeto de outra empresa "
                            f"ou de empresa a partir de {e['escopo'].split('/')[0]} — bloqueante (isolamento entre empresas)")
-            elif not _caminho_existe(v, raiz):
+            elif not _caminho_existe(v, e.get("_base", raiz)):
                 ach.append(f"{e['arquivo']} · {e['nome']}: **{k}:** aponta para caminho que não existe ({v.strip()})")
         tipo_estrutura = (e["campos"].get("Classe", "").strip().lower()
                           or CLASSE_DO_TIPO.get(e["campos"].get("Tipo", "").strip().lower())) == "estrutura"
@@ -499,25 +651,26 @@ def verificar(raiz, trabalhos_dir=None, hoje=None, empresa=None):
             else:
                 ach.append(f"{e['arquivo']} · {e['nome']}: relação '{rel}' aponta para termo inexistente '{alvo}'")
     idents = identificadores_de_empresa(raiz)
+    ocultos = hashes_de_ausentes(raiz)
     for base, _d, arquivos in os.walk(os.path.join(raiz, "assuntos")):
         for nome in sorted(arquivos):
             if nome.lower().endswith(".md"):
                 p = os.path.join(base, nome)
                 rel_p = os.path.relpath(p, raiz).replace("\\", "/")
-                for a in verificar_assunto(open(p, encoding="utf-8-sig", errors="replace").read(), idents, empresa):
+                for a in verificar_assunto(open(p, encoding="utf-8-sig", errors="replace").read(), idents, empresa,
+                                           ocultos):
                     ach.append(f"{rel_p}: {a} — assunto não guarda dado de empresa (bloqueante)")
+    alvo_pub = [] if empresa == NENHUMA else ([empresa] if empresa not in (None, TODAS) else empresas_presentes(raiz))
+    for emp in alvo_pub:
+        if emp in empresas_presentes(raiz) and _ler_hashes(arquivo_hashes(raiz, emp)) != set(hashes_esperados(raiz, emp)):
+            ach.append(f"identificadores de {emp} não publicados ou desatualizados em {DIR_HASHES}: rode "
+                       f"`python tools/conhecimento.py publicar <raiz> --empresa {emp}`")
     ach += _verificar_indice(raiz, trabalhos_dir, empresa)
-    for base, _d, arquivos in os.walk(raiz):
-        rel_base = os.path.relpath(base, raiz).replace("\\", "/").split("/")
-        if len(rel_base) >= 2 and rel_base[0] == "empresas" and not _visivel(f"empresas/{rel_base[1]}", empresa):
-            continue
-        for nome in arquivos:
-            if nome.lower().endswith((".md", ".json")):
-                p = os.path.join(base, nome)
-                texto = open(p, encoding="utf-8-sig", errors="replace").read()
-                for rx, rotulo in PROIBIDOS:
-                    if rx.search(texto):
-                        ach.append(f"{os.path.relpath(p, raiz)}: contém {rotulo} — nunca entra na biblioteca")
+    for p, rel, _base in _arquivos(raiz, empresa, exts=(".md", ".json")):
+        texto = open(p, encoding="utf-8-sig", errors="replace").read()
+        for rx, rotulo in PROIBIDOS:
+            if rx.search(texto):
+                ach.append(f"{rel}: contém {rotulo} — nunca entra na biblioteca")
     return ach
 
 
@@ -616,7 +769,7 @@ def main(argv):
     except (AttributeError, ValueError):
         pass
     args = [a for a in argv[1:]]
-    if not args or args[0] not in ("verificar", "vencidos"):
+    if not args or args[0] not in ("verificar", "vencidos", "publicar"):
         print(__doc__)
         return 2
     cmd, resto = args[0], args[1:]
@@ -643,6 +796,12 @@ def main(argv):
         print(f"RECUSADO: {e}")
         return 2
     print(f"empresa: {empresa} ({como})")
+    if cmd == "publicar":
+        if empresa in (TODAS, NENHUMA) or empresa not in empresas_presentes(raiz):
+            print(f"RECUSADO: publicar exige a empresa cuja biblioteca está nesta máquina ({empresa})")
+            return 2
+        print(f"publicado: {publicar_identificadores(raiz, empresa)} ({len(hashes_esperados(raiz, empresa))} hashes)")
+        return 0
     if cmd == "vencidos":
         itens = vencidos(raiz, hoje, empresa)
         for e, motivo in itens:

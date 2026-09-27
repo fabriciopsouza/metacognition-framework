@@ -5,6 +5,17 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### Emenda 2 do ADR-120 — isolamento físico das bibliotecas de empresa (27/09/2026)
+
+- Biblioteca da Natulab movida do framework para o repositório privado `conhecimento-natulab`, submódulo de
+  `conhecimento-negocio` (decisão "b" do dono). O framework a acha pelo marcador `.conhecimento-empresa`
+  (`"bibliotecas"` no `conhecimento.json`).
+- **`conhecimento.py publicar --empresa <e>`:** identificadores da empresa em sha256, em `assuntos/_identificadores/`.
+  A máquina sem a biblioteca daquela empresa ainda reprova o identificador dela em `assuntos/`.
+- O `--recall` omite relatório de sessão que cita outra empresa.
+- A versão do S/4HANA da Natulab foi para a biblioteca dela.
+- **Pendente com o dono:** limpar a Natulab do histórico do git do framework, que exige push forçado.
+
 ### ADR-123 — Resposta executiva medida por hook de Stop (27/09/2026)
 
 - **`tools/hooks/resposta_executiva.py`** devolve, uma vez, a resposta que tiver:

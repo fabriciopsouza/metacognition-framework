@@ -49,7 +49,8 @@ conjunto completo num projeto pequeno viola a régua §0 tanto quanto não docum
 7. Biblioteca de conhecimento (ADR-120): registrar o que o bloco produziu e é reutilizável — termo confirmado,
    consulta rodada, número medido (como `retrato`, com data), pesquisa, runbook — ou declarar "nada a registrar";
    depois `python tools/conhecimento.py verificar <raiz> --empresa <empresa>`. Saber puro de assunto, sem dado da
-   empresa, vai para `assuntos/<assunto>/`. Método: `exemplos/conhecimento/_modelo/README.md`.
+   empresa, vai para `assuntos/<assunto>/`. Conteúdo da empresa vai para o repositório dela (submódulo em
+   `conhecimento-negocio`); se `verificar` acusar identificadores desatualizados, rode `publicar --empresa <empresa>`. Método: `exemplos/conhecimento/_modelo/README.md`.
 
 ## Encerramento
 Sem CHANGELOG + dicionário (se aplicável) + ADR aceito (se havia) → não fecha.
