@@ -350,6 +350,9 @@ product_type: <ide-code | executable | gui-app | data-notebook | data-pipeline |
 | P-03 | <macroação> | <o que se faz> | <papel> | — | <o que sai> | | — | — |
 
 ### Pontos para aprovação
+> Viram linhas `H-n` da planilha de confirmação (Parte I). As três colunas de resposta são preenchidas
+> pelo `importar`; não as escreva à mão.
+
 | # | Ponto | Por que importa |
 |---|---|---|
 | 1 | <o que a área precisa aprovar> | <consequência> |
@@ -358,6 +361,74 @@ product_type: <ide-code | executable | gui-app | data-notebook | data-pipeline |
 | # | Pergunta | Quem decide |
 |---|---|---|
 | 1 | <pergunta> | <papel> |
+
+# Parte I — Definições a confirmar
+> _(quando a área precisa confirmar regras ou valores; apague se não se aplica)_ Fonte da planilha de
+> confirmação: `python tools/planilhas_projeto.py gerar <spec.md> --out-dir <pasta>`. Cada gravação cria
+> `confirmacao_vN.xlsx`; a anterior só é apagada depois de comparada. A resposta da área volta com
+> `importar <spec.md> --planilha <xlsx> --out-dir <pasta>`, que grava as três últimas colunas aqui e gera a
+> versão seguinte. Os campos `**...:**` abaixo formam a aba LEIA. As colunas valem para qualquer projeto;
+> o texto do cabeçalho se adapta ao domínio em `### Rótulos` (a ordem e o papel da coluna não mudam).
+
+**Para que serve:** <reunir as regras para a área confirmar>
+**Quem responde:** <área>
+**Prazo:** <dd/mm/aaaa>
+**Como devolver:** <canal>
+
+| Definição | Tema | Regra, como entendemos | Exemplo | Como fica no sistema | Exige alterar muitos registros? | Situação hoje | É possível? Como? Em massa? | Links (fonte e tutorial) | De onde tiramos | Área confirma? | Correção da área | Nome e data |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| DEF-01 | <tema> | <regra> | <exemplo concreto> | <onde e como fica> | <sim/não> | <conforme/diverge/sem definição> | <como fazer, em massa?> | <links> | <reunião, documento> | | | |
+
+### Valores por categoria
+> _(opcional; apague se não se aplica)_ Matriz de valores esperados por categoria (tipo de registro, perfil,
+> unidade). As colunas entre **Nome técnico** e **Regra** são as categorias do projeto.
+
+| Item | Nome técnico | <categoria 1> | <categoria 2> | Regra | Área confirma? | Correção da área | Nome e data |
+|---|---|---|---|---|---|---|---|
+| <item> | <nome técnico> | <valor> | <valor> | DEF-01 | | | |
+
+### Rótulos
+> _(opcional)_ Texto do cabeçalho neste projeto. Ex.: `| Como fica no sistema | Como fica no ERP |`.
+
+| Coluna | Rótulo neste projeto |
+|---|---|
+
+# Parte J — Roteiro de verificação
+> _(quando a área confere o sistema contra as regras; apague se não se aplica)_ Fonte da planilha de
+> verificação (`verificacao_vN.xlsx`), gerada e importada como a Parte I. Uma subseção `### Bloco: <nome>`
+> por grupo de verificações. Com impacto regulado, o `gerar` acrescenta um bloco para cada categoria
+> obrigatória do perfil que faltar. **Rodadas:** o modelo traz uma; para devolver perguntas à área,
+> `python tools/planilhas_projeto.py rodada <spec.md> --data dd/mm/aaaa --ids VER-01,VER-03` acrescenta a
+> próxima; escreva a pergunta de volta e gere de novo. O que a área já respondeu:
+> `python tools/planilhas_projeto.py situacao <spec.md> [--exigir]`. Os campos `**...:**` abaixo formam a aba
+> COMO USAR.
+
+**Para que serve:** <conferir, item a item, se o sistema segue as regras confirmadas>
+**Quem preenche:** <área>
+
+### Antes de começar
+- <armadilha que muda a leitura da conferência>
+
+### Bloco: <nome do bloco>
+| Verificação | Onde olhar | Item como aparece na tela | Nome técnico | O que o item faz | Aplica-se a | Regra / valor esperado | Como conferir vários de uma vez | Se estiver errado, o que acontece | Criticidade | Natureza da decisão | Confiança | Valor encontrado | Conclusão da área | Data / Visto |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| VER-01 | <tela, relatório, tabela> | <nome na tela> | <nome técnico> | <função do item> | <a quais registros> | <valor esperado, DEF-nn> | <consulta em massa> | <consequência> | <bloqueador/alto/médio/baixo> | <quem decide> | <CONFIRMADO/INFERIDO> | | | |
+
+### Rodada 1 — <dd/mm/aaaa>
+| Verificação | Pergunta de volta | Resposta da área | O que fazer (valor, onde, quem) | Situação | Nome e data |
+|---|---|---|---|---|---|
+
+### Achados do ambiente
+| Achado | O que foi constatado | Por que muda a leitura | O que fazer | Confiança |
+|---|---|---|---|---|
+
+### Correções da base
+| Correção | O que constava | Correção aplicada | Motivo |
+|---|---|---|---|
+
+### Controle de versão
+| Versão | Data | Autor | Conteúdo | Base utilizada |
+|---|---|---|---|---|
 
 # Decisões
 | # | Decisão | Alternativas | Recomendação | Resposta do dono |

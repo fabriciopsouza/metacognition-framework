@@ -208,7 +208,10 @@ Quando há **fonte canônica/normativa citada** no contexto (norma, regulamento,
 Entrega os **requisitos de nível sênior** na Parte A do `spec.md` único (copiar
 `docs/specs/_template-spec-unico/spec.md` — ADR-117) ou num `requirements.md` (clonar `docs/specs/_template/`
 para modo universal/revisar; `docs/specs/_template-process/` para mapeamento de
-processo), com cada requisito classificado. Resumo ao orquestrador:
+processo), com cada requisito classificado. Regra que a área precisa confirmar vai para a **Parte I** (`DEF-nn`) e
+a conferência no sistema para a **Parte J** (`VER-nn`), de onde saem as planilhas para a área
+(`tools/planilhas_projeto.py`, ADR-122). Adapte os cabeçalhos ao domínio em `### Rótulos` da Parte I, sem mudar a
+ordem das colunas. Resumo ao orquestrador:
 ```yaml
 papel: discovery
 modo: universal | revisar-projeto-existente | mapeamento-de-processo

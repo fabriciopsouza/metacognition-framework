@@ -2274,6 +2274,31 @@
    }
   },
   {
+   "id": "planilhas-de-confirmacao-e-verificacao",
+   "title": "Planilhas de confirmacao e de verificacao geradas do arquivo unico, com resposta da area de volta e versao vN comparada antes de apagar a anterior",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/planilhas_projeto.py",
+   "test": "tools/test_planilhas_projeto.py",
+   "adr": "docs/adr/122-planilhas-de-confirmacao-e-verificacao-geradas.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "planilha",
+    "confirmacao",
+    "verificacao",
+    "regulado"
+   ],
+   "note": "Partes I e J do arquivo unico (e pontos para aprovacao da Parte H) -> confirmacao_vN.xlsx e verificacao_vN.xlsx; colunas neutras com rotulos por projeto; uma rodada padrao repetivel; importar grava a resposta e gera vN+1; a anterior vai para _obsoleto/ e so e apagada se toda resposta estiver na nova. Categorias obrigatorias do perfil entram como blocos. situacao --exigir mede a confirmacao assinada (prova da etapa 2 do metodo); rodada acrescenta a proxima volta com a area.",
+   "mutacao": {
+    "arquivo": "tools/planilhas_projeto.py",
+    "de": "            perdidas = {k: v for k, v in velhas.items() if novas.get(k) != v}",
+    "para": "            perdidas = {}",
+    "canario": "tools/test_planilhas_projeto.py",
+    "espera": "resposta não importada reprova o gerar"
+   }
+  },
+  {
    "id": "manifesto-de-evidencia",
    "title": "Manifesto de evidencia de desenvolvimento: caminho absoluto, sha256, data, origem e requisito ou teste; acusa arquivo alterado sem nome novo, apagado ou sensivel no git",
    "status": "PROVIDES",

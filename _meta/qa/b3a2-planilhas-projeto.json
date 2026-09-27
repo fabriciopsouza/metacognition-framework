@@ -1,0 +1,152 @@
+{
+  "bloco": "b3a2-planilhas-projeto",
+  "papel": "qa_critic",
+  "rodada": 3,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "veredito": "aprovar",
+  "escopo_paths": [
+    ".agent/skills/discovery/SKILL.md",
+    ".claude/global/CLAUDE-global.md",
+    "CAPABILITIES.md",
+    "CHANGELOG.md",
+    "capabilities.json",
+    "docs/adr/122-planilhas-de-confirmacao-e-verificacao-geradas.md",
+    "docs/specs/_template-spec-unico/spec.md",
+    "docs/specs/b3-documentacao-regulada/spec.md",
+    "guia/METODO-DE-PROJETO.md",
+    "guia/web/index.html",
+    "tools/planilhas_projeto.py",
+    "tools/spec_fonte.py",
+    "tools/test_planilhas_projeto.py",
+    "_meta/qa/b3a2-planilhas-projeto.json",
+    "_meta/qa/b3a2-planilhas-projeto.md"
+  ],
+  "atestacao": {
+    "agentId": "a8c92769abb3f04c3",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic isolado, segundo plano, so leitura; experimentos em %TEMP%. Rodadas anteriores: a6acdb62011b4b5bb (1; a tentativa a8db818c65065baef travou sem veredito), abdd541d0a8351a16 (2)."
+  },
+  "postura": {
+    "discovery": "docs/specs/b3-documentacao-regulada/spec.md (REQ-05, REQ-06, criterios 3a e 3b, T4) e decisoes do dono de 27/09/2026",
+    "rrc": "PASSA",
+    "metodo_senior": "aplicado: modelos reais conferidos com openpyxl; cenarios de perda de resposta reproduzidos em copia; mutacoes"
+  },
+  "resumo": "B3a-2 (ADR-122): planilhas de confirmacao e de verificacao geradas das Partes I e J, resposta da area de volta, versao vN comparada antes de apagar a anterior, comandos situacao e rodada. Rodada 3 PASS.",
+  "verificacoes_executadas": [
+    "rodada 1: cenarios de perda de resposta (formula, CRLF, br literal, rotulo mudado, linha removida, falha no meio); 5/5 mutacoes mortas",
+    "rodada 2: correcoes da rodada 1 reproduzidas e fechadas; 4/5 mutacoes mortas (a viva virou caso na rodada 3)",
+    "rodada 3: mutacao de _nome_e_data morta pelo motivo certo; test_planilhas_projeto 68 verificacoes PASS",
+    "canarios pedidos PASS: test_planilhas_projeto, test_spec_unico, test_desenho_processo, test_capabilities, check_core_agnostic, check_rules_parity, test_marketing_claims",
+    "suite completa (autor): 94 PASS, 1 SKIP, 0 FAIL de 95"
+  ],
+  "problemas": [
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "tools/planilhas_projeto.py:respostas",
+      "descricao": "resposta iniciada por '=' vira formula no Excel e some (leitura data_only)",
+      "cenario_de_falha": "Nome e data = '=03/2026' sem recalculo -> None -> resposta descartada sem aviso"
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/planilhas_projeto.py:_gravar_spec",
+      "descricao": "arquivo unico em CRLF regravado em LF",
+      "cenario_de_falha": "spec com 16 CRLF -> apos importar 0 CRLF; diff do arquivo inteiro"
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/planilhas_projeto.py:_xl",
+      "descricao": "texto literal <br> digitado pela area vira quebra de linha",
+      "cenario_de_falha": "resposta 'usar <br>' -> nova versao com quebra -> recusa perpetua"
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/planilhas_projeto.py:gerar_tipo",
+      "descricao": "recusa igual para causas distintas e sem saida (rotulo mudado; linha removida)",
+      "cenario_de_falha": "linha DEF removida com resposta -> 'rode importar' sem resposta possivel"
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "tools/planilhas_projeto.py:gerar_tipo (limpeza)",
+      "descricao": "falha no os.remove final sem tratamento",
+      "cenario_de_falha": "PermissionError no remove -> traceback; anterior orfa em _obsoleto"
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/test_planilhas_projeto.py:(i)",
+      "descricao": "nenhum caso com Nome e data invalido; mutacao de _nome_e_data sobrevivia",
+      "cenario_de_falha": "situacao aceitaria 'Sim' + 'Ana' sem data"
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "tools/planilhas_projeto.py:nova_rodada",
+      "descricao": "--ids repetido gravava a linha duas vezes",
+      "cenario_de_falha": "--ids VER-01,VER-01 -> arquivo unico nasce reprovado"
+    }
+  ],
+  "nao_verificado": [
+    "caso combinando ID repetido e inexistente em --ids (nota BAIXA opcional da rodada 3; ordem do codigo garante)"
+  ],
+  "recomendacao_do_critico": "PASS",
+  "data": "2026-09-27T01:30:00Z",
+  "sha_revisado": "5cf3cb565897eaadb35f0568898fe6e3a1dacf56",
+  "blobs_revisados": {
+    ".agent/skills/discovery/SKILL.md": "1b3daf88335dd3f0cf2cea2f60a423aad8d1ca72",
+    ".claude/global/CLAUDE-global.md": "cefd56e92330f5d7f01e6ca0cb523c8dec85e690",
+    "CAPABILITIES.md": "9a8c2b7371d6e5ac097c2cd5ca456f7ab3a1945c",
+    "CHANGELOG.md": "a189d0cc5e02ddad288e8813ebb86d50aae223f7",
+    "capabilities.json": "b6d2d607a812ab8be8013f00485c3f025b2de0ee",
+    "docs/adr/122-planilhas-de-confirmacao-e-verificacao-geradas.md": "ca081328f0fc00561a0bd76cfd653a654eed89b2",
+    "docs/specs/_template-spec-unico/spec.md": "a1b6cc82ac3b143be5b2c51dbc0b41ae3f5b2797",
+    "docs/specs/b3-documentacao-regulada/spec.md": "b5dbc137898c7dcfad24b284bcf1de9cc14f333f",
+    "guia/METODO-DE-PROJETO.md": "61895f9f4592809f9b2fce2b7a3ef9c3604ef837",
+    "guia/web/index.html": "58ce5b12f927bf5bae928b175071c60135bd8355",
+    "tools/planilhas_projeto.py": "384174885fc87d1d4fa0afc5fca42e46aa1a49ed",
+    "tools/spec_fonte.py": "f73e0e4d49a1cff28f9ce288b92c156ed91c28d4",
+    "tools/test_planilhas_projeto.py": "f96dba026d50967f820001718b24a835bcf3308b"
+  },
+  "substitui": [
+    {
+      "rodada": 3,
+      "data": "2026-09-27T01:30:00Z",
+      "recomendacao": "aprovar",
+      "sha_revisado": null,
+      "agentId": "a8c92769abb3f04c3",
+      "escopo_paths": [
+        ".agent/skills/discovery/SKILL.md",
+        ".claude/global/CLAUDE-global.md",
+        "CAPABILITIES.md",
+        "CHANGELOG.md",
+        "capabilities.json",
+        "docs/adr/122-planilhas-de-confirmacao-e-verificacao-geradas.md",
+        "docs/specs/_template-spec-unico/spec.md",
+        "docs/specs/b3-documentacao-regulada/spec.md",
+        "guia/METODO-DE-PROJETO.md",
+        "guia/web/index.html",
+        "tools/planilhas_projeto.py",
+        "tools/spec_fonte.py",
+        "tools/test_planilhas_projeto.py",
+        "_meta/qa/b3a2-planilhas-projeto.json",
+        "_meta/qa/b3a2-planilhas-projeto.md"
+      ],
+      "achados_fp": [
+        "ALTA|tools/planilhas_projeto.py:respostas",
+        "BAIXA|tools/planilhas_projeto.py:gerar_tipo (limpeza)",
+        "BAIXA|tools/planilhas_projeto.py:nova_rodada",
+        "MEDIA|tools/planilhas_projeto.py:_gravar_spec",
+        "MEDIA|tools/planilhas_projeto.py:_xl",
+        "MEDIA|tools/planilhas_projeto.py:gerar_tipo",
+        "MEDIA|tools/test_planilhas_projeto.py:(i)"
+      ],
+      "reinicio": false
+    }
+  ]
+}
