@@ -61,6 +61,23 @@
 ### Requisitos numerados
 - REQ-01: <requisito verificável>
 
+### Atributos dos requisitos
+> _(com impacto regulado, quando o perfil pede; apague se não se aplica)_ Colunas depois de **Requisito** = as do
+> perfil (`requisito_campos`), com o nome exato dele; os documentos do perfil saem daqui (`regulado.py documento`,
+> ADR-124).
+
+| Requisito | <coluna 1 do perfil> | <coluna 2 do perfil> |
+|---|---|---|
+| REQ-01 | <valor> | <valor> |
+
+### Documentos controlados
+> _(com impacto regulado)_ Código e versão de cada documento gerado. O código vem da Qualidade: deixe vazio até ela
+> preencher, nunca invente.
+
+| Documento | Código | Versão |
+|---|---|---|
+| <tipo do documento no perfil> |  | 1 |
+
 ## Spec Kernel — HEAD (opcional; ADR-081 / padrão bmad-spec)
 
 > 5 campos compactos consumidos por skills downstream (architect, developer, qa-critic) sem precisar ler o requirements inteiro. Preencher ao fechar a elicitação. **Não substitui o requirements completo** — é um resumo executável.
@@ -328,13 +345,26 @@ product_type: <ide-code | executable | gui-app | data-notebook | data-pipeline |
 | RISCO-01 | REQ-01 | <o que pode falhar> | <efeito no produto, no paciente ou no dado> | <alta/média/baixa> | <como a falha é percebida> | alto | <controle> | TESTE-01 |
 
 # Parte G — Testes e evidências
-> _(obrigatória com impacto regulado; apague se não se aplica)_ Todo requisito tem teste. Resultado
-> preenchido exige evidência (caminho do arquivo: print, xlsx, consulta, log) e nome e data de quem
+> _(obrigatória com impacto regulado; apague se não se aplica)_ Todo requisito tem teste. Resultado:
+> `aprovado` ou `reprovado` (ou `pendente` enquanto não executado). Resultado preenchido exige evidência (caminho do arquivo: print, xlsx, consulta, log) e nome e data de quem
 > executou. Matriz de rastreabilidade: `python tools/regulado.py matriz <spec.md>`.
 
 | Teste | Requisito | Categoria | Roteiro | Esperado | Resultado | Evidência | Nome e data |
 |---|---|---|---|---|---|---|---|
 | TESTE-01 | REQ-01 | <funcional \| integridade de dados \| trilha de auditoria \| ...> | <passos> | <resultado esperado> | pendente | pendente | pendente |
+
+### Desvios
+> Teste reprovado exige desvio registrado, com tratamento e nome e data (entra no relatório de validação).
+
+| Desvio | Teste | Descrição | Tratamento | Nome e data |
+|---|---|---|---|---|
+
+### Prontidão para operação
+> _(sistema que entra em uso)_ Itens obrigatórios vêm do perfil (documento de prontidão do perfil, ADR-124).
+
+| Item | Situação | Onde está |
+|---|---|---|
+| <item do perfil> | <existe/pendente> | <caminho ou documento> |
 
 # Parte H — Processo
 > _(quando o projeto muda ou cria um processo; apague se não se aplica)_ Fonte do desenho do processo:

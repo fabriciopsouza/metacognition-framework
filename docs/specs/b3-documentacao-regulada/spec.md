@@ -175,10 +175,10 @@ barraria (requisito sem teste, risco alto sem mitigação, teste sem evidência,
 | 7 | REQ-02: nenhuma peça de auditoria é escrita à mão | cada peça sai de um gerador; editar a peça gerada e gerar de novo desfaz a edição (canário) | ☐ |
 | 8 | REQ-03: matriz gerada | projeto de teste com 3 REQ, 2 RISCO, 4 TESTE gera a matriz completa; REQ sem teste aparece como lacuna | ☐ |
 | 9 | REQ-07: cronograma sai do estado do projeto | cronograma gerado do `estado.json` do pacote de controle de projeto; alterar uma data no estado muda o cronograma | ☐ |
-| 10 | REQ-09: relatório de validação gerado | contém requisitos, riscos, testes, desvios e campos de aprovação (dono do processo + Qualidade) | ☐ |
-| 11 | REQ-10: checklist de prontidão | itens: descrição do sistema, POPs, treinamento, acesso, backup/restauração, continuidade, revisão periódica, cada um com situação e onde está | ☐ |
-| 12 | REQ-11: ERU gerada da Parte A | todo REQ da Parte A aparece na ERU com identificador, criticidade e origem; campo do código do documento fica vazio até a Qualidade preencher | ☐ |
-| 13 | REQ-12: mudança e versão | registros "o que mudou", "correções da base" e "controle de versão" gerados do histórico; nenhuma versão sem data e autor | ☐ |
+| 10 | REQ-09: relatório de validação gerado | contém requisitos, riscos, testes, desvios e campos de aprovação (dono do processo + Qualidade) | ✅ `test_documento_regulado` (ADR-124) |
+| 11 | REQ-10: checklist de prontidão | itens: descrição do sistema, POPs, treinamento, acesso, backup/restauração, continuidade, revisão periódica, cada um com situação e onde está | ✅ `test_documento_regulado` (ADR-124) |
+| 12 | REQ-11: ERU gerada da Parte A | todo REQ da Parte A aparece na ERU com identificador, criticidade e origem; campo do código do documento fica vazio até a Qualidade preencher | ✅ `test_documento_regulado` (ADR-124) |
+| 13 | REQ-12: mudança e versão | registros "o que mudou", "correções da base" e "controle de versão" gerados do histórico; nenhuma versão sem data e autor | ✅ `test_documento_regulado` (ADR-124) |
 | 14 | REQ-13: método único encontrável | `CLAUDE.md` e o início de sessão apontam para `guia/METODO-DE-PROJETO.md`; projeto aberto aparece em `trabalhos.py listar` | ☐ |
 | 15 | REQ-14: desenho do processo gerado | alterar um passo na especificação e gerar de novo muda o HTML e o docx; nenhum dos dois é editado à mão | ☐ |
 | 16 | REQ-15: evidência de desenvolvimento rastreável | todo arquivo citado no manifesto existe no caminho com o sha256 registrado; arquivo alterado sem nome novo é apontado; nenhum arquivo marcado como sensível no manifesto está rastreado pelo git (`git ls-files` não o lista) | ☐ |
@@ -248,8 +248,8 @@ barraria (requisito sem teste, risco alto sem mitigação, teste sem evidência,
 - [x] T2 `tools/regulado.py verificar`: os 5 casos do REQ-04, com canário e sabotagem. — prova: `test_regulado` (32 sabotagens, 6 exceções) e 32/32 mutações mortas; `--planejamento` para uso durante o projeto.
 - [x] T3 `tools/regulado.py matriz`: requisito → risco → teste → evidência, gerada. — prova: `test_regulado` (d), projeto de 3 REQ, 2 RISCO, 4 TESTE (critério 8).
 - [x] T4 (B3a-2, ADR-122 — prova: `tools/test_planilhas_projeto.py`; Partes I e J do modelo de arquivo único) Geração das duas planilhas no padrão do MRP e importação da resposta da área, com versão vN, `_obsoleto/` e comparação antes de apagar.
-- [ ] T5 Relatório de validação e checklist de prontidão para operação, gerados.
-- [ ] T5b ERU gerada da Parte A (REQ-11) e registros de mudança e versão (REQ-12).
+- [x] T5 (B3a-3, ADR-124 — prova: `tools/test_documento_regulado.py`) Relatório de validação e checklist de prontidão para operação, gerados pelo perfil (`regulado.py documento`).
+- [x] T5b (B3a-3, ADR-124) ERU gerada da Parte A pelo perfil farma/alimentos (REQ-11) e registros de mudança e versão gerados (`mudancas_spec.py`, REQ-12).
 
 ### B3b — Perfil farma/ANVISA (fora do núcleo)
 - [ ] T6 Clonar `exemplos\dominio-regulado\compliance-profile-saude-dispositivo.json` para `compliance-profile-farma-anvisa.json` (ADR-043) e preencher: normas (RDC 658/2022, IN 134/2022, IN 138/2022, Guia 33/2020), controles, e o mapa peça do kit → artigo num arquivo ao lado, `exemplos\dominio-regulado\farma-anvisa-mapa-normas.md` (o schema do perfil não tem campo para isso; não estender o schema), com a marca de confiança de cada citação; leitura primária da IN 134/2022 antes de marcar CONFIRMADO.
@@ -295,6 +295,8 @@ barraria (requisito sem teste, risco alto sem mitigação, teste sem evidência,
 | 27/09/2026 | REQ-06, critério 3b | as 12 colunas de rodada viram uma rodada padrão de 5 colunas, uma no modelo, com instrução para acrescentar outra | as 12 do modelo são três rodadas diferentes empilhadas; copiadas, cada volta criaria colunas de formato próprio e a importação não teria formato fixo | dono (27/09): "faça com uma rodada e a instrução para adicionar rodada quando for necessário" |
 | 27/09/2026 | REQ-05, critério 3a | cabeçalhos neutros no núcleo; o texto do projeto vem de `### Rótulos`; "igual ao modelo" passa a ser estrutura | termo de sistema no núcleo quebra o agnosticismo | dono (27/09): "não é só SAP, é requisitos de projeto, seja qual for" |
 | 27/09/2026 | REQ-05 | VALORES POR TIPO vira VALORES POR CATEGORIA, opcional, com as categorias declaradas no projeto | as colunas do modelo são tipos de registro de um sistema | dono (27/09): "ok, ajustar e a skill adapta" |
+| 27/09/2026 | B3a-3, B3c, B2b, B3b | ERU e documentos regulados saem do PERFIL farma/alimentos (motor neutro); skill enxuta e verificador do plano são gerais; perfil ANVISA é de aplicação, só farma/alimentos, sem citar empresa; virão perfis ANP e outros | o núcleo não pode carregar documento de um tipo de regulação | dono (27/09) |
+| 28/09/2026 | REQ-09, REQ-11, T5, T5b | desvios em `### Desvios` (Parte G); código do documento em `### Documentos controlados` (Parte A); atributos dos requisitos em `### Atributos dos requisitos`; motor `regulado.py documento` com modelo no perfil | decisões D1–D3 do B3a-3 | dono (28/09): "todas a" |
 | 27/09/2026 | REQ-05, REQ-06 | toda gravação cria vN+1, move a anterior para `_obsoleto/`, compara e só então apaga a anterior; divergência reprova e restaura a anterior | regerar apagaria as respostas da área | dono (27/09) |
 
 # Revisões adversariais

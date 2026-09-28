@@ -5,6 +5,20 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-124 — Documentos do kit regulado gerados com o modelo do perfil; mudança e versão (28/09/2026)
+
+- **`python tools/regulado.py documento <tipo> <spec.md> --out-dir <pasta>`:** motor neutro; título, seções e
+  rótulos vêm do perfil.
+  - O perfil farma/ANVISA emite ERU, relatório de validação e checklist de prontidão (md e docx).
+  - Lacuna reprova sem gravar; `--rascunho` grava marcado.
+- Partes novas no arquivo único:
+  - na Parte A: `### Atributos dos requisitos` e `### Documentos controlados` (código vazio até a Qualidade
+    preencher);
+  - na Parte G: `### Desvios` e `### Prontidão para operação`.
+- **`python tools/mudancas_spec.py <spec.md> --out-dir <pasta>`** (geral): controle de versão pelo git, "o que
+  mudou" pelo Replanejamento e correções da base.
+- Prova: `test_documento_regulado`.
+
 ### Emenda 2 do ADR-120 — isolamento físico das bibliotecas de empresa (27/09/2026)
 
 - Biblioteca da Natulab movida do framework para o repositório privado `conhecimento-natulab`, submódulo de

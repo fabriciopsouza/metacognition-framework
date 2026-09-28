@@ -2249,6 +2249,46 @@
    }
   },
   {
+   "id": "documentos-do-kit-regulado",
+   "title": "Documentos do kit regulado gerados com o modelo do perfil (ex.: ERU, relatorio de validacao, prontidao no perfil farma): lacuna reprova sem gravar; codigo do documento nunca inventado",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/documento_regulado.py",
+   "test": "tools/test_documento_regulado.py",
+   "adr": "docs/adr/124-documentos-do-kit-regulado-gerados-pelo-perfil.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": ["regulado", "documentacao", "perfil"],
+   "note": "regulado.py documento <tipo> <spec> --out-dir; motor neutro, secoes do perfil; atributos dos requisitos, documentos controlados, desvios e prontidao no arquivo unico.",
+   "mutacao": {
+    "arquivo": "tools/documento_regulado.py",
+    "de": "    if ach and not rascunho:",
+    "para": "    if False:",
+    "canario": "tools/test_documento_regulado.py",
+    "espera": "atributo faltando: nada gravado"
+   }
+  },
+  {
+   "id": "mudanca-e-versao-gerada",
+   "title": "Registro de mudanca e versao gerado da especificacao e do git: versao sem data ou autor e mudanca sem quem aprovou reprovam",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/mudancas_spec.py",
+   "test": "tools/test_documento_regulado.py",
+   "adr": "docs/adr/124-documentos-do-kit-regulado-gerados-pelo-perfil.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": ["versao", "mudanca", "documentacao"],
+   "note": "Geral (qualquer projeto): git log --follow do spec.md, secao Replanejamento, correcoes da base da Parte J.",
+   "mutacao": {
+    "arquivo": "tools/mudancas_spec.py",
+    "de": "        if regulado._vazio(m[\"quem aprovou\"]):",
+    "para": "        if False:",
+    "canario": "tools/test_documento_regulado.py",
+    "espera": "mudança sem quem aprovou reprova"
+   }
+  },
+  {
    "id": "resposta-executiva",
    "title": "Resposta executiva medida por hook de Stop: prosa longa, pedido ao dono no meio do turno e bloco explicativo devolvem a resposta para reescrita uma vez",
    "status": "PROVIDES",

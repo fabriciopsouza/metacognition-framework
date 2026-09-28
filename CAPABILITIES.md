@@ -1,7 +1,7 @@
 <!-- GERADO por tools/build_capabilities.py a partir de capabilities.json — NAO editar a mao -->
 # CAPABILITIES — indice de capacidades (nivel 1: id + title)
 
-> **111 capacidades** — 99 ✅ PROVIDES · 12 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
+> **113 capacidades** — 101 ✅ PROVIDES · 12 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
 > **Como usar (file-first, boot):** leia esta lista p/ achar o `id`; o registro completo (mecanismo · canario · ADR · doc) vem por **`python tools/build_capabilities.py --show <id>`** ou `grep -A8 '"<id>"' capabilities.json`. Nao reexplore o repo antes disto.
 > **Manutencao:** feature nova -> +1 registro em `capabilities.json` + `python tools/build_capabilities.py`. Canario barra canario orfao (cobertura).
 
@@ -50,6 +50,7 @@
 - ✅ `dev-dogfood-gate` — Dev-dogfood DETERMINISTA: master fechando bloco DEVE ter execution-report + handoff cross-IA (nao opt-in, shadow-aware)
 - ✅ `discovery-eval` — Discovery com eval executado (nao so prosa de plano)
 - ✅ `doc-intake` — Parse deterministico offline (pdf/docx/xlsx/...) -> chunks + sha256, sem embeddings
+- ✅ `documentos-do-kit-regulado` — Documentos do kit regulado gerados com o modelo do perfil (ex.: ERU, relatorio de validacao, prontidao no perfil farma): lacuna reprova sem gravar; codigo do documento nunca inventado
 - 🟡 `edge-case-hunter` — Percurso mecanico exaustivo de paths nao tratados — output JSON verificavel
 - ✅ `effect-gate` — Action-safety por EFEITO: classifica acao destrutiva e pede confirmacao (T3)
 - ✅ `elicitation-gate` — Elicitation-first VINCULANTE antes de implementar sobre indicador/metrica/regra de dominio de risco alto: ficha de insumo (6 campos) nao-skippavel mesmo em autosuficiente (enforcement, nao skill nova)
@@ -73,6 +74,7 @@
 - ✅ `marketing-honesty-gate` — Gates de honestidade da vitrine (anti-overclaim, claim provado ancorado, versao em sync)
 - ✅ `mission-gate` — Declara/confirma product_type + escopo antes de J2+ (mission.md)
 - ✅ `model-policy` — Politica de modelo como dado: papel x risco -> tier com chain de fallback + escada de heterogeneidade + indisponibilidade declarada (env) + escada RELATIVA ao default (executor/1o QA/2o QA) com regra de borda verificada em codigo
+- ✅ `mudanca-e-versao-gerada` — Registro de mudanca e versao gerado da especificacao e do git: versao sem data ou autor e mudanca sem quem aprovou reprovam
 - ✅ `mutacao-controle` — Prova de mutacao do pacote controle_*: cada defeito ja corrigido e' reintroduzido numa COPIA e o canario correspondente e' exigido a reprovar
 - ✅ `nonadmin-profile` — Perfil non-admin: gates anunciados inline quando GPO/EDR veta hooks
 - ✅ `numeros-da-prosa` — Numero afirmado na documentacao do pacote controle_* e' MEDIDO contra o repositorio, e numero ja refutado nao volta
