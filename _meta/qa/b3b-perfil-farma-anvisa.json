@@ -1,0 +1,57 @@
+{
+  "bloco": "b3b-perfil-farma-anvisa",
+  "papel": "qa_critic",
+  "rodada": 3,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "veredito": "aprovar",
+  "escopo_paths": [
+    "tools/regulado.py",
+    "tools/test_regulado.py",
+    "exemplos/dominio-regulado/farma-anvisa-mapa-normas.md",
+    "exemplos/dominio-regulado/compliance-profile-farma-anvisa.json",
+    "exemplos/dominio-regulado/README.md",
+    "docs/specs/b3-documentacao-regulada/fontes.md",
+    "docs/specs/b3-documentacao-regulada/spec.md",
+    "docs/adr/126-perfil-farma-anvisa-mapa-peca-norma.md",
+    "CHANGELOG.md",
+    "capabilities.json",
+    "_meta/qa/b3b-perfil-farma-anvisa.json",
+    "_meta/qa/b3b-perfil-farma-anvisa.md"
+  ],
+  "atestacao": {
+    "agentId": "a59465b15043a1852",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic isolado, so leitura; rodadas 1 (a19805fe11d95dc0e) e 2 (a96c428ebd8655796) com mutacoes em copia fora do repo."
+  },
+  "postura": {
+    "discovery": "docs/specs/b3-documentacao-regulada/spec.md (T6) aprovado pelo dono em 26/09/2026; escopo medicamentos pelo dono em 28/09/2026",
+    "rrc": "PASSA",
+    "metodo_senior": "aplicado: citacoes do mapa conferidas contra o texto oficial baixado (IN 134, IN 138, RDC 658, Guia 33); 11 mutacoes no verificador do mapa, todas mortas; limite (forma, nao conteudo) declarado no ADR"
+  },
+  "resumo": "ADR-126: leitura primaria das normas; mapa peca -> norma do perfil farma-anvisa (so medicamentos); regulado.py mapa exige o mapa com toda peca coberta. PASS na rodada 3.",
+  "verificacoes_executadas": [
+    "test_regulado (h) com 8 sabotagens, test_capabilities, test_consistency_closing, plano.py verificar, check_core_agnostic PASS",
+    "todas as citacoes literais do mapa conferidas nos .txt oficiais, sem divergencia",
+    "rodada 1: 5 mutacoes, 4 mortas (encoding corrigido depois); rodada 2: 6 mutacoes, todas mortas"
+  ],
+  "problemas": [],
+  "nao_verificado": [
+    "conteudo do artigo contra a linha do mapa nao e verificado pelo canario (forma apenas) — limite declarado no ADR-126"
+  ],
+  "data": "2026-09-28T17:16:43Z",
+  "sha_revisado": "5dc86002f519aaa29746ff54e6f0b122de4f6624",
+  "blobs_revisados": {
+    "tools/regulado.py": "d00707eeac298e1835289e483f508cf25d69ad6b",
+    "tools/test_regulado.py": "737eda721eeb6d76832fc6c1c9193ee5e0e032f8",
+    "exemplos/dominio-regulado/farma-anvisa-mapa-normas.md": "dff20a65ca48b484b43f3fa539964611ee37ec4f",
+    "exemplos/dominio-regulado/compliance-profile-farma-anvisa.json": "234ecd46b2fc5b23633a0de03c0dc32897e71034",
+    "exemplos/dominio-regulado/README.md": "735849aebc452807a6843004c7bddce3d0c69eb1",
+    "docs/specs/b3-documentacao-regulada/fontes.md": "52e81e9a96d89a19180ee709f14ee71080cd11c2",
+    "docs/specs/b3-documentacao-regulada/spec.md": "f222a0dfecfd7583d87b775571284660c7b66664",
+    "docs/adr/126-perfil-farma-anvisa-mapa-peca-norma.md": "47def5406706387becea718cbcd4e6c8b7334b7d",
+    "CHANGELOG.md": "e908991e3523c148e70881c6562095ab1ce85eff",
+    "capabilities.json": "8816333ee3ebae61716e99740f171e72886bbfac"
+  }
+}

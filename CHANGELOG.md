@@ -5,6 +5,17 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-126 — Perfil farma-anvisa: leitura primária e mapa peça → norma (28/09/2026)
+
+- Leitura primária das IN 134/2022, IN 138/2022, RDC 658/2022, RDC 972/2025 e Guia 33/2020; vigência e URLs em
+  `docs/specs/b3-documentacao-regulada/fontes.md`, seção 6. [CONFIRMADO]
+- `exemplos/dominio-regulado/farma-anvisa-mapa-normas.md`: cada peça do perfil com artigo, trecho literal e marca.
+- **`python tools/regulado.py mapa <perfil.json>`:** perfil com categorias precisa do mapa ao lado, com toda peça
+  coberta.
+- Perfil só de medicamentos. Trilha de auditoria "por risco" e assinatura eletrônica "quando usada", pelo texto da
+  IN 134.
+- Prova: `test_regulado` (h).
+
 ### ADR-125 — Verificador do plano no arquivo único (28/09/2026)
 
 - **`python tools/plano.py verificar`** reprova:

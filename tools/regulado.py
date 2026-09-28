@@ -19,6 +19,7 @@ Uso:
     python tools/regulado.py matriz <spec.md>                     # requisito -> risco -> teste -> evidência (md)
     python tools/regulado.py kit <spec.md>                        # peças exigidas (exit 1 sem registro)
     python tools/regulado.py documento <tipo> <spec.md> --out-dir <pasta> [--rascunho]   # documento do perfil (ADR-124)
+    python tools/regulado.py mapa <perfil.json>                   # toda peça do perfil tem artigo no mapa ao lado
 """
 import datetime
 import json
@@ -42,6 +43,7 @@ CAMPOS = ["Impacto regulado", "Perfil regulado", "Sistema", "Categoria de softwa
 _DEF_REQ = re.compile(r"(?m)^\s*(?:[-*+]|\d+[.)])?\s*(?:\*\*)?\s*(REQ-\d+)\s*(?:\*\*)?\s*[:—–-]")
 _DATA = re.compile(r"\b(\d{1,2})/(\d{1,2})/(\d{4})\b")
 _VAZIO = {"", "-", "—", "n/a", "pendente", "<pendente>"}
+MARCAS_MAPA = {"CONFIRMADO", "INFERIDO", "DESCONHECIDO", "NÃO SE APLICA"}
 
 
 class Recusa(Exception):
@@ -243,6 +245,53 @@ def matriz(spec):
     return "\n".join(out)
 
 
+def pecas_do_perfil(perfil):
+    """Tudo o que o perfil exige: peças por categoria, documentos emitidos, itens deles e testes obrigatórios."""
+    out = []
+    for k, v in (perfil.get("categorias_software") or {}).items():
+        if not k.startswith("_"):
+            out += v
+    for k, v in (perfil.get("documentos") or {}).items():
+        if not k.startswith("_"):
+            out += [k] + list(v.get("itens") or [])
+    out += perfil.get("testes_obrigatorios_com_impacto") or []
+    return list(dict.fromkeys(out))
+
+
+def verificar_mapa(perfil_arquivo):
+    """Mapa peça -> norma ao lado do perfil (`<profile>-mapa-normas.md`, B3b): toda peça do perfil tem linha,
+    toda linha tem marca de confiança válida, a citada tem norma e artigo, e nenhuma linha fala de peça que o
+    perfil não tem."""
+    with open(perfil_arquivo, encoding="utf-8") as fh:
+        perfil = json.load(fh)
+    mapa = os.path.join(os.path.dirname(perfil_arquivo), f"{perfil.get('profile', '?')}-mapa-normas.md")
+    if not os.path.isfile(mapa):
+        return [f"mapa peça -> norma ausente: {os.path.basename(mapa)}"]
+    try:
+        texto = open(mapa, encoding="utf-8-sig").read()
+    except UnicodeDecodeError as e:
+        return [f"{os.path.basename(mapa)} não está em UTF-8: {e}"]
+    pecas, ach, vistas = pecas_do_perfil(perfil), [], set()
+    for ln in texto.splitlines():
+        m = re.match(r"^\|\s*`([^`]+)`\s*\|", ln)
+        if not m:
+            continue
+        cel = [c.strip() for c in re.split(r"(?<!\\)\|", ln.strip().strip("|"))]
+        peca, marca = m.group(1), cel[-1]
+        vistas.add(peca)
+        if len(cel) != 5:
+            ach.append(f"{peca}: {len(cel)} colunas, o mapa tem 5 (escape '|' no trecho como '\\|')")
+            continue
+        if peca not in pecas:
+            ach.append(f"linha do mapa para peça que o perfil não tem: {peca}")
+        if marca not in MARCAS_MAPA:
+            ach.append(f"{peca}: marca '{marca}' fora de {sorted(MARCAS_MAPA)}")
+        elif marca in ("CONFIRMADO", "INFERIDO") and (_vazio(cel[1]) or _vazio(cel[2])):
+            ach.append(f"{peca}: marca {marca} sem norma e artigo")
+    ach += [f"peça do perfil sem linha no mapa: {p}" for p in pecas if p not in vistas]
+    return ach
+
+
 def main(argv):
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -251,6 +300,12 @@ def main(argv):
     if len(argv) > 1 and argv[1] == "documento":
         import documento_regulado  # noqa: E402  (B3a-3, ADR-124: documento com modelo vindo do perfil)
         return documento_regulado.main(argv[2:])
+    if len(argv) == 3 and argv[1] == "mapa":
+        ach = verificar_mapa(argv[2])
+        for a in ach:
+            print(f"  - {a}")
+        print("RESULTADO:", f"FAIL ({len(ach)})" if ach else "PASS")
+        return 1 if ach else 0
     flags = [a for a in argv[1:] if a.startswith("--")]
     args = [a for a in argv[1:] if not a.startswith("--")]
     if (len(args) != 2 or args[0] not in ("verificar", "matriz", "kit")

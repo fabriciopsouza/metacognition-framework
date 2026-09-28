@@ -17,6 +17,11 @@
 | `compliance-profile-saude-dispositivo.json` | dispositivo/saúde/laboratório | ISO 13485, CLIA, 21 CFR |
 | `compliance-profile-financeiro.json` | relato financeiro/contábil | SOX, Sarbanes-Oxley, Basel |
 | `compliance-profile-infosec.json` | segurança da informação | ISO 27001, SOC 2 |
+| `compliance-profile-farma-anvisa.json` | sistemas computadorizados em BPF de medicamentos (Brasil) | RDC 658/2022, IN 134/2022, IN 138/2022, Guia 33/2020 |
+
+**Perfil com peças por categoria (`categorias_software`)** precisa do mapa `<profile>-mapa-normas.md` ao lado:
+toda peça do perfil com norma, artigo e marca de confiança. Confere: `python tools/regulado.py mapa <perfil.json>`
+(canário `test_regulado`). Modelo: `farma-anvisa-mapa-normas.md`.
 
 > **Limite declarado (→ LIMITS.md):** "andaime de conformidade", não "pronto para regulado". A
 > adequação à norma concreta é responsabilidade do dono + revisão humana (HITL). `check_core_agnostic`

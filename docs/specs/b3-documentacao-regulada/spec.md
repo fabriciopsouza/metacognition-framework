@@ -8,7 +8,7 @@
 
 ## Painel
 
-**Avanço:** discovery ✅ · requisitos aprovados pelo dono (26/09) · execução: B3a-1 ✅ (PR #161) · B3e ✅ (PR #163) · B3d ✅ (PR #168) · B3a-2 em revisão (ADR-122) · B3a-3, B3c, B2b, B3b a fazer
+**Avanço:** discovery ✅ · requisitos aprovados pelo dono (26/09) · execução: B3a-1 ✅ (PR #161) · B3e ✅ (PR #163) · B3d ✅ (PR #168) · B3a-2 ✅ (PR #170) · B3a-3 ✅ (PR #174) · B3c ✅ (PR #175) · B2b ✅ (PR #176) · B3b em revisão (ADR-126) · depois: perfil ANP (`trabalhos.py`, `perfil-anp`)
 
 | # | Assunto | Situação | Quem age | Resultado / próximo |
 |---|---|---|---|---|
@@ -90,8 +90,8 @@ barraria (requisito sem teste, risco alto sem mitigação, teste sem evidência,
 - Sim: a obrigatoriedade de cada documento depende da categoria do software e do risco; o texto do documento não pode citar norma revogada.
 
 ### (d) Gaps não-bloqueantes?
-- Texto primário integral da IN 134/2022 e IN 138/2022 não foi lido linha a linha (triangulado por 4 fontes) · impacto: citações de artigo ficam como INFERIDO até leitura primária · decisão: tratar em B3b.
-- ALCOA+ como sigla não foi localizada no texto oficial · impacto: não citar a sigla como exigência literal da norma · decisão: usar a substância (dado atribuível, legível, contemporâneo, original, exato) sem atribuir a sigla à norma.
+- ~~Texto primário integral da IN 134/2022 e IN 138/2022 não foi lido~~ · **resolvido no B3b (28/09/2026):** texto integral lido; peça → artigo em `exemplos/dominio-regulado/farma-anvisa-mapa-normas.md`.
+- ALCOA+ como sigla está ausente do texto oficial (confirmado por busca literal em 28/09/2026) · impacto: não citar a sigla como exigência literal da norma · decisão: usar a substância (dado atribuível, legível, contemporâneo, original, exato) sem atribuir a sigla à norma.
 
 ## Dimensões de elicitação
 - operador: equipe de sistemas (autor) e áreas de negócio e Qualidade (confirmam e executam verificação) — as áreas usam planilha, não o repositório
@@ -194,10 +194,10 @@ barraria (requisito sem teste, risco alto sem mitigação, teste sem evidência,
 
 | Âncora | Vigência | Pertinência | Confiança | Fonte |
 |---|---|---|---|---|
-| RDC nº 658, de 30/03/2022 — BPF de medicamentos | vigente desde 02/05/2022; revogou a RDC 301/2019 | norma vinculante de fundo | CONFIRMADO (texto oficial lido, p. 1–8; revogação por fontes convergentes) | https://sindusfarma.org.br/uploads/files/8e1f-diego-silva/2022/Anvisa/RDC%20BPF%20-%20Anvisa/file.pdf (acesso em 25/09/2026) |
-| IN nº 134, de 30/03/2022 — sistemas computadorizados | vigente desde 02/05/2022; substitui a IN 43/2019 | vinculante para sistemas GxP | INFERIDO — triangulado em 4 fontes secundárias; texto primário **não** lido | https://www.legisweb.com.br/legislacao/?id=429571 (acesso em 25/09/2026) |
-| IN nº 138, de 30/03/2022 — qualificação e validação | vigente; substitui a IN 47/2019 | vinculante | INFERIDO — triangulado em 2 fontes secundárias; texto primário **não** lido | https://www.legisweb.com.br/legislacao/?id=429593 (acesso em 25/09/2026) |
-| Guia ANVISA nº 33/2020, versão 1 — validação de sistemas computadorizados | vigente desde 14/04/2020; **não vinculante**; base legal cita normas revogadas | lista os entregáveis e permite escalonar por risco | CONFIRMADO para as p. 1–32, 54–60, 73–83; seções §9.x fora dessas páginas: a conferir (lacuna 8 de `fontes.md`) | https://www.gov.br/anvisa/pt-br/centraisdeconteudo/publicacoes/medicamentos/publicacoes-sobre-medicamentos/guia-de-validacao-de-sistemas-computadorizados.pdf (acesso em 25/09/2026) |
+| RDC nº 658, de 30/03/2022 — BPF de medicamentos | vigente desde 02/05/2022; revogou a RDC 301/2019 | norma vinculante de fundo | CONFIRMADO (texto integral lido em 28/09/2026; revogação da RDC 301/2019 no art. 379; alterada só pela RDC 972/2025, no art. 372, fora de sistemas computadorizados) | AnvisaLegis e DOU — URLs em `fontes.md`, seção 6 (acesso em 28/09/2026) |
+| IN nº 134, de 30/03/2022 — sistemas computadorizados | vigente desde 02/05/2022, sem alterações; revogou a IN 43/2019 (art. 47) | vinculante para sistemas GxP | CONFIRMADO (texto integral lido em 28/09/2026, conferido no DOU) | AnvisaLegis e DOU — URLs em `fontes.md`, seção 6 (acesso em 28/09/2026) |
+| IN nº 138, de 30/03/2022 — qualificação e validação | vigente desde 02/05/2022, sem alterações; revogou a IN 47/2019 (art. 132) | vinculante; a definição de protocolo inclui sistema computadorizado (art. 3º, XVI) | CONFIRMADO (texto integral lido em 28/09/2026, conferido no DOU) | AnvisaLegis e DOU — URLs em `fontes.md`, seção 6 (acesso em 28/09/2026) |
+| Guia ANVISA nº 33/2020, versão 1 — validação de sistemas computadorizados | vigente desde 14/04/2020; **não vinculante**; base legal cita normas revogadas | lista os entregáveis e permite escalonar por risco | CONFIRMADO (íntegra do PDF lida em 28/09/2026) | https://anexosportal.datalegis.net/arquivos/1860250.pdf (acesso em 28/09/2026) |
 | GAMP 5, 2ª edição (ISPE, jul/2022) | referência de mercado, não norma | aceita métodos ágeis e "pensamento crítico" | INFERIDO (fontes secundárias; texto pago não lido) | https://www.scilife.io/blog/gamp5-for-gxp-compliant-computerized-systems (acesso em 25/09/2026) |
 
 ## Entregáveis que uma inspeção espera (Guia 33/2020, escalonado por risco)
@@ -207,7 +207,7 @@ barraria (requisito sem teste, risco alto sem mitigação, teste sem evidência,
 | Inventário de sistemas | Guia §8, §10 | boa prática forte | sempre |
 | Política / plano mestre de validação | Guia §9.1 | expectativa de inspeção; corporativo — **fora deste kit** (documento da Qualidade; o kit só aponta onde está) | corporativo |
 | Categorização GAMP (1, 3, 4, 5) | Guia §7 | ferramenta de escalonamento — **entra no kit**: define o conjunto de peças (REQ-01, D2) | sistema novo; mudança |
-| Integridade de dados | IN 134/2022 (vinculante; texto primário a ler) | **obrigatório, não escalonável** — entra como categoria obrigatória de teste (REQ-06) e item do checklist de prontidão (REQ-10) | todo o ciclo |
+| Integridade de dados | IN 134/2022, arts. 26, 28, 32, 39 e 45; RDC 658/2022, arts. 116, 124 e 125 (vinculantes; lidos em 28/09/2026) | **obrigatório, não escalonável** — entra como categoria obrigatória de teste (REQ-06) e item do checklist de prontidão (REQ-10) | todo o ciclo |
 | Plano de validação | Guia §9.2 | proporcional ao risco | sistema novo, mudança maior |
 | ERU (requisitos do usuário) | Guia §9.3 | obrigatório na substância | categorias 3, 4, 5 |
 | Avaliação de fornecedor | Guia §9.4 | proporcional ao risco | aquisição |
@@ -252,7 +252,7 @@ barraria (requisito sem teste, risco alto sem mitigação, teste sem evidência,
 - [x] T5b (B3a-3, ADR-124) ERU gerada da Parte A pelo perfil farma/alimentos (REQ-11) e registros de mudança e versão gerados (`mudancas_spec.py`, REQ-12).
 
 ### B3b — Perfil farma/ANVISA (fora do núcleo)
-- [ ] T6 Clonar `exemplos\dominio-regulado\compliance-profile-saude-dispositivo.json` para `compliance-profile-farma-anvisa.json` (ADR-043) e preencher: normas (RDC 658/2022, IN 134/2022, IN 138/2022, Guia 33/2020), controles, e o mapa peça do kit → artigo num arquivo ao lado, `exemplos\dominio-regulado\farma-anvisa-mapa-normas.md` (o schema do perfil não tem campo para isso; não estender o schema), com a marca de confiança de cada citação; leitura primária da IN 134/2022 antes de marcar CONFIRMADO.
+- [x] T6 (B3b, ADR-126, 28/09/2026 — prova: `exemplos/dominio-regulado/farma-anvisa-mapa-normas.md` e `tools/test_regulado.py` (h); só medicamentos, ver Replanejamento) Clonar `exemplos\dominio-regulado\compliance-profile-saude-dispositivo.json` para `compliance-profile-farma-anvisa.json` (ADR-043) e preencher: normas (RDC 658/2022, IN 134/2022, IN 138/2022, Guia 33/2020), controles, e o mapa peça do kit → artigo num arquivo ao lado, `exemplos\dominio-regulado\farma-anvisa-mapa-normas.md` (o schema do perfil não tem campo para isso; não estender o schema), com a marca de confiança de cada citação; leitura primária da IN 134/2022 antes de marcar CONFIRMADO.
 
 ### B3d — Método único de projeto (depende de D7/D8)
 - [x] T8 (ADR-121; prova: `tools\test_desenho_processo.py` (e)) `guia\METODO-DE-PROJETO.md`: fluxo numerado (elicitação → confirmação da área → especificação → desenho do processo → testes e evidências → liberação → operação), onde mora cada peça; citado no `CLAUDE.md` e no início de sessão.
@@ -275,8 +275,8 @@ barraria (requisito sem teste, risco alto sem mitigação, teste sem evidência,
 |---|---|---|
 | hooks | não previsto | |
 | scripts e gates | sim: `regulado.py` novo; `spec_fonte.py` ganha partes F, G, H, I e J; `planilhas_projeto.py` novo (B3a-2) | B3a-2: ✅ |
-| canários | sim: novo canário do verificador | ✅ test_regulado, test_desenho_processo, test_evidencia, test_planilhas_projeto, test_documento_regulado |
-| README / guias | sim: `guia/` com o kit regulado e `guia/METODO-DE-PROJETO.md` | ✅ guia/METODO-DE-PROJETO.md (ADR-121) e project-docs enxuta (B3c) |
+| canários | sim: novo canário do verificador | ✅ test_regulado (inclui o mapa peça → norma, B3b), test_desenho_processo, test_evidencia, test_planilhas_projeto, test_documento_regulado |
+| README / guias | sim: `guia/` com o kit regulado e `guia/METODO-DE-PROJETO.md` | ✅ guia/METODO-DE-PROJETO.md (ADR-121), project-docs enxuta (B3c) e `exemplos/dominio-regulado/README.md` com o perfil farma e a regra do mapa (B3b) |
 | `CLAUDE.md` | sim: 1 linha de ponteiro para o método (dieta do ADR-080) | ✅ ponteiro ao método (ADR-121, PR #168) |
 | site | sim: contagem de capacidades | ✅ contagem de capacidades e canários atualizada a cada PR (test_marketing_claims) |
 | CHANGELOG | sim | ✅ uma entrada por bloco (ADR-119 a ADR-124, B3c) |
@@ -297,6 +297,7 @@ barraria (requisito sem teste, risco alto sem mitigação, teste sem evidência,
 | 27/09/2026 | REQ-05 | VALORES POR TIPO vira VALORES POR CATEGORIA, opcional, com as categorias declaradas no projeto | as colunas do modelo são tipos de registro de um sistema | dono (27/09): "ok, ajustar e a skill adapta" |
 | 27/09/2026 | B3a-3, B3c, B2b, B3b | ERU e documentos regulados saem do PERFIL farma/alimentos (motor neutro); skill enxuta e verificador do plano são gerais; perfil ANVISA é de aplicação, só farma/alimentos, sem citar empresa; virão perfis ANP e outros | o núcleo não pode carregar documento de um tipo de regulação | dono (27/09) |
 | 28/09/2026 | REQ-09, REQ-11, T5, T5b | desvios em `### Desvios` (Parte G); código do documento em `### Documentos controlados` (Parte A); atributos dos requisitos em `### Atributos dos requisitos`; motor `regulado.py documento` com modelo no perfil | decisões D1–D3 do B3a-3 | dono (28/09): "todas a" |
+| 28/09/2026 | T6, T5b | o perfil `farma-anvisa` cobre só medicamentos; alimentos saem (entram só se houver projeto); o próximo perfil é ANP; a trilha de auditoria passa a "por risco" e a assinatura eletrônica a "quando usada", conforme o texto da IN 134 | leitura primária: IN 134 art. 33 ("deve ser considerada") e art. 41 ("podem ser assinados") | dono (28/09): "vamos começar com o que temos: medicamentos. Depois será ANP, não alimentos" · "D2 farma" |
 | 27/09/2026 | REQ-05, REQ-06 | toda gravação cria vN+1, move a anterior para `_obsoleto/`, compara e só então apaga a anterior; divergência reprova e restaura a anterior | regerar apagaria as respostas da área | dono (27/09) |
 
 # Revisões adversariais

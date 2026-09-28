@@ -16,6 +16,7 @@ Uso: python tools/test_regulado.py   (exit 0 PASS; 1 FAIL)
 import json
 import os
 import re
+import shutil
 import sys
 import tempfile
 
@@ -267,6 +268,52 @@ def main():
               not any(re.search(r"especificacao-(de-configuracao|funcional)", x) for x in c["3"]), c["3"])
         check("farma: categoria 4 com especificação de configuração",
               "especificacao-de-configuracao" in c["4"], c["4"])
+
+    print("(h) mapa peça -> norma ao lado do perfil")
+    for f in sorted(os.listdir(regulado.PERFIS_DIR)):
+        if f.startswith("compliance-profile-") and f.endswith(".json"):
+            p = os.path.join(regulado.PERFIS_DIR, f)
+            if "categorias_software" in json.load(open(p, encoding="utf-8")):
+                ach = regulado.verificar_mapa(p)
+                check(f"{f}: toda peça tem artigo no mapa", ach == [], ach)
+    if os.path.isfile(farma):
+        mapa_real = open(os.path.join(regulado.PERFIS_DIR, "farma-anvisa-mapa-normas.md"), encoding="utf-8").read()
+        d = tempfile.mkdtemp()
+        shutil.copy(farma, d)
+        alvo = os.path.join(d, os.path.basename(farma))
+
+        def mapa_com(texto):
+            with open(os.path.join(d, "farma-anvisa-mapa-normas.md"), "w", encoding="utf-8") as fh:
+                fh.write(texto)
+            return regulado.verificar_mapa(alvo)
+
+        def sem_linhas(peca):
+            return "\n".join(ln for ln in mapa_real.splitlines() if not ln.startswith(f"| `{peca}` |"))
+
+        sabot = [
+            ("peça sem linha", sem_linhas("inventario"), "peça do perfil sem linha no mapa: inventario"),
+            ("item de documento sem linha", sem_linhas("Treinamento"), "sem linha no mapa: Treinamento"),
+            ("marca inválida", mapa_real.replace(
+                "disponibilizada sempre que solicitado.\" | CONFIRMADO |",
+                "disponibilizada sempre que solicitado.\" | OK |", 1), "inventario: marca 'OK'"),
+            ("citada sem artigo", mapa_real.replace("| `inventario` | IN134 | art. 18 |", "| `inventario` | IN134 | — |", 1),
+             "inventario: marca CONFIRMADO sem norma e artigo"),
+            ("linha de peça inexistente", mapa_real + "\n| `peca-fantasma` | — | — | x | NÃO SE APLICA |\n",
+             "peça que o perfil não tem: peca-fantasma"),
+            ("barra vertical sem escape no trecho", mapa_real.replace("| `inventario` | IN134 | art. 18 | \"Um",
+                                                                     "| `inventario` | IN134 | art. 18 | \"a | b\" \"Um", 1),
+             "inventario: 6 colunas"),
+        ]
+        for nome, texto, trecho in sabot:
+            ach = mapa_com(texto)
+            check(f"mapa: {nome} reprova", any(trecho in a for a in ach), ach)
+        with open(os.path.join(d, "farma-anvisa-mapa-normas.md"), "w", encoding="cp1252", errors="replace") as fh:
+            fh.write(mapa_real)
+        ach = regulado.verificar_mapa(alvo)
+        check("mapa fora de UTF-8 vira achado, não exceção", any("não está em UTF-8" in a for a in ach), ach)
+        os.remove(os.path.join(d, "farma-anvisa-mapa-normas.md"))
+        ach = regulado.verificar_mapa(alvo)
+        check("mapa ausente reprova", any("mapa peça -> norma ausente" in a for a in ach), ach)
 
     print("-" * 50)
     print("RESULTADO:", f"FAIL ({len(falhas)})" if falhas else "PASS")
