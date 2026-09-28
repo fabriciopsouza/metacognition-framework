@@ -9,11 +9,18 @@ Reprova o que torna o plano enganoso para quem o lê (regra: o dono decide pelo 
      tarefa `[~]` sem linha no Replanejamento que a cite;
   4. percentual do "**Avanço:**" que não bate com a contagem das tarefas do bloco (tolerância de 5 pontos);
   5. Mapa de impacto sem linhas, ou item que muda ("sim") sem situação;
-  6. aceite datado antes da aprovação dos requisitos (Parte B).
+  6. aceite datado antes da aprovação dos requisitos (Parte B);
+  7. painel de fases (entre `<!-- painel:inicio -->` e `<!-- painel:fim -->`) diferente do que as tarefas geram —
+     % editado à mão ou tarefa marcada sem regenerar;
+  8. cronograma: `prazo:` ilegível, `depende:` de tarefa inexistente, prazo antes do prazo da dependência.
+
+Cronograma: na linha da tarefa, `prazo: dd/mm/aaaa` e, se houver, `depende: T1, T2`.
 
 Uso:
     python tools/plano.py verificar [<spec.md> ...]   # sem argumento: todos os spec.md únicos de docs/specs
     python tools/plano.py verificar <spec.md> --avisar # só avisa (exit 0): uso fora deste repositório
+    python tools/plano.py painel <spec.md> [--escrever] # fases com contagem, barra e % (grava entre os marcadores)
+    python tools/plano.py cronograma <spec.md> [--csv <arquivo>]   # tarefas por prazo, com atraso na data de hoje
 Exit 1 com achado (0 com --avisar).
 """
 import datetime
@@ -60,13 +67,117 @@ def _blocos(texto):
             atual = m.group(2)
             out.setdefault(atual, [])
             continue
-        if atual is not None:
+        if atual is not None and fora:  # exemplo dentro de bloco de código não é tarefa nem linha de tabela
             out[atual].append(ln)
     return out
 
 
 def _secao(blocos, prefixo):
     return next((v for k, v in blocos.items() if k.lower().startswith(prefixo.lower())), None)
+
+
+MARCA_INI, MARCA_FIM = "<!-- painel:inicio -->", "<!-- painel:fim -->"
+_PRAZO = re.compile(r"(?i)\bprazo:\s*(\S+)")
+_DEPENDE = re.compile(r"(?i)\bdepende:\s*((?:T[\w.-]*\d[\w.-]*(?:\s*,\s*|\s+e\s+|\s*))+)")
+_ID = re.compile(r"T[\w.-]*\d[\w.-]*")
+BARRA = 12
+
+
+def tarefas(texto):
+    """Tarefas da seção Tarefas, na ordem: bloco (`### `), marca, id, texto, prazo (cru e data), dependências."""
+    out, grupo = [], "(sem bloco)"
+    for ln in _secao(_blocos(texto), "Tarefas") or []:
+        if ln.startswith("### "):
+            grupo = ln[4:].strip()
+            continue
+        m = _TAREFA.match(ln)
+        if not m:
+            continue
+        mp, md = _PRAZO.search(ln), _DEPENDE.search(ln)
+        out.append({"grupo": grupo, "marca": m.group(1).lower(), "id": m.group(2) or "", "texto": m.group(3).strip(),
+                    "linha": ln, "prazo_cru": mp.group(1).rstrip(".,;") if mp else "",
+                    "prazo": _data(mp.group(1)) if mp else None,
+                    "depende": [d.rstrip(".,;-") for d in _ID.findall(md.group(1))] if md else []})
+    return out
+
+
+def painel(texto):
+    """Tabela de fases gerada das tarefas: feitas/total, barra de 12 blocos, %, e onde estamos (1ª fase aberta)."""
+    grupos = {}
+    for t in tarefas(texto):
+        if t["marca"] != "~":
+            grupos.setdefault(t["grupo"], []).append(t["marca"] == "x")
+    linhas, onde = ["| Fase | Feitas | Andamento | % |", "|---|---|---|---|"], None
+    for g, feitas in grupos.items():
+        n, f = len(feitas), sum(feitas)
+        pct = round(100 * f / n)
+        cheio = round(pct * BARRA / 100)
+        marca = ""
+        if onde is None and f < n:
+            onde, marca = g, " ◀ onde estamos"
+        linhas.append(f"| {g}{marca} | {f}/{n} | `{'█' * cheio}{'░' * (BARRA - cheio)}` | {pct}% |")
+    return "\n".join(linhas)
+
+
+def _painel_escrito(texto):
+    """(conteúdo entre os marcadores ou None, erro de marcador ou None)."""
+    ni, nf = texto.count(MARCA_INI), texto.count(MARCA_FIM)
+    if ni == nf == 0:
+        return None, None
+    i, j = texto.find(MARCA_INI), texto.find(MARCA_FIM)
+    if ni != 1 or nf != 1 or i > j:
+        return None, (f"marcadores do painel inválidos ({ni} de início, {nf} de fim, "
+                      f"{'fim antes do início' if i > j else 'fora de par'}) — deixe um par e rode painel --escrever")
+    return texto[i + len(MARCA_INI):j].strip(), None
+
+
+def escrever_painel(spec):
+    texto = open(spec, encoding="utf-8-sig").read()
+    bloco = f"{MARCA_INI}\n{painel(texto)}\n{MARCA_FIM}"
+    escrito, erro = _painel_escrito(texto)
+    if erro:
+        raise ValueError(erro)
+    i, j = texto.find(MARCA_INI), texto.find(MARCA_FIM)
+    if escrito is not None:
+        novo = texto[:i] + bloco + texto[j + len(MARCA_FIM):]
+    else:
+        m = re.search(r"(?m)^## Painel[ \t]*$", texto)
+        if not m:
+            raise ValueError("sem '## Painel' para receber o painel de fases")
+        novo = texto[:m.end()] + "\n\n" + bloco + texto[m.end():]
+    with open(spec, "w", encoding="utf-8") as fh:
+        fh.write(novo)
+
+
+def cronograma(texto, hoje=None):
+    """Linhas do cronograma ordenadas por prazo (sem prazo por último)."""
+    hoje = hoje or datetime.date.today()
+    linhas = []
+    for t in tarefas(texto):
+        sit = {"x": "feita", "~": "replanejada"}.get(t["marca"], "aberta")
+        if sit == "aberta" and t["prazo"] and t["prazo"] < hoje:
+            sit = "ATRASADA"
+        linhas.append({"prazo": t["prazo"], "tarefa": (t["id"] + " " + t["texto"][:70]).strip(), "fase": t["grupo"],
+                       "situacao": sit, "depende": ", ".join(t["depende"])})
+    return sorted(linhas, key=lambda x: (x["prazo"] is None, x["prazo"] or datetime.date.max))
+
+
+def _achados_cronograma(texto):
+    ts = tarefas(texto)
+    por_id = {t["id"]: t for t in ts if t["id"]}
+    ach = []
+    for t in ts:
+        nome = t["id"] or t["texto"][:40]
+        if t["prazo_cru"] and t["prazo"] is None:
+            ach.append(f"tarefa {nome}: prazo '{t['prazo_cru']}' ilegível (use dd/mm/aaaa)")
+        for d in t["depende"]:
+            dep = por_id.get(d)
+            if dep is None:
+                ach.append(f"tarefa {nome} depende de {d}, que não existe nas Tarefas")
+            elif t["prazo"] and dep["prazo"] and t["prazo"] < dep["prazo"]:
+                ach.append(f"tarefa {nome} tem prazo {t['prazo']:%d/%m/%Y}, antes de {d} de quem depende "
+                           f"({dep['prazo']:%d/%m/%Y})")
+    return ach
 
 
 def verificar(spec):
@@ -78,9 +189,9 @@ def verificar(spec):
         if _secao(blocos, nome) is None:
             ach.append(f"seção obrigatória ausente: {nome}")
 
-    painel = _secao(blocos, "Painel") or []
+    sec_painel = _secao(blocos, "Painel") or []
     cab = None
-    for ln in painel:
+    for ln in sec_painel:
         if not ln.strip().startswith("|") or re.match(r"^\|?\s*:?-{3,}", ln.strip()):
             continue
         cel = _celulas(ln)
@@ -109,7 +220,7 @@ def verificar(spec):
         if marca == "~" and tid and tid not in replan:
             ach.append(f"tarefa {tid} replanejada [~] sem linha no Replanejamento que a cite")
 
-    avanco = next((ln for ln in painel if "**Avanço:**" in ln), "")
+    avanco = next((ln for ln in sec_painel if "**Avanço:**" in ln), "")
     for nome, pct in re.findall(r"([A-Za-zÀ-ÿ0-9][\w.\-]*)\s+(\d{1,3})\s*%", avanco):
         chave = next((g for g in grupos if g.split()[0].lower().rstrip("—-") == nome.lower()), None)
         if chave is None:
@@ -138,6 +249,14 @@ def verificar(spec):
     d_ap, d_ac = _data(m_ap.group(1) if m_ap else ""), _data(m_ac.group(1) if m_ac else "")
     if d_ap and d_ac and d_ac < d_ap:
         ach.append(f"aceite escrito em {d_ac:%d/%m/%Y}, antes da aprovação dos requisitos ({d_ap:%d/%m/%Y})")
+
+    escrito, erro = _painel_escrito(texto)
+    if erro:
+        ach.append(erro)
+    elif escrito is not None and escrito != painel(texto):
+        ach.append("painel de fases diferente do que as tarefas geram (% editado à mão ou tarefa marcada sem "
+                   "regenerar) — rode: python tools/plano.py painel <spec.md> --escrever")
+    ach += _achados_cronograma(texto)
     return ach
 
 
@@ -146,6 +265,34 @@ def main(argv):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     except (AttributeError, ValueError):
         pass
+    if len(argv) >= 3 and argv[1] in ("painel", "cronograma"):
+        spec = argv[2]
+        texto = open(spec, encoding="utf-8-sig").read()
+        spec_fonte.validar_unico(texto)
+        if argv[1] == "painel":
+            if "--escrever" in argv:
+                escrever_painel(spec)
+                print(f"painel gravado em {spec}")
+            else:
+                print(painel(texto))
+            return 0
+        linhas = cronograma(texto)
+        if "--csv" in argv:
+            import csv
+            destino = argv[argv.index("--csv") + 1]
+            with open(destino, "w", encoding="utf-8-sig", newline="") as fh:
+                w = csv.writer(fh, delimiter=";")
+                w.writerow(["Prazo", "Tarefa", "Fase", "Situação", "Depende de"])
+                for x in linhas:
+                    w.writerow([f"{x['prazo']:%d/%m/%Y}" if x["prazo"] else "", x["tarefa"], x["fase"],
+                                x["situacao"], x["depende"]])
+            print(f"cronograma gravado em {destino}")
+            return 0
+        print("| Prazo | Tarefa | Fase | Situação | Depende de |\n|---|---|---|---|---|")
+        for x in linhas:
+            p = f"{x['prazo']:%d/%m/%Y}" if x["prazo"] else "—"
+            print(f"| {p} | {x['tarefa']} | {x['fase']} | {x['situacao']} | {x['depende'] or '—'} |")
+        return 0
     if len(argv) < 2 or argv[1] != "verificar":
         print(__doc__)
         return 2

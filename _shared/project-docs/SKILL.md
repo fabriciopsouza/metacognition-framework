@@ -40,7 +40,7 @@ Verifique: entregue a documentação a quem não participou e peça o próximo p
 | Arquivo único | requisitos, aceite, riscos, testes, processo, definições, verificação | `docs/specs/<projeto>/spec.md` |
 | HANDOFF | onde paramos, próximo passo | `python tools/handoff.py` |
 | Glossário | nome oficial de cada coisa | `.agent/rules/00-glossario.md` |
-| Cronograma | datas e dependências | gerado do estado do projeto. **Gerador ainda não existe** (REQ-07 do plano B3, pendente). Hoje, só para repositório no formato do framework, `python tools/projeto_docs.py --repo <repo>` gera o **backlog ordenado por prioridade, sem data nem dependência** |
+| Cronograma | datas e dependências | gerado das Tarefas do `spec.md`: na linha da tarefa, `prazo: dd/mm/aaaa` e `depende: T1`. `python tools/plano.py cronograma <spec.md> [--csv <arquivo>]` (atraso na data de hoje); o painel de fases sai de `python tools/plano.py painel <spec.md> --escrever`. `plano.py verificar` reprova painel editado à mão, prazo ilegível e dependência inexistente ou fora de ordem (ADR-127) |
 | Confirmação e verificação com a área | a área confirma as regras e confere o sistema | `python tools/planilhas_projeto.py gerar <spec.md> --out-dir <pasta>` (Partes I e J) |
 
 **Condicionais:**

@@ -5,6 +5,15 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-127 — Cronograma e painel de fases gerados do arquivo único (28/09/2026)
+
+- `python tools/plano.py painel <spec.md> --escrever`: tabela por fase com feitas/total, barra, % e "onde estamos".
+- `python tools/plano.py cronograma <spec.md> [--csv]`: tarefas por prazo (`prazo:`, `depende:` na linha), com atraso.
+- `plano.py verificar` reprova painel editado à mão ou desatualizado, prazo ilegível e dependência inexistente ou
+  fora de ordem.
+- Fecha o REQ-07 do plano B3, que não tinha tarefa e aparecia como 100%.
+- Prova: `test_plano` (f) e (g).
+
 ### ADR-126 — Perfil farma-anvisa: leitura primária e mapa peça → norma (28/09/2026)
 
 - Leitura primária das IN 134/2022, IN 138/2022, RDC 658/2022, RDC 972/2025 e Guia 33/2020; vigência e URLs em

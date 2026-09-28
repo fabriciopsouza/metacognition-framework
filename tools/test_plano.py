@@ -128,6 +128,58 @@ def main():
                        env=dict(os.environ, PYTHONDONTWRITEBYTECODE="1", PYTHONIOENCODING="utf-8"))
     check("--avisar informa o achado e sai com 0", r.returncode == 0 and "AVISO" in r.stdout, r.stdout)
 
+    print("(f) painel de fases gerado")
+    base_painel = troca("## Painel\n", f"## Painel\n\n{plano.MARCA_INI}\n{plano.painel(BASE)}\n{plano.MARCA_FIM}\n")
+    ach, _ = rodar(base_painel)
+    check("painel gerado e intacto passa", ach == [], ach)
+    check("painel: contagem, barra e onde estamos",
+          "| B1 — primeiro bloco ◀ onde estamos | 1/2 | `██████░░░░░░` | 50% |" in base_painel
+          and "| B2 — segundo bloco | 1/1 | `████████████` | 100% |" in base_painel, plano.painel(BASE))
+    ach, _ = rodar(troca("| 1/2 | `██████░░░░░░` | 50% |", "| 1/2 | `██████░░░░░░` | 80% |", base_painel))
+    check("% editado à mão no painel reprova", any("painel de fases diferente" in a for a in ach), ach)
+    ach, _ = rodar(troca("- [ ] T2 fazer y", "- [x] T2 fazer y — prova: `x.py`", base_painel).replace("B1 50%", "B1 100%"))
+    check("tarefa marcada sem regenerar o painel reprova", any("painel de fases diferente" in a for a in ach), ach)
+    _, p = rodar(troca("B1 50%", "B1 100%", troca("- [ ] T2 fazer y", "- [x] T2 fazer y — prova: `x.py`")))
+    plano.escrever_painel(p)
+    check("--escrever insere o painel e o plano passa", plano.verificar(p) == [], plano.verificar(p))
+    plano.escrever_painel(p)
+    gravado = open(p, encoding="utf-8").read()
+    check("--escrever de novo não duplica", gravado.count(plano.MARCA_INI) == 1)
+    check("--escrever sem linha em branco a mais", f"## Painel\n\n{plano.MARCA_INI}" in gravado
+          and f"{plano.MARCA_FIM}\n**Avanço:**" in gravado, gravado[:300])
+
+    ach, _ = rodar(base_painel + f"\n{plano.MARCA_INI}\nvelho\n{plano.MARCA_FIM}\n")
+    check("par de marcadores duplicado reprova", any("marcadores do painel inválidos" in a for a in ach), ach)
+    ach, _ = rodar(troca("## Painel\n", f"## Painel\n{plano.MARCA_FIM}\nx\n{plano.MARCA_INI}\n"))
+    check("marcadores invertidos reprovam", any("fim antes do início" in a for a in ach), ach)
+    exemplo = troca("### B2 — segundo bloco\n", "### B2 — segundo bloco\n```\n- [ ] T8 exemplo de sintaxe — depende: T99\n```\n")
+    check("tarefa dentro de bloco de código não conta", "T8" not in [t["id"] for t in plano.tarefas(exemplo)]
+          and rodar(exemplo)[0] == [], rodar(exemplo)[0])
+
+    print("(g) cronograma")
+    crono = troca("- [ ] T2 fazer y", "- [ ] T2 fazer y — prazo: 20/10/2026 · depende: T1").replace(
+        "- [x] T1 fazer x — prova: `tools/x.py`", "- [x] T1 fazer x — prova: `tools/x.py` · prazo: 10/10/2026")
+    ach, _ = rodar(crono)
+    check("cronograma coerente passa", ach == [], ach)
+    ach, _ = rodar(crono.replace("depende: T1", "depende: T1."))
+    check("ponto final depois do id não vira dependência inexistente", ach == [], ach)
+    hoje = plano.datetime.date(2026, 10, 25)
+    linhas = plano.cronograma(crono, hoje=hoje)
+    check("ordenado por prazo, sem prazo por último",
+          [x["tarefa"][:2] for x in linhas] == ["T1", "T2", "T3", "T4"], [x["tarefa"] for x in linhas])
+    check("tarefa aberta com prazo vencido sai ATRASADA", linhas[1]["situacao"] == "ATRASADA", linhas[1])
+    linhas2 = plano.cronograma(crono.replace("prazo: 20/10/2026", "prazo: 05/11/2026"), hoje=hoje)
+    check("mudar a data da tarefa muda o cronograma (critério 9)",
+          linhas2[1]["prazo"] == plano.datetime.date(2026, 11, 5) and linhas2[1]["situacao"] == "aberta", linhas2[1])
+    for nome, texto, trecho in [
+        ("prazo ilegível", crono.replace("prazo: 20/10/2026", "prazo: 31/02/2026"), "prazo '31/02/2026' ilegível"),
+        ("dependência inexistente", crono.replace("depende: T1", "depende: T9"), "depende de T9, que não existe"),
+        ("prazo antes da dependência", crono.replace("prazo: 20/10/2026", "prazo: 01/10/2026"),
+         "antes de T1 de quem depende"),
+    ]:
+        ach, _ = rodar(texto)
+        check(f"cronograma: {nome} reprova", any(trecho in a for a in ach), ach)
+
     print("(e) especificações reais deste repositório")
     r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "plano.py"), "verificar"],
                        capture_output=True, text=True, encoding="utf-8", cwd=ROOT,
