@@ -89,7 +89,7 @@
 - ✅ `posture-gate` — posture-gate (fail-closed): release exige evidencia de postura deep-research/squad (discovery+RRC+metodo-senior) atestada pelo qa-critic adversarial (ADR-074 emenda 3)
 - ✅ `premium-tier-export` — Tier premium na export-clean (mesma fonte, mantem camada premium; baseline single-source)
 - 🟡 `prepush-sync-guard` — Guarda de pre-push: evita push sobre base dessincronizada
-- 🟡 `project-docs-standard` — Padrao do conjunto documental de projeto (7 propriedades + conjunto graduado + 4 gates) — PROSA, sem canario proprio
+- 🟡 `project-docs-standard` — Padrao do conjunto documental de projeto (teste de pronto + 7 propriedades + kit essencial gerado do arquivo unico + 4 gates; runbook e quadro de estado em arquivos por assunto) — PROSA, sem canario proprio
 - ✅ `project-onboarding` — Onboarding/wayfinding de projeto por COMPOSICAO (ADR-090): fork greenfield/brownfield no discovery + workflows generate-project-context/document-project (compoem handoff/explorer/docops) + guia user-facing POR-ONDE-COMECAR
 - ✅ `project-token-report` — Relatorio de tokens por projeto (custo de sessao)
 - ✅ `projeto-docs-derivados` — Backlog, cronograma e status report DERIVADOS do estado real — quadro que nao envelhece

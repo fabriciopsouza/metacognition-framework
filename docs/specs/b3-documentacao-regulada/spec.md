@@ -267,7 +267,7 @@ barraria (requisito sem teste, risco alto sem mitigação, teste sem evidência,
 - [x] T15 Discovery pergunta empresa e perfil regulado sem padrão (REQ-08) e grava termo confirmado no nível certo. — discovery (item 0 do método), docops (passo 7), regra global §9, dimensão `biblioteca-consultada` cobrada no arquivo único. `[~]` A semente a partir de conteúdo de projetos foi retirada desta sessão (ver Replanejamento).
 
 ### B3c — Skill `project-docs`
-- [ ] T7 A tabela de 15 documentos vira: kit essencial (TAP, arquivo único, HANDOFF, glossário, cronograma gerado) + kit regulado escalonado por risco.
+- [x] T7 (B3c, 28/09/2026 — `_shared/project-docs/SKILL.md` v2.0.0: 402 → 80 linhas; conteúdo integral em 8 arquivos por assunto, soma conferida linha a linha) A tabela de 15 documentos vira: kit essencial (TAP, arquivo único, HANDOFF, glossário, cronograma gerado, confirmação e verificação com a área) + kit regulado pelo perfil (`regulado.py kit | documento`).
 
 # Mapa de impacto
 

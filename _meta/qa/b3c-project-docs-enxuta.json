@@ -1,0 +1,120 @@
+{
+  "bloco": "b3c-project-docs-enxuta",
+  "papel": "qa_critic",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "veredito": "aprovar",
+  "escopo_paths": [
+    "_shared/project-docs/SKILL.md",
+    "_shared/project-docs/conjunto-graduado-anterior.md",
+    "_shared/project-docs/debito.md",
+    "_shared/project-docs/gates-falhas-e-revisao.md",
+    "_shared/project-docs/origem-e-porte.md",
+    "_shared/project-docs/prompt-de-partida.md",
+    "_shared/project-docs/propriedades.md",
+    "_shared/project-docs/quadro-de-estado.md",
+    "_shared/project-docs/runbook.md",
+    ".agent/skills/docops/SKILL.md",
+    "capabilities.json",
+    "CAPABILITIES.md",
+    "docs/specs/b3-documentacao-regulada/spec.md",
+    "CHANGELOG.md",
+    "_meta/qa/b3c-project-docs-enxuta.json",
+    "_meta/qa/b3c-project-docs-enxuta.md"
+  ],
+  "atestacao": {
+    "agentId": "a7673b2e4bb306443",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic isolado, so leitura. Rodadas anteriores: adb140a4d6431415b (plano), abad89d6d59d56796 (1, FAIL)."
+  },
+  "postura": {
+    "discovery": "plano B3c aprovado pelo dono em 28/09/2026 (todas a; condicao: objetividade, clareza e assertividade); T7 da spec B3",
+    "rrc": "PASSA",
+    "metodo_senior": "aplicado: conteudo reconstruido e comparado com HEAD; cada comando citado conferido com --help"
+  },
+  "resumo": "B3c: project-docs de 402 para 80 linhas, kit essencial gerado do spec.md, conteudo integral em 8 arquivos por assunto. Rodada 2 aprova; ressalva (cronograma sem data) aplicada.",
+  "verificacoes_executadas": [
+    "plano: leitura b sustentada por D3/REQ-02/ADR-122/124/metodo; nao dividir, com precedente (discovery)",
+    "rodada 1: conteudo reconstruido = HEAD; FAIL por ponteiro de cronograma errado",
+    "rodada 2: ponteiro corrigido e verdadeiro; demais comandos conferidos",
+    "check_core_agnostic, check_rules_parity, test_capabilities PASS"
+  ],
+  "problemas": [
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "_shared/project-docs/SKILL.md:cronograma",
+      "descricao": "cronograma apontava para controle-projeto, que nao gera cronograma",
+      "cenario_de_falha": "leitor abre o skill e nao acha gerador"
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "_shared/project-docs/SKILL.md:cronograma",
+      "descricao": "substituto de hoje nao tem data nem dependencia",
+      "cenario_de_falha": "cronograma.csv e backlog ordenado"
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "_shared/project-docs/SKILL.md",
+      "descricao": "orgaos reguladores citados no nucleo (gate agnostico)",
+      "cenario_de_falha": "check_core_agnostic FAIL"
+    }
+  ],
+  "nao_verificado": [],
+  "recomendacao_do_critico": "PASS-COM-RESSALVAS",
+  "data": "2026-09-28T04:00:00Z",
+  "sha_revisado": "f3111b994d495336c5394f9af196c0c18689ab80",
+  "blobs_revisados": {
+    "_shared/project-docs/SKILL.md": "002fe9b86f5f67e2e0d86a2f86899d7bd45fe5e9",
+    "_shared/project-docs/conjunto-graduado-anterior.md": "71bc5b976001ade5bb9af19aa4f66e002b38ff8c",
+    "_shared/project-docs/debito.md": "a5725b60bac2011eb23281ee8bcaa8b26c3df63f",
+    "_shared/project-docs/gates-falhas-e-revisao.md": "bd2903de82ce789923f16618852d13211a1c0c84",
+    "_shared/project-docs/origem-e-porte.md": "cfd2c1e4af020fc6dfa242b97a6c9f6d39065818",
+    "_shared/project-docs/prompt-de-partida.md": "4ae50977464de9408bdc6403aa9fac3a490b5019",
+    "_shared/project-docs/propriedades.md": "db4f4473f17b9fde4b77402a0547f44723b5f2ff",
+    "_shared/project-docs/quadro-de-estado.md": "22b3827b2fb6b86027b0c8fb4511ba4cf5d74a31",
+    "_shared/project-docs/runbook.md": "ad4a5412779a1c11eb1f1945e6a69dbc670f40e2",
+    ".agent/skills/docops/SKILL.md": "30a85c6bc2c2e047385018afe50b78ce82322acb",
+    "capabilities.json": "5e2b7d595c707597f91ade32a6d91c05c8d5657d",
+    "CAPABILITIES.md": "584492a0b8a63d50da40cb1607db9e2ace555161",
+    "docs/specs/b3-documentacao-regulada/spec.md": "c981bc3222705ce6515d386273c4b0ef5d932d36",
+    "CHANGELOG.md": "b776a187ce2c38169675666b54c47d84f4a09991"
+  },
+  "substitui": [
+    {
+      "rodada": 2,
+      "data": "2026-09-28T04:00:00Z",
+      "recomendacao": "aprovar",
+      "sha_revisado": null,
+      "agentId": "a7673b2e4bb306443",
+      "escopo_paths": [
+        "_shared/project-docs/SKILL.md",
+        "_shared/project-docs/conjunto-graduado-anterior.md",
+        "_shared/project-docs/debito.md",
+        "_shared/project-docs/gates-falhas-e-revisao.md",
+        "_shared/project-docs/origem-e-porte.md",
+        "_shared/project-docs/prompt-de-partida.md",
+        "_shared/project-docs/propriedades.md",
+        "_shared/project-docs/quadro-de-estado.md",
+        "_shared/project-docs/runbook.md",
+        ".agent/skills/docops/SKILL.md",
+        "capabilities.json",
+        "CAPABILITIES.md",
+        "docs/specs/b3-documentacao-regulada/spec.md",
+        "CHANGELOG.md",
+        "_meta/qa/b3c-project-docs-enxuta.json",
+        "_meta/qa/b3c-project-docs-enxuta.md"
+      ],
+      "achados_fp": [
+        "ALTA|_shared/project-docs/skill.md:cronograma",
+        "MEDIA|_shared/project-docs/skill.md",
+        "MEDIA|_shared/project-docs/skill.md:cronograma"
+      ],
+      "reinicio": false
+    }
+  ]
+}
