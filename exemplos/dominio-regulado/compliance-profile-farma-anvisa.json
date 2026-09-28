@@ -1,6 +1,6 @@
 {
  "profile": "farma-anvisa",
- "_doc": "Perfil regulado de sistemas computadorizados com impacto em BPF de medicamentos (Brasil). Clonado do padrão do ADR-043; lido por tools/regulado.py (ADR-119). Fontes, datas e marcas de confiança: docs/specs/b3-documentacao-regulada/fontes.md. Andaime, não certificação.",
+ "_doc": "Perfil regulado de sistemas computadorizados com impacto em BPF de medicamentos (Brasil); não cobre alimentos nem outros setores. Perfil de aplicação: não cita empresa. Clonado do padrão do ADR-043; lido por tools/regulado.py (ADR-119). Peça -> artigo, com marca de confiança: farma-anvisa-mapa-normas.md (ao lado; conferido por `regulado.py mapa`). Fontes e vigência: docs/specs/b3-documentacao-regulada/fontes.md, seção 6 (leitura primária de 28/09/2026). Andaime, não certificação.",
  "orgao": "ANVISA",
  "norms_typical": [
   "RDC nº 658/2022 (BPF de medicamentos)",
@@ -14,7 +14,7 @@
   {"padrao": "IN\\s*(n[ºo°.]*\\s*)?47\\s*/\\s*2019", "substituida_por": "IN nº 138/2022"}
  ],
  "categorias_software": {
-  "_doc": "Categorias de software (classificação de mercado GAMP, Guia 33/2020 §7) -> peças exigidas. 'kit_comum' vale para todo projeto; as demais somam a ele.",
+  "_doc": "Categorias de software (classificação de mercado GAMP, Guia 33/2020 itens 7.2 e 7.3, não vinculante) -> peças exigidas. A categoria escalona as peças; não é exigência de norma (as normas vinculantes só distinguem software pronto para uso de sistema sob medida, IN 134/2022 art. 3º, VII e VIII). 'kit_comum' vale para todo projeto; as demais somam a ele.",
   "kit_comum": ["TAP", "especificacao", "HANDOFF", "glossario", "cronograma"],
   "1": ["inventario", "gestao-de-mudanca"],
   "3": ["ERU", "analise-de-risco", "matriz-requisito-teste", "roteiro-de-testes", "relatorio-de-testes", "descricao-do-sistema", "gestao-de-mudanca", "relatorio-de-validacao"],
@@ -24,11 +24,11 @@
  "categoria_padrao_por_sistema": {"SAP": "4"},
  "testes_obrigatorios_com_impacto": ["integridade de dados", "trilha de auditoria", "controle de acesso", "backup/restauração"],
  "controls": {
-  "audit_trail": {"required": true, "fields": ["quem", "quando", "o-que", "valor-anterior", "valor-novo"], "immutable": true},
+  "audit_trail": {"required": "por risco", "_doc": "IN 134/2022 art. 33: a trilha 'deve ser considerada' com base em análise de risco e, se existir, revisada regularmente; o registro de quem insere, altera, confirma ou exclui, com data e hora (art. 39), é incondicional", "fields": ["quem", "quando", "o-que", "valor-anterior", "valor-novo"], "immutable": true},
   "hitl": {"sufficient_when": "liberação do sistema e mudança com impacto em BPF aprovadas pelo dono do processo e pela Qualidade"},
   "retention": {"min_period": "definir-por-norma", "default_hint": "confirmar com a Qualidade"},
-  "e_signature": {"required": true, "binds": ["identidade", "intencao", "timestamp"]},
-  "data_integrity": {"principles_hint": "dado atribuível, legível, contemporâneo, original e exato — a sigla ALCOA+ não foi localizada no texto oficial (fontes.md, lacuna 3)"},
+  "e_signature": {"required": "quando usada", "_doc": "IN 134/2022 art. 41: registros 'podem ser assinados eletronicamente'; se usada, art. 42 (mesmo impacto da manuscrita, ligada ao registro, com data e hora); liberação de lote por sistema exige assinatura eletrônica (art. 43, § 2º)", "binds": ["identidade", "intencao", "timestamp"]},
+  "data_integrity": {"principles_hint": "dado atribuível, legível, contemporâneo, original e exato. A sigla ALCOA+ e as palavras 'atribuível' e 'contemporâneo' não aparecem no texto oficial; os atributos estão na IN 134/2022 (arts. 26, 28, 32, 39, 45) e na RDC 658/2022 (arts. 116, 124, 125)"},
   "validation": {"risk_based": true, "evidence": ["ERU", "análise de risco", "roteiro de testes", "resultado com evidência", "aprovação"]}
  },
  "documentos": {
