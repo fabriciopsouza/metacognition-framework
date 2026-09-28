@@ -166,7 +166,7 @@ def main(argv):
             if miss_cov:
                 print(f"      sem declaração em '## Cobertura exigida pelo pedido': {miss_cov}")
             if miss_val:
-                print(f"      sem critério binário no validation.md: {miss_val}")
+                print(f"      sem critério binário na Parte B (ou no validation.md, formato antigo): {miss_val}")
         else:
             print(f"PASS {rel}  (quantificadores {sorted(quant)} cobertos em coverage + validation)")
     print("-" * 50)

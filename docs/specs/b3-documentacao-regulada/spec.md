@@ -256,7 +256,7 @@ barraria (requisito sem teste, risco alto sem mitigação, teste sem evidência,
 
 ### B3d — Método único de projeto (depende de D7/D8)
 - [x] T8 (ADR-121; prova: `tools\test_desenho_processo.py` (e)) `guia\METODO-DE-PROJETO.md`: fluxo numerado (elicitação → confirmação da área → especificação → desenho do processo → testes e evidências → liberação → operação), onde mora cada peça; citado no `CLAUDE.md` e no início de sessão.
-- [x] T9 (Parte H do arquivo único, ADR-121) Parte Processo na especificação (passos, papéis, regras, gatilhos), a partir do mapeamento de processo existente.
+- [x] T9 (Parte H do arquivo único, ADR-121) Parte Processo na especificação (passos, papéis, regras, gatilhos), a partir do mapeamento de processo existente. — prova: `tools/test_desenho_processo.py` (PR #168)
 - [x] T10 (`tools\desenho_processo.py`; prova: `test_desenho_processo` e 20/20 mutações mortas; raias verticais por papel e macroações acima de 15 passos, decisões do dono de 26/09) Gerador especificação → desenho do processo em HTML de revisão, no padrão do modelo de CAPA, com papéis genéricos no núcleo; o docx controlado sai do `tools/gen_exec_doc.py` existente.
 - [x] T11 (`tools\doc_intake.py evidencia registrar | verificar`; prova: `tools\test_evidencia.py`) Manifesto de evidência de desenvolvimento (REQ-15) com `tools/doc_intake.py`; verificador de existência e sha256.
 
@@ -264,7 +264,7 @@ barraria (requisito sem teste, risco alto sem mitigação, teste sem evidência,
 - [x] T12 Estrutura `docs\_private\conhecimento\` (perfis, empresas, `INDICE-PROJETOS.md`) e modelo de `DICIONARIO.md`. — ADR-120: modelo agnóstico em `exemplos\conhecimento\_modelo\` (termo, consulta, fato, pesquisa, runbook; empresa → área de negócio → assunto); instância vazia em `docs\_private\conhecimento\`.
 - [x] T13 Verificador do dicionário e do índice (critérios 17 e 18), com sabotagem. — `tools\conhecimento.py verificar | vencidos`; prova: `tools\test_conhecimento.py` e 38/38 mutações mortas.
 - [x] T14 `knowledge_catalog` indexa o conhecimento (critério 19). — `--recall --conhecimento <raiz>`, lido ao vivo; sem a opção nada é carregado; retrato sai com a data. Prova: `test_conhecimento` (e).
-- [x] T15 Discovery pergunta empresa e perfil regulado sem padrão (REQ-08) e grava termo confirmado no nível certo. — discovery (item 0 do método), docops (passo 7), regra global §9, dimensão `biblioteca-consultada` cobrada no arquivo único. `[~]` A semente a partir de conteúdo de projetos foi retirada desta sessão (ver Replanejamento).
+- [x] T15 Discovery pergunta empresa e perfil regulado sem padrão (REQ-08) e grava termo confirmado no nível certo. — discovery (item 0 do método), docops (passo 7), regra global §9, dimensão `biblioteca-consultada` cobrada no arquivo único. `[~]` A semente a partir de conteúdo de projetos foi retirada desta sessão (ver Replanejamento). — prova: `tools/test_spec_unico.py` caso (j) e `tools/test_conhecimento.py` (PR #163)
 
 ### B3c — Skill `project-docs`
 - [x] T7 (B3c, 28/09/2026 — `_shared/project-docs/SKILL.md` v2.0.0: 402 → 80 linhas; conteúdo integral em 8 arquivos por assunto, soma conferida linha a linha) A tabela de 15 documentos vira: kit essencial (TAP, arquivo único, HANDOFF, glossário, cronograma gerado, confirmação e verificação com a área) + kit regulado pelo perfil (`regulado.py kit | documento`).
@@ -275,12 +275,12 @@ barraria (requisito sem teste, risco alto sem mitigação, teste sem evidência,
 |---|---|---|
 | hooks | não previsto | |
 | scripts e gates | sim: `regulado.py` novo; `spec_fonte.py` ganha partes F, G, H, I e J; `planilhas_projeto.py` novo (B3a-2) | B3a-2: ✅ |
-| canários | sim: novo canário do verificador | |
-| README / guias | sim: `guia/` com o kit regulado e `guia/METODO-DE-PROJETO.md` | |
-| `CLAUDE.md` | sim: 1 linha de ponteiro para o método (dieta do ADR-080) | |
-| site | sim: contagem de capacidades | |
-| CHANGELOG | sim | |
-| índice de capacidades | sim | |
+| canários | sim: novo canário do verificador | ✅ test_regulado, test_desenho_processo, test_evidencia, test_planilhas_projeto, test_documento_regulado |
+| README / guias | sim: `guia/` com o kit regulado e `guia/METODO-DE-PROJETO.md` | ✅ guia/METODO-DE-PROJETO.md (ADR-121) e project-docs enxuta (B3c) |
+| `CLAUDE.md` | sim: 1 linha de ponteiro para o método (dieta do ADR-080) | ✅ ponteiro ao método (ADR-121, PR #168) |
+| site | sim: contagem de capacidades | ✅ contagem de capacidades e canários atualizada a cada PR (test_marketing_claims) |
+| CHANGELOG | sim | ✅ uma entrada por bloco (ADR-119 a ADR-124, B3c) |
+| índice de capacidades | sim | ✅ registros por bloco (test_capabilities) |
 | links e caminhos | modelos do MRP citados por caminho absoluto | |
 
 # Replanejamento

@@ -219,21 +219,21 @@ por armazenamento separado (D1) `[INFERIDO]`.
 - [x] T2 `knowledge_catalog.py --recall --empresa`. — prova: idem (b)
 - [x] T3 `tools/test_conhecimento_isolamento.py` (duas empresas falsas); mutação declarada em `capabilities.json` morta.
 - [x] T5 D1: Natulab em `conhecimento-natulab`, submódulo de `conhecimento-negocio` (decisão b); marcador e `bibliotecas`. — prova: `test_conhecimento_isolamento` (emenda 2)
-- [x] T6 D2: `publicar` e hash em `assuntos/_identificadores`.
-- [x] T7 D3: `--recall` omite relatório que cita outra empresa.
-- [x] T8 D5: versão do S/4HANA na biblioteca da Natulab.
-- [x] T4 modelo com `assuntos/` e `## Identificadores`; README do modelo e da instância; emenda 1 do ADR-120; regra global §9; skills discovery e docops; guia do método; banco de dimensões; modelo de arquivo único; site.
+- [x] T6 D2: `publicar` e hash em `assuntos/_identificadores`. — prova: `tools/test_conhecimento_isolamento.py`, seção emenda 2 (PR #173)
+- [x] T7 D3: `--recall` omite relatório que cita outra empresa. — prova: `tools/test_conhecimento_isolamento.py`, relatório filtrado (PR #173)
+- [x] T8 D5: versão do S/4HANA na biblioteca da Natulab. — prova: biblioteca externa com o `conhecimento.json` da natulab (PR #173)
+- [x] T4 modelo com `assuntos/` e `## Identificadores`; README do modelo e da instância; emenda 1 do ADR-120; regra global §9; skills discovery e docops; guia do método; banco de dimensões; modelo de arquivo único; site. — prova: `tools/check_rules_parity.py` PASS (PR #171)
 
 # Mapa de impacto
 | Item | Muda? | Situação |
 |---|---|---|
 | hooks | não | |
-| scripts e gates | sim: `conhecimento.py`, `knowledge_catalog.py` | |
-| canários | sim: canário novo; `test_conhecimento` continua | |
-| README / guias | sim: README do modelo; regra global §9; skills discovery e docops | |
-| site | sim se a contagem de canários mudar | |
-| CHANGELOG | sim | |
-| índice de capacidades | sim: registro da capacidade | |
+| scripts e gates | sim: `conhecimento.py`, `knowledge_catalog.py` | ✅ conhecimento.py, knowledge_catalog.py (PR #171, #173); squad_gate aceita remoção revisada |
+| canários | sim: canário novo; `test_conhecimento` continua | ✅ test_conhecimento_isolamento (novo); test_conhecimento atualizado |
+| README / guias | sim: README do modelo; regra global §9; skills discovery e docops | ✅ README do modelo e da instância; regra global §9; skills discovery e docops |
+| site | sim se a contagem de canários mudar | ✅ contagem atualizada (test_marketing_claims) |
+| CHANGELOG | sim | ✅ emendas 1 e 2 do ADR-120 |
+| índice de capacidades | sim: registro da capacidade | ✅ isolamento-entre-empresas |
 | links e caminhos | não | |
 
 # Replanejamento

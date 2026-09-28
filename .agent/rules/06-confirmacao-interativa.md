@@ -11,6 +11,10 @@ natureza da mudança), **as decisões em aberto** com as alternativas reais e um
 recomendação, e **o que fica de fora**. Plano sem decisão em aberto declarada é
 plano incompleto — se o agente decidiu sozinho, ele diz o que decidiu.
 
+**Onde o plano vive:** no **Painel** do arquivo único da especificação (`docs/specs/<projeto>/spec.md`). A resposta
+no chat traz o status curto e o caminho do painel. O painel é verificado por `python tools/plano.py verificar`, que
+reprova, entre outros casos, decisão pendente sem quem age e tarefa feita sem prova (ADR-125).
+
 **Interativo significa conversa.** Pergunta feita ao dono, respondida no diálogo.
 Entregar um documento com perguntas abertas **não** é elicitar: é transferir o
 trabalho de volta e chamar de consulta.

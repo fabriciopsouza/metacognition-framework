@@ -2249,6 +2249,26 @@
    }
   },
   {
+   "id": "verificador-do-plano",
+   "title": "Verificador do plano no arquivo unico: secao obrigatoria, decisao pendente sem quem age, tarefa feita sem prova, % que nao bate, mapa de impacto sem situacao, aceite antes da aprovacao",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/plano.py",
+   "test": "tools/test_plano.py",
+   "adr": "docs/adr/125-verificador-do-plano-no-arquivo-unico.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": ["plano", "painel", "especificacao"],
+   "note": "Barra neste repo (test_plano roda sobre todas as specs reais); --avisar nos outros (D1 do plano, 25/09).",
+   "mutacao": {
+    "arquivo": "tools/plano.py",
+    "de": "        if marca == \"x\" and not _PROVA.search(ln):",
+    "para": "        if False:",
+    "canario": "tools/test_plano.py",
+    "espera": "tarefa feita sem prova"
+   }
+  },
+  {
    "id": "documentos-do-kit-regulado",
    "title": "Documentos do kit regulado gerados com o modelo do perfil (ex.: ERU, relatorio de validacao, prontidao no perfil farma): lacuna reprova sem gravar; codigo do documento nunca inventado",
    "status": "PROVIDES",
