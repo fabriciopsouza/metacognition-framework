@@ -1,0 +1,133 @@
+{
+  "bloco": "b3a3-documentos-regulados",
+  "papel": "qa_critic",
+  "rodada": 3,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "veredito": "aprovar",
+  "escopo_paths": [
+    "CAPABILITIES.md",
+    "CHANGELOG.md",
+    "capabilities.json",
+    "docs/adr/124-documentos-do-kit-regulado-gerados-pelo-perfil.md",
+    "docs/specs/_template-spec-unico/spec.md",
+    "docs/specs/b3-documentacao-regulada/spec.md",
+    "exemplos/dominio-regulado/compliance-profile-farma-anvisa.json",
+    "guia/METODO-DE-PROJETO.md",
+    "guia/web/index.html",
+    "tools/documento_regulado.py",
+    "tools/mudancas_spec.py",
+    "tools/regulado.py",
+    "tools/test_documento_regulado.py",
+    "_meta/qa/b3a3-documentos-regulados.json",
+    "_meta/qa/b3a3-documentos-regulados.md"
+  ],
+  "atestacao": {
+    "agentId": "a4e1e3c6b8d6d9ded",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic isolado, segundo plano, so leitura; mutacoes em %TEMP%. Rodadas anteriores: ab2076577416856cd (1, FAIL), a1e9d873a50c85156 (2)."
+  },
+  "postura": {
+    "discovery": "docs/specs/b3-documentacao-regulada/spec.md (REQ-09 a REQ-12, criterios 10 a 13) e decisoes do dono de 27 e 28/09/2026",
+    "rrc": "PASSA",
+    "metodo_senior": "aplicado: criterios da spec reproduzidos; parsing adversarial; mutacoes"
+  },
+  "resumo": "ADR-124: documentos do kit regulado com modelo do perfil (farma emite ERU, relatorio de validacao, prontidao); mudanca e versao geradas. Rodada 3 aprova; ressalvas tratadas com caso de teste.",
+  "verificacoes_executadas": [
+    "rodada 1: FAIL por REQ sumindo da ERU; corrigido na causa",
+    "rodada 2: CRITICA e enum fechados com mutacao morta",
+    "rodada 3: repetido e gravacao confirmados; mutacao morta",
+    "suite completa (autor): 97 PASS, 1 SKIP, 0 FAIL de 98"
+  ],
+  "problemas": [
+    {
+      "severidade": "CRITICA",
+      "estado": "corrigido",
+      "local": "tools/documento_regulado.py:montar",
+      "descricao": "REQ com descricao vazia fazia o seguinte sumir da ERU",
+      "cenario_de_falha": "REQ-02 vazio -> REQ-03 ausente, PASS"
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/documento_regulado.py:desvios",
+      "descricao": "sinonimos de reprovado escapavam do desvio",
+      "cenario_de_falha": "nao aprovado sem desvio"
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/documento_regulado.py:requisitos",
+      "descricao": "REQ repetido em silencio sem secao de testes",
+      "cenario_de_falha": "doc-requisitos com REQ duplicado -> PASS"
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/regulado.py:duplicados_reqs",
+      "descricao": "regra de repetido duplicada em dois arquivos",
+      "cenario_de_falha": "mudanca futura so num lado"
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "tools/documento_regulado.py:gerar",
+      "descricao": "falha de gravacao virava traceback, sem caso de teste",
+      "cenario_de_falha": "arquivo aberto no editor"
+    }
+  ],
+  "nao_verificado": [],
+  "recomendacao_do_critico": "PASS-COM-RESSALVAS",
+  "data": "2026-09-28T02:00:00Z",
+  "sha_revisado": "7ad6a24c1c5b105ec0cc71518d7768cd3564e964",
+  "blobs_revisados": {
+    "CAPABILITIES.md": "e513701fc45d5a329258d7ba2aff615374bfe617",
+    "CHANGELOG.md": "401e59715d04caa7bfbb7b9d51574feabadb8d75",
+    "capabilities.json": "d7cd5dabc0a17767476280288a7d1e52a62a8b91",
+    "docs/adr/124-documentos-do-kit-regulado-gerados-pelo-perfil.md": "3ec754b88adab6a879dc3b13fd0a991ef8c5b4a6",
+    "docs/specs/_template-spec-unico/spec.md": "062a9e2a1e7a82c586a86a24f4957cdb3972ee96",
+    "docs/specs/b3-documentacao-regulada/spec.md": "dedd7cacc051688c6cf53a2680b4b1099b54167e",
+    "exemplos/dominio-regulado/compliance-profile-farma-anvisa.json": "ed9dce9c6d07b8e41d8ef338625bb621b65d8446",
+    "guia/METODO-DE-PROJETO.md": "c040ffd6ddf4a7c03ce1ec444211758e678e36ca",
+    "guia/web/index.html": "3ea785ecbdc9af3510c71e9d0e43fdbf4e93dccb",
+    "tools/documento_regulado.py": "d9d59125669413e9c8eb86ef37ff08e90b8c00f5",
+    "tools/mudancas_spec.py": "37036a837b5cc1bc792b8e6545a0d3631ec1f3e6",
+    "tools/regulado.py": "306b9e153c53702e8216e4d8e299aa547f418115",
+    "tools/test_documento_regulado.py": "1bf3e428efc9fb5db083a83a4249e1054f4eab80"
+  },
+  "substitui": [
+    {
+      "rodada": 3,
+      "data": "2026-09-28T02:00:00Z",
+      "recomendacao": "aprovar",
+      "sha_revisado": null,
+      "agentId": "a4e1e3c6b8d6d9ded",
+      "escopo_paths": [
+        "CAPABILITIES.md",
+        "CHANGELOG.md",
+        "capabilities.json",
+        "docs/adr/124-documentos-do-kit-regulado-gerados-pelo-perfil.md",
+        "docs/specs/_template-spec-unico/spec.md",
+        "docs/specs/b3-documentacao-regulada/spec.md",
+        "exemplos/dominio-regulado/compliance-profile-farma-anvisa.json",
+        "guia/METODO-DE-PROJETO.md",
+        "guia/web/index.html",
+        "tools/documento_regulado.py",
+        "tools/mudancas_spec.py",
+        "tools/regulado.py",
+        "tools/test_documento_regulado.py",
+        "_meta/qa/b3a3-documentos-regulados.json",
+        "_meta/qa/b3a3-documentos-regulados.md"
+      ],
+      "achados_fp": [
+        "BAIXA|tools/documento_regulado.py:gerar",
+        "CRITICA|tools/documento_regulado.py:montar",
+        "MEDIA|tools/documento_regulado.py:desvios",
+        "MEDIA|tools/documento_regulado.py:requisitos",
+        "MEDIA|tools/regulado.py:duplicados_reqs"
+      ],
+      "reinicio": false
+    }
+  ]
+}

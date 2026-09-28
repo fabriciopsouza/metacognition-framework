@@ -31,6 +31,29 @@
   "data_integrity": {"principles_hint": "dado atribuível, legível, contemporâneo, original e exato — a sigla ALCOA+ não foi localizada no texto oficial (fontes.md, lacuna 3)"},
   "validation": {"risk_based": true, "evidence": ["ERU", "análise de risco", "roteiro de testes", "resultado com evidência", "aprovação"]}
  },
- "wires_to": ["high-stakes-gate", "tools/regulado.py"],
+ "documentos": {
+  "_doc": "Documentos que este perfil emite por `python tools/regulado.py documento <tipo> <spec.md> --out-dir <pasta>` (ADR-124). O motor é neutro; título, seções e rótulos vêm daqui. Código do documento controlado vem da Qualidade (Parte A, `### Documentos controlados`), nunca é inventado.",
+  "eru": {
+   "titulo": "Especificação de Requisitos do Usuário (ERU)",
+   "secoes": ["identificacao", "documento_controlado", "requisitos", "aprovacao"],
+   "requisito_campos": ["Criticidade em BPF", "Origem"],
+   "aprovacao": ["Dono do processo", "Garantia da Qualidade"],
+   "nota_aprovacao": "A aprovação formal acontece no sistema de documentos controlados da Qualidade."
+  },
+  "relatorio-de-validacao": {
+   "titulo": "Relatório de Validação",
+   "secoes": ["identificacao", "documento_controlado", "requisitos", "riscos", "testes", "desvios", "aprovacao"],
+   "requisito_campos": ["Criticidade em BPF", "Origem"],
+   "aprovacao": ["Dono do processo", "Garantia da Qualidade"],
+   "nota_aprovacao": "A aprovação formal acontece no sistema de documentos controlados da Qualidade."
+  },
+  "checklist-de-prontidao": {
+   "titulo": "Checklist de prontidão para operação",
+   "secoes": ["identificacao", "documento_controlado", "prontidao", "aprovacao"],
+   "itens": ["Descrição do sistema", "POPs", "Treinamento", "Controle de acesso", "Backup e restauração", "Continuidade", "Revisão periódica"],
+   "aprovacao": ["Dono do processo", "Garantia da Qualidade"]
+  }
+ },
+ "wires_to": ["high-stakes-gate", "tools/regulado.py", "tools/documento_regulado.py"],
  "note": "Primeiro perfil do kit regulado, não o padrão (D1, 26/09/2026): cada projeto declara o seu. A norma concreta e o código de documento controlado vêm da Qualidade da empresa."
 }

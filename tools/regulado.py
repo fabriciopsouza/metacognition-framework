@@ -18,6 +18,7 @@ Uso:
     python tools/regulado.py verificar <spec.md> --planejamento   # durante o projeto: aceita teste não executado
     python tools/regulado.py matriz <spec.md>                     # requisito -> risco -> teste -> evidência (md)
     python tools/regulado.py kit <spec.md>                        # peças exigidas (exit 1 sem registro)
+    python tools/regulado.py documento <tipo> <spec.md> --out-dir <pasta> [--rascunho]   # documento do perfil (ADR-124)
 """
 import datetime
 import json
@@ -143,6 +144,11 @@ def registro(d):
     return ach
 
 
+def duplicados_reqs(reqs):
+    """REQs definidos mais de uma vez (regra única, usada também pelos documentos do perfil)."""
+    return sorted({r for r in reqs if reqs.count(r) > 1})
+
+
 def verificar(spec, planejamento=False):
     d = carregar(spec)
     ach = registro(d)
@@ -153,7 +159,7 @@ def verificar(spec, planejamento=False):
         ach.append("nenhum requisito numerado na Parte A (formato `- REQ-01: ...`)")
     for r in sorted(d["reqs_citados"] - set(d["reqs"])):
         ach.append(f"{r} citado na Parte A sem linha de definição (`- {r}: ...`)")
-    for r in sorted({r for r in d["reqs"] if d["reqs"].count(r) > 1}):
+    for r in duplicados_reqs(d["reqs"]):
         ach.append(f"{r} definido mais de uma vez na Parte A")
     if not d["riscos"]:
         ach.append("Parte F sem risco registrado")
@@ -242,6 +248,9 @@ def main(argv):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     except (AttributeError, ValueError):
         pass
+    if len(argv) > 1 and argv[1] == "documento":
+        import documento_regulado  # noqa: E402  (B3a-3, ADR-124: documento com modelo vindo do perfil)
+        return documento_regulado.main(argv[2:])
     flags = [a for a in argv[1:] if a.startswith("--")]
     args = [a for a in argv[1:] if not a.startswith("--")]
     if (len(args) != 2 or args[0] not in ("verificar", "matriz", "kit")
