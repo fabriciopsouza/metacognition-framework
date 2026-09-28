@@ -2259,7 +2259,7 @@
    "cross_ai": false,
    "enforcement": "fail-closed",
    "tags": ["plano", "painel", "especificacao"],
-   "note": "Barra neste repo (test_plano roda sobre todas as specs reais); --avisar nos outros (D1 do plano, 25/09).",
+   "note": "Barra neste repo (test_plano roda sobre todas as specs reais); --avisar nos outros (D1 do plano, 25/09). ADR-127: `plano.py painel --escrever` gera o painel de fases (contagem, barra, %, onde estamos) entre marcadores e `plano.py cronograma [--csv]` gera o cronograma das tarefas (prazo:, depende:); o verificador reprova painel divergente, prazo ilegivel e dependencia inexistente ou fora de ordem.",
    "mutacao": {
     "arquivo": "tools/plano.py",
     "de": "        if marca == \"x\" and not _PROVA.search(ln):",

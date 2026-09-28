@@ -8,7 +8,18 @@
 
 ## Painel
 
-**Avanço:** discovery ✅ · requisitos aprovados pelo dono (26/09) · execução: B3a-1 ✅ (PR #161) · B3e ✅ (PR #163) · B3d ✅ (PR #168) · B3a-2 ✅ (PR #170) · B3a-3 ✅ (PR #174) · B3c ✅ (PR #175) · B2b ✅ (PR #176) · B3b em revisão (ADR-126) · depois: perfil ANP (`trabalhos.py`, `perfil-anp`)
+<!-- painel:inicio -->
+| Fase | Feitas | Andamento | % |
+|---|---|---|---|
+| B3a — Kit neutro e ferramentas | 6/6 | `████████████` | 100% |
+| B3b — Perfil farma/ANVISA (fora do núcleo) | 1/1 | `████████████` | 100% |
+| B3d — Método único de projeto (depende de D7/D8) | 4/4 | `████████████` | 100% |
+| B3e — Conhecimento contextual reutilizável (D9) | 4/4 | `████████████` | 100% |
+| B3f — Acompanhamento de projeto (REQ-07) | 1/1 | `████████████` | 100% |
+| B3c — Skill `project-docs` | 1/1 | `████████████` | 100% |
+<!-- painel:fim -->
+
+**Avanço:** discovery ✅ · requisitos aprovados pelo dono (26/09) · execução: B3a-1 ✅ (PR #161) · B3e ✅ (PR #163) · B3d ✅ (PR #168) · B3a-2 ✅ (PR #170) · B3a-3 ✅ (PR #174) · B3c ✅ (PR #175) · B2b ✅ (PR #176) · B3b ✅ (PR #177) · B3f em revisão (ADR-127) · depois: perfil ANP (`trabalhos.py`, `perfil-anp`)
 
 | # | Assunto | Situação | Quem age | Resultado / próximo |
 |---|---|---|---|---|
@@ -174,7 +185,7 @@ barraria (requisito sem teste, risco alto sem mitigação, teste sem evidência,
 | 6 | Recorte (Parte A) + REQ-08: impacto em BPF | o discovery pergunta e registra o impacto em BPF de todos os projetos; os que têm impacto recebem o kit regulado, os demais o comum; sem a resposta registrada, o verificador não libera o kit | ☐ |
 | 7 | REQ-02: nenhuma peça de auditoria é escrita à mão | cada peça sai de um gerador; editar a peça gerada e gerar de novo desfaz a edição (canário) | ☐ |
 | 8 | REQ-03: matriz gerada | projeto de teste com 3 REQ, 2 RISCO, 4 TESTE gera a matriz completa; REQ sem teste aparece como lacuna | ☐ |
-| 9 | REQ-07: cronograma sai do estado do projeto | cronograma gerado do `estado.json` do pacote de controle de projeto; alterar uma data no estado muda o cronograma | ☐ |
+| 9 | REQ-07: cronograma sai do estado do projeto | cronograma gerado das Tarefas do `spec.md` (`prazo:` e `depende:` na linha; ver Replanejamento de 28/09); alterar uma data na tarefa muda o cronograma | ✅ `test_plano` (g) |
 | 10 | REQ-09: relatório de validação gerado | contém requisitos, riscos, testes, desvios e campos de aprovação (dono do processo + Qualidade) | ✅ `test_documento_regulado` (ADR-124) |
 | 11 | REQ-10: checklist de prontidão | itens: descrição do sistema, POPs, treinamento, acesso, backup/restauração, continuidade, revisão periódica, cada um com situação e onde está | ✅ `test_documento_regulado` (ADR-124) |
 | 12 | REQ-11: ERU gerada da Parte A | todo REQ da Parte A aparece na ERU com identificador, criticidade e origem; campo do código do documento fica vazio até a Qualidade preencher | ✅ `test_documento_regulado` (ADR-124) |
@@ -266,6 +277,9 @@ barraria (requisito sem teste, risco alto sem mitigação, teste sem evidência,
 - [x] T14 `knowledge_catalog` indexa o conhecimento (critério 19). — `--recall --conhecimento <raiz>`, lido ao vivo; sem a opção nada é carregado; retrato sai com a data. Prova: `test_conhecimento` (e).
 - [x] T15 Discovery pergunta empresa e perfil regulado sem padrão (REQ-08) e grava termo confirmado no nível certo. — discovery (item 0 do método), docops (passo 7), regra global §9, dimensão `biblioteca-consultada` cobrada no arquivo único. `[~]` A semente a partir de conteúdo de projetos foi retirada desta sessão (ver Replanejamento). — prova: `tools/test_spec_unico.py` caso (j) e `tools/test_conhecimento.py` (PR #163)
 
+### B3f — Acompanhamento de projeto (REQ-07)
+- [x] T16 (ADR-127 — prova: `tools/test_plano.py` (f) e (g)) Cronograma e painel de fases gerados das Tarefas do arquivo único (`plano.py cronograma | painel`), com verificador: painel editado à mão, prazo ilegível, dependência inexistente ou fora de ordem. Critério 9 adaptado: a fonte é a linha da tarefa no `spec.md` (D2 do plano modo planejado), não um `estado.json`. — prazo: 29/09/2026
+
 ### B3c — Skill `project-docs`
 - [x] T7 (B3c, 28/09/2026 — `_shared/project-docs/SKILL.md` v2.0.0: 402 → 80 linhas; conteúdo integral em 8 arquivos por assunto, soma conferida linha a linha) A tabela de 15 documentos vira: kit essencial (TAP, arquivo único, HANDOFF, glossário, cronograma gerado, confirmação e verificação com a área) + kit regulado pelo perfil (`regulado.py kit | documento`).
 
@@ -274,7 +288,7 @@ barraria (requisito sem teste, risco alto sem mitigação, teste sem evidência,
 | Item | Muda? | Situação |
 |---|---|---|
 | hooks | não previsto | |
-| scripts e gates | sim: `regulado.py` novo; `spec_fonte.py` ganha partes F, G, H, I e J; `planilhas_projeto.py` novo (B3a-2) | B3a-2: ✅ |
+| scripts e gates | sim: `regulado.py` novo; `spec_fonte.py` ganha partes F, G, H, I e J; `planilhas_projeto.py` novo (B3a-2); `plano.py` ganha `painel` e `cronograma` (B3f) | B3a-2: ✅ · B3f: ✅ |
 | canários | sim: novo canário do verificador | ✅ test_regulado (inclui o mapa peça → norma, B3b), test_desenho_processo, test_evidencia, test_planilhas_projeto, test_documento_regulado |
 | README / guias | sim: `guia/` com o kit regulado e `guia/METODO-DE-PROJETO.md` | ✅ guia/METODO-DE-PROJETO.md (ADR-121), project-docs enxuta (B3c) e `exemplos/dominio-regulado/README.md` com o perfil farma e a regra do mapa (B3b) |
 | `CLAUDE.md` | sim: 1 linha de ponteiro para o método (dieta do ADR-080) | ✅ ponteiro ao método (ADR-121, PR #168) |
@@ -297,6 +311,7 @@ barraria (requisito sem teste, risco alto sem mitigação, teste sem evidência,
 | 27/09/2026 | REQ-05 | VALORES POR TIPO vira VALORES POR CATEGORIA, opcional, com as categorias declaradas no projeto | as colunas do modelo são tipos de registro de um sistema | dono (27/09): "ok, ajustar e a skill adapta" |
 | 27/09/2026 | B3a-3, B3c, B2b, B3b | ERU e documentos regulados saem do PERFIL farma/alimentos (motor neutro); skill enxuta e verificador do plano são gerais; perfil ANVISA é de aplicação, só farma/alimentos, sem citar empresa; virão perfis ANP e outros | o núcleo não pode carregar documento de um tipo de regulação | dono (27/09) |
 | 28/09/2026 | REQ-09, REQ-11, T5, T5b | desvios em `### Desvios` (Parte G); código do documento em `### Documentos controlados` (Parte A); atributos dos requisitos em `### Atributos dos requisitos`; motor `regulado.py documento` com modelo no perfil | decisões D1–D3 do B3a-3 | dono (28/09): "todas a" |
+| 28/09/2026 | REQ-07, critério 9, B3f | o cronograma sai das Tarefas do `spec.md` (`prazo:`, `depende:`), não de um `estado.json`; painel de fases gerado e verificado; o REQ-07 não tinha tarefa e o painel o escondia como 100% — ganhou a T16 | fonte única do arquivo único (ADR-117; D2 do plano modo planejado) | dono (28/09): D5 "a" — "cronograma e painel por fase gerados do spec.md, com verificador" |
 | 28/09/2026 | T6, T5b | o perfil `farma-anvisa` cobre só medicamentos; alimentos saem (entram só se houver projeto); o próximo perfil é ANP; a trilha de auditoria passa a "por risco" e a assinatura eletrônica a "quando usada", conforme o texto da IN 134 | leitura primária: IN 134 art. 33 ("deve ser considerada") e art. 41 ("podem ser assinados") | dono (28/09): "vamos começar com o que temos: medicamentos. Depois será ANP, não alimentos" · "D2 farma" |
 | 27/09/2026 | REQ-05, REQ-06 | toda gravação cria vN+1, move a anterior para `_obsoleto/`, compara e só então apaga a anterior; divergência reprova e restaura a anterior | regerar apagaria as respostas da área | dono (27/09) |
 

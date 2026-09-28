@@ -1,0 +1,51 @@
+{
+  "bloco": "b3f-cronograma-painel",
+  "papel": "qa_critic",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "veredito": "aprovar",
+  "escopo_paths": [
+    "tools/plano.py",
+    "tools/test_plano.py",
+    "docs/specs/b3-documentacao-regulada/spec.md",
+    "_shared/project-docs/SKILL.md",
+    "docs/adr/127-cronograma-e-painel-de-fases-gerados.md",
+    "CHANGELOG.md",
+    "capabilities.json",
+    "_meta/qa/b3f-cronograma-painel.json",
+    "_meta/qa/b3f-cronograma-painel.md"
+  ],
+  "atestacao": {
+    "agentId": "a4e62c12c7ca1ba26",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic isolado, so leitura; rodada 1 (acf6de8e52082714f) FAIL corrigido; mutacoes em copia no scratchpad."
+  },
+  "postura": {
+    "discovery": "docs/specs/b3-documentacao-regulada/spec.md REQ-07/criterio 9; decisoes D5 e D6 do dono em 28/09/2026",
+    "rrc": "PASSA",
+    "metodo_senior": "aplicado: falso PASS e falso FAIL testados (CRLF, pontuacao, codigo, marcadores); 10 mutacoes nas duas rodadas, todas mortas"
+  },
+  "resumo": "ADR-127: plano.py painel e cronograma gerados das Tarefas do spec.md; verificar reprova painel divergente, prazo ilegivel e dependencia inexistente ou fora de ordem. PASS na rodada 2.",
+  "verificacoes_executadas": [
+    "test_plano (f)(g), test_spec_unico, test_completeness, test_capabilities, test_consistency_closing, check_core_agnostic PASS",
+    "rodada 1: 6 de 6 mutacoes mortas; rodada 2: 4 de 4",
+    "painel real do plano B3 conferido contra a regeneracao"
+  ],
+  "problemas": [],
+  "nao_verificado": [
+    "ciclo de dependencias nao detectado — limite declarado no ADR-127"
+  ],
+  "data": "2026-09-28T22:27:37Z",
+  "sha_revisado": "f452b75e7b064325431789e91fa4e5b0fedf6915",
+  "blobs_revisados": {
+    "tools/plano.py": "fdbb360d4d4e653c952e3053873e88c85fc8341b",
+    "tools/test_plano.py": "f7dafeea0417e081c5011f82c21e9bc93ddf0433",
+    "docs/specs/b3-documentacao-regulada/spec.md": "3655ae6a78136000abd2a583efc205da95cddc13",
+    "_shared/project-docs/SKILL.md": "cf6e1c9b045fd81000bdf17ca9d632346845bcfa",
+    "docs/adr/127-cronograma-e-painel-de-fases-gerados.md": "6ee35a5be27ec6e41c49560df97f5a4a4bf58736",
+    "CHANGELOG.md": "16801eb8aa6081a555373c19609f932d877cdbb2",
+    "capabilities.json": "4cf4c85ba08e8f2360734019d0e8a50831b12695"
+  }
+}
