@@ -5,6 +5,22 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-125 — Verificador do plano no arquivo único (28/09/2026)
+
+- **`python tools/plano.py verificar`** reprova:
+  - seção obrigatória ausente;
+  - decisão pendente sem quem age;
+  - tarefa feita sem prova;
+  - replanejada sem registro;
+  - % do avanço que não bate com as tarefas;
+  - mapa de impacto sem situação;
+  - aceite antes da aprovação.
+
+  Neste repositório barra (canário sobre todas as specs); nos outros, `--avisar`.
+- Regra 06: o plano vive no Painel do arquivo único.
+- Specs reais corrigidas: 18 achados na primeira execução.
+- Prova: `test_plano`.
+
 ### B3c — skill `project-docs` enxuta (28/09/2026)
 
 - Entrada de 402 para 80 linhas.

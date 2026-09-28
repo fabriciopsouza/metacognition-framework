@@ -1,0 +1,88 @@
+{
+  "bloco": "b2b-verificador-do-plano",
+  "papel": "qa_critic",
+  "rodada": 1,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "veredito": "aprovar",
+  "escopo_paths": [
+    "tools/plano.py",
+    "tools/test_plano.py",
+    "tools/check_completeness.py",
+    ".agent/rules/06-confirmacao-interativa.md",
+    "docs/specs/b3-documentacao-regulada/spec.md",
+    "docs/specs/isolamento-empresas-biblioteca/spec.md",
+    "docs/specs/plano-modo-planejado/PLANO.md",
+    "docs/adr/125-verificador-do-plano-no-arquivo-unico.md",
+    "CHANGELOG.md",
+    "capabilities.json",
+    "CAPABILITIES.md",
+    "guia/web/index.html",
+    "_meta/qa/b2b-verificador-do-plano.json",
+    "_meta/qa/b2b-verificador-do-plano.md"
+  ],
+  "atestacao": {
+    "agentId": "a154afe401cad9da1",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic isolado, segundo plano, so leitura; mutacoes em copia em %TEMP%."
+  },
+  "postura": {
+    "discovery": "docs/specs/plano-modo-planejado/PLANO.md (B2.2, B2.3b) aprovado pelo dono em 25/09/2026",
+    "rrc": "PASSA",
+    "metodo_senior": "aplicado: falso negativo e falso positivo testados; provas das specs reais conferidas (PRs e arquivos)"
+  },
+  "resumo": "ADR-125: plano.py verificar barra plano enganoso neste repo (canario sobre todas as specs) e avisa nos outros. PASS; limites declarados no ADR.",
+  "verificacoes_executadas": [
+    "test_plano, test_completeness, test_spec_unico, check_rules_parity, test_capabilities PASS",
+    "3 mutacoes (prova, %, aceite) mortas; mutacao declarada morta",
+    "provas acrescentadas as specs reais conferidas: PRs mergeados e arquivos existentes",
+    "numeros do site conferidos contra capabilities.json e tools/test_*.py"
+  ],
+  "problemas": [],
+  "nao_verificado": [],
+  "recomendacao_do_critico": "PASS",
+  "data": "2026-09-28T06:00:00Z",
+  "sha_revisado": "681c0bce3d7e8637b3c83be8f0dd96282ad62879",
+  "blobs_revisados": {
+    "tools/plano.py": "e0dbd1582c9311f2a256f874a2abe6faa2052e51",
+    "tools/test_plano.py": "739bed381e3da79ad345abb1d6f7cc4b37682bcd",
+    "tools/check_completeness.py": "edbf136f2c19630683567f568c4077b2dcbb29ad",
+    ".agent/rules/06-confirmacao-interativa.md": "ccb5157a0d8c1301ae34c9e82423884ecec42b39",
+    "docs/specs/b3-documentacao-regulada/spec.md": "76c4d2e882898f315064b1a6b0cb777d0a2c8ac1",
+    "docs/specs/isolamento-empresas-biblioteca/spec.md": "9ebd06fdf5ccc408d63861bafd91ea27ab68c0ff",
+    "docs/specs/plano-modo-planejado/PLANO.md": "c82abc7e0fc1974d56063a70856fd3ac52ebfc60",
+    "docs/adr/125-verificador-do-plano-no-arquivo-unico.md": "f7c21f19c0ce36a807e56fbb4f68ee467e5d05eb",
+    "CHANGELOG.md": "555b2f92f1a3b5e456d0eccc3c5f4eb1fa89512b",
+    "capabilities.json": "ae1558046c15700c0315f817d2ee65118f74cbb9",
+    "CAPABILITIES.md": "a4be8ca5744bc80587d24cd04a87f661c5b28031",
+    "guia/web/index.html": "d689d22ef39353d2061ddedd22f599d46f7ad933"
+  },
+  "substitui": [
+    {
+      "rodada": 1,
+      "data": "2026-09-28T06:00:00Z",
+      "recomendacao": "aprovar",
+      "sha_revisado": null,
+      "agentId": "a154afe401cad9da1",
+      "escopo_paths": [
+        "tools/plano.py",
+        "tools/test_plano.py",
+        "tools/check_completeness.py",
+        ".agent/rules/06-confirmacao-interativa.md",
+        "docs/specs/b3-documentacao-regulada/spec.md",
+        "docs/specs/isolamento-empresas-biblioteca/spec.md",
+        "docs/specs/plano-modo-planejado/PLANO.md",
+        "docs/adr/125-verificador-do-plano-no-arquivo-unico.md",
+        "CHANGELOG.md",
+        "capabilities.json",
+        "CAPABILITIES.md",
+        "guia/web/index.html",
+        "_meta/qa/b2b-verificador-do-plano.json",
+        "_meta/qa/b2b-verificador-do-plano.md"
+      ],
+      "achados_fp": [],
+      "reinicio": false
+    }
+  ]
+}

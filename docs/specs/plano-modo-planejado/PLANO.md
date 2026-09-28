@@ -204,8 +204,8 @@ Legenda: `[ ]` a fazer · `[x]` feito, com prova · `[~]` replanejado, com motiv
 - [x] B2.5a ADR-117 + CHANGELOG + índice de capacidades (`spec-arquivo-unico`, fail-closed) + site (103).
 
 **B2b — verificador do plano e painel** (depois do B2a)
-- [ ] B2.2 `tools/plano.py verificar`: reprova seção obrigatória ausente, decisão pendente sem "quem age", item `[x]` sem prova, % que não bate com a contagem, mapa de impacto ausente, aceite datado antes da aprovação dos requisitos. Barra o fechamento neste repo; avisa nos outros (D1).
-- [ ] B2.3b A regra de confirmação (regra 06) aponta para o painel do arquivo único.
+- [x] B2.2 (ADR-125, 28/09/2026 — prova: `tools/test_plano.py`) `tools/plano.py verificar`: reprova seção obrigatória ausente, decisão pendente sem "quem age", item `[x]` sem prova, % que não bate com a contagem, mapa de impacto ausente, aceite datado antes da aprovação dos requisitos. Barra o fechamento neste repo; avisa nos outros (D1).
+- [x] B2.3b (ADR-125 — prova: `.agent/rules/06-confirmacao-interativa.md`) A regra de confirmação (regra 06) aponta para o painel do arquivo único.
 - [ ] B2.6 Painel acumulado + status curto por resposta: toda resposta com a frente aberta termina com avanço, decisões pendentes pelo número e link absoluto para o painel.
 - [ ] B2.7 (depende de D6) Página visual gerada do painel.
 
