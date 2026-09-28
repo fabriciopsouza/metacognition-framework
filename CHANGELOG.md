@@ -5,6 +5,19 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### B3c — skill `project-docs` enxuta (28/09/2026)
+
+- Entrada de 402 para 80 linhas.
+- **Kit essencial geral:**
+  - TAP (portal ou Parte D do `spec.md`), arquivo único, HANDOFF, glossário, cronograma gerado;
+  - confirmação e verificação com a área (`planilhas_projeto.py`).
+  - Regra da skill: todas as peças saem do `spec.md`, gerados.
+- **Condicionais:** RUNBOOK, quadro de estado, desenho do processo, mudança e versão. O regulado vem pelo perfil
+  (`regulado.py kit | documento`).
+- **Conteúdo anterior preservado integralmente** em 8 arquivos por assunto na mesma pasta (a soma confere com o
+  original, linha a linha).
+- `docops` e o registro `project-docs-standard` atualizados.
+
 ### ADR-124 — Documentos do kit regulado gerados com o modelo do perfil; mudança e versão (28/09/2026)
 
 - **`python tools/regulado.py documento <tipo> <spec.md> --out-dir <pasta>`:** motor neutro; título, seções e

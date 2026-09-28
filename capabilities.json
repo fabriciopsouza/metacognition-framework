@@ -1649,7 +1649,7 @@
   },
   {
    "id": "project-docs-standard",
-   "title": "Padrao do conjunto documental de projeto (7 propriedades + conjunto graduado + 4 gates) — PROSA, sem canario proprio",
+   "title": "Padrao do conjunto documental de projeto (teste de pronto + 7 propriedades + kit essencial gerado do arquivo unico + 4 gates; runbook e quadro de estado em arquivos por assunto) — PROSA, sem canario proprio",
    "status": "PARTIAL",
    "ai_owner": "claude",
    "mechanism": "_shared/project-docs/SKILL.md",
