@@ -13,7 +13,8 @@
 # Garante no ~/.claude/settings.json:
 #   - hooks.SessionStart     contém inject-start-session-global.ps1 (auto-boot, ADR-006)
 #   - hooks.UserPromptSubmit contém route-gate.ps1                  (roteamento, ADR-027)
-#   - hooks.Stop             contém resposta_executiva.py           (formato executivo, regra do dono 27/09/2026)
+#   - hooks.Stop             contém resposta_executiva.py --hook      (mede o formato, sem bloquear; ADR-129)
+#   - hooks.UserPromptSubmit contém resposta_executiva.py --lembrete  (molde + achados da resposta anterior)
 #
 # EXIT CODES (consumidos por bootstrap/sync-global p/ transparência ao usuário):
 #   0  = nada a fazer (já wirado)
@@ -100,15 +101,20 @@ try {
     if (Ensure-HookEvent -Cfg $cfg -EventName 'UserPromptSubmit' -Needle 'route-gate' `
             -Command $routeCmd -StatusMessage 'Roteamento determinístico (route-gate ADR-027)') { $changed = $true }
 
-    # Formato executivo (regra do dono, 27/09/2026): mede a resposta final e devolve uma vez se verborrágica.
+    # Formato executivo (regra do dono, 27/09/2026; ADR-129, 28/09/2026): o Stop MEDE e guarda os achados, sem
+    # bloquear (bloquear depois de exibir duplicava a resposta na tela); o UserPromptSubmit injeta o molde e os
+    # achados da resposta anterior antes da próxima. Sem python no PATH o shell sai com 127: não bloqueante.
     $respExec = Join-Path $hooksDir 'resposta_executiva.py'
-    # Sem `|| true`: ele engoliria o exit 2 que devolve a resposta. Sem python no PATH o shell sai com 127, que o
-    # Claude Code trata como não bloqueante (docs oficiais de hooks, conferido em 27/09/2026): a sessão segue.
     $respCmd  = "python `"$respExec`" --hook"
+    $lembCmd  = "python `"$respExec`" --lembrete"
     if (-not (Test-Path $respExec)) {
-        Log "resposta_executiva.py ausente em $hooksDir — Stop NAO ligado (rode o sync-global ou passe -RepoDir)."
-    } elseif (Ensure-HookEvent -Cfg $cfg -EventName 'Stop' -Needle 'resposta_executiva' `
-            -Command $respCmd -StatusMessage 'Formato executivo da resposta (regra do dono)') { $changed = $true }
+        Log "resposta_executiva.py ausente em $hooksDir — Stop/UserPromptSubmit NAO ligados (rode o sync-global ou passe -RepoDir)."
+    } else {
+        if (Ensure-HookEvent -Cfg $cfg -EventName 'Stop' -Needle 'resposta_executiva' `
+                -Command $respCmd -StatusMessage 'Formato executivo: mede a resposta (regra do dono)') { $changed = $true }
+        if (Ensure-HookEvent -Cfg $cfg -EventName 'UserPromptSubmit' -Needle 'resposta_executiva' `
+                -Command $lembCmd -StatusMessage 'Formato executivo: molde e achados da resposta anterior') { $changed = $true }
+    }
 
     if (-not $changed) {
         Log 'wiring ja presente; nada a fazer.'

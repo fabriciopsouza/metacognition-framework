@@ -2310,26 +2310,26 @@
   },
   {
    "id": "resposta-executiva",
-   "title": "Resposta executiva medida por hook de Stop: prosa longa, pedido ao dono no meio do turno e bloco explicativo devolvem a resposta para reescrita uma vez",
+   "title": "Resposta executiva medida por hook: o Stop mede a estrutura sem bloquear e o UserPromptSubmit devolve os achados antes da resposta seguinte",
    "status": "PROVIDES",
    "ai_owner": "claude",
    "mechanism": "tools/hooks/resposta_executiva.py",
    "test": "tools/test_resposta_executiva.py",
-   "adr": "docs/adr/123-resposta-executiva-medida-por-hook.md",
+   "adr": "docs/adr/129-resposta-executiva-sem-bloqueio.md",
    "cross_ai": false,
-   "enforcement": "fail-closed",
+   "enforcement": "advisory",
    "tags": [
     "formato",
     "comunicacao",
     "hook"
    ],
-   "note": "Regra do dono 27/09/2026. Limite 150 palavras de prosa fora de tabela e codigo, salvo pedido de detalhe; pedido ao dono so no fim; sem laco (stop_hook_active). Instalado em toda pasta por sync-global + ensure-global-wiring (hooks.Stop).",
+   "note": "Regras do dono 27/09 e 28/09/2026: conciso mas claro, objetivo mas compreensivel, nunca omisso; numero de palavras nao e regra fixa (prosa longa e sinal). Mede: pedido no meio do turno, Insight, decisao sem recomendacao, tabelas coladas sem titulo, prosa longa. ADR-129: bloquear depois de exibir duplicava a resposta; agora advisory com retorno no turno seguinte (UserPromptSubmit --lembrete). Instalado por sync-global + ensure-global-wiring.",
    "mutacao": {
     "arquivo": "tools/hooks/resposta_executiva.py",
-    "de": "    if n > PROSA_MAX and not _DETALHE.search(pedido or \"\") and not _ARTEFATO.search(pedido or \"\"):",
-    "para": "    if False:",
+    "de": "        if _DECISAO.search(cab) and not _RECOMENDA.search(cab):",
+    "para": "        if False:",
     "canario": "tools/test_resposta_executiva.py",
-    "espera": "prosa longa na final é devolvida"
+    "espera": "tabela de decisão sem recomendação vira achado"
    }
   },
   {

@@ -5,6 +5,14 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-129 — Resposta executiva: medir sem bloquear, achados antes da resposta seguinte (28/09/2026)
+
+- O hook de Stop mede e nunca bloqueia. Antes, bloquear depois de exibir duplicava a resposta na tela.
+- O `UserPromptSubmit` (`--lembrete`) injeta os achados da resposta anterior uma vez; sem achado, nada. O molde fica na regra global.
+- Sem limite fixo de palavras (prosa longa vira sinal). Passam a ser medidos: decisão sem recomendação e tabelas coladas sem título.
+- Regra global, seção 4: "conciso, mas claro; objetivo, mas compreensível; nunca omisso", com o molde do fechamento.
+- Prova: `test_resposta_executiva`.
+
 ### ADR-127 — Cronograma e painel de fases gerados do arquivo único (28/09/2026)
 
 - `python tools/plano.py painel <spec.md> --escrever`: tabela por fase com feitas/total, barra, % e "onde estamos".

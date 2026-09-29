@@ -1,26 +1,40 @@
 #!/usr/bin/env python3
-"""resposta_executiva.py — hook de Stop: a resposta ao dono sai no formato executivo (regra do dono, 27/09/2026).
+"""resposta_executiva.py — formato executivo da resposta ao dono (regra do dono, 27/09/2026; revista em 28/09/2026).
 
-Regra: "CONCISÃO, CLAREZA, informação simples e direta, overview, checklist, ações e ideias encadeadas. NÃO uma
-redação verborrágica. A explicação detalhada SE SOLICITADA." e "Reportou e a tarefa precisa de algo, tem que parar e
-esperar. Ou terminar o que está fazendo e pedir ao final."
+Regra: conciso, mas claro; objetivo, mas compreensível; nunca omisso. Número de palavras não é regra fixa (dono,
+28/09/2026: "número de palavras não deve ser escrito em pedra").
 
-Mede o turno que acabou (o texto que o dono lê) e devolve para reescrita UMA vez (exit 2, motivo no stderr) quando:
-  1. a mensagem final tem mais de PROSA_MAX palavras de prosa (fora de tabela, bloco de código e títulos) — não vale
-     quando o dono pediu detalhe no último pedido;
-  2. há pedido ao dono (pergunta ou ordem de decidir/responder) em texto intermediário do turno, antes da mensagem
-     final: o pedido some quando a tela sobe;
-  3. há bloco "★ Insight" (estilo explicativo proibido pela regra global, seção 4).
-Com `stop_hook_active` (já devolvido uma vez) não bloqueia de novo: evita laço. Transcript ilegível: não bloqueia.
+POR QUE NÃO BLOQUEIA MAIS (ADR-129). O Stop com exit 2 devolvia a resposta DEPOIS que ela já estava na tela: a
+reescrita saía embaixo e o dono lia tudo duas vezes. Agora são dois momentos:
+  --hook      (Stop)             mede o turno que acabou e guarda os achados da sessão; nunca bloqueia. A mensagem
+                                 final vem de `last_assistant_message` (o transcript pode ainda não tê-la no Stop).
+  --lembrete  (UserPromptSubmit) antes da próxima resposta, injeta os achados da anterior (uma vez); sem achado,
+                                 não injeta nada (o molde está na regra global, CLAUDE.md seção 4).
 
-Uso (hook): python resposta_executiva.py --hook   (lê o JSON do Stop no stdin)
-      teste: python resposta_executiva.py --medir <transcript.jsonl>
+O que é medido na mensagem final (e no texto intermediário do turno):
+  1. pedido ao dono no meio do processamento (some quando a tela sobe);
+  2. bloco "★ Insight" (estilo explicativo proibido pela regra global, seção 4);
+  3. tabela de decisão (cabeçalho com "Decisão") sem recomendação;
+  4. duas tabelas seguidas sem título entre elas (não se vê onde começa cada assunto);
+  5. prosa longa (sinal, não limite: acima de PROSA_SINAL palavras fora de tabela e código, sem pedido de detalhe
+     ou de artefato) — pergunta se dá para organizar em tabela ou lista sem perder contexto.
+
+Uso: python resposta_executiva.py --hook | --lembrete   (JSON do evento no stdin)
+     python resposta_executiva.py --medir <transcript.jsonl>
 """
+import datetime
 import json
+import os
 import re
 import sys
 
-PROSA_MAX = 150
+PROSA_SINAL = 300
+ESTADO_DIR = os.environ.get("RESPOSTA_EXECUTIVA_DIR") or os.path.join(
+    os.path.expanduser("~"), ".claude", "estado", "resposta_executiva")
+HISTORICO_MAX = 500  # linhas guardadas em historico.jsonl (as mais recentes)
+# O molde é estático e vive na regra global (CLAUDE.md, seção 4), que carrega uma vez por sessão; o lembrete só
+# fala quando há achado (docs oficiais de hooks: instrução que nunca muda vai no CLAUDE.md, não em hook).
+AVISO = "Formato executivo (regra do dono, CLAUDE.md seção 4) — na sua resposta anterior: "
 _CERCA = re.compile(r"^\s{0,3}(`{3,}|~{3,})")
 _PEDIDO = re.compile(r"(?im)(\?\s*$|^\W*(responda|decida|confirme|aprove|escolha|diga|preciso que (você|voce)|"
                      r"você precisa|voce precisa|me diga|qual (você|voce) prefere)\b)")
@@ -33,6 +47,8 @@ _ARTEFATO = re.compile(r"(?i)\b(escrev\w*|ger[ea]\w*|cri[ea]\w*|redij\w*|redig\w
                        r"mand[ea]\w*|envi[ea]\w*|prepar\w*)\b.{0,60}\b(adr|spec\w*|especifica\w*|"
                        r"relat[oó]rio|documento|doc|readme|pop|runbook|e-?mail|mensagem|texto|ata|proposta|prompt|"
                        r"post|artigo|carta|parecer)\b|\b(quero|precis\w*)\b.{0,30}\b(prompt|texto|e-?mail|mensagem)\b")
+_DECISAO = re.compile(r"(?i)decis")  # "Opções" sozinho é tabela de referência, não decisão pendente
+_RECOMENDA = re.compile(r"(?i)recomend")
 
 
 def _texto(content):
@@ -70,9 +86,7 @@ def _prompt_real(d):
 
 
 def turno(caminho):
-    """(último pedido do dono, [textos do assistente no turno atual, em ordem]). O turno começa no último pedido do
-    dono OU aviso do sistema (o turno anterior já foi medido no Stop dele); a isenção de detalhe vem do último
-    pedido escrito pelo dono."""
+    """(último pedido do dono, [textos do assistente no turno atual, em ordem])."""
     entradas = []
     with open(caminho, encoding="utf-8", errors="replace") as fh:
         for ln in fh:
@@ -88,52 +102,116 @@ def turno(caminho):
     return pedido, [t for t in textos if t.strip()]
 
 
-def prosa(texto):
-    """Palavras fora de tabela, bloco de código e título."""
-    n, aberta = 0, False
+def _linhas_fora_de_codigo(texto):
+    aberta = False
     for ln in texto.splitlines():
         if _CERCA.match(ln):
             aberta = not aberta
             continue
-        s = ln.strip()
-        if aberta or not s or s.startswith("|") or s.startswith("#"):
-            continue
-        n += len(re.findall(r"\w+", s))
-    return n
+        if not aberta:
+            yield ln
+
+
+def prosa(texto):
+    """Palavras fora de tabela, bloco de código e título."""
+    return sum(len(re.findall(r"\w+", s)) for s in (ln.strip() for ln in _linhas_fora_de_codigo(texto))
+               if s and not s.startswith("|") and not s.startswith("#"))
 
 
 def _sem_codigo(texto):
-    out, aberta = [], False
-    for ln in texto.splitlines():
-        if _CERCA.match(ln):
-            aberta = not aberta
+    return "\n".join(ln for ln in _linhas_fora_de_codigo(texto) if not ln.strip().startswith("|"))
+
+
+def tabelas(texto):
+    """[(cabeçalho, linhas em branco/título entre a tabela anterior e esta)] das tabelas fora de código."""
+    out, dentro, entre = [], False, None
+    for ln in _linhas_fora_de_codigo(texto):
+        s = ln.strip()
+        if s.startswith("|"):
+            if not dentro:
+                out.append((s, entre))
+                dentro = True
+            entre = []
             continue
-        if not aberta and not ln.strip().startswith("|"):
-            out.append(ln)
-    return "\n".join(out)
+        dentro = False
+        if entre is not None:
+            entre.append(s)
+    return out
 
 
 def medir(pedido, textos):
-    """Motivos para devolver a resposta (vazio = passa)."""
+    """Achados sobre o turno (vazio = resposta no formato)."""
     if not textos:
         return []
     motivos = []
     final, meio = textos[-1], textos[:-1]
-    n = prosa(final)
-    if n > PROSA_MAX and not _DETALHE.search(pedido or "") and not _ARTEFATO.search(pedido or ""):
-        motivos.append(f"a mensagem final tem {n} palavras de prosa (limite {PROSA_MAX} fora de tabela e código): "
-                       f"reescreva no formato executivo — overview, tabela ou checklist, ações encadeadas, o que o dono "
-                       f"precisa fazer; detalhe só se pedido")
     for t in meio:
-        m = _PEDIDO.search(_sem_codigo(t))
-        if m:
+        if _PEDIDO.search(_sem_codigo(t)):
             linha = next((ln.strip() for ln in _sem_codigo(t).splitlines() if _PEDIDO.search(ln)), "")[:90]
-            motivos.append(f"há pedido ao dono no meio do processamento (\"{linha}\"): ele se perde quando a tela "
-                           f"sobe; repita-o no fim da mensagem final, ou pare e espere")
+            motivos.append(f"pedido ao dono no meio do processamento (\"{linha}\"): some quando a tela sobe; "
+                           f"pedido só no fim da mensagem final")
             break
     if any("★ Insight" in t for t in textos):
-        motivos.append("há bloco '★ Insight': proibido pela regra global (seção 4); retire a explicação didática")
+        motivos.append("bloco '★ Insight': proibido pela regra global (seção 4)")
+    for cab, entre in tabelas(final):
+        if _DECISAO.search(cab) and not _RECOMENDA.search(cab):
+            motivos.append(f"tabela de decisão sem coluna de recomendação: {cab[:70]}")
+        if entre is not None and not any(s for s in entre):
+            motivos.append(f"tabela colada na anterior, sem título entre elas: {cab[:70]}")
+    n = prosa(final)
+    if n > PROSA_SINAL and not _DETALHE.search(pedido or "") and not _ARTEFATO.search(pedido or ""):
+        motivos.append(f"prosa longa ({n} palavras fora de tabela e código) — sinal, não limite: dá para organizar "
+                       f"em seções, tabela ou lista sem perder contexto?")
     return motivos
+
+
+def _mesmo_texto(a, b):
+    """Mesma mensagem apesar de CRLF e espaços (o transcript e o evento podem gravar o branco de forma diferente)."""
+    return re.sub(r"\s+", " ", a).strip() == re.sub(r"\s+", " ", b).strip()
+
+
+def _estado(sessao):
+    return os.path.join(ESTADO_DIR, re.sub(r"[^A-Za-z0-9_.-]", "_", sessao) + ".json")
+
+
+def registrar(sessao, motivos):
+    """Guarda os achados para o próximo turno da MESMA sessão e acrescenta ao histórico (as últimas HISTORICO_MAX
+    medições; dado do débito avaliar-resposta-executiva). Sem id de sessão não guarda: não há como devolver."""
+    if not sessao:
+        return
+    os.makedirs(ESTADO_DIR, exist_ok=True)
+    p = _estado(sessao)
+    if motivos:
+        with open(p, "w", encoding="utf-8") as fh:
+            json.dump({"motivos": motivos}, fh, ensure_ascii=False)
+    elif os.path.isfile(p):
+        os.remove(p)
+    h = os.path.join(ESTADO_DIR, "historico.jsonl")
+    with open(h, "a", encoding="utf-8") as fh:  # acréscimo: duas sessões ao mesmo tempo não se sobrescrevem
+        fh.write(json.dumps({"quando": datetime.datetime.now().isoformat(timespec="seconds"), "sessao": sessao,
+                             "motivos": motivos}, ensure_ascii=False) + "\n")
+    # Poda só quando passa do dobro: a reescrita (única janela de corrida, que perderia no máximo uma linha de
+    # diagnóstico) fica rara. Atalho declarado: sem trava de arquivo; o estado da sessão não passa por aqui.
+    linhas = open(h, encoding="utf-8").read().splitlines()
+    if len(linhas) > 2 * HISTORICO_MAX:
+        with open(h, "w", encoding="utf-8") as fh:
+            fh.write("\n".join(linhas[-HISTORICO_MAX:]) + "\n")
+
+
+def lembrete(sessao):
+    """Achados da resposta anterior (consumidos: aparecem uma vez). Sem achado: texto vazio, nada é injetado."""
+    if not sessao:
+        return ""
+    p, achados = _estado(sessao), []
+    if os.path.isfile(p):
+        try:
+            achados = json.load(open(p, encoding="utf-8")).get("motivos") or []
+        except (OSError, ValueError):
+            achados = []
+        os.remove(p)
+    if not achados:
+        return ""
+    return AVISO + " | ".join(achados) + ". Corrija daqui em diante; não repita a resposta anterior."
 
 
 def main(argv):
@@ -145,25 +223,35 @@ def main(argv):
     if len(argv) >= 3 and argv[1] == "--medir":
         pedido, textos = turno(argv[2])
         for m in medir(pedido, textos):
-            print(f"MOTIVO: {m}")
+            print(f"ACHADO: {m}")
         return 0
-    if "--hook" not in argv:
+    if "--hook" not in argv and "--lembrete" not in argv:
         print(__doc__)
         return 2
     try:
         dados = json.loads(sys.stdin.read() or "{}")
-        if dados.get("stop_hook_active"):
+    except ValueError:
+        dados = {}
+    sessao = str(dados.get("session_id") or "")
+    try:
+        if "--lembrete" in argv:
+            txt = lembrete(sessao)
+            if txt:
+                print(txt)  # stdout do UserPromptSubmit entra como contexto do próximo turno
             return 0
-        pedido, textos = turno(dados.get("transcript_path", ""))
+        try:
+            pedido, textos = turno(dados.get("transcript_path", ""))
+        except (OSError, ValueError):
+            pedido, textos = "", []
+        final = dados.get("last_assistant_message")
+        if isinstance(final, str) and final.strip():
+            # docs oficiais do Stop: o transcript pode ainda não ter a mensagem final; ela vem neste campo
+            if not textos or _mesmo_texto(textos[-1], final) is False:
+                textos = textos + [final]
+        registrar(sessao, medir(pedido, textos))
     except (OSError, ValueError):
-        return 0  # sem transcript legível não há o que medir; nunca trava a sessão
-    motivos = medir(pedido, textos)
-    if motivos:
-        # Contrato do Stop (docs oficiais, hooks.md, conferido em 27/09/2026): exit 2 impede a parada e o stderr
-        # volta ao modelo. Qualquer outro código não bloqueia.
-        print("Formato executivo (regra do dono): " + " | ".join(motivos), file=sys.stderr)
-        return 2
-    return 0
+        pass  # medir nunca trava a sessão
+    return 0  # nunca bloqueia: bloquear depois de exibir duplicava a resposta na tela (ADR-129)
 
 
 if __name__ == "__main__":
