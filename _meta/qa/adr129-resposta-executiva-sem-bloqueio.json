@@ -1,0 +1,54 @@
+{
+  "bloco": "adr129-resposta-executiva-sem-bloqueio",
+  "papel": "qa_critic",
+  "rodada": 3,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "veredito": "aprovar",
+  "escopo_paths": [
+    "tools/hooks/resposta_executiva.py",
+    "tools/test_resposta_executiva.py",
+    "tools/hooks/ensure-global-wiring.ps1",
+    ".claude/global/CLAUDE-global.md",
+    "docs/adr/123-resposta-executiva-medida-por-hook.md",
+    "docs/adr/129-resposta-executiva-sem-bloqueio.md",
+    "CHANGELOG.md",
+    "capabilities.json",
+    "CAPABILITIES.md",
+    "_meta/qa/adr129-resposta-executiva-sem-bloqueio.json",
+    "_meta/qa/adr129-resposta-executiva-sem-bloqueio.md"
+  ],
+  "atestacao": {
+    "agentId": "afa98307504953277",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic isolado, so leitura; rodadas 1 (ac264f3ba8dff2464) e 2 (a4c45131e46d349df) corrigidas; ressalva MEDIA da rodada 3 fechada com teste e mutacao conferida."
+  },
+  "postura": {
+    "discovery": "pedido do dono 28/09/2026: avaliar o fechamento do SAC e corrigir o metodo; numero de palavras nao e regra fixa",
+    "rrc": "PASSA",
+    "metodo_senior": "aplicado: contrato dos hooks conferido na documentacao oficial; 18 mutacoes nas tres rodadas"
+  },
+  "resumo": "ADR-129: Stop mede sem bloquear (fim da resposta duplicada na tela); UserPromptSubmit devolve os achados uma vez; molde na regra global; sem limite fixo de palavras.",
+  "verificacoes_executadas": [
+    "test_resposta_executiva, test_capabilities, test_consistency_closing, test_marketing_claims, check_core_agnostic PASS",
+    "rodada 1: 7/8 mutacoes mortas; rodada 2: 4/6; rodada 3: 3/4, sobrevivente morta apos endurecer o teste"
+  ],
+  "problemas": [],
+  "nao_verificado": [
+    "termo sem definicao e ritos de fechamento nao sao medidos automaticamente (limite declarado)"
+  ],
+  "data": "2026-09-29T01:33:58Z",
+  "sha_revisado": "9744a31ef9469f68dfa3cb65b6286d1d5b0ba883",
+  "blobs_revisados": {
+    "tools/hooks/resposta_executiva.py": "f8d364f2eb6e92b69e6b509377a88ae7e0d7e5d8",
+    "tools/test_resposta_executiva.py": "cdb406052b3ba9906f94e1efc4abe89052a590e4",
+    "tools/hooks/ensure-global-wiring.ps1": "d95416839db1fc403b7f21f760d2ae1f89c71e13",
+    ".claude/global/CLAUDE-global.md": "4f5a8fdf2235c14f075404aee55b6e98e00173ef",
+    "docs/adr/123-resposta-executiva-medida-por-hook.md": "6cdff1e9f548858e49b029e509431a6050d2cd2c",
+    "docs/adr/129-resposta-executiva-sem-bloqueio.md": "0c5899d67943da1afaa60f85523d44a812ef25cf",
+    "CHANGELOG.md": "7a73de9ee21055df3aaa7c14442ba7d37166fcd4",
+    "capabilities.json": "bce12ff17609b2951abe04fa2bdfde79d53e1db3",
+    "CAPABILITIES.md": "7adf4c5ce5bb6ee5b79c415b03b8ec3f097666ed"
+  }
+}
