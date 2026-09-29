@@ -5,6 +5,14 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-130 — Hook global nunca bloqueia; sincronização nunca rebaixa (29/09/2026)
+
+- Causa medida: a sincronização copiou de um branch antigo a versão do hook sem `--lembrete`, que saía com 2 e
+  barrava toda mensagem do dono no UserPromptSubmit.
+- Comandos do hook com `|| true`; `ensure-global-wiring.ps1` repara instalações antigas sem duplicar.
+- `sync-global.ps1` só copia para `~/.claude` quando o clone contém `origin/main`; senão, pula e avisa.
+- Prova: `test_resposta_executiva` (j).
+
 ### ADR-129 — Resposta executiva: medir sem bloquear, achados antes da resposta seguinte (28/09/2026)
 
 - O hook de Stop mede e nunca bloqueia. Antes, bloquear depois de exibir duplicava a resposta na tela.

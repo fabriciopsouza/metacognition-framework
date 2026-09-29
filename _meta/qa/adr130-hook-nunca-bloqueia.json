@@ -1,0 +1,46 @@
+{
+  "bloco": "adr130-hook-nunca-bloqueia",
+  "papel": "qa_critic",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "veredito": "aprovar",
+  "escopo_paths": [
+    "tools/hooks/ensure-global-wiring.ps1",
+    ".claude/hooks/sync-global.ps1",
+    "tools/test_resposta_executiva.py",
+    "docs/adr/130-hook-global-nunca-bloqueia-nem-rebaixa.md",
+    "CHANGELOG.md",
+    "_meta/qa/adr130-hook-nunca-bloqueia.json",
+    "_meta/qa/adr130-hook-nunca-bloqueia.md"
+  ],
+  "atestacao": {
+    "agentId": "a8042365575f96d20",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic isolado, so leitura, USERPROFILE falso; rodada 1 (ad0df1ef2b1a10913) PASS-COM-RESSALVAS corrigida."
+  },
+  "postura": {
+    "discovery": "erro relatado pelo dono em 29/09/2026 (UserPromptSubmit bloqueado); causa medida no arquivo instalado (0 ocorrencias de --lembrete) e no exit 2",
+    "rrc": "PASSA",
+    "metodo_senior": "aplicado: causa reproduzida; 10 mutacoes em 2 rodadas; uma sobrevivente equivalente declarada"
+  },
+  "resumo": "ADR-130: comandos do hook com || true (nunca bloqueia) + reparo; sync-global e ensure -RepoDir nao copiam de clone sem origin/main.",
+  "verificacoes_executadas": [
+    "test_resposta_executiva (j), test_capabilities, test_consistency_closing, test_rules_parity PASS",
+    "rodada 1: 5/6 mutacoes mortas; rodada 2: 3/4, sobrevivente equivalente (rev-parse ja falha antes)"
+  ],
+  "problemas": [],
+  "nao_verificado": [
+    "docs oficiais sobre o shell do hook no Windows nao consultadas (WebFetch indisponivel); evidencia local ADR-079 = bash"
+  ],
+  "data": "2026-09-29T14:00:38Z",
+  "sha_revisado": "bef74efe528d4ca91e584e827a15233029222256",
+  "blobs_revisados": {
+    "tools/hooks/ensure-global-wiring.ps1": "952919254f6b0dca7992b7138a50feecb031f6c1",
+    ".claude/hooks/sync-global.ps1": "6b13310c5df23a59394083e5d5d10549d0d49621",
+    "tools/test_resposta_executiva.py": "6fcab71c576084068acf59f7b79e4c6c0d29b447",
+    "docs/adr/130-hook-global-nunca-bloqueia-nem-rebaixa.md": "79d0af2cb861d646e23c7efdf07fadf127604605",
+    "CHANGELOG.md": "b78a837e8c2fd3b5b24969fc35930a6778ea1c12"
+  }
+}

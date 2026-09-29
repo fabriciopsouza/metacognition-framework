@@ -44,7 +44,18 @@ try {
     if (-not (Test-Path $hooksDir))  { New-Item -ItemType Directory -Path $hooksDir -Force | Out-Null }
 
     # 0. Auto-suficiência: se -RepoDir, espelhar os scripts-fonte p/ ~/.claude/hooks/.
-    if ($RepoDir -and (Test-Path $RepoDir)) {
+    # ADR-130: não copia de clone que não contém origin/main (a cópia antiga do hook barrou o dono em 28/09/2026).
+    $atrasado = $false
+    if ($RepoDir -and (Test-Path (Join-Path $RepoDir '.git'))) {
+        try {
+            & git -C $RepoDir rev-parse --verify --quiet origin/main *> $null
+            if ($LASTEXITCODE -eq 0) {
+                & git -C $RepoDir merge-base --is-ancestor origin/main HEAD *> $null
+                if ($LASTEXITCODE -eq 1) { $atrasado = $true; Log "clone $RepoDir nao contem origin/main: scripts NAO copiados (ADR-130)." }
+            }
+        } catch { }
+    }
+    if ($RepoDir -and (Test-Path $RepoDir) -and -not $atrasado) {
         $srcRoute  = Join-Path $RepoDir 'tools\hooks\route-gate.ps1'
         $srcInject = Join-Path $RepoDir '.claude\hooks\inject-start-session-global.template.ps1'
         if (Test-Path $srcRoute)  { Copy-Item $srcRoute  $routeGate    -Force -ErrorAction SilentlyContinue }
@@ -102,18 +113,30 @@ try {
             -Command $routeCmd -StatusMessage 'Roteamento determinístico (route-gate ADR-027)') { $changed = $true }
 
     # Formato executivo (regra do dono, 27/09/2026; ADR-129, 28/09/2026): o Stop MEDE e guarda os achados, sem
-    # bloquear (bloquear depois de exibir duplicava a resposta na tela); o UserPromptSubmit injeta o molde e os
-    # achados da resposta anterior antes da próxima. Sem python no PATH o shell sai com 127: não bloqueante.
+    # bloquear; o UserPromptSubmit devolve os achados da resposta anterior antes da próxima.
+    # ADR-130: `|| true` — este hook NUNCA pode bloquear. Em 28/09/2026 uma cópia antiga do script (sem --lembrete)
+    # saiu com 2 no UserPromptSubmit e barrou toda mensagem do dono. Qualquer versão, qualquer erro: exit 0.
     $respExec = Join-Path $hooksDir 'resposta_executiva.py'
-    $respCmd  = "python `"$respExec`" --hook"
-    $lembCmd  = "python `"$respExec`" --lembrete"
+    $respCmd  = "python `"$respExec`" --hook || true"
+    $lembCmd  = "python `"$respExec`" --lembrete || true"
     if (-not (Test-Path $respExec)) {
         Log "resposta_executiva.py ausente em $hooksDir — Stop/UserPromptSubmit NAO ligados (rode o sync-global ou passe -RepoDir)."
     } else {
         if (Ensure-HookEvent -Cfg $cfg -EventName 'Stop' -Needle 'resposta_executiva' `
                 -Command $respCmd -StatusMessage 'Formato executivo: mede a resposta (regra do dono)') { $changed = $true }
         if (Ensure-HookEvent -Cfg $cfg -EventName 'UserPromptSubmit' -Needle 'resposta_executiva' `
-                -Command $lembCmd -StatusMessage 'Formato executivo: molde e achados da resposta anterior') { $changed = $true }
+                -Command $lembCmd -StatusMessage 'Formato executivo: achados da resposta anterior') { $changed = $true }
+        # Reparo das instalações anteriores ao ADR-130: comando do hook sem `|| true` ganha a guarda.
+        foreach ($ev in @('Stop', 'UserPromptSubmit')) {
+            foreach ($grupo in @($cfg.hooks.$ev)) {
+                foreach ($h in @($grupo.hooks)) {
+                    if ($h -and $h.command -like '*resposta_executiva*' -and $h.command -notlike '*|| true*') {
+                        $h.command = "$($h.command) || true"
+                        $changed = $true
+                    }
+                }
+            }
+        }
     }
 
     if (-not $changed) {
