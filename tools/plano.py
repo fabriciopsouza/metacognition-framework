@@ -244,8 +244,8 @@ def verificar(spec):
                 ach.append(f"Mapa de impacto: '{c[0]}' muda e está sem situação")
 
     parte_b = "\n".join(_secao(blocos, "Parte B") or [])
-    m_ap = re.search(r"\*\*Requisitos aprovados pelo dono em:\*\*\s*([^·\n]+)", parte_b)
-    m_ac = re.search(r"\*\*Aceite escrito em:\*\*\s*([^·\n]+)", parte_b)
+    m_ap = re.search(r"\*\*Requisitos aprovados pelo dono em:\*\*[ \t]*([^·\n]+)", parte_b)  # [ \t]: vazio não
+    m_ac = re.search(r"\*\*Aceite escrito em:\*\*[ \t]*([^·\n]+)", parte_b)                  # lê a linha seguinte
     d_ap, d_ac = _data(m_ap.group(1) if m_ap else ""), _data(m_ac.group(1) if m_ac else "")
     if d_ap and d_ac and d_ac < d_ap:
         ach.append(f"aceite escrito em {d_ac:%d/%m/%Y}, antes da aprovação dos requisitos ({d_ap:%d/%m/%Y})")

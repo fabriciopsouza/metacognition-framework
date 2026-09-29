@@ -2214,7 +2214,7 @@
     "rastreabilidade",
     "evidencia"
    ],
-   "note": "Motor neutro: normas revogadas, pecas por categoria de software, testes obrigatorios e categoria padrao por sistema vem do perfil exemplos/dominio-regulado/compliance-profile-<nome>.json declarado na Parte A. Sem perfil padrao (decisao do dono D1, 26/09/2026). Partes F (Riscos) e G (Testes e evidencias) no spec.md. Primeiro perfil: farma-anvisa (so medicamentos). `regulado.py mapa <perfil.json>` exige o mapa peca -> norma ao lado do perfil com categorias (toda peca com artigo e marca de confianca; B3b, ADR-126).",
+   "note": "Motor neutro: normas revogadas, pecas por categoria de software, testes obrigatorios e categoria padrao por sistema vem do perfil exemplos/dominio-regulado/compliance-profile-<nome>.json declarado na Parte A. Sem perfil padrao (decisao do dono D1, 26/09/2026). Partes F (Riscos) e G (Testes e evidencias) no spec.md. Primeiro perfil: farma-anvisa (so medicamentos). `regulado.py mapa <perfil.json>` exige o mapa peca -> norma ao lado do perfil com categorias (toda peca com artigo e marca de confianca; B3b, ADR-126). Segundo perfil: anp-combustiveis (distribuicao; sem validacao de sistema, que a ANP nao exige). Camada privada (ADR-128): `**Empresa:**` na Parte A soma perfis/compliance-profile-<perfil>.json da biblioteca da empresa; biblioteca ausente recusa o kit.",
    "mutacao": {
     "arquivo": "tools/regulado.py",
     "de": "        ach.append(f\"{r} sem teste\")",

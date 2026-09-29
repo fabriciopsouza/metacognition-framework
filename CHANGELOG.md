@@ -5,6 +5,18 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-128 — Perfil anp-combustiveis e camada privada da empresa (28/09/2026)
+
+- **Novo perfil `anp-combustiveis`** (distribuição de combustíveis):
+  - categorias pelo papel do sistema;
+  - mapa com 27 peças, cada uma com artigo e marca;
+  - fontes em `docs/specs/perfil-anp/fontes.md`.
+- A ANP não exige validação de sistema do distribuidor. O perfil só pede o que a norma exige; o canário barra a importação do kit farma.
+- **Camada privada:** `**Empresa:** <e>` na Parte A soma `perfis/compliance-profile-<perfil>.json` da biblioteca da empresa. Se a biblioteca estiver ausente, o kit é recusado.
+- `knowledge_catalog.py` não quebra mais em console cp1252.
+- Campo `**Nome:**` vazio não lê mais a linha seguinte (`regulado.py`, datas da Parte B no `plano.py`).
+- Prova: `test_regulado` (g), (h) e (i); `test_knowledge_catalog` (`TestConsoleSemUtf8`).
+
 ### ADR-127 — Cronograma e painel de fases gerados do arquivo único (28/09/2026)
 
 - `python tools/plano.py painel <spec.md> --escrever`: tabela por fase com feitas/total, barra, % e "onde estamos".

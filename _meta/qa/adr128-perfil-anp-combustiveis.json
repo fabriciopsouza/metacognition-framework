@@ -1,0 +1,67 @@
+{
+  "bloco": "adr128-perfil-anp-combustiveis",
+  "papel": "qa_critic",
+  "rodada": 7,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "escopo_paths": [
+    "CHANGELOG.md",
+    "_shared/project-docs/SKILL.md",
+    "capabilities.json",
+    "docs/adr/128-perfil-anp-combustiveis-e-camada-privada.md",
+    "docs/specs/_template-spec-unico/spec.md",
+    "docs/specs/perfil-anp/fontes.md",
+    "exemplos/dominio-regulado/README.md",
+    "exemplos/dominio-regulado/anp-combustiveis-mapa-normas.md",
+    "exemplos/dominio-regulado/compliance-profile-anp-combustiveis.json",
+    "tools/knowledge_catalog.py",
+    "tools/plano.py",
+    "tools/regulado.py",
+    "tools/test_knowledge_catalog.py",
+    "tools/test_plano.py",
+    "tools/test_regulado.py",
+    "_meta/qa/adr128-perfil-anp-combustiveis.json",
+    "_meta/qa/adr128-perfil-anp-combustiveis.md"
+  ],
+  "atestacao": {
+    "agentId": "a0ed96f5b671b6d6c",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic isolado, so leitura na arvore compartilhada, mutacoes em copia no %TEMP%; rodadas 1-4 registradas no ADR-128 (ab32eb99671a15d9c, ac09324a8fc4126bb, a3905fef23a83ad12, aae18c0502056fd9a); rodadas 5-7 por a0ed96f5b671b6d6c: ALTA (camada enfraquecia o perfil) corrigida e confirmada; 2 MEDIA de falso positivo corrigidas; BAIXA fechadas ou declaradas."
+  },
+  "postura": {
+    "discovery": "decisoes do dono D1-D4 de 28/09/2026 registradas no ADR-128; D5 (export publico) pendente e registrada",
+    "rrc": "PASSA",
+    "metodo_senior": "aplicado: leitura primaria das normas, mapa peca->norma com marca de confianca, marcas rebaixadas a INFERIDO onde a copia nao tem URL de origem"
+  },
+  "resumo": "ADR-128: perfil anp-combustiveis com mapa de 27 pecas e camada privada da empresa que so acrescenta (nulo, troca de tipo ou valor diferente reprova).",
+  "verificacoes_executadas": [
+    "test_regulado, test_plano, test_knowledge_catalog, test_capabilities, test_consistency_closing, check_core_agnostic, audit_enforcement PASS; regulado.py mapa PASS",
+    "rodada 5: 20/25 mutacoes mortas; rodada 6: 12/13; rodada 7: 5/9 (sobreviventes sem efeito de seguranca, 3 mortas depois pelo teste direto dos metadados)"
+  ],
+  "problemas": [],
+  "nao_verificado": [
+    "texto literal das normas nao reconferido na web pelo revisor (sem acesso); consistencia mapa x fontes conferida",
+    "D5: perfil ANP nas distribuicoes publicas (anonimizador corrompe citacoes) - decisao do dono; nao publicar release antes"
+  ],
+  "data": "2026-09-29T21:38:34Z",
+  "sha_revisado": "9744a31ef9469f68dfa3cb65b6286d1d5b0ba883",
+  "blobs_revisados": {
+    "CHANGELOG.md": "858089c24b56a515f94fee37077b4ef7f72044ff",
+    "_shared/project-docs/SKILL.md": "95fd371728861368128160ab39940569890460ae",
+    "capabilities.json": "edac490f30b0a69455cf459444ea037aae8d0222",
+    "docs/adr/128-perfil-anp-combustiveis-e-camada-privada.md": "42f6d2052ce0f2fd9ab88c116cd5306389ac6565",
+    "docs/specs/_template-spec-unico/spec.md": "9848402e83ed9a9129081ad87d478bbd45e49e35",
+    "docs/specs/perfil-anp/fontes.md": "388071d7fa2ca46ec6a46b5cd1db53323cb01c73",
+    "exemplos/dominio-regulado/README.md": "9664a4eec3076c615e6c41433d9bdf10dbb620bb",
+    "exemplos/dominio-regulado/anp-combustiveis-mapa-normas.md": "5385aa5233869bfdcc8c22bb273aff79d4341199",
+    "exemplos/dominio-regulado/compliance-profile-anp-combustiveis.json": "9605edac330191b4a2efa8e4e026ba347cade392",
+    "tools/knowledge_catalog.py": "e052b07a99bff959f8c8ef0dc859c722fa17814e",
+    "tools/plano.py": "d4fedd0ba890594ae72a19c7f92ba7a05f0fb05a",
+    "tools/regulado.py": "d2851ad6cd4c3739c1b558e3b827de9f4bf8f8b3",
+    "tools/test_knowledge_catalog.py": "66f4d34f61821589b69151a687a548fea1354137",
+    "tools/test_plano.py": "370e599452cd07664f7d922e29168bbc5f2d29c8",
+    "tools/test_regulado.py": "91e95b97c4a6cee88216eb87b37db9a9b2bf8ad9"
+  }
+}

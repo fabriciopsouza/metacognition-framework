@@ -115,6 +115,11 @@ def main():
         ach, _ = rodar(texto)
         check(nome, any(trecho in a for a in ach), ach)
 
+    vazio = troca("- **Requisitos aprovados pelo dono em:** 10/09/2026 · **Aceite escrito em:** 11/09/2026",
+                  "- **Requisitos aprovados pelo dono em:** 10/09/2026\n- **Aceite escrito em:**\n- nota de 01/01/2020")
+    ach, _ = rodar(vazio)
+    check("aceite vazio não lê a data da linha seguinte", not any("aceite escrito" in a for a in ach), ach)
+
     print("(c) exceções legítimas")
     ach, _ = rodar(troca("B1 50% · B2 100%", "B1 50% · B9 30%"))
     check("bloco do avanço sem lista de tarefas não reprova", ach == [], ach)

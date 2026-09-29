@@ -51,6 +51,7 @@
 > `**Perfil regulado:** nenhum`, e as Partes F e G podem ser apagadas.
 - **Impacto regulado:** sim | não — <por quê, em meia frase; ex.: afeta boas práticas de fabricação, qualidade do produto ou dado regulado>
 - **Perfil regulado:** <nome do perfil em `exemplos/dominio-regulado/compliance-profile-<nome>.json`> | nenhum
+- **Empresa:** <empresa da biblioteca de conhecimento> | nenhuma — opcional; soma ao perfil a camada privada da empresa (`perfis/compliance-profile-<perfil>.json` na biblioteca dela). Declarada e ausente na máquina, o kit é recusado
 - **Sistema:** <sistema afetado>
 - **Categoria de software:** 1 | 3 | 4 | 5
 - **Categoria decidida por:** <nome, dd/mm/aaaa — motivo> _(obrigatório quando diverge do padrão do perfil para o sistema)_

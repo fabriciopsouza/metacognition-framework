@@ -1,0 +1,55 @@
+{
+ "profile": "anp-combustiveis",
+ "_doc": "Perfil regulado de sistemas que registram ou informam movimentação, estoque, medição e qualidade na DISTRIBUIÇÃO de combustíveis líquidos (Brasil, ANP). Perfil de aplicação: não cita empresa. A ANP não exige validação de sistema computadorizado nem trilha de auditoria do distribuidor (busca negativa, 28/09/2026): o perfil só pede o que a norma exige. Peça -> artigo, com marca de confiança: anp-combustiveis-mapa-normas.md (ao lado; `regulado.py mapa`). Fontes e vigência: docs/specs/perfil-anp/fontes.md. Procedimentos internos da empresa entram pela camada privada (`**Empresa:**` na Parte A; ADR-128). Andaime, não certificação.",
+ "orgao": "ANP",
+ "norms_typical": [
+  "Lei nº 9.847/1999 (abastecimento; penalidades)",
+  "Resolução ANP nº 950/2023 (autorização e obrigações do distribuidor)",
+  "Resolução ANP nº 729/2018 (i-SIMP)",
+  "Resolução ANP nº 868/2022 (estoque diário)",
+  "Resolução ANP nº 949/2023 (estoque mínimo)",
+  "Resolução ANP nº 894/2022 (correção a 20 °C)",
+  "Resoluções ANP nº 807/2020, 968/2024, 907/2022 e 828/2020 (qualidade)",
+  "Resolução ANP nº 898/2022 (lacre e amostra-testemunha)",
+  "Convênio ICMS 110/07 (volume na nota fiscal)",
+  "Portarias INMETRO nº 227/2022, 291/2021, 49/2022 e 103/2022 (instrumentos de medição)"
+ ],
+ "normas_revogadas": [
+  {"padrao": "CNP\\s*(n[ºo°.]*\\s*)?6\\s*/\\s*1970", "substituida_por": "Resolução ANP nº 894/2022"},
+  {"padrao": "ANP\\s*(n[ºo°.]*\\s*)?50\\s*/\\s*2013", "substituida_por": "Resolução ANP nº 968/2024"},
+  {"padrao": "ANP\\s*(n[ºo°.]*\\s*)?58\\s*/\\s*2014", "substituida_por": "Resolução ANP nº 950/2023"},
+  {"padrao": "ANP\\s*(n[ºo°.]*\\s*)?45\\s*/\\s*2013", "substituida_por": "Resolução ANP nº 949/2023"},
+  {"padrao": "ANP\\s*(n[ºo°.]*\\s*)?9\\s*/\\s*2007", "substituida_por": "Resolução ANP nº 898/2022"},
+  {"padrao": "DNC\\s*(n[ºo°.]*\\s*)?26\\s*/\\s*1992", "substituida_por": "Resolução ANP nº 884/2022"},
+  {"padrao": "INMETRO\\s*(n[ºo°.]*\\s*)?559\\s*/\\s*2016", "substituida_por": "Portaria INMETRO nº 227/2022"},
+  {"padrao": "INMETRO\\s*(n[ºo°.]*\\s*)?(0)?64\\s*/\\s*2003", "substituida_por": "Portaria INMETRO nº 291/2021"},
+  {"padrao": "INMETRO\\s*(n[ºo°.]*\\s*)?208\\s*/\\s*2016", "substituida_por": "Portaria INMETRO nº 49/2022"}
+ ],
+ "categorias_software": {
+  "_doc": "Nesta norma não há categoria de software (GAMP). A categoria é o PAPEL do sistema no que a ANP exige; o projeto declara uma em **Categoria de software:**. Sistema com mais de um papel declara 'completo'. 'kit_comum' vale para todo projeto.",
+  "kit_comum": ["TAP", "especificacao", "HANDOFF", "glossario", "cronograma"],
+  "movimentacao": ["registro-de-movimentacao-e-estoque", "correcao-a-20c", "volume-na-nota-fiscal", "perdas-e-sobras", "calibracao-de-medicao"],
+  "reporte": ["registro-de-movimentacao-e-estoque", "correcao-a-20c", "perdas-e-sobras", "envio-isimp", "reprocessamento-isimp", "estoque-diario", "estoque-minimo"],
+  "qualidade": ["boletim-de-conformidade", "certificado-no-recebimento", "recusa-fora-de-especificacao", "rastreabilidade-na-nota-fiscal", "lacre-e-amostra-testemunha"],
+  "completo": ["registro-de-movimentacao-e-estoque", "correcao-a-20c", "volume-na-nota-fiscal", "perdas-e-sobras", "calibracao-de-medicao", "envio-isimp", "reprocessamento-isimp", "estoque-diario", "estoque-minimo", "boletim-de-conformidade", "certificado-no-recebimento", "recusa-fora-de-especificacao", "rastreabilidade-na-nota-fiscal", "lacre-e-amostra-testemunha"]
+ },
+ "testes_obrigatorios_com_impacto": ["integridade de registros", "retenção de registros"],
+ "controls": {
+  "audit_trail": {"required": false, "_doc": "A ANP não exige trilha de auditoria do distribuidor (busca negativa, 28/09/2026). A Lei 9.847/1999, art. 3º, V, pune alterar ou adulterar registros: o teste 'integridade de registros' cobre isso."},
+  "hitl": {"sufficient_when": "envio à ANP e correção de dado já enviado (reprocessamento) aprovados pelo responsável da área"},
+  "retention": {"min_period": "6 meses", "_doc": "Resolução ANP nº 950/2023, art. 22, IX, com notificação de 10 dias para período anterior (parágrafo único). Prazo fiscal (5 anos) vem de outra legislação."},
+  "e_signature": {"required": false},
+  "data_integrity": {"principles_hint": "registros 'escriturados e atualizados' (Res. 950/2023, art. 22, IX); informação inverídica ou registro alterado é infração (Lei 9.847/1999, art. 3º, V)"}
+ },
+ "documentos": {
+  "_doc": "A ANP não pede documento de validação de sistema. O perfil emite só o checklist de prontidão, cujos itens vêm da norma (`python tools/regulado.py documento checklist-de-prontidao <spec.md> --out-dir <pasta>`).",
+  "checklist-de-prontidao": {
+   "titulo": "Checklist de prontidão para operação",
+   "secoes": ["identificacao", "documento_controlado", "prontidao", "aprovacao"],
+   "itens": ["Envio ao i-SIMP até o dia 15", "Estoque diário até as 12 h do dia útil seguinte", "Registros disponíveis por 6 meses", "Correção a 20 °C pelas tabelas da ANP", "Instrumentos de medição com verificação vigente"],
+   "aprovacao": ["Dono do processo", "Responsável regulatório"]
+  }
+ },
+ "wires_to": ["tools/regulado.py", "tools/documento_regulado.py"],
+ "note": "Segundo perfil do kit regulado (28/09/2026). Nenhuma exigência de validação de sistema foi importada do perfil farma (decisão D3 do dono)."
+}
