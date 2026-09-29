@@ -1,7 +1,7 @@
 <!-- GERADO por tools/build_capabilities.py a partir de capabilities.json — NAO editar a mao -->
 # CAPABILITIES — indice de capacidades (nivel 1: id + title)
 
-> **114 capacidades** — 102 ✅ PROVIDES · 12 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
+> **115 capacidades** — 103 ✅ PROVIDES · 12 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
 > **Como usar (file-first, boot):** leia esta lista p/ achar o `id`; o registro completo (mecanismo · canario · ADR · doc) vem por **`python tools/build_capabilities.py --show <id>`** ou `grep -A8 '"<id>"' capabilities.json`. Nao reexplore o repo antes disto.
 > **Manutencao:** feature nova -> +1 registro em `capabilities.json` + `python tools/build_capabilities.py`. Canario barra canario orfao (cobertura).
 
@@ -62,6 +62,7 @@
 - ✅ `external-work-provenance` — Carimbo de PROCEDENCIA em trabalho executado FORA do repo: PROCEDENCIA.md com framework/versao/commit/sessao deterministicos + status por artefato (MINUTA/PROPOSTA/MIGRADO/APROVADO)
 - ✅ `handoff-generator` — Gerador deterministico do Pacote de handoff P14 do estado do repo + sugestao de modelo (papel+risco)
 - ✅ `history-rotation` — Rotacao deterministica do history.md — ultimos N checkpoints quentes + Em aberto/Aprendizado inteiros; antigos -> docs/history/history-archive.md (poda de contexto, zero perda, idempotente)
+- ✅ `hook-wiring-coerente` — Hook global coerente: script fail-open, sonda do script instalado antes de ligar cada evento e script + wiring instalados do mesmo commit (origin/main por default)
 - ✅ `input-contract-gate` — Contrato de entrada: spec sem contrato de input declarado falha
 - ✅ `install-verification` — Instalar em qualquer PC com veredito: o que bloqueia, o que avisa, e como resolver cada um
 - ✅ `isolamento-entre-empresas` — Isolamento entre empresas na biblioteca de conhecimento: busca e verificacao so da empresa do projeto + assuntos, resolvida pelo indice e com recusa sem resolucao; relacao ou caminho que cruza empresa e identificador de empresa em assuntos reprovam

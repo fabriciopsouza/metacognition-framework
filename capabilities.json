@@ -2333,6 +2333,30 @@
    }
   },
   {
+   "id": "hook-wiring-coerente",
+   "title": "Hook global coerente: script fail-open, sonda do script instalado antes de ligar cada evento e script + wiring instalados do mesmo commit (origin/main por default)",
+   "status": "PROVIDES",
+   "ai_owner": "claude",
+   "mechanism": "tools/hooks/ensure-global-wiring.ps1",
+   "test": "tools/test_resposta_executiva.py",
+   "adr": "docs/adr/130-hook-wiring-coerente.md",
+   "cross_ai": false,
+   "enforcement": "fail-closed",
+   "tags": [
+    "hook",
+    "instalacao",
+    "incidente"
+   ],
+   "note": "Incidente de 28/09/2026: wiring --lembrete do ADR-129 com script antigo copiado de outro branch; exit 2 bloqueou todo prompt. Sonda exige exit 0 e stdout vazio; falhou, nao liga e remove a entrada. Carimbo em ~/.claude/hooks/hooks-origem.json. Opt-in de outro ref: FRAMEWORK_HOOKS_REF ou -Ref. Sync so executa ensure com ENSURE-CONTRATO >= 2. Mutacoes: python tools/test_resposta_executiva.py --mutacoes.",
+   "mutacao": {
+    "arquivo": "tools/hooks/ensure-global-wiring.ps1",
+    "de": "        $falha = Test-HookScript -Script $respExec -Flag $s.flag -Eventos $s.json",
+    "para": "        $falha = ''",
+    "canario": "tools/test_resposta_executiva.py",
+    "espera": "FAIL R4a entrada --lembrete incompatível removida"
+   }
+  },
+  {
    "id": "isolamento-entre-empresas",
    "title": "Isolamento entre empresas na biblioteca de conhecimento: busca e verificacao so da empresa do projeto + assuntos, resolvida pelo indice e com recusa sem resolucao; relacao ou caminho que cruza empresa e identificador de empresa em assuntos reprovam",
    "status": "PROVIDES",

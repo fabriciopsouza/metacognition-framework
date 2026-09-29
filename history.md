@@ -13,6 +13,28 @@
 > **Poda de contexto (ADR-107):** este arquivo quente mantem os ultimos **10** checkpoints + `## Em aberto` + `## Aprendizado`. **56** checkpoints mais antigos estao em [`docs/history/history-archive.md`](docs/history/history-archive.md) (nada deletado — so realocado). Rotacao: `python tools/rotate_history.py`.
 <!-- history-archive-pointer -->
 
+## 2026-09-29 — ADR-130: incidente do hook `--lembrete` corrigido na fonte
+
+**Incidente (28/09/2026):** o wiring `UserPromptSubmit --lembrete` do ADR-129 (#180) foi ligado às 22:44:04 com o
+`resposta_executiva.py` antigo, copiado do working tree do repo principal (em `feat/perfil-anp-combustiveis`). A
+flag desconhecida saía com 2 e bloqueou todo prompt, inclusive notificações. O dono removeu a entrada à mão.
+
+**Causa raiz:** script fail-closed · wiring sem conferir o script instalado · sync copiando do branch do working
+tree (wiring e script de versões diferentes).
+
+**Entregue (branch `fix/hook-wiring-coerente`, PR aguardando aprovação do dono):**
+- `resposta_executiva.py` fail-open (flag desconhecida, sem flag e exceção saem com 0; só stderr);
+- `ensure-global-wiring.ps1` sonda o script instalado antes de ligar e remove a entrada incompatível; backup com
+  timestamp;
+- script e wiring instalados do mesmo commit (`origin/main` por default; outro ref por opt-in), com carimbo
+  `~/.claude/hooks/hooks-origem.json`;
+- o sync só executa ensure com `ENSURE-CONTRATO: 2` (origin/main local sem fetch traria o ensure antigo);
+- canários R4a a R4j e 16 verificações de mutação (`python tools/test_resposta_executiva.py --mutacoes`).
+
+**Risco aberto:** branch anterior ao ADR-130 (ex.: `feat/perfil-anp-combustiveis`) ainda tem o sync antigo; abrir
+sessão nele antes de trazer a main pode reinstalar o script antigo. Por isso, ao aplicar no `~/.claude`, o
+`--lembrete` ficou desligado; ele volta sozinho quando o sync novo rodar.
+
 ## 2026-09-26 — plano B3: kit regulado, biblioteca de conhecimento e método único de projeto na main
 
 **Entregue (8 PRs mesclados, todos com revisão isolada aprovada e `canarios-local` verde):**

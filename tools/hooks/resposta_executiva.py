@@ -19,8 +19,9 @@ O que é medido na mensagem final (e no texto intermediário do turno):
   5. prosa longa (sinal, não limite: acima de PROSA_SINAL palavras fora de tabela e código, sem pedido de detalhe
      ou de artefato) — pergunta se dá para organizar em tabela ou lista sem perder contexto.
 
-Uso: python resposta_executiva.py --hook | --lembrete   (JSON do evento no stdin)
+Uso: python resposta_executiva.py --hook | --lembrete   (JSON do evento no stdin; sempre exit 0, erro só no stderr)
      python resposta_executiva.py --medir <transcript.jsonl>
+Fail-open (ADR-130): sem flag, com flag desconhecida ou com exceção, o hook sai com 0 e nada no stdout.
 """
 import datetime
 import json
@@ -226,14 +227,18 @@ def main(argv):
             print(f"ACHADO: {m}")
         return 0
     if "--hook" not in argv and "--lembrete" not in argv:
-        print(__doc__)
-        return 2
+        # Hook é fail-open (ADR-130): o uso vai para o stderr (o stdout do UserPromptSubmit vira contexto) e o exit é
+        # 0 (exit 2 no UserPromptSubmit bloqueia TODO prompt; foi o incidente de 28/09/2026 com flag desconhecida).
+        print(__doc__, file=sys.stderr)
+        return 0
     try:
-        dados = json.loads(sys.stdin.read() or "{}")
-    except ValueError:
-        dados = {}
-    sessao = str(dados.get("session_id") or "")
-    try:
+        try:
+            dados = json.loads(sys.stdin.read() or "{}")
+        except ValueError:
+            dados = {}
+        if not isinstance(dados, dict):
+            dados = {}
+        sessao = str(dados.get("session_id") or "")
         if "--lembrete" in argv:
             txt = lembrete(sessao)
             if txt:
@@ -249,8 +254,8 @@ def main(argv):
             if not textos or _mesmo_texto(textos[-1], final) is False:
                 textos = textos + [final]
         registrar(sessao, medir(pedido, textos))
-    except (OSError, ValueError):
-        pass  # medir nunca trava a sessão
+    except Exception as erro:  # noqa: BLE001 — qualquer falha vira aviso no stderr, nunca bloqueio (ADR-130)
+        print(f"[resposta_executiva] erro ignorado: {erro!r}", file=sys.stderr)
     return 0  # nunca bloqueia: bloquear depois de exibir duplicava a resposta na tela (ADR-129)
 
 
