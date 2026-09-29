@@ -99,6 +99,67 @@ COLADAS = "| A | B |\n|---|---|\n| 1 | 2 |\n\n| C | D |\n|---|---|\n| 3 | 4 |"
 SEPARADAS = "## Um\n\n| A | B |\n|---|---|\n| 1 | 2 |\n\n## Dois\n\n| C | D |\n|---|---|\n| 3 | 4 |"
 
 
+def _ps(script, env_extra, *args):
+    env = dict(os.environ, **env_extra)
+    return subprocess.run(["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script, *args],
+                          capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
+
+
+def _git(repo, *args):
+    return subprocess.run(["git", "-C", repo, *args], capture_output=True, text=True)
+
+
+def secao_adr130(wiring):
+    """ADR-130: o hook nunca bloqueia a mensagem do dono, e a sincronização não rebaixa ~/.claude."""
+    print("(j) ADR-130: nunca bloquear, nunca rebaixar")
+    casa = tempfile.mkdtemp()
+    hooks = os.path.join(casa, ".claude", "hooks")
+    os.makedirs(hooks)
+    open(os.path.join(hooks, "resposta_executiva.py"), "w").close()
+    antigo = f'python "{os.path.join(hooks, "resposta_executiva.py")}" --lembrete'
+    with open(os.path.join(casa, ".claude", "settings.json"), "w", encoding="utf-8") as fh:
+        json.dump({"hooks": {"UserPromptSubmit": [{"hooks": [{"type": "command", "command": antigo}]}]}}, fh)
+    r = _ps(os.path.join(ROOT, "tools", "hooks", "ensure-global-wiring.ps1"), {"USERPROFILE": casa})
+    cfg = json.load(open(os.path.join(casa, ".claude", "settings.json"), encoding="utf-8-sig"))
+    cmds = [h["command"] for g in cfg["hooks"]["UserPromptSubmit"] for h in g["hooks"]
+            if "resposta_executiva" in h["command"]]
+    check("instalação antiga ganha `|| true`, sem duplicar o hook", cmds == [antigo + " || true"], (cmds, r.stderr[-300:]))
+    stop = [h["command"] for g in cfg["hooks"].get("Stop", []) for h in g["hooks"]]
+    check("Stop instalado já com `|| true`", any(c.endswith("--hook || true") for c in stop), stop)
+    r = subprocess.run(["bash", "-c", "python -c 'import sys; sys.exit(2)' || true"], capture_output=True)
+    check("comando com a guarda sai com 0 mesmo se o script sair com 2", r.returncode == 0, r.returncode)
+
+    repo = tempfile.mkdtemp()
+    _git(repo, "init", "-q")
+    _git(repo, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "a")
+    _git(repo, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "b")
+    b = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    _git(repo, "update-ref", "refs/remotes/origin/main", b)
+    _git(repo, "checkout", "-q", "HEAD~1")
+    casa2 = tempfile.mkdtemp()
+    sync = os.path.join(ROOT, ".claude", "hooks", "sync-global.ps1")
+    r = _ps(sync, {"USERPROFILE": casa2, "CLAUDE_PROJECT_DIR": repo})
+    check("clone sem origin/main: sincronização pulada e avisada", "PULADO" in r.stdout
+          and not os.path.isdir(os.path.join(casa2, ".claude", "skills")), (r.stdout[-300:], r.stderr[-300:]))
+    os.makedirs(os.path.join(repo, "tools", "hooks"))
+    with open(os.path.join(repo, "tools", "hooks", "resposta_executiva.py"), "w") as fh:
+        fh.write("# versao antiga\n")
+    casa3 = tempfile.mkdtemp()
+    r = _ps(os.path.join(ROOT, "tools", "hooks", "ensure-global-wiring.ps1"), {"USERPROFILE": casa3}, "-RepoDir", repo)
+    check("ensure -RepoDir de clone atrasado não copia o hook (caminho do bootstrap)",
+          not os.path.isfile(os.path.join(casa3, ".claude", "hooks", "resposta_executiva.py")), r.stderr[-300:])
+    _git(repo, "checkout", "-q", b)
+    r = _ps(sync, {"USERPROFILE": casa2, "CLAUDE_PROJECT_DIR": repo})
+    check("clone que contém origin/main: sincroniza", "PULADO" not in r.stdout and "Framework sync" in r.stdout,
+          (r.stdout[-300:], r.stderr[-300:]))
+    _git(repo, "checkout", "-q", "HEAD~1")
+    with open(os.path.join(repo, ".git", "refs", "remotes", "origin", "main"), "w") as fh:
+        fh.write("0123456789abcdef0123456789abcdef01234567\n")  # referência para objeto que não existe
+    r = _ps(sync, {"USERPROFILE": casa2, "CLAUDE_PROJECT_DIR": repo})
+    check("origin/main quebrado: guarda não decide e a sincronização segue (fail-open declarado)",
+          "PULADO" not in r.stdout and "Framework sync" in r.stdout, (r.stdout[-300:], r.stderr[-300:]))
+
+
 def main():
     print("(a) resposta no formato")
     rc, a = rodar([user("status"), tool_use(), tool_result(), asst(EXEC)])
@@ -219,10 +280,14 @@ def main():
           "resposta_executiva" in glob and "nunca omisso" in glob and "150" not in glob)
     wiring = open(os.path.join(ROOT, "tools", "hooks", "ensure-global-wiring.ps1"), encoding="utf-8").read()
     check("wiring instala o Stop (--hook) e o UserPromptSubmit (--lembrete)",
-          "'Stop'" in wiring and "--hook" in wiring and "--lembrete" in wiring and "|| true" not in wiring)
+          "'Stop'" in wiring and "--hook || true" in wiring and "--lembrete || true" in wiring)
+    check("wiring repara instalação antiga sem a guarda (ADR-130)", "-notlike '*|| true*'" in wiring)
     check("wiring isolada (-RepoDir) copia o hook", "tools\\hooks\\resposta_executiva.py" in wiring)
     sync = open(os.path.join(ROOT, ".claude", "hooks", "sync-global.ps1"), encoding="utf-8").read()
     check("sync-global espelha o hook para ~/.claude/hooks", "resposta_executiva.py" in sync)
+
+    if os.name == "nt":
+        secao_adr130(wiring)
 
     print(f"\nRESULTADO: {'FAIL' if falhas else 'PASS'} ({len(falhas)} falha(s))")
     return 1 if falhas else 0

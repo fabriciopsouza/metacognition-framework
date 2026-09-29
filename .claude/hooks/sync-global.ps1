@@ -25,6 +25,24 @@ if ($env:CLAUDE_PROJECT_DIR -and (Test-Path $env:CLAUDE_PROJECT_DIR)) {
                   else { $null }
     $projectRoot = if ($scriptPath) { Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $scriptPath)) } else { $null }
 }
+# ADR-130 — não rebaixar ~/.claude. Só sincroniza quando o clone CONTÉM origin/main: um branch antigo copiaria hooks
+# velhos para toda pasta (28/09/2026: a cópia antiga do resposta_executiva.py barrou toda mensagem do dono).
+if ($projectRoot -and (Test-Path (Join-Path $projectRoot '.git'))) {
+    try {
+        & git -C $projectRoot rev-parse --verify --quiet origin/main *> $null
+        if ($LASTEXITCODE -eq 0) {
+            & git -C $projectRoot merge-base --is-ancestor origin/main HEAD *> $null
+            if ($LASTEXITCODE -eq 1) {
+                $ramo = (& git -C $projectRoot rev-parse --abbrev-ref HEAD 2>$null)
+                $aviso = "Framework sync PULADO: o clone ($ramo) nao contem origin/main; copiar dele rebaixaria os hooks e " +
+                         "skills globais (ADR-130). Atualize o branch (git pull ou merge de origin/main) e reabra a sessao."
+                Write-Output (@{ systemMessage = $aviso } | ConvertTo-Json -Compress)
+                exit 0
+            }
+        }
+    } catch { }  # sem git no PATH: segue como antes
+}
+
 $dest          = Join-Path $env:USERPROFILE '.claude'
 $skillsDest    = Join-Path $dest 'skills'
 $agentsDest    = Join-Path $dest 'agents'
