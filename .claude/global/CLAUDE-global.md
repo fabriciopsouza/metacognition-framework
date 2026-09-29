@@ -56,8 +56,18 @@
 - Toda referência a arquivo com caminho absoluto; instrução com o comando exato.
 - **Toda resposta é executiva (27/09/2026):** overview, tabela ou checklist, ações encadeadas e o que o
   dono precisa fazer. Detalhe só se pedido. **Pedido ao dono só no fim da resposta final**, nunca no
-  meio do processamento: pare e espere, ou termine e peça no fim. O hook de Stop
-  `resposta_executiva.py` mede e devolve a resposta fora do padrão.
+  meio do processamento: pare e espere, ou termine e peça no fim.
+- **Conciso, mas claro; objetivo, mas compreensível; nunca omisso (28/09/2026).** Número de palavras não é
+  regra fixa. Molde do fechamento:
+  - seções com título curto e linha em branco: resultado · arquivos · pendências · decisões · sua ação;
+  - cada item diz o que é, e termo novo ganha meia frase de definição;
+  - o conteúdo aparece uma vez só;
+  - decisão tem opções e recomendação;
+  - o que dá para decidir sozinho (data impossível, erro de digitação) é corrigido e avisado, não vira pergunta;
+  - ritos de fechamento feitos, não só declarados (biblioteca, `trabalhos.py`).
+
+  O hook `resposta_executiva.py` mede a resposta sem bloquear (bloquear depois de exibir duplicava a tela) e
+  devolve os achados antes da resposta seguinte.
 
 ## 5. Fontes sempre em arquivo
 

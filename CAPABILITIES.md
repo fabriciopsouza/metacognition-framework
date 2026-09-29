@@ -105,7 +105,7 @@
 - ✅ `repo-mode-user-vs-dev` — Modo por identidade no boot: shadow=USER (aplica a dominio, nao desenvolve), master=DEV
 - ✅ `repo-sync-boot` — Sync do repo no boot: dim.1 vs proprio upstream (pull seguro) + dim.2 ORTOGONAL vs branch de integracao (origin/HEAD) com marker persistente repetido por-turno (ADR-084)
 - ✅ `research-evidence` — NAO SEI so vale depois de busca provada: >= K dominios distintos com prova, ou ratificacao humana
-- ✅ `resposta-executiva` — Resposta executiva medida por hook de Stop: prosa longa, pedido ao dono no meio do turno e bloco explicativo devolvem a resposta para reescrita uma vez
+- ✅ `resposta-executiva` — Resposta executiva medida por hook: o Stop mede a estrutura sem bloquear e o UserPromptSubmit devolve os achados antes da resposta seguinte
 - ✅ `risk-gate` — Gating deterministico por risco (prob x impacto -> gate + tier P0-P3); recast externo (ADR-086) sob P15, forma agnostica (categorias = blueprint)
 - 🟡 `route-gate` — Lembrete de rota deterministico 1x/sessao (UserPromptSubmit), fail-open
 - ✅ `rules-parity-guard` — Anti-drift das 4 regras inviolaveis entre arquivos de autoridade (sem violar SSoT §6.5)
