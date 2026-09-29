@@ -1,0 +1,88 @@
+{
+  "bloco": "adr130-hook-wiring-coerente",
+  "papel": "qa_critic",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "escopo_paths": [
+    "tools/hooks/resposta_executiva.py",
+    "tools/hooks/ensure-global-wiring.ps1",
+    ".claude/hooks/sync-global.ps1",
+    "bootstrap.ps1",
+    "tools/test_resposta_executiva.py",
+    "docs/adr/130-hook-wiring-coerente.md",
+    "CHANGELOG.md",
+    "capabilities.json",
+    "CAPABILITIES.md",
+    "history.md",
+    "guia/web/index.html",
+    "docs/_private/_intake/execution-report-2026-09-29-incidente-hook-lembrete.md",
+    "_meta/qa/adr130-hook-wiring-coerente.json",
+    "_meta/qa/adr130-hook-wiring-coerente.md"
+  ],
+  "atestacao": {
+    "agentId": "ad08c091ef0199801",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic isolado, so leitura, USERPROFILE falso, mutacoes em copia no %TEMP%; rodada 1 PASS-COM-RESSALVAS (3 MEDIA, 4 BAIXA) corrigida; rodada 2 confirmou as 7 correcoes; 3 BAIXA da rodada 2 fechadas (regex ancorado) ou declaradas em Limites do ADR-130."
+  },
+  "postura": {
+    "discovery": "pedido do dono 29/09/2026: corrigir na fonte o incidente de hook de 28/09 com os requisitos R1 a R5; default origin/main, branch so com opt-in",
+    "rrc": "PASSA",
+    "metodo_senior": "aplicado: causa raiz em 3 falhas; canarios com home falso e repo git sintetico; 16 verificacoes de mutacao do autor e 10 do revisor por rodada"
+  },
+  "resumo": "ADR-130: hook fail-open; ensure sonda o script instalado antes de ligar e remove entrada incompativel; script e wiring do mesmo commit (origin/main), com carimbo; sync so executa ensure com ENSURE-CONTRATO >= 2.",
+  "verificacoes_executadas": [
+    "test_resposta_executiva PASS (R4a a R4j), --mutacoes PASS 16/16",
+    "test_capabilities, test_consistency_closing, test_marketing_claims, check_core_agnostic, test_rules_parity, audit_enforcement, test_execution_report PASS",
+    "revisor rodada 1: 6/10 mutacoes mortas; rodada 2: 9/10 (MI equivalente, coberta pela M11 do canario)"
+  ],
+  "problemas": [],
+  "nao_verificado": [
+    "contrato do ensure e declaratorio (limite declarado)",
+    "branch anterior ao ADR-130 reinstala o script antigo ao abrir sessao ate receber a main (limite declarado)"
+  ],
+  "data": "2026-09-29T14:37:37Z",
+  "sha_revisado": "bef74efe528d4ca91e584e827a15233029222256",
+  "blobs_revisados": {
+    "tools/hooks/resposta_executiva.py": "c18ae1999e9a2ab9934c0216420e271a2e3d179f",
+    "tools/hooks/ensure-global-wiring.ps1": "bbd53bf5afb2e1e0ac5138dae3939fd29bee0573",
+    ".claude/hooks/sync-global.ps1": "4c3f9a039b8b6195ea465936a4c75d2d47c6b5b2",
+    "bootstrap.ps1": "482fc48ac0a5cfa9c7fad895abd7762d0a536b1a",
+    "tools/test_resposta_executiva.py": "6a29b658e34b97cce29ccfc735721829980e123f",
+    "docs/adr/130-hook-wiring-coerente.md": "8063efc263b3586c262055c08fd51af299aa0506",
+    "CHANGELOG.md": "11a4a18c44cc2e0d5121be644eaebcf65dac1091",
+    "capabilities.json": "82633c627c9d3e7b505a0e908e33cc4820fbd11f",
+    "CAPABILITIES.md": "d3b1cd3e9a7ea4dbd9052b1edd29c71a5fdfde98",
+    "history.md": "ab1931e32178a8aa5d7df3d4e24b6965dca63a0e",
+    "guia/web/index.html": "ed0cd7243cff1166d16348a70c844e9b6699073a",
+    "docs/_private/_intake/execution-report-2026-09-29-incidente-hook-lembrete.md": "cd880e12f606855de595f5c3c02dbe2eb45c5253"
+  },
+  "substitui": [
+    {
+      "rodada": 2,
+      "data": "2026-09-29T14:37:11Z",
+      "recomendacao": "aprovar_com_ressalvas",
+      "sha_revisado": "bef74efe528d4ca91e584e827a15233029222256",
+      "agentId": "ad08c091ef0199801",
+      "escopo_paths": [
+        "tools/hooks/resposta_executiva.py",
+        "tools/hooks/ensure-global-wiring.ps1",
+        ".claude/hooks/sync-global.ps1",
+        "bootstrap.ps1",
+        "tools/test_resposta_executiva.py",
+        "docs/adr/130-hook-wiring-coerente.md",
+        "CHANGELOG.md",
+        "capabilities.json",
+        "CAPABILITIES.md",
+        "history.md",
+        "guia/web/index.html",
+        "docs/_private/_intake/execution-report-2026-09-29-incidente-hook-lembrete.md",
+        "_meta/qa/adr130-hook-wiring-coerente.json"
+      ],
+      "achados_fp": [],
+      "reinicio": false
+    }
+  ]
+}

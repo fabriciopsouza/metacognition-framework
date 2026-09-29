@@ -5,6 +5,20 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-130 — Hook global fail-open, sonda antes de ligar e origem única de script e wiring (29/09/2026)
+
+- Incidente de 28/09/2026: o wiring `--lembrete` do ADR-129 foi ligado com o script antigo, copiado de outro branch;
+  o exit 2 com flag desconhecida bloqueou todo prompt.
+- `resposta_executiva.py`: sem flag, com flag desconhecida ou com exceção, sai com 0 e escreve só no stderr.
+- `ensure-global-wiring.ps1`: sonda o script instalado (exit 0 e stdout vazio) antes de ligar `Stop` e
+  `UserPromptSubmit`; se falhar, não liga e remove a entrada. Backup `settings.json.heal-<timestamp>.bak`, sem
+  sobrescrever.
+- `sync-global.ps1` não copia mais hooks do working tree: o ensure do commit `origin/main` instala script e wiring no
+  mesmo passo e grava `~/.claude/hooks/hooks-origem.json`. Outro ref só com `FRAMEWORK_HOOKS_REF` ou `-Ref`. Ensure
+  sem `ENSURE-CONTRATO: 2` (anterior a este ADR) não é executado.
+- Repo sem `origin/main` não recebe hooks globais até declarar o ref; o sync avisa na mensagem de sessão.
+- Prova: os canários R4a a R4j de `test_resposta_executiva` instalam num home falso e conferem cada requisito; `--mutacoes` desfaz cada correção numa cópia e o canário certo fica vermelho nas 16 verificações.
+
 ### ADR-129 — Resposta executiva: medir sem bloquear, achados antes da resposta seguinte (28/09/2026)
 
 - O hook de Stop mede e nunca bloqueia. Antes, bloquear depois de exibir duplicava a resposta na tela.

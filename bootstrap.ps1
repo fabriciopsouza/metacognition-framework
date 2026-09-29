@@ -149,7 +149,7 @@ if (Test-Path $ensureWiring) {
     switch ($LASTEXITCODE) {
         10      { Write-Ok "hooks globais wirados: SessionStart inject-global + UserPromptSubmit route-gate (ADR-027)" }
         0       { Write-Ok "hooks globais ja wirados; preservando" }
-        default { Write-Warn "ensure-global-wiring codigo $LASTEXITCODE; ver ~/.claude/settings.json.heal.bak" }
+        default { Write-Warn "ensure-global-wiring codigo $LASTEXITCODE; ver ~/.claude/settings.json.heal-<timestamp>.bak" }
     }
 } else {
     Write-Warn "tools/hooks/ensure-global-wiring.ps1 ausente; wiring global pulado (abra o repo-framework p/ sync)"
