@@ -17,7 +17,7 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   mesmo passo e grava `~/.claude/hooks/hooks-origem.json`. Outro ref só com `FRAMEWORK_HOOKS_REF` ou `-Ref`. Ensure
   sem `ENSURE-CONTRATO: 2` (anterior a este ADR) não é executado.
 - Repo sem `origin/main` não recebe hooks globais até declarar o ref; o sync avisa na mensagem de sessão.
-- Prova: `test_resposta_executiva` (R4a a R4j) e `--mutacoes` (M1 a M15, 16 verificações).
+- Prova: os canários R4a a R4j de `test_resposta_executiva` instalam num home falso e conferem cada requisito; `--mutacoes` desfaz cada correção numa cópia e o canário certo fica vermelho nas 16 verificações.
 
 ### ADR-129 — Resposta executiva: medir sem bloquear, achados antes da resposta seguinte (28/09/2026)
 
