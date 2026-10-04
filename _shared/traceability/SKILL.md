@@ -147,6 +147,45 @@ python tools/test_path_absoluto.py # canário
 Cobertura **HARD no handoff**; **advisory** no resto do output (ADR-097: advisory ≠ opcional).
 Débito registrado em `capabilities.json` (`enforcement: advisory` — o aviso é visível, não bloqueia).
 
+## Regra 9 — Recuperar as premissas ANTES de decidir (ADR-109)
+
+Antes de decidir escopo, semântica, origem de dado ou regra de negócio — e antes de **reprocessar
+algo que já estava fechado** — recuperar o que já foi decidido. A ordem é fixa, e ela **não termina
+no repositório**:
+
+1. **Memória** do projeto e **dos projetos irmãos** (`~/.claude/projects/*/memory/MEMORY.md`).
+   **Memória vazia não é ausência de premissa** — pode estar no irmão, ou ter-se perdido.
+2. **Estado do trabalho**: branch, divergência com o upstream, últimos commits. Código lido numa
+   branch órfã ou defasada é **arqueologia**, não o vigente.
+3. **Artefatos de decisão** do repo: `mission`, `requirements`, `docs/adr/`, glossário, provas.
+4. **Só então** elicitar — dizendo **o que já se procurou**.
+
+Três invariantes:
+
+- **Ausência de evidência não é evidência de ausência.** Não achar registro é `[A-DEFINIR]`,
+  nunca `[CONFIRMADO]` na direção conveniente. Ver `_shared/confidence-classification`.
+- **"Não encontrei X em A, B e C — onde está?"** é resposta legítima e barata. Preencher a lacuna
+  com inferência própria e entregá-la como fato é o defeito.
+- **Regra já acordada não muda sem confirmação**, mesmo quando o agente a julga tecnicamente
+  melhor — é a Regra 6 (canônico-prevalece) aplicada ao ato de reprocessar.
+
+Mecanizado no boot — não é prosa a lembrar:
+
+```bash
+python tools/hooks/premises_brief.py   # SessionStart: inventário (ponteiros, não conteúdo)
+python tools/test_premises_brief.py    # canário
+```
+
+Complementa `check_repo_sync` (ADR-019), que gateia **sincronia**; aqui o git entra como
+**procedência do que se está lendo**.
+
+> Causa raiz: sessão de 2026-08-23. O agente afirmou `[CONFIRMADO]` que a origem de um indicador
+> "não era GCP", contrariando definição já tomada pelo dono; reprocessou trabalho fechado mudando
+> uma regra acordada; e leu como vigente o código de uma branch cuja ADR nunca fora mergeada,
+> estando 80 commits atrás de `main`. As três falhas têm a mesma raiz: **decidir antes de
+> recuperar**. A memória do próprio projeto estava vazia e a premissa vivia na memória de um
+> projeto irmão — lugar que nenhum inventário do framework olhava.
+
 > Causa raiz: quatro falhas na MESMA sessão (2026-08-01) — prompt entregue apontando para o
 > scratchpad temporário; link relativo em documento destinado a outra IA em outro repo; path com
 > espaço passado sem aspas (falhou no PowerShell); e "pasta inexistente" declarada sobre um

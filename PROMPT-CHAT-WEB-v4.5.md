@@ -109,6 +109,9 @@ Ao citar caminho, arquivo, planilha ou aba, a referência tem de resolver **de o
 ### 3.7 Alto risco exige humano no circuito (ADR-096)
 Antes de entregar algo que vá a decisão executiva, dinheiro, saúde, obrigação legal ou operação irreversível: estime **probabilidade × impacto** (1–3 cada). Produto **≥ 6** → declare **"requer revisão humana antes de usar"** de forma explícita no topo da entrega. Limite conhecido e declarado: **raro × catastrófico (1×3 = 3) não atinge o corte** — se o dano for irreversível, sinalize mesmo com score baixo.
 
+### 3.8 Recuperar as premissas antes de decidir (ADR-109)
+Antes de decidir escopo, origem de dado, semântica ou regra de negócio — e antes de **refazer algo que já estava fechado** — recupere o que já foi definido: o que o dono já disse **nesta e em conversas anteriores**, os documentos anexados / no Project Knowledge, e o que o próprio artefato registra. No chat não há hook: **é você quem varre, e diz o que varreu**. Três invariantes: **(a) ausência de evidência não é evidência de ausência** — não achou registro é `[A-DEFINIR]`, nunca `[CONFIRMADO]` na direção que lhe convém; **(b)** *"não encontrei X em A, B e C — onde está?"* é resposta legítima e barata, presumir no lugar do dono não é; **(c) regra já acordada não muda sem confirmação**, ainda que você a julgue tecnicamente melhor — é o canônico-prevalece do §3.5 aplicado ao ato de refazer. Refazer trabalho fechado sobre premissa reinventada custa mais que perguntar.
+
 ---
 
 ## 4. WORKFLOW

@@ -15,6 +15,47 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   princípios e busca os mesmos resultados do núcleo. A cada release, revisar — e se
   necessário, bumpar a versão do prompt (v4.2→v4.3…) e registrar aqui.
 
+## [1.91.0] — 2026-08-24 — A premissa já decidida entra no boot (ADR-109)
+
+[CONSOLIDADO] · [CONFIRMADO — 5 canários, incluindo contraprova e prova de mutação ADR-106]
+
+Fecha o gap que o dono nomeou depois de uma sessão que saiu cara: *"este comportamento de recuperar
+premissas, ver git, ler tudo e ter certeza para não reinventar a roda DEVE ser comportamento padrão
+do framework."*
+
+**A doutrina já existia** — `traceability` Regra 1 (file-first) manda ler antes de assumir, e a
+Regra 6 fixa canônico-prevalece. O que faltou foi **alcance do inventário** e **mecanismo**. Numa
+sessão real o agente afirmou `[CONFIRMADO]` uma origem de dado que contrariava definição do dono,
+reprocessou trabalho fechado mudando regra acordada, e leu como vigente o código de uma branch
+órfã 80 commits atrás de `main`. As três falhas têm a mesma raiz: **decidir antes de recuperar**.
+
+Duas lacunas medidas, e é o que muda aqui:
+
+- **A memória não entrava em inventário nenhum.** Na sessão, a memória do próprio projeto estava
+  vazia *e a premissa vivia na memória de um projeto irmão*. O agente concluiu "não há registro" de
+  uma busca que nunca cobriu o lugar certo. Agora o boot declara: memória própria (com contagem) +
+  memórias irmãs, e afirma explicitamente que **memória vazia não é ausência de premissa**.
+- **Nada declarava a procedência do código lido.** `check_repo_sync` (ADR-019) gateia *sincronia*,
+  não diz "você está numa branch cuja decisão nunca entrou em main". Agora entram branch,
+  divergência com upstream, últimos commits e árvore suja.
+
+Três invariantes passam a ser texto injetado, não subentendido: ausência de evidência não é
+evidência de ausência (→ `[A-DEFINIR]`, nunca `[CONFIRMADO]` na direção conveniente); *"não
+encontrei X em A, B e C — onde está?"* é resposta legítima; regra acordada não muda sem confirmação.
+
+Nota de ironia útil: o `boot_brief.py`, remédio escrito para o gap irmão na linha ADR-101, **nunca
+foi mergeado** — vive só numa branch órfã. O remédio anterior era vítima do próprio problema. O que
+sobrevive dele está absorvido aqui, com as duas camadas que faltavam.
+
+- **Mecanismo:** `tools/hooks/premises_brief.py` (SessionStart, ponteiros e não conteúdo — ADR-029),
+  registrado em `hooks-manifest.json` (auditado por liveness, ADR-061).
+- **Canário:** `tools/test_premises_brief.py` — 5 casos, com contraprova (projeto virgem não fabrica
+  inventário) e prova de mutação (quebrar a camada de memória reprova).
+- **Doutrina:** `_shared/traceability` Regra 9.
+- **Cross-IA:** `AGENT-FRAMEWORK.md` princípio 16 e `PROMPT-CHAT-WEB-v4.5.md` §3.8 — o defeito é do
+  comportamento do agente, não da ferramenta; IA sem hooks precisa da regra em prosa.
+- **Débito declarado:** o inventário **informa, não prova leitura**. `enforcement: advisory`.
+
 ## [1.90.0] — 2026-08-18 — O boletim deixa de ser escrito só pelo avaliado (ADR-108)
 
 [CONSOLIDADO] · [CONFIRMADO — 17 vereditos verificados retroativamente contra o relatório real do crítico]

@@ -1883,6 +1883,31 @@
         "alarme",
         "anti-silencio"
       ]
+    },
+    {
+      "id": "premises-brief",
+      "title": "Premissa ja decidida entra no boot: memoria (propria E irma), procedencia do git e artefatos de decisao",
+      "status": "PROVIDES",
+      "ai_owner": "claude",
+      "mechanism": "tools/hooks/premises_brief.py",
+      "test": "tools/test_premises_brief.py",
+      "adr": "docs/adr/109-recuperacao-de-premissas-antes-de-decidir.md",
+      "cross_ai": true,
+      "enforcement": "advisory",
+      "mutacao": {
+        "arquivo": "tools/hooks/premises_brief.py",
+        "de": "    base = os.path.join(home, \".claude\", \"projects\")",
+        "para": "    return []  # MUTACAO ADR-106",
+        "canario": "tools/test_premises_brief.py",
+        "espera": "[FALHA] sem a camada de memoria, o inventario nao aponta o projeto irmao"
+      },
+      "tags": [
+        "premissas",
+        "anti-retrabalho",
+        "memoria",
+        "procedencia",
+        "boot"
+      ]
     }
   ],
   "registry_waivers": [

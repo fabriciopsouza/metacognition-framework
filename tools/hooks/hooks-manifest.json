@@ -8,6 +8,12 @@
       "manual": "rode `git fetch --prune` + `git status -sb` voce mesmo (nao assuma sincronizado)"
     },
     {
+      "key": "premises-brief",
+      "event": "SessionStart",
+      "gate": "recuperacao de premissas (ADR-109)",
+      "manual": "liste voce mesmo: memoria do projeto E dos irmaos (~/.claude/projects/*/memory/MEMORY.md), branch + divergencia + ultimos commits, e docs/adr + mission + requirements - ANTES de decidir"
+    },
+    {
       "key": "check-core-agnostic",
       "event": "SessionStart",
       "gate": "agnosticismo do nucleo (ADR-020)",
