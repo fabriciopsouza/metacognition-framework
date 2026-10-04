@@ -48,7 +48,11 @@ conjunto completo num projeto pequeno viola a régua §0 tanto quanto não docum
 6. Sincronizar a spec se decisões mudaram (anti-drift).
 7. Biblioteca de conhecimento (ADR-120): registrar o que o bloco produziu e é reutilizável — termo confirmado,
    consulta rodada, número medido (como `retrato`, com data), pesquisa, runbook — ou declarar "nada a registrar";
-   depois `python tools/conhecimento.py verificar <raiz> --empresa <empresa>`. Saber puro de assunto, sem dado da
+   depois `python tools/conhecimento.py verificar <raiz> --empresa <empresa>`. **Gate do fechamento (emenda 3):**
+   o comando exato, com o caminho absoluto do framework e a pasta do projeto, sai no boot (check
+   `contexto-empresa` do `boot_check`): `python "<framework>\tools\conhecimento.py" encerramento --cwd "<projeto>"
+   --desde "<dd/mm/aaaa hh:mm do início>" [--declarar "<motivo>"]` — o bloco só fecha com exit 0 (commit + push na
+   biblioteca da empresa, ou declaração). Saber puro de assunto, sem dado da
    empresa, vai para `assuntos/<assunto>/`. Conteúdo da empresa vai para o repositório dela (submódulo em
    `conhecimento-negocio`); se `verificar` acusar identificadores desatualizados, rode `publicar --empresa <empresa>`. Método: `exemplos/conhecimento/_modelo/README.md`.
 

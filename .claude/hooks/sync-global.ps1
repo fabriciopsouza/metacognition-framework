@@ -147,8 +147,17 @@ try {
         # Espelha .agent/workflows/ — o hook global le start-session.md de ~/.claude/workflows/.
         $workflowsRoot = Join-Path $projectRoot '.agent\workflows'
         if (Test-Path $workflowsRoot) {
+            # {{FRAMEWORK_ROOT}} vira o caminho absoluto deste repo: o workflow injetado numa pasta de projeto
+            # precisa de comando que resolva LA (ADR-098; ADR-120 emenda 3 — boot_check na pasta da sessao).
             Get-ChildItem -Path $workflowsRoot -File -ErrorAction SilentlyContinue | ForEach-Object {
-                Copy-Item -Path $_.FullName -Destination (Join-Path $workflowsDest $_.Name) -Force -ErrorAction SilentlyContinue
+                $wfDest = Join-Path $workflowsDest $_.Name
+                $wfText = Get-Content -Path $_.FullName -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+                if ($null -ne $wfText -and $wfText.Contains('{{FRAMEWORK_ROOT}}')) {
+                    [System.IO.File]::WriteAllText($wfDest, $wfText.Replace('{{FRAMEWORK_ROOT}}', $projectRoot),
+                        (New-Object System.Text.UTF8Encoding($false)))
+                } else {
+                    Copy-Item -Path $_.FullName -Destination $wfDest -Force -ErrorAction SilentlyContinue
+                }
                 $workflowCount++
             }
         }

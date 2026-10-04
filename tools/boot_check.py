@@ -117,6 +117,19 @@ def check_trabalhos_abertos():
             "stamps": []}
 
 
+def check_contexto_empresa(cwd=None):
+    """Empresa, projeto e biblioteca da pasta da SESSAO (emenda 3 do ADR-120): o agente le o contexto certo antes
+    de agir e sabe onde gravar o conhecimento novo. Fora do indice = alerta com a instrucao do 1o turno."""
+    sys.path.insert(0, os.path.join(ROOT, "tools"))
+    import conhecimento
+    ctx = conhecimento.contexto(conhecimento.RAIZ_PADRAO, cwd or os.getcwd())
+    est = ctx["estado"]
+    status = {"EMPRESA": "warn" if ctx.get("a_reverificar") else "ok", "PRODUTO-PRÓPRIO": "ok",
+              "SEM-BIBLIOTECA": "skip"}.get(est, "warn")
+    return {"name": "contexto-empresa", "status": status,
+            "detail": f"{est}: {conhecimento.texto_contexto(ctx)}", "stamps": []}
+
+
 def check_version_sanity():
     """Ancora a versao canonica (anti 'versao fantasma' — erro real do boot Gemini que declarou v3.1
     inexistente). Le o topo do CHANGELOG (release) e a versao do roteador no AGENT-FRAMEWORK.md."""
@@ -370,7 +383,7 @@ def check_environment_applicability():
 
 
 CHECKS = [check_repo_sync, check_core_agnostic, check_cross_ai_boot_scan, check_version_sanity,
-          check_environment_applicability, check_trabalhos_abertos]
+          check_environment_applicability, check_trabalhos_abertos, check_contexto_empresa]
 
 
 def run_checks():
