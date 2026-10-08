@@ -2225,7 +2225,7 @@
   },
   {
    "id": "biblioteca-de-conhecimento",
-   "title": "Biblioteca de conhecimento reutilizavel por empresa: metodo de construir e consultar, modelo, verificador de forma e validade, busca unica pelo knowledge_catalog",
+   "title": "Biblioteca de conhecimento reutilizavel por empresa: metodo de construir e consultar, modelo, verificador de forma e validade, busca unica pelo knowledge_catalog; empresa da pasta no boot (contexto), regra superada por fonte alterada (vencidos) e registro cobrado no fechamento (encerramento)",
    "status": "PROVIDES",
    "ai_owner": "claude",
    "mechanism": "tools/conhecimento.py",

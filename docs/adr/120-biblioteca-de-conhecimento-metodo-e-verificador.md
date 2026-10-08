@@ -204,3 +204,71 @@ Critério (c): o banco de dimensões e o `knowledge_catalog`, que já existiam, 
 | código 2 | Sonnet isolado (addd6d7a6db4e5278) | PASS-COM-RESSALVAS | correções conferidas; 3 mutações e a declarada, mortas. 1 MÉDIA e 1 BAIXA: limites não declarados | declarados em Limites |
 | emenda 2, 1 | Sonnet isolado (a0421ad803ee9eb90; travou 600 s e foi retomado) | PASS-COM-RESSALVAS | 2 ALTA: filtro D3 não olhava o nome do arquivo do relatório; biblioteca ausente dava PASS sem ler nada. 1 MÉDIA: marcador lido duas vezes | nome do arquivo no filtro; `verificar` reprova e `--recall` avisa; leitura única; 3 casos novos |
 | emenda 2, 2 | Sonnet isolado (aede2a2d99a0f1c53) | PASS-COM-RESSALVAS | ALTAs fechadas; mudança sem perda (9 arquivos idênticos, índice, 27 achados iguais); README do pai confere; mutações 3 de 4 mortas. 1 BAIXA: `_hash` sem teste direto de maiúsculas | caso direto acrescentado |
+
+## Emenda 3 — empresa da pasta no boot, regra superada e registro cobrado no fechamento (04/10/2026)
+
+- **Status:** Aceita.
+- **Decisores:** dono (Fabricio), 04/10/2026: débito `framework-contexto-empresa-automatico` ("resolver empresa,
+  domínio e assunto pela pasta; gravar o conhecimento no repositório certo sem pedido, superando o desatualizado");
+  "produto próprio" = lista configurável, começando só pela pasta do framework; fechamento cobrado pelo comando no
+  docops, sem hook novo. Autoria: Opus 5.5.
+- **Problema:** (1) o recorte por pasta da emenda 1 nunca funcionou com o índice real: o `~\` dos caminhos não era
+  expandido; (2) o boot não dizia a empresa nem onde ler/gravar; (3) entrada superada no projeto continuava valendo
+  na biblioteca (caso de 03/10/2026: regra antiga sem a fonte única); (4) o registro no fechamento era prosa.
+
+### Decisão
+1. `~\` e `~/` expandem para a pasta do usuário, nos dois separadores, no índice e nos ponteiros.
+2. `conhecimento.py contexto [--cwd]` → EMPRESA · PRODUTO-PRÓPRIO · FORA-DO-ÍNDICE · AMBÍGUO · SEM-BIBLIOTECA.
+   - PRODUTO-PRÓPRIO: a pasta deste framework, ou uma pasta de `conhecimento.json` → `"sem_empresa"` da raiz.
+   - FORA-DO-ÍNDICE manda perguntar a empresa no 1º turno e indexar.
+   - O `boot_check` roda o `contexto` na pasta da sessão (check `contexto-empresa`; alerta fora do índice ou com
+     entrada a reverificar) e a linha da empresa traz o comando de `encerramento` com caminhos absolutos.
+   - O passo 0.7 do `start-session.md` chama o `boot_check` por `{{FRAMEWORK_ROOT}}`, que o `sync-global.ps1`
+     troca pelo caminho absoluto do framework ao espelhar os workflows: o comando injetado numa pasta de projeto
+     resolve lá (ADR-098). Em pasta de projeto, o passo manda rodar sempre.
+3. `vencidos` acusa a entrada cuja **Fonte:** cita arquivo local alterado (último commit; fora do git, data de
+   modificação) depois do **Verificado em:**. Retrato não entra; arquivo ausente na máquina não acusa.
+4. `conhecimento.py encerramento --desde dd/mm/aaaa [hh:mm] [--declarar "<motivo>"]`: 0 com commit + push na biblioteca da
+   empresa desde a data, sem alteração pendente, ou com declaração; 1 sem registro, com pendência ou sem push;
+   2 empresa não resolvida. Produto próprio passa. O passo 7 do docops cobra o comando.
+
+### Régua §0
+Critério (c): o recorte por pasta da emenda 1, que existia e não funcionava, passa a funcionar; o passo 7 do docops,
+que era prosa, vira comando com código de saída. Sem hook e sem arquivo novos: 2 comandos e 1 critério no
+verificador existente, 1 check no `boot_check` existente, casos no canário existente.
+
+### Limites
+- **Fonte alterada ≠ regra contraditória:** qualquer commit no arquivo citado depois da verificação acusa, mesmo
+  numa seção que a entrada não usa. É pedido de reverificação, não prova de erro. Commit no mesmo dia da
+  verificação não acusa.
+- **O fechamento só é cobrado se o docops rodar:** sem hook, pular o passo 7 não é barrado.
+- **O boot só mostra a empresa se o agente rodar o `boot_check`** (passo 0.7). Nenhum hook roda Python no boot
+  das pastas de projeto.
+- **O espelho global só muda quando o `sync-global.ps1` roda.** Ele não roda sozinho: em 04/10/2026 o
+  `~\.claude\workflows\start-session.md` desta máquina era de 08/08/2026. Até o próximo sync, as pastas de projeto
+  recebem o texto antigo. Lido direto no repositório do framework, `{{FRAMEWORK_ROOT}}` = a raiz deste repositório.
+- **Mudança na fonte** = último commit do arquivo; com edição não commitada (ou fora do git), a data de modificação.
+- **Push:** só é conferido quando há commit desde a data; commit antigo sem push, com declaração, passa.
+- **"Registro" = qualquer commit na pasta da biblioteca** desde `--desde` (que aceita hora), inclusive índice ou
+  correção de digitação. O comando prova que algo foi gravado e publicado, não que o conteúdo é o conhecimento
+  novo do bloco; `--desde` vem de quem fecha o bloco.
+- **A biblioteca precisa ser repositório git nesta máquina;** senão o fechamento reprova sem provar nada.
+- **Fora do índice** a mensagem mostra só quantas bibliotecas de empresa existem na máquina, nunca os nomes.
+- Sem caso de canário com biblioteca externa dentro de repositório-pai real (provado só na biblioteca real da
+  máquina e pelo crítico em cenário montado).
+
+### Prova
+- `tools/test_conhecimento.py` (g): expansão de `~`; EMPRESA por subpasta e não por prefixo de nome; FORA,
+  PRODUTO-PRÓPRIO (framework e `sem_empresa`), AMBÍGUO, SEM-BIBLIOTECA; célula com dois caminhos; fonte alterada
+  depois e antes da verificação, retrato e fonte ausente; fechamento sem registro, com declaração, com pendência,
+  sem push, com push, produto próprio e fora do índice.
+- Biblioteca real (04/10/2026): `verificar --empresa vibra` 56 → 24 achados (os 24 são reais, da biblioteca da
+  empresa); `vencidos` passou a mostrar 3 entradas com fonte alterada; `encerramento` mostrou 1 commit sem push.
+
+### Estado do QA da emenda 3
+| Rodada | Revisor | Veredito | Achados | Destino |
+|---|---|---|---|---|
+| código 1 | Sonnet isolado (ad63fbe9c8b6622b0) | PASS-COM-RESSALVAS | sem ALTA. 4 MÉDIA: push contava commit de outra pasta do repositório-pai; "registro" fraco (commit anterior ao trabalho no mesmo dia contava); produto próprio antes do índice dava falso PASS para projeto sob a pasta do framework; FORA citava nome de empresa. 2 BAIXA: sem caso com biblioteca externa em repositório-pai; boot_check 6,8 s | `rev-list -- .`; `--desde` com hora + limite declarado; índice antes de produto próprio; só a contagem; BAIXAs declaradas em Limites. 4 casos novos no canário |
+| fechamento, padrão | Sonnet isolado (a28f70ad1837bbbce) | PASS-COM-RESSALVAS | 4 correções conferidas no código e no canário; sem ALTA. 3 BAIXA: `--desde ... 14:30` sem aspas virava raiz; hora inválida virava meia-noite; `"sem_empresa": [""]` valia a raiz inteira | as 3 corrigidas, com caso no canário |
+| fechamento, acima | Fable isolado (ab54e0aea4b53b769) | FAIL | 1 ALTA: `boot_check` por caminho relativo só resolve no framework (sempre PRODUTO-PRÓPRIO) — na pasta de projeto nunca rodava. 2 MÉDIA: docops com caminho relativo; fonte com espaço no caminho nunca vencia. BAIXA: edição não commitada não acusava; `data_da_fonte` reimplementava `_git` | `{{FRAMEWORK_ROOT}}` no 0.7 + substituição no `sync-global`; comando absoluto na linha do boot e no docops; regex aceita espaço e tira palavras do fim; edição não commitada usa a data de modificação; `_git` único; 4 casos novos |
+| fechamento, acima, 2 | Fable isolado (a0e02b81a46b52da7) | PASS-COM-RESSALVAS | ALTA fechado, conferido no caminho real (hook → espelho → comando absoluto; sync rodado com perfil temporário); substituição sem BOM, CRLF preservado, workflow sem marcador byte-idêntico. 2 BAIXA: Fonte "A e B" só conferia o 1º; sem canário contra o comando relativo voltar | `e`/`ou` separam arquivos; trava no canário (g); 2 casos novos |
