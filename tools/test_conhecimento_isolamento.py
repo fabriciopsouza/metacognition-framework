@@ -210,7 +210,7 @@ def main():
             ("nome de empresa", "O relatório da Beta usa este saldo.", "identificador de empresa"),
             ("valor de ## Identificadores", "Filtrar o centro 8802 no relatório.", "identificador de empresa"),
             ("repositório do índice", "Ver repo-beta-estoque para exemplos.", "identificador de empresa"),
-            ("caminho de projeto do índice", f"Arquivo em {os.path.join(proj_b, 'q.sql')}.", "caminho"),
+            ("caminho de projeto do índice", f"Arquivo em {os.path.join(proj_b, 'q.sql')}.", "identificador de empresa"),
             ("objeto de cliente Z*", "Rodar o programa ZMM001 antes.", "namespace de cliente"),
             ("objeto de cliente com sublinhado", "Tabela Z_ESTOQUE guarda o saldo.", "namespace de cliente"),
             ("tabela de cliente sem dígito", "A tabela ZMARA estende o cadastro.", "namespace de cliente"),
@@ -323,6 +323,78 @@ def main():
         for nome in os.listdir(os.path.join(raiz, k.DIR_HASHES)):
             if os.path.normcase(os.path.join(raiz, k.DIR_HASHES, nome)) == os.path.normcase(k.arquivo_hashes(raiz, "gama")):
                 os.remove(os.path.join(raiz, k.DIR_HASHES, nome))
+
+        print("emenda 4: caminho com ~ (perfis de usuário diferentes; bloqueio de outra empresa)")
+        casa = os.path.join(base, "casa")
+        os.makedirs(os.path.join(casa, "proj-alfa-casa", "sub"))
+        os.makedirs(os.path.join(casa, "proj-beta-casa"))
+        escrever(os.path.join(casa, "proj-alfa-casa", "q.sql"), "select 1;")
+        env_orig = {v: os.environ.get(v) for v in ("USERPROFILE", "HOME")}
+        os.environ["USERPROFILE"] = os.environ["HOME"] = casa
+        idx = os.path.join(raiz, "INDICE-PROJETOS.md")
+        idx_orig = open(idx, encoding="utf-8").read()
+        acrescentar(idx, "| Casa A | alfa | — | ~\\proj-alfa-casa | repo-alfa-casa | aberto | ~/proj-alfa-casa/q.sql | — |\n"
+                         "| Casa B | beta | — | ~/proj-beta-casa | repo-beta-casa | aberto | — | — |\n")
+        k.publicar_identificadores(raiz, "alfa")  # o repositório novo da alfa é identificador dela
+        arq = os.path.join(raiz, "empresas", "alfa", "estoque", "consultas.md")
+        original = open(arq, encoding="utf-8").read()
+        try:
+            check("~ no índice: diretório dentro do projeto resolve a empresa",
+                  k.resolver_empresa(raiz, os.path.join(casa, "proj-alfa-casa", "sub"))[0] == "alfa")
+            check("~ no índice: o caminho e a especificação existem nesta máquina (sem achado)",
+                  k.verificar(raiz, empresa="alfa") == [], k.verificar(raiz, empresa="alfa"))
+            acrescentar(arq, consulta("AL-C4 com til", "consulta com til?", "- **Aponta para:** ~\\proj-alfa-casa\\q.sql\n"))
+            check("Aponta para com ~ que existe passa", k.verificar(raiz, empresa="alfa") == [], k.verificar(raiz, empresa="alfa"))
+            escrever(arq, original)
+            acrescentar(arq, consulta("AL-C5 til inexistente", "consulta?", "- **Aponta para:** ~/proj-alfa-casa/nao.sql\n"))
+            check("Aponta para com ~ que não existe reprova",
+                  any("AL-C5" in a and "não existe" in a for a in k.verificar(raiz, empresa="alfa")))
+            escrever(arq, original)
+            acrescentar(arq, consulta("AL-C6 til cruzado", "consulta?", "- **Evidência:** ~\\proj-beta-casa\\x.sql\n"))
+            ach = k.verificar(raiz, empresa="alfa")
+            check("~ apontando para projeto de outra empresa é bloqueante e não cita a outra",
+                  any("AL-C6" in a and "outra empresa" in a and "bloqueante" in a for a in ach)
+                  and not any("beta" in a.lower() for a in ach), ach)
+        finally:
+            escrever(arq, original)
+            escrever(idx, idx_orig)
+            k.publicar_identificadores(raiz, "alfa")
+            for v, val in env_orig.items():
+                if val is None:
+                    os.environ.pop(v, None)
+                else:
+                    os.environ[v] = val
+
+        print("emenda 4: atalho de pasta (macOS /var -> /private/var; unidade mapeada no Windows)")
+        # atalho SIMULADO: realpath troca o prefixo da pasta temporária por outro (sem criar link de verdade)
+        base_n = os.path.normcase(os.path.normpath(os.path.abspath(base)))
+        base_real = os.path.join(tempfile.gettempdir(), "atalho-simulado-" + os.path.basename(base))
+        real_orig = os.path.realpath
+
+        def real_falso(p, *a, **kw):
+            n = os.path.normcase(os.path.normpath(os.path.abspath(p)))
+            if n == base_n or n.startswith(base_n + os.sep):
+                return base_real + n[len(base_n):]
+            nb = os.path.normcase(base_real)
+            if n == nb or n.startswith(nb + os.sep):
+                return n  # já está na forma "resolvida": o realpath real expandiria nome curto (RUNNER~1) ou /var
+            return real_orig(p, *a, **kw)
+        os.path.realpath = real_falso
+        try:
+            try:
+                emp_atalho = k.resolver_empresa(raiz, os.path.join(base_real, "projeto-alfa", "sub"))[0]
+            except k.Recusa as e:
+                emp_atalho = f"RECUSA: {e}"
+            check("pasta na forma resolvida (atalho) resolve a empresa pelo índice escrito", emp_atalho == "alfa",
+                  emp_atalho)
+            idents = k.identificadores_de_empresa(raiz)
+            check("identificador guarda o caminho ESCRITO do índice, não o resolvido",
+                  os.path.normcase(os.path.normpath(proj_b)) in idents and not any(v.startswith(os.path.normcase(base_real))
+                                                                                     for v in idents), list(idents))
+            check("texto de assunto com o caminho escrito continua reprovando",
+                  bool(k.verificar_assunto(f"Arquivo em {os.path.join(proj_b, 'q.sql')}.", idents, "alfa")))
+        finally:
+            os.path.realpath = real_orig
 
         print("identificadores")
         arq = os.path.join(raiz, "assuntos", "erp-estoque", "DICIONARIO.md")

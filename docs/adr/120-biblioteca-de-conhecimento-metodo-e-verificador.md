@@ -272,3 +272,19 @@ verificador existente, 1 check no `boot_check` existente, casos no canário exis
 | fechamento, padrão | Sonnet isolado (a28f70ad1837bbbce) | PASS-COM-RESSALVAS | 4 correções conferidas no código e no canário; sem ALTA. 3 BAIXA: `--desde ... 14:30` sem aspas virava raiz; hora inválida virava meia-noite; `"sem_empresa": [""]` valia a raiz inteira | as 3 corrigidas, com caso no canário |
 | fechamento, acima | Fable isolado (ab54e0aea4b53b769) | FAIL | 1 ALTA: `boot_check` por caminho relativo só resolve no framework (sempre PRODUTO-PRÓPRIO) — na pasta de projeto nunca rodava. 2 MÉDIA: docops com caminho relativo; fonte com espaço no caminho nunca vencia. BAIXA: edição não commitada não acusava; `data_da_fonte` reimplementava `_git` | `{{FRAMEWORK_ROOT}}` no 0.7 + substituição no `sync-global`; comando absoluto na linha do boot e no docops; regex aceita espaço e tira palavras do fim; edição não commitada usa a data de modificação; `_git` único; 4 casos novos |
 | fechamento, acima, 2 | Fable isolado (a0e02b81a46b52da7) | PASS-COM-RESSALVAS | ALTA fechado, conferido no caminho real (hook → espelho → comando absoluto; sync rodado com perfil temporário); substituição sem BOM, CRLF preservado, workflow sem marcador byte-idêntico. 2 BAIXA: Fonte "A e B" só conferia o 1º; sem canário contra o comando relativo voltar | `e`/`ou` separam arquivos; trava no canário (g); 2 casos novos |
+
+## Emenda 4 — caminho com `~` também no bloqueio de outra empresa (09/10/2026)
+
+- **Status:** Aceita.
+- **Problema medido:** a emenda 3 passou a expandir `~` no índice, na resolução da pasta e na conferência de existência.
+  O bloqueio de **Evidência:** e **Aponta para:** contra caminho de projeto de outra empresa só reconhecia caminho
+  absoluto. Com `~\<projeto de outra empresa>\arquivo`, o bloqueio era pulado e o caminho passava se existisse.
+- **Decisão:** o bloqueio expande o `~` antes de comparar com os projetos do índice.
+- **Prova:** `tools/test_conhecimento_isolamento.py`, emenda 4: 5 casos com domínios falsos. O caso "`~` apontando
+  para projeto de outra empresa" falha no código anterior (só acusava "não existe") e passa com a correção.
+- **Limite:** caminho relativo à biblioteca não é comparado com os projetos do índice (só absoluto e `~`).
+- **QA:** Sonnet isolado, PASS-COM-RESSALVAS (só BAIXA: título do bloco no canário, espaço, fim de arquivo; corrigidos). `~` sozinho ou com crase fica coberto por leitura do código, não pelo canário.
+- **Junto, duas falhas que já existiam no `main` e deixavam a CI vermelha no Linux:** (1) nome de repositório tirado com `os.path.basename`, que no Linux não separa pela barra invertida (um caminho Windows inteiro virava o nome); agora `_nome_repo` separa pelas duas barras; (2) o canário esperava a palavra `caminho` para caminho de projeto do índice em `assuntos/`, que só aparecia no Windows; o achado nos dois sistemas é `identificador de empresa`.
+- **Também:** a comparação pasta atual × projeto do índice (`_contem`, usada também no bloqueio acima) aceita a forma com atalhos resolvidos (`realpath`). No macOS a pasta temporária `/var` é atalho de `/private/var` e a pasta atual não casava (falha da CI no Mac, também no `main`). O caminho guardado continua o escrito: com `realpath` em `_norm_caminho`, unidade mapeada virava UNC e o detector de caminho de projeto em `assuntos/` deixava de casar (achado ALTA da rodada 3 do QA). Canário: 3 casos com atalho simulado; as duas mutações morrem.
+- **Limites (QA rodada 4):** projeto que é atalho para a pasta de outra empresa pode ter a Evidência atribuída pelo caminho resolvido (bloqueia a mais, lado seguro); em rede fora do ar, a segunda tentativa com `realpath` pode ser lenta por projeto do índice.
+- **QA:** rodadas 1 e 2 PASS-COM-RESSALVAS; rodada 3 FAIL (`realpath` no lugar errado, corrigido); rodada 4 PASS-COM-RESSALVAS (só BAIXA).

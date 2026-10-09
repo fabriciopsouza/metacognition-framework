@@ -1,0 +1,91 @@
+{
+  "bloco": "adr-120-emenda-4-til-no-bloqueio-de-outra-empresa",
+  "rodada": 5,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "autor_modelo": "claude-opus-5-5",
+  "critico_modelo": "claude-sonnet-5",
+  "heterogeneo": true,
+  "atestacao": {
+    "agentId": "a60db010e24e641a7",
+    "modelo": "claude-sonnet-5"
+  },
+  "problemas": [
+    {
+      "severidade": "BAIXA",
+      "local": "tools/test_conhecimento_isolamento.py:378",
+      "descricao": "startswith sem separador no simulador",
+      "estado": "corrigido",
+      "fix": "n == nb or n.startswith(nb + os.sep)"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "tools/test_conhecimento_isolamento.py:377",
+      "descricao": "base_real sem normcase no primeiro ramo",
+      "estado": "aceito",
+      "fix": "inofensivo: _contem aplica normcase"
+    }
+  ],
+  "verificacoes_executadas": [
+    "crítico: canário PASS; 2 mutações reexecutadas em cópia, mortas",
+    "autor: canário PASS; mutações mortas"
+  ],
+  "steelman": "o simulador poderia aceitar qualquer caminho; só devolve intacto o que está sob o diretório simulado inexistente",
+  "data": "2026-10-09T17:21:31Z",
+  "sha_revisado": "c50cac563225c35355bfcc2cd9ca206f75013b48",
+  "substitui": [
+    {
+      "rodada": 1,
+      "data": "2026-10-09T11:00:20Z",
+      "recomendacao": "aprovar_com_ressalvas",
+      "sha_revisado": "e07a75ca830d4d90564c0327a506091bed1198ff",
+      "agentId": "ad0e92ad2bc54cd7c",
+      "escopo_paths": [],
+      "achados_fp": [
+        "BAIXA|docs/adr/120-biblioteca-de-conhecimento-metodo-e-verificador",
+        "BAIXA|tools/test_conhecimento_isolamento.py"
+      ],
+      "reinicio": false
+    },
+    {
+      "rodada": 2,
+      "data": "2026-10-09T13:09:01Z",
+      "recomendacao": "aprovar_com_ressalvas",
+      "sha_revisado": "a88307cb9142e4bd6fbe3110684db531c0318062",
+      "agentId": "a16fc079488882302",
+      "escopo_paths": [],
+      "achados_fp": [
+        "BAIXA|tools/conhecimento.py:547,593",
+        "BAIXA|tools/conhecimento.py:_nome_repo",
+        "BAIXA|tools/test_conhecimento_isolamento.py:213"
+      ],
+      "reinicio": false
+    },
+    {
+      "rodada": 3,
+      "data": "2026-10-09T15:54:10Z",
+      "recomendacao": "corrigir",
+      "sha_revisado": "ae19998dede92641867f65ba7ef313ab33d4366e",
+      "agentId": "af76ab8c880bbb2bf",
+      "escopo_paths": [],
+      "achados_fp": [
+        "ALTA|tools/conhecimento.py:_norm_caminho"
+      ],
+      "reinicio": false
+    },
+    {
+      "rodada": 4,
+      "data": "2026-10-09T15:55:43Z",
+      "recomendacao": "aprovar_com_ressalvas",
+      "sha_revisado": "ae19998dede92641867f65ba7ef313ab33d4366e",
+      "agentId": "afa4a16b1612eccaa",
+      "escopo_paths": [],
+      "achados_fp": [
+        "BAIXA|tools/conhecimento.py:385-386",
+        "BAIXA|tools/conhecimento.py:673",
+        "BAIXA|tools/test_conhecimento_isolamento.py:379-382"
+      ],
+      "reinicio": false
+    }
+  ]
+}
