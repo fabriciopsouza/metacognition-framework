@@ -210,7 +210,7 @@ def main():
             ("nome de empresa", "O relatório da Beta usa este saldo.", "identificador de empresa"),
             ("valor de ## Identificadores", "Filtrar o centro 8802 no relatório.", "identificador de empresa"),
             ("repositório do índice", "Ver repo-beta-estoque para exemplos.", "identificador de empresa"),
-            ("caminho de projeto do índice", f"Arquivo em {os.path.join(proj_b, 'q.sql')}.", "caminho"),
+            ("caminho de projeto do índice", f"Arquivo em {os.path.join(proj_b, 'q.sql')}.", "identificador de empresa"),
             ("objeto de cliente Z*", "Rodar o programa ZMM001 antes.", "namespace de cliente"),
             ("objeto de cliente com sublinhado", "Tabela Z_ESTOQUE guarda o saldo.", "namespace de cliente"),
             ("tabela de cliente sem dígito", "A tabela ZMARA estende o cadastro.", "namespace de cliente"),

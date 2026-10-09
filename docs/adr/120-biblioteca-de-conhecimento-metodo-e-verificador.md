@@ -284,3 +284,4 @@ verificador existente, 1 check no `boot_check` existente, casos no canário exis
   para projeto de outra empresa" falha no código anterior (só acusava "não existe") e passa com a correção.
 - **Limite:** caminho relativo à biblioteca não é comparado com os projetos do índice (só absoluto e `~`).
 - **QA:** Sonnet isolado, PASS-COM-RESSALVAS (só BAIXA: título do bloco no canário, espaço, fim de arquivo; corrigidos). `~` sozinho ou com crase fica coberto por leitura do código, não pelo canário.
+- **Junto, duas falhas que já existiam no `main` e deixavam a CI vermelha no Linux:** (1) nome de repositório tirado com `os.path.basename`, que no Linux não separa pela barra invertida (um caminho Windows inteiro virava o nome); agora `_nome_repo` separa pelas duas barras; (2) o canário esperava a palavra `caminho` para caminho de projeto do índice em `assuntos/`, que só aparecia no Windows; o achado nos dois sistemas é `identificador de empresa`.

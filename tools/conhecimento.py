@@ -241,6 +241,14 @@ def _expandir(v):
     return v
 
 
+def _nome_repo(v):
+    """Último trecho de um caminho ou nome de repositório, com `\\` ou `/` em qualquer sistema (no Linux,
+    `os.path.basename` não separa pela barra invertida e o caminho Windows inteiro virava o nome)."""
+    limpo = re.sub(r"^[`\s/\\]+|[`\s/\\]+$", "", str(v or ""))  # mesmo strip("`/\\ ") de antes, nas duas pontas
+    partes = [p for p in re.split(r"[\\/]+", limpo) if p]
+    return partes[-1].lower() if partes else ""
+
+
 def _caminho_existe(v, raiz):
     v = _expandir(v)
     alvo = v if os.path.isabs(v) or re.match(r"^[A-Za-z]:[\\/]", v) else os.path.join(raiz, v)
@@ -360,7 +368,7 @@ def _projetos(raiz):
         v = linha["caminho"]
         if v and v not in ("—", "-"):
             out.append((_norm_caminho(v), linha["empresa"].strip().lower(),
-                        os.path.basename(linha["repositório"].strip("`/\\ ")).lower()))
+                        _nome_repo(linha["repositório"])))
     return out
 
 
@@ -717,7 +725,7 @@ def _verificar_indice(raiz, trabalhos_dir, empresa=None):
     linhas, ach = linhas_indice(raiz)
     repos = set()
     for linha in linhas:
-        repos.add(os.path.basename(linha["repositório"].strip("`/\\ ")).lower())
+        repos.add(_nome_repo(linha["repositório"]))
         if not _visivel(f"empresas/{linha['empresa'].strip().lower()}", empresa):
             continue
         for k in ("caminho", "especificação", "dicionário"):
@@ -735,7 +743,7 @@ def _verificar_indice(raiz, trabalhos_dir, empresa=None):
             fm = open(os.path.join(trabalhos_dir, nome), encoding="utf-8", errors="replace").read()
             m_repo = re.search(r"(?m)^repo:\s*(.+)$", fm)
             m_st = re.search(r"(?m)^status:\s*(.+)$", fm)
-            repo = os.path.basename((m_repo.group(1) if m_repo else "").strip().strip("/\\")).lower()
+            repo = _nome_repo(m_repo.group(1) if m_repo else "")
             if not repo or repo in FRAMEWORK_REPOS:
                 continue  # trabalho do próprio framework não é projeto
             if m_st and m_st.group(1).strip().lower() != "aberto":
