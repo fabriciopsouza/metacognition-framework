@@ -114,4 +114,16 @@
   pergunte a empresa ao dono, nunca escolha.
 - **Registrar ao fechar o bloco:** termo confirmado, consulta rodada, número medido, pesquisa ou
   runbook reutilizável entra na biblioteca; ou declarar "nada a registrar". Credencial nunca entra.
+
+## 10. Sessões simultâneas: quadro de coordenação
+
+- Várias sessões escrevem nos mesmos repositórios ao mesmo tempo. **Ao abrir e antes de escrever** em
+  repositório: ler `%USERPROFILE%\.claude\coordenacao\QUADRO.md` (o protocolo completo está lá), registrar-se
+  e seguir. `ListAgents` e `SendMessage`, **se disponíveis**, mostram as sessões vivas e levam o aviso; sem
+  elas, o quadro é o canal. Sem o quadro, criá-lo com estas regras e avisar o dono.
+- `git status` antes de escrever: arquivo alterado que não é seu = sessão viva; não tocar, avisar.
+  Commit só por caminho explícito; nunca `add -A`, `checkout`, `reset --hard`, `stash`, `clean`.
+- Fato que afeta outra sessão (decisão do dono, contrato, incidente) vai para o quadro **e** por mensagem às
+  afetadas. O quadro só se edita com `Edit` (recusa gravar sobre escrita alheia); nunca `Write` nem shell.
+- Limite: sessão fora do Claude Code (outra IDE, Codex) não carrega esta regra; o dono avisa a ela.
 <!-- framework:global:fim -->
