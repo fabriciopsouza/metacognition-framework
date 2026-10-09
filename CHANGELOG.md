@@ -5,6 +5,30 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-120 emenda 3 — Empresa da pasta no boot, regra superada e registro cobrado no fechamento (04/10/2026)
+
+- **Correção:** `~\` dos caminhos do `INDICE-PROJETOS.md` não era expandido; nenhum projeto da empresa era resolvido
+  pela pasta e o `verificar` acusava caminhos existentes como inexistentes (56 achados → 24 reais na biblioteca real).
+- **`conhecimento.py contexto`** + check `contexto-empresa` no `boot_check`: EMPRESA (projeto, especificação,
+  dicionário, biblioteca, entradas a reverificar) · PRODUTO-PRÓPRIO (pasta do framework ou `"sem_empresa"`) ·
+  FORA-DO-ÍNDICE (perguntar a empresa no 1º turno e indexar) · AMBÍGUO · SEM-BIBLIOTECA.
+- **`vencidos`** acusa entrada cuja **Fonte:** (arquivo local) mudou depois do **Verificado em:** — regra superada no
+  projeto sem a biblioteca saber.
+- **`conhecimento.py encerramento --desde dd/mm/aaaa [hh:mm]`**: exit 0 só com commit + push na biblioteca da empresa ou declaração
+  "nada a registrar"; o passo 7 do docops passa a cobrar o comando.
+- Índice aceita vários caminhos separados por `;` na especificação/dicionário.
+- `start-session.md` 0.7 chama o `boot_check` por `{{FRAMEWORK_ROOT}}`; o `sync-global.ps1` troca o marcador pelo
+  caminho absoluto ao espelhar os workflows (antes, o comando relativo só resolvia dentro do framework).
+- Prova: `test_conhecimento` (g).
+
+### ADR-129 — Resposta executiva: medir sem bloquear, achados antes da resposta seguinte (28/09/2026)
+
+- O hook de Stop mede e nunca bloqueia. Antes, bloquear depois de exibir duplicava a resposta na tela.
+- O `UserPromptSubmit` (`--lembrete`) injeta os achados da resposta anterior uma vez; sem achado, nada. O molde fica na regra global.
+- Sem limite fixo de palavras (prosa longa vira sinal). Passam a ser medidos: decisão sem recomendação e tabelas coladas sem título.
+- Regra global, seção 4: "conciso, mas claro; objetivo, mas compreensível; nunca omisso", com o molde do fechamento.
+- Prova: `test_resposta_executiva`.
+
 ### ADR-128 — Perfil anp-combustiveis e camada privada da empresa (28/09/2026)
 
 - **Novo perfil `anp-combustiveis`** (distribuição de combustíveis):

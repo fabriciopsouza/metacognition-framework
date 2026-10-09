@@ -26,7 +26,7 @@
 - ✅ `agnostic-core-linter` — Linter fail-closed: nucleo nao carrega norma de dominio (agnosticismo)
 - ✅ `author-tier-gate` — Gate de tier-autor da sessao: detecta modelo ativo (transcript) + alerta LOUD se autor < baseline (ADR-082)
 - ✅ `autonomy-retry-policy` — Dial retry/escalate por MODO (ADR-087): HITL escala na 1a falha; autosuficiente auto-retenta subindo a escada de modelo ate budget, escala por ultimo
-- ✅ `biblioteca-de-conhecimento` — Biblioteca de conhecimento reutilizavel por empresa: metodo de construir e consultar, modelo, verificador de forma e validade, busca unica pelo knowledge_catalog
+- ✅ `biblioteca-de-conhecimento` — Biblioteca de conhecimento reutilizavel por empresa: metodo de construir e consultar, modelo, verificador de forma e validade, busca unica pelo knowledge_catalog; empresa da pasta no boot (contexto), regra superada por fonte alterada (vencidos) e registro cobrado no fechamento (encerramento)
 - ✅ `boot-self-check` — Self-check de boot consolidado (sync+agnosticismo+boot-scan+versao) com prova checavel
 - ✅ `byo-ci-gate` — Gate de merge dirigido pelos canarios LOCAIS (BYO-CI) — a seguranca do GHA sem GHA: posta commit-status verde so com 0 FAIL; branch protection exige o context
 - ✅ `canary-runner-bytecode-isolation` — O executor da suite nao pode ser enganado por bytecode velho
@@ -105,7 +105,7 @@
 - ✅ `repo-mode-user-vs-dev` — Modo por identidade no boot: shadow=USER (aplica a dominio, nao desenvolve), master=DEV
 - ✅ `repo-sync-boot` — Sync do repo no boot: dim.1 vs proprio upstream (pull seguro) + dim.2 ORTOGONAL vs branch de integracao (origin/HEAD) com marker persistente repetido por-turno (ADR-084)
 - ✅ `research-evidence` — NAO SEI so vale depois de busca provada: >= K dominios distintos com prova, ou ratificacao humana
-- ✅ `resposta-executiva` — Resposta executiva medida por hook de Stop: prosa longa, pedido ao dono no meio do turno e bloco explicativo devolvem a resposta para reescrita uma vez
+- ✅ `resposta-executiva` — Resposta executiva medida por hook: o Stop mede a estrutura sem bloquear e o UserPromptSubmit devolve os achados antes da resposta seguinte
 - ✅ `risk-gate` — Gating deterministico por risco (prob x impacto -> gate + tier P0-P3); recast externo (ADR-086) sob P15, forma agnostica (categorias = blueprint)
 - 🟡 `route-gate` — Lembrete de rota deterministico 1x/sessao (UserPromptSubmit), fail-open
 - ✅ `rules-parity-guard` — Anti-drift das 4 regras inviolaveis entre arquivos de autoridade (sem violar SSoT §6.5)

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Canario do boot_check (emenda ADR-061 / plano anti-bypass): prova que o self-check de boot RODA,
-produz .claude/boot-proof.json com o schema esperado, FRESCO desta execucao, e cobre as 7 verificacoes
-session-time (incl. author-tier ADR-082, env-applicability ADR-093, trabalhos-abertos ADR-100). Sem isto, "boot_check existe e funciona" seria prosa. Fail-closed (exit 1 se diverge).
+produz .claude/boot-proof.json com o schema esperado, FRESCO desta execucao, e cobre as 8 verificacoes
+session-time (incl. author-tier ADR-082, env-applicability ADR-093, trabalhos-abertos ADR-100, contexto-empresa
+ADR-120 emenda 3). Sem isto, "boot_check existe e funciona" seria prosa. Fail-closed (exit 1 se diverge).
 
 Anti false-PASS (achado CRITICO do qa-critic 2026-06-10): NAO basta validar o schema de QUALQUER
 boot-proof.json em disco — uma prova velha/forjada passaria. Aqui capturamos t0 ANTES de rodar e
@@ -28,7 +29,8 @@ except Exception:
 
 EXPECTED_CHECKS = {"repo-sync", "core-agnostic", "cross-ai-boot-scan", "version-sanity",
                    "env-applicability", "author-tier",  # env-applicability: ADR-093
-                   "trabalhos-abertos"}  # ADR-100: oferece handoff pendente ate ser tratado
+                   "trabalhos-abertos",  # ADR-100: oferece handoff pendente ate ser tratado
+                   "contexto-empresa"}  # ADR-120 emenda 3: empresa/projeto/biblioteca da pasta da sessao
 VALID_STATUS = {"ok", "warn", "fail", "skip"}
 
 

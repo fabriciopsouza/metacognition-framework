@@ -29,6 +29,11 @@ Uso:
     python tools/conhecimento.py verificar [<raiz>] [--empresa <e>|nenhuma|todas] [--trabalhos <dir>] [--hoje dd/mm/aaaa]
     python tools/conhecimento.py vencidos  [<raiz>] [--empresa <e>|nenhuma|todas] [--hoje dd/mm/aaaa]
     python tools/conhecimento.py publicar  [<raiz>] --empresa <e>   # sha256 dos identificadores em assuntos/_identificadores/
+    python tools/conhecimento.py contexto  [<raiz>] [--cwd <pasta>]  # empresa/projeto/biblioteca da pasta (boot)
+    python tools/conhecimento.py encerramento [<raiz>] --desde dd/mm/aaaa [hh:mm] [--cwd <pasta>] [--declarar "<motivo>"]
+contexto: EMPRESA | PRODUTO-PRÓPRIO (pasta do framework ou "sem_empresa" no conhecimento.json) → exit 0;
+FORA-DO-ÍNDICE | AMBÍGUO | SEM-BIBLIOTECA → exit 1. encerramento: 0 registrado/declarado, 1 falta, 2 recusado.
+`vencidos` também acusa entrada cuja **Fonte:** (arquivo local) mudou depois do **Verificado em:**.
 Bibliotecas de empresa fora da raiz (repositório próprio): `conhecimento.json` → "bibliotecas": [<pasta>], com o
 marcador `.conhecimento-empresa` (nome da empresa) na raiz da biblioteca da empresa.
 Raiz padrão: docs/_private/conhecimento. Exit 1 com achado (verificar) ou com vencido (vencidos); 2 = recusado.
@@ -38,6 +43,7 @@ import hashlib
 import json
 import os
 import re
+import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -225,8 +231,18 @@ def _relacoes(v):
     return pares
 
 
-def _caminho_existe(v, raiz):
+def _expandir(v):
+    """`~\\pasta` ou `~/pasta` → pasta do usuário desta máquina (o índice guarda caminhos com `~`, emenda 3).
+    Aceita as duas barras em qualquer sistema; o resto do texto fica como está."""
     v = v.strip().strip("`")
+    if re.match(r"^~(?:[\\/]|$)", v):
+        partes = [p for p in re.split(r"[\\/]+", v[1:]) if p]
+        return os.path.join(os.path.expanduser("~"), *partes)
+    return v
+
+
+def _caminho_existe(v, raiz):
+    v = _expandir(v)
     alvo = v if os.path.isabs(v) or re.match(r"^[A-Za-z]:[\\/]", v) else os.path.join(raiz, v)
     return os.path.exists(alvo)
 
@@ -305,7 +321,7 @@ def _visivel(escopo, empresa):
 
 
 def _norm_caminho(p):
-    return os.path.normcase(os.path.normpath(os.path.abspath(p.strip().strip("`"))))
+    return os.path.normcase(os.path.normpath(os.path.abspath(_expandir(p))))
 
 
 def linhas_indice(raiz):
@@ -348,17 +364,31 @@ def _projetos(raiz):
     return out
 
 
+def _contem(base, alvo):
+    return alvo == base or alvo.startswith(base.rstrip(os.sep) + os.sep)
+
+
+def projetos_da_pasta(raiz, cwd=None):
+    """Linhas do índice do projeto mais específico cujo Caminho contém `cwd` ([] = fora do índice)."""
+    alvo = _norm_caminho(cwd or os.getcwd())
+    cands = [(len(_norm_caminho(ln["caminho"])), ln) for ln in linhas_indice(raiz)[0]
+             if ln["caminho"] not in ("", "—", "-") and _contem(_norm_caminho(ln["caminho"]), alvo)]
+    if not cands:
+        return []
+    maior = max(n for n, _ in cands)
+    return [ln for n, ln in cands if n == maior]
+
+
 def resolver_empresa(raiz, cwd=None):
     """(empresa, como) pelo projeto do índice cujo Caminho contém `cwd` (o mais específico). Levanta Recusa
     quando nenhum projeto contém o diretório ou quando dois de empresas diferentes empatam."""
     alvo = _norm_caminho(cwd or os.getcwd())
-    cands = [(len(c), e) for c, e, _r in _projetos(raiz) if alvo == c or alvo.startswith(c.rstrip(os.sep) + os.sep)]
-    if not cands:
+    linhas = projetos_da_pasta(raiz, alvo)
+    if not linhas:
         raise Recusa(f"a empresa não foi informada e o diretório atual ({alvo}) não está no Caminho de nenhum projeto "
                      f"do INDICE-PROJETOS.md. Informe --empresa <empresa> (ou --empresa nenhuma, só assuntos e "
                      f"perfis). Nada foi lido.")
-    maior = max(n for n, _ in cands)
-    topo = {e for n, e in cands if n == maior}
+    topo = {ln["empresa"].strip().lower() for ln in linhas}
     if len(topo) > 1:
         raise Recusa(f"o diretório atual está em projetos de mais de uma empresa no índice; informe --empresa. "
                      f"Nada foi lido.")
@@ -691,9 +721,11 @@ def _verificar_indice(raiz, trabalhos_dir, empresa=None):
         if not _visivel(f"empresas/{linha['empresa'].strip().lower()}", empresa):
             continue
         for k in ("caminho", "especificação", "dicionário"):
-            v = linha[k]
-            if v and v not in ("—", "-") and not _caminho_existe(v, raiz):
-                ach.append(f"INDICE-PROJETOS.md · {linha['projeto']}: {k} não existe ({v})")
+            # especificação/dicionário aceitam vários caminhos separados por `;` (cada um é conferido)
+            partes = [linha[k]] if k == "caminho" else re.split(r"\s*;\s*", linha[k])
+            for v in partes:
+                if v and v not in ("—", "-") and not _caminho_existe(v, raiz):
+                    ach.append(f"INDICE-PROJETOS.md · {linha['projeto']}: {k} não existe ({v})")
     # Trabalho aberto sem linha no índice: o trabalho não diz a empresa e a mensagem traz o nome do repositório;
     # por isso só na manutenção da biblioteca inteira (sem recorte), nunca no recorte de uma empresa.
     if trabalhos_dir and os.path.isdir(trabalhos_dir) and empresa in (None, TODAS):
@@ -713,11 +745,57 @@ def _verificar_indice(raiz, trabalhos_dir, empresa=None):
     return ach
 
 
-def vencidos(raiz, hoje=None, empresa=None):
-    """[(entrada, motivo)] a reverificar: contestada, versão do sistema mudou, ou prazo da classe vencido."""
+# caminho até vírgula, ponto e vírgula, crase ou fim; pode ter espaço ("OneDrive - X\spec.md, §2")
+_CAMINHO_FONTE = re.compile(r"(?:~[\\/]|[A-Za-z]:[\\/])[^,;`\n]+")
+
+
+def _arquivo_citado(bruto):
+    """Arquivo local citado no trecho: tenta o trecho inteiro e vai tirando palavras do fim ("regra.md linha 12",
+    "spec.md."); None se nada existir nesta máquina."""
+    partes = bruto.strip().split(" ")
+    while partes:
+        caminho = _expandir(" ".join(partes).rstrip(".):"))
+        if os.path.isfile(caminho):
+            return caminho
+        partes.pop()
+    return None
+
+
+def data_da_fonte(caminho):
+    """Data da última mudança de um arquivo: último commit (git); com edição não commitada ou fora do git, a data
+    de modificação."""
+    pasta, nome = os.path.dirname(caminho), os.path.basename(caminho)
+    rc, st = _git(pasta, "status", "--porcelain", "--", nome)
+    rc_log, s = _git(pasta, "log", "-1", "--format=%cs", "--", nome)
+    if rc == 0 and not st and rc_log == 0 and s:
+        try:
+            return datetime.date.fromisoformat(s)
+        except ValueError:
+            pass
+    return datetime.date.fromtimestamp(os.path.getmtime(caminho))
+
+
+def _fonte_alterada(c, verificado, data_fonte, cache):
+    """Primeiro arquivo local citado em **Fonte:** que mudou depois de `verificado`: (caminho, data) ou None.
+    Regra superada no projeto sem a biblioteca saber (caso de 03/10/2026, emenda 3)."""
+    trechos = [t for b in _CAMINHO_FONTE.findall(c.get("Fonte", "")) for t in re.split(r"\s+(?:e|ou)\s+", b)]
+    for bruto in trechos:  # "~\a.md e ~\b.md": cada arquivo é conferido
+        caminho = _arquivo_citado(bruto)
+        if not caminho:
+            continue
+        if caminho not in cache:
+            cache[caminho] = data_fonte(caminho)
+        if cache[caminho] and cache[caminho] > verificado:
+            return bruto, cache[caminho]
+    return None
+
+
+def vencidos(raiz, hoje=None, empresa=None, data_fonte=data_da_fonte):
+    """[(entrada, motivo)] a reverificar: contestada, versão do sistema mudou, prazo da classe vencido, ou arquivo
+    citado em **Fonte:** alterado depois do **Verificado em:**. `data_fonte` é injetável para teste."""
     hoje = hoje or datetime.date.today()
     cfg0, ents, _ = carregar(raiz, empresa)
-    out = []
+    out, cache = [], {}
     for e in ents:
         cfg = cfg_do_escopo(raiz, cfg0, e["escopo"])
         prazos = dict(PRAZO_PADRAO, **(cfg.get("validade_meses") or {}))
@@ -736,6 +814,11 @@ def vencidos(raiz, hoje=None, empresa=None):
         d = _data(c.get("Verificado em"))
         if d and classe in prazos and _meses(d, hoje) >= prazos[classe]:
             out.append((e, f"{classe}: verificado há {_meses(d, hoje)} meses (prazo {prazos[classe]})"))
+            continue
+        alterada = _fonte_alterada(c, d, data_fonte, cache) if d and classe != "retrato" else None
+        if alterada:
+            out.append((e, f"fonte alterada em {alterada[1]:%d/%m/%Y}, depois da verificação de {d:%d/%m/%Y} "
+                           f"({alterada[0]})"))
     return out
 
 
@@ -763,18 +846,107 @@ def rotulo(e):
     return f"- **{e['nome']}** ({c.get('Tipo', '?').strip()}, `{e['arquivo']}`) — {prefixo}{str(texto or '').strip()[:160]}"
 
 
+# Contexto da pasta no boot e cobrança no encerramento (emenda 3 do ADR-120, pedido do dono de 04/10/2026).
+EMPRESA, PROPRIO, FORA, AMBIGUO, SEM_BIBLIOTECA = "EMPRESA", "PRODUTO-PRÓPRIO", "FORA-DO-ÍNDICE", "AMBÍGUO", \
+    "SEM-BIBLIOTECA"
+
+
+def contexto(raiz, cwd=None, data_fonte=data_da_fonte):
+    """Empresa, projeto e biblioteca da pasta `cwd`. Produto próprio = a pasta deste framework ou uma pasta de
+    `conhecimento.json` → "sem_empresa" (declaração do dono). Devolve dict com `estado` e o que achou."""
+    alvo = _norm_caminho(cwd or os.getcwd())
+    proprios = [ROOT] + [_expandir(p) if os.path.isabs(_expandir(p)) else os.path.join(raiz, p)
+                         for p in (_cfg_raiz(raiz).get("sem_empresa") or []) if str(p).strip()]
+    # o índice vem antes: projeto de empresa sob a pasta do framework (worktree, raiz padrão) não vira produto próprio
+    linhas = projetos_da_pasta(raiz, alvo) if os.path.isdir(raiz) else []
+    if not linhas and any(_contem(_norm_caminho(p), alvo) for p in proprios):
+        return {"estado": PROPRIO, "pasta": alvo}
+    if not os.path.isdir(raiz):
+        return {"estado": SEM_BIBLIOTECA, "pasta": alvo, "raiz": raiz}
+    if not linhas:
+        return {"estado": FORA, "pasta": alvo, "n_empresas": len(empresas_presentes(raiz)), "raiz": raiz}
+    if len({ln["empresa"].strip().lower() for ln in linhas}) > 1:
+        return {"estado": AMBIGUO, "pasta": alvo}
+    ln = linhas[0]
+    e = ln["empresa"].strip().lower()
+    return {"estado": EMPRESA, "pasta": alvo, "empresa": e, "projeto": ln["projeto"],
+            "especificação": ln["especificação"], "dicionário": ln["dicionário"],
+            "biblioteca": dir_empresa(raiz, e), "a_reverificar": len(vencidos(raiz, empresa=e, data_fonte=data_fonte))}
+
+
+def texto_contexto(ctx):
+    """Uma linha para o boot. Fora do índice, diz o que fazer no 1º turno."""
+    est = ctx["estado"]
+    if est == EMPRESA:
+        rev = f"; {ctx['a_reverificar']} entrada(s) a reverificar (conhecimento.py vencidos)" if ctx["a_reverificar"] else ""
+        cmd = (f'python "{os.path.join(ROOT, "tools", "conhecimento.py")}" encerramento --cwd "{ctx["pasta"]}" '
+               f'--desde "<dd/mm/aaaa hh:mm do início>"')
+        return (f"empresa {ctx['empresa']} · projeto {ctx['projeto']} · especificação {ctx['especificação']} · "
+                f"dicionário {ctx['dicionário']} · biblioteca {ctx['biblioteca']}{rev}. Ler antes de agir; ao "
+                f"encerrar, registrar o conhecimento novo lá e provar: {cmd}")
+    if est == PROPRIO:
+        return f"produto próprio ({ctx['pasta']}): sem empresa; o conhecimento fica no próprio repositório."
+    if est == FORA:
+        # só a contagem: o nome de uma empresa não aparece no trabalho de outra (isolamento, emenda 1)
+        return (f"{ctx['pasta']} não está no INDICE-PROJETOS de nenhuma empresa desta máquina "
+                f"({ctx['n_empresas']} biblioteca(s) de empresa presentes). No 1º turno, pergunte ao dono a empresa e "
+                f"acrescente a linha no INDICE-PROJETOS.md dela; se for produto próprio, declare a pasta em "
+                f"{os.path.join(ctx['raiz'], 'conhecimento.json')} → \"sem_empresa\".")
+    if est == AMBIGUO:
+        return f"{ctx['pasta']} está em projetos de mais de uma empresa no índice: pergunte ao dono e corrija o índice."
+    return f"biblioteca de conhecimento ausente ({ctx['raiz']}): empresa não resolvida."
+
+
+def _git(pasta, *args):
+    try:  # stdin fechado: git herdando a entrada de um processo em segundo plano chegou a travar (04/10/2026)
+        p = subprocess.run(["git", *args], cwd=pasta, capture_output=True, text=True, encoding="utf-8",
+                           errors="replace", timeout=30, stdin=subprocess.DEVNULL)
+    except (OSError, subprocess.SubprocessError) as e:
+        return 1, str(e)
+    return p.returncode, p.stdout.strip()
+
+
+def encerramento(raiz, desde, cwd=None, declarar=None):
+    """(código, linhas). 0 = conhecimento registrado (commit na biblioteca da empresa desde `desde`, sem pendência
+    e sem push faltando) ou declarado; 1 = falta registro, commit ou push; 2 = empresa não resolvida."""
+    ctx = contexto(raiz, cwd)
+    if ctx["estado"] == PROPRIO:
+        return 0, ["PASS: produto próprio — sem empresa; o conhecimento fica no próprio repositório."]
+    if ctx["estado"] != EMPRESA:
+        return 2, [f"RECUSADO: {texto_contexto(ctx)}"]
+    lib, linhas = ctx["biblioteca"], [f"empresa: {ctx['empresa']} · biblioteca: {ctx['biblioteca']}"]
+    rc, raiz_git = _git(lib, "rev-parse", "--show-toplevel") if os.path.isdir(lib) else (1, "")
+    if rc != 0:
+        return 1, linhas + ["FAIL: a biblioteca da empresa não é um repositório git nesta máquina — sem como provar o registro."]
+    _rc, pend = _git(lib, "status", "--porcelain", "--", ".")
+    if pend:
+        return 1, linhas + ["FAIL: alterações não commitadas na biblioteca:"] + [f"  {x}" for x in pend.splitlines()[:10]]
+    desde = desde if isinstance(desde, datetime.datetime) else datetime.datetime.combine(desde, datetime.time())
+    _rc, commits = _git(lib, "log", f"--since={desde:%Y-%m-%d %H:%M}", "--format=%h %cs %s", "--", ".")
+    rc, adiante = _git(lib, "rev-list", "--count", "@{u}..HEAD", "--", ".")  # só commits da biblioteca
+    if commits and (rc != 0 or adiante != "0"):
+        return 1, linhas + [f"FAIL: commit sem push na biblioteca ({adiante if rc == 0 else 'sem upstream'})."]
+    if commits:
+        return 0, linhas + [f"PASS: conhecimento registrado desde {desde:%d/%m/%Y}:"] + \
+            [f"  {x}" for x in commits.splitlines()[:10]]
+    if declarar and declarar.strip():
+        return 0, linhas + [f"PASS: declarado — nada a registrar desde {desde:%d/%m/%Y}: {declarar.strip()}"]
+    return 1, linhas + [f"FAIL: nenhum registro na biblioteca desde {desde:%d/%m/%Y}. Registre o conhecimento novo "
+                        f"(commit + push) ou declare: --declarar \"<por que não há o que registrar>\"."]
+
+
 def main(argv):
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     except (AttributeError, ValueError):
         pass
     args = [a for a in argv[1:]]
-    if not args or args[0] not in ("verificar", "vencidos", "publicar"):
+    if not args or args[0] not in ("verificar", "vencidos", "publicar", "contexto", "encerramento"):
         print(__doc__)
         return 2
     cmd, resto = args[0], args[1:]
     opts = {}
-    for flag in ("--trabalhos", "--hoje", "--empresa"):
+    for flag in ("--trabalhos", "--hoje", "--empresa", "--cwd", "--desde", "--declarar"):
         if flag in resto:
             i = resto.index(flag)
             if i + 1 >= len(resto):
@@ -782,11 +954,31 @@ def main(argv):
                 return 2
             opts[flag] = resto[i + 1]
             del resto[i:i + 2]
+            if flag == "--desde" and i < len(resto) and re.fullmatch(r"\d{1,2}:\d{2}", resto[i]):
+                opts[flag] += " " + resto.pop(i)  # `--desde 04/10/2026 14:30` sem aspas
     raiz = resto[0] if resto else RAIZ_PADRAO
     hoje = _data(opts["--hoje"]) if "--hoje" in opts else None
     if "--hoje" in opts and hoje is None:
         print("RECUSADO: --hoje precisa de data dd/mm/aaaa")
         return 2
+    if cmd == "contexto":
+        ctx = contexto(raiz, opts.get("--cwd"))
+        print(f"{ctx['estado']}: {texto_contexto(ctx)}")
+        return 0 if ctx["estado"] in (EMPRESA, PROPRIO) else 1
+    if cmd == "encerramento":
+        desde = _data(opts.get("--desde"))
+        if desde is None:
+            print("RECUSADO: encerramento exige --desde dd/mm/aaaa [hh:mm] (início do trabalho)")
+            return 2
+        hm = re.search(r"\b(\d{1,2}):(\d{2})\b", opts["--desde"])
+        if hm:
+            if int(hm.group(1)) > 23 or int(hm.group(2)) > 59:
+                print(f"RECUSADO: hora inválida em --desde ({hm.group(0)})")
+                return 2
+            desde = datetime.datetime.combine(desde, datetime.time(int(hm.group(1)), int(hm.group(2))))
+        rc, linhas = encerramento(raiz, desde, opts.get("--cwd"), opts.get("--declarar"))
+        print("\n".join(linhas))
+        return rc
     if not os.path.isdir(raiz):
         print(f"RECUSADO: {raiz} não existe")
         return 2

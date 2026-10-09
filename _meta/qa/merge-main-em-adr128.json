@@ -1,0 +1,124 @@
+{
+  "bloco": "merge-main-em-adr128",
+  "papel": "qa_critic",
+  "rodada": 1,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "veredito": "aprovar",
+  "escopo_paths": [
+    ".agent/skills/docops/SKILL.md",
+    ".agent/workflows/start-session.md",
+    ".claude/global/CLAUDE-global.md",
+    ".claude/hooks/sync-global.ps1",
+    "CAPABILITIES.md",
+    "CHANGELOG.md",
+    "_meta/qa/adr129-resposta-executiva-sem-bloqueio.json",
+    "_meta/qa/adr129-resposta-executiva-sem-bloqueio.md",
+    "_meta/qa/junctions/adr-120-emenda-3.jsonl",
+    "capabilities.json",
+    "docs/_private/conhecimento/assuntos/_identificadores/9797670166d0f431.txt",
+    "docs/adr/120-biblioteca-de-conhecimento-metodo-e-verificador.md",
+    "docs/adr/123-resposta-executiva-medida-por-hook.md",
+    "docs/adr/129-resposta-executiva-sem-bloqueio.md",
+    "tools/boot_check.py",
+    "tools/conhecimento.py",
+    "tools/hooks/ensure-global-wiring.ps1",
+    "tools/hooks/resposta_executiva.py",
+    "tools/test_boot_check.py",
+    "tools/test_conhecimento.py",
+    "tools/test_resposta_executiva.py",
+    "_meta/qa/merge-main-em-adr128.json",
+    "_meta/qa/merge-main-em-adr128.md"
+  ],
+  "atestacao": {
+    "agentId": "a8222c4cc15e6fe14",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic isolado, so leitura (git diff/show/ls-files); nenhuma escrita"
+  },
+  "postura": {
+    "discovery": "merge de sincronizacao, sem decisao nova",
+    "rrc": "PASSA",
+    "metodo_senior": "diff cached contra cada pai, contagem de ids do capabilities nos 3 estados, conteudo do arquivo de hashes e regra de export"
+  },
+  "resumo": "Merge de origin/main na branch do ADR-128: diff contra cada pai igual ao do outro lado; CHANGELOG com as 3 entradas integras; capabilities 114=114=114; 9797670166d0f431.txt so sha256 e removido do export por tools/export-clean.py.",
+  "verificacoes_executadas": [
+    "git diff --cached origin/main == git show 24e5f4f",
+    "git diff --cached HEAD == git diff HEAD...origin/main",
+    "CHANGELOG sem marcas, 3 entradas",
+    "capabilities ids 114 nos 3",
+    "export-clean STRIP_BEFORE docs/_private",
+    "run_canaries 98 PASS 1 SKIP 0 FAIL (autor)"
+  ],
+  "problemas": [
+    {
+      "severidade": "BAIXA",
+      "descricao": "Data 28/09 do ADR-128 vs commit 29/09; ordem nao cronologica no CHANGELOG; cosmetico",
+      "estado": "aceito",
+      "local": "CHANGELOG.md"
+    }
+  ],
+  "data": "2026-10-09T02:48:35Z",
+  "sha_revisado": "24e5f4f85b9144c427b1cf08c73d91ba282d63cc",
+  "blobs_revisados": {
+    ".agent/skills/docops/SKILL.md": "bd8d3e697fe6ab8455cd4224d2a7e8031657aec2",
+    ".agent/workflows/start-session.md": "93da3c4c34d6f5b15bfa84e4af0d8b53fb8ef55c",
+    ".claude/global/CLAUDE-global.md": "4f5a8fdf2235c14f075404aee55b6e98e00173ef",
+    ".claude/hooks/sync-global.ps1": "740b75c9afdafa00b86d812d0bedd31976be981c",
+    "CAPABILITIES.md": "67385f21cdf187a88a2b2b8e56840a042309129b",
+    "CHANGELOG.md": "7290227143ed6011078201c51711aab85f089cfd",
+    "_meta/qa/adr129-resposta-executiva-sem-bloqueio.json": "f261ff600b93e03c42732eadcde961577967e008",
+    "_meta/qa/adr129-resposta-executiva-sem-bloqueio.md": "452d55dacb8a3208a5257ed8c23093ceae5dc5e8",
+    "_meta/qa/junctions/adr-120-emenda-3.jsonl": "b0499e5e58f5e1c1ec8f79ff7b553d6d78781ea8",
+    "capabilities.json": "d31fda8cbe4680db7c68d88bd3d5fe14a7beb167",
+    "docs/_private/conhecimento/assuntos/_identificadores/9797670166d0f431.txt": "4ef6213dfafcf5dc061d7b031aed38906c31ec5d",
+    "docs/adr/120-biblioteca-de-conhecimento-metodo-e-verificador.md": "fea9627ca310287bb118377a7447aa101ac30800",
+    "docs/adr/123-resposta-executiva-medida-por-hook.md": "6cdff1e9f548858e49b029e509431a6050d2cd2c",
+    "docs/adr/129-resposta-executiva-sem-bloqueio.md": "0c5899d67943da1afaa60f85523d44a812ef25cf",
+    "tools/boot_check.py": "7a5c83af7e0801ffb62a4edf9e25612c6a0316cd",
+    "tools/conhecimento.py": "f4e955bcb37ae0e2f4607f0cd01b8ebf8d024759",
+    "tools/hooks/ensure-global-wiring.ps1": "d95416839db1fc403b7f21f760d2ae1f89c71e13",
+    "tools/hooks/resposta_executiva.py": "f8d364f2eb6e92b69e6b509377a88ae7e0d7e5d8",
+    "tools/test_boot_check.py": "114c564b591ccdeb4f7f7bbe4e0de47541249ee6",
+    "tools/test_conhecimento.py": "28b0c1d29a818224dff2a4d90101965466c82843",
+    "tools/test_resposta_executiva.py": "cdb406052b3ba9906f94e1efc4abe89052a590e4"
+  },
+  "substitui": [
+    {
+      "rodada": 1,
+      "data": null,
+      "recomendacao": "aprovar",
+      "sha_revisado": null,
+      "agentId": "a8222c4cc15e6fe14",
+      "escopo_paths": [
+        ".agent/skills/docops/SKILL.md",
+        ".agent/workflows/start-session.md",
+        ".claude/global/CLAUDE-global.md",
+        ".claude/hooks/sync-global.ps1",
+        "CAPABILITIES.md",
+        "CHANGELOG.md",
+        "_meta/qa/adr129-resposta-executiva-sem-bloqueio.json",
+        "_meta/qa/adr129-resposta-executiva-sem-bloqueio.md",
+        "_meta/qa/junctions/adr-120-emenda-3.jsonl",
+        "capabilities.json",
+        "docs/_private/conhecimento/assuntos/_identificadores/9797670166d0f431.txt",
+        "docs/adr/120-biblioteca-de-conhecimento-metodo-e-verificador.md",
+        "docs/adr/123-resposta-executiva-medida-por-hook.md",
+        "docs/adr/129-resposta-executiva-sem-bloqueio.md",
+        "tools/boot_check.py",
+        "tools/conhecimento.py",
+        "tools/hooks/ensure-global-wiring.ps1",
+        "tools/hooks/resposta_executiva.py",
+        "tools/test_boot_check.py",
+        "tools/test_conhecimento.py",
+        "tools/test_resposta_executiva.py",
+        "_meta/qa/merge-main-em-adr128.json",
+        "_meta/qa/merge-main-em-adr128.md"
+      ],
+      "achados_fp": [
+        "BAIXA|changelog.md"
+      ],
+      "reinicio": false
+    }
+  ]
+}

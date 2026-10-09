@@ -75,6 +75,150 @@ def sabotado(mudanca, esperado, trabalhos=None):
     return any(re.search(esperado, a) for a in ach), ach
 
 
+def _git(pasta, *args, env=None):
+    return subprocess.run(["git", *args], cwd=pasta, capture_output=True, text=True, stdin=subprocess.DEVNULL,
+                          env=dict(os.environ, **(env or {})))
+
+
+LINHA = "| Projeto A | {e} | — | {c} | proj-a | aberto | — | — |\n"
+
+
+def _emenda3(casa):
+    os.makedirs(os.path.join(casa, "proj-a", "sub"))
+    os.makedirs(os.path.join(casa, "outra"))
+    check("~\\ e ~/ expandem para a pasta do usuário",
+          k._expandir("~\\proj-a\\sub") == os.path.join(casa, "proj-a", "sub")
+          and k._expandir("`~/proj-a`") == os.path.join(casa, "proj-a"), k._expandir("~\\proj-a\\sub"))
+    check("caminho absoluto e '~nome' ficam como estão",
+          k._expandir("C:\\x\\y") == "C:\\x\\y" and k._expandir("~nome/x") == "~nome/x")
+
+    raiz = copia()
+    acrescenta(raiz, "INDICE-PROJETOS.md", LINHA.format(e="empresa-exemplo", c="~\\proj-a"))
+    check("índice com ~\\ não acusa caminho inexistente",
+          not any("Projeto A" in a for a in k.verificar(raiz, None, HOJE)), k.verificar(raiz, None, HOJE))
+    ctx = k.contexto(raiz, os.path.join(casa, "proj-a", "sub"), data_fonte=lambda p: None)
+    check("subpasta de projeto do índice → EMPRESA", ctx["estado"] == k.EMPRESA
+          and ctx["empresa"] == "empresa-exemplo" and ctx["projeto"] == "Projeto A", ctx)
+    check("biblioteca da empresa apontada", ctx.get("biblioteca") == os.path.join(raiz, "empresas", "empresa-exemplo"), ctx)
+    check("resolver_empresa aceita o ~\\ do índice",
+          k.resolver_empresa(raiz, os.path.join(casa, "proj-a"))[0] == "empresa-exemplo")
+    ctx = k.contexto(raiz, os.path.join(casa, "outra"))
+    check("pasta fora do índice → FORA-DO-ÍNDICE com a instrução do 1º turno",
+          ctx["estado"] == k.FORA and "pergunte ao dono a empresa" in k.texto_contexto(ctx), ctx)
+    check("FORA-DO-ÍNDICE não cita nome de empresa (isolamento)", "empresa-exemplo" not in k.texto_contexto(ctx),
+          k.texto_contexto(ctx))
+    raiz3 = copia()
+    acrescenta(raiz3, "INDICE-PROJETOS.md", LINHA.format(e="empresa-exemplo", c=os.path.join(k.ROOT, "tools")))
+    check("projeto do índice sob a pasta do framework → EMPRESA, não produto próprio",
+          k.contexto(raiz3, os.path.join(k.ROOT, "tools"), data_fonte=lambda p: None)["estado"] == k.EMPRESA)
+    check("prefixo de nome não é subpasta (proj-a-velho ≠ proj-a)",
+          k.contexto(raiz, os.path.join(casa, "proj-a-velho"))["estado"] == k.FORA)
+    check("pasta do framework → PRODUTO-PRÓPRIO", k.contexto(raiz, k.ROOT)["estado"] == k.PROPRIO)
+    troca(raiz, "conhecimento.json", '"empresa": "empresa-exemplo",', '"empresa": "empresa-exemplo", "sem_empresa": ["~/outra"],')
+    check("pasta declarada em sem_empresa → PRODUTO-PRÓPRIO",
+          k.contexto(raiz, os.path.join(casa, "outra"))["estado"] == k.PROPRIO)
+    check("sem biblioteca → SEM-BIBLIOTECA",
+          k.contexto(os.path.join(casa, "nao-existe"), os.path.join(casa, "proj-a"))["estado"] == k.SEM_BIBLIOTECA)
+    raiz2 = copia()
+    acrescenta(raiz2, "INDICE-PROJETOS.md", LINHA.format(e="empresa-exemplo", c="~\\proj-a")
+               + LINHA.format(e="outra-empresa", c="~/proj-a"))
+    check("mesmo caminho em duas empresas → AMBÍGUO",
+          k.contexto(raiz2, os.path.join(casa, "proj-a"))["estado"] == k.AMBIGUO)
+    check("célula com dois caminhos (;) confere cada um",
+          sabotado(lambda r: acrescenta(r, "INDICE-PROJETOS.md",
+                                        "| P | empresa-exemplo | — | — | p | aberto | README.md; nao-existe.md | — |\n"),
+                   r"especificação não existe \(nao-existe\.md\)")[0]
+          and not sabotado(lambda r: acrescenta(r, "INDICE-PROJETOS.md",
+                                                "| P | empresa-exemplo | — | — | p | aberto | README.md; README.md | — |\n"),
+                           r"especificação não existe")[0])
+
+    regra = os.path.join(casa, "proj-a", "regra.md")
+    open(regra, "w", encoding="utf-8").write("regra\n")
+    entrada = ("\n## F-09 regra do projeto\n- **Tipo:** fato\n- **Classe:** regra de negócio\n"
+               "- **Fonte:** ~\\proj-a\\regra.md, §2\n- **Verificado em:** 26/09/2026\n- **Confiança:** INFERIDO\n\ntexto\n")
+    acrescenta(raiz, ASSUNTO, entrada)
+    novo = lambda p: datetime.date(2026, 9, 30)  # noqa: E731
+    velho = lambda p: datetime.date(2026, 9, 20)  # noqa: E731
+    mot = {e["nome"]: m for e, m in k.vencidos(raiz, HOJE, data_fonte=novo)}
+    check("fonte alterada depois da verificação → a reverificar",
+          "fonte alterada em 30/09/2026" in mot.get("F-09 regra do projeto", ""), mot)
+    check("fonte anterior à verificação não acusa",
+          "F-09 regra do projeto" not in {e["nome"] for e, _ in k.vencidos(raiz, HOJE, data_fonte=velho)})
+    check("retrato não vence por fonte alterada", "F-01 lotes bloqueados" not in mot, mot)
+    os.makedirs(os.path.join(casa, "pasta com espaco"))
+    open(os.path.join(casa, "pasta com espaco", "spec.md"), "w", encoding="utf-8").write("x\n")
+    acrescenta(raiz, ASSUNTO, entrada.replace("F-09", "F-10").replace("~\\proj-a\\regra.md, §2",
+                                                                      "~\\pasta com espaco\\spec.md linha 12."))
+    mot = {e["nome"]: m for e, m in k.vencidos(raiz, HOJE, data_fonte=novo)}
+    check("fonte com espaço no caminho e texto depois do arquivo é achada", "F-10 regra do projeto" in mot, mot)
+    acrescenta(raiz, ASSUNTO, entrada.replace("F-09", "F-11").replace(
+        "~\\proj-a\\regra.md, §2", "~\\nao-existe.md e ~\\pasta com espaco\\spec.md"))
+    mot = {e["nome"]: m for e, m in k.vencidos(raiz, HOJE, data_fonte=novo)}
+    check("fonte 'A e B': B é conferido mesmo com A ausente", "F-11 regra do projeto" in mot, mot)
+    ss = open(os.path.join(ROOT, ".agent", "workflows", "start-session.md"), encoding="utf-8").read()
+    check("start-session chama o boot_check por caminho absoluto, nunca relativo",
+          "python tools/boot_check.py" not in ss and '"{{FRAMEWORK_ROOT}}\\tools\\boot_check.py"' in ss)
+    rep = os.path.join(casa, "rep")
+    os.makedirs(rep)
+    open(os.path.join(rep, "r.md"), "w", encoding="utf-8").write("a\n")
+    for args in (("init", "-q"), ("config", "user.email", "t@t"), ("config", "user.name", "t"), ("add", "-A"),
+                 ("commit", "-q", "-m", "x")):
+        _git(rep, *args, env={"GIT_AUTHOR_DATE": "2020-01-01T00:00:00", "GIT_COMMITTER_DATE": "2020-01-01T00:00:00"})
+    check("data_da_fonte = último commit", k.data_da_fonte(os.path.join(rep, "r.md")) == datetime.date(2020, 1, 1))
+    open(os.path.join(rep, "r.md"), "a", encoding="utf-8").write("b\n")
+    check("edição não commitada conta como mudança de hoje",
+          k.data_da_fonte(os.path.join(rep, "r.md")) == datetime.date.today())
+    os.remove(regra)
+    check("fonte que não existe nesta máquina não acusa",
+          "F-09 regra do projeto" not in {e["nome"] for e, _ in k.vencidos(raiz, HOJE, data_fonte=novo)})
+
+    # encerramento: a biblioteca vira repositório git com remoto local
+    raiz = copia()
+    acrescenta(raiz, "INDICE-PROJETOS.md", LINHA.format(e="empresa-exemplo", c="~\\proj-a"))
+    remoto = os.path.join(casa, "remoto.git")
+    _git(casa, "init", "-q", "--bare", remoto)
+    antigo = {"GIT_AUTHOR_DATE": "2020-01-01T00:00:00", "GIT_COMMITTER_DATE": "2020-01-01T00:00:00"}
+    for args in (("init", "-q"), ("config", "user.email", "t@t"), ("config", "user.name", "t"),
+                 ("add", "-A"), ("commit", "-q", "-m", "base"),
+                 ("remote", "add", "origin", remoto), ("push", "-q", "-u", "origin", "HEAD")):
+        _git(raiz, *args, env=antigo)  # commit-base antigo: `--since` filtra pela data do COMMIT
+    pa, desde = os.path.join(casa, "proj-a"), datetime.date.today()
+    rc, out = k.encerramento(raiz, desde, pa)
+    check("sem registro nem declaração → FAIL (1)", rc == 1 and "nenhum registro" in out[-1], out)
+    rc, out = k.encerramento(raiz, desde, pa, declarar="só leitura")
+    check("declaração → PASS (0)", rc == 0 and "nada a registrar" in out[-1], out)
+    lib = os.path.join(raiz, "empresas", "empresa-exemplo")
+    acrescenta(raiz, DIC_EMP, "\n")
+    rc, out = k.encerramento(raiz, desde, pa, declarar="só leitura")
+    check("alteração não commitada → FAIL mesmo com declaração", rc == 1 and "não commitadas" in " ".join(out), out)
+    _git(lib, "commit", "-qam", "registro")
+    rc, out = k.encerramento(raiz, desde, pa)
+    check("commit sem push → FAIL", rc == 1 and "sem push" in out[-1], out)
+    _git(raiz, "push", "-q")
+    rc, out = k.encerramento(raiz, desde, pa)
+    check("commit com push → PASS", rc == 0 and "registrado" in " ".join(out), out)
+    acrescenta(raiz, "README.md", "\n")
+    _git(raiz, "commit", "-qam", "fora da biblioteca, sem push")
+    rc, out = k.encerramento(raiz, desde, pa)
+    check("commit sem push FORA da pasta da biblioteca não reprova", rc == 0, out)
+    depois = datetime.datetime.now() + datetime.timedelta(hours=1)
+    rc, out = k.encerramento(raiz, depois, pa)
+    check("--desde com hora: commit anterior ao início não conta", rc == 1 and "nenhum registro" in out[-1], out)
+    check("produto próprio → PASS sem biblioteca", k.encerramento(raiz, desde, k.ROOT)[0] == 0)
+    check("fora do índice → RECUSADO (2)", k.encerramento(raiz, desde, os.path.join(casa, "outra"))[0] == 2)
+    cli = os.path.join(ROOT, "tools", "conhecimento.py")
+    r = subprocess.run([sys.executable, cli, "encerramento", "--desde", "04/10/2026", "14:30", "--cwd", ROOT],
+                       capture_output=True, text=True, encoding="utf-8", stdin=subprocess.DEVNULL)
+    check("CLI: --desde com hora sem aspas", r.returncode == 0 and "produto próprio" in r.stdout, r.stdout + r.stderr)
+    r = subprocess.run([sys.executable, cli, "encerramento", "--desde", "04/10/2026 25:00", "--cwd", ROOT],
+                       capture_output=True, text=True, encoding="utf-8", stdin=subprocess.DEVNULL)
+    check("CLI: hora inválida → RECUSADO (2)", r.returncode == 2 and "hora inválida" in r.stdout, r.stdout)
+    raiz4 = copia()
+    troca(raiz4, "conhecimento.json", '"empresa": "empresa-exemplo",', '"empresa": "empresa-exemplo", "sem_empresa": [""],')
+    check("sem_empresa vazio não vira a raiz inteira",
+          k.contexto(raiz4, os.path.join(raiz4, "empresas"))["estado"] == k.FORA)
+
+
 def main():
     print("(a) verde")
     raiz = copia()
@@ -235,6 +379,19 @@ def main():
                        capture_output=True, text=True, encoding="utf-8", env=env)
     check("biblioteca vazia responde 'nada encontrado' sem erro", r.returncode == 0 and "nada encontrado" in r.stdout,
           r.stdout + r.stderr)
+
+    print("(g) emenda 3 — contexto da pasta, fonte alterada, encerramento")
+    casa = tempfile.mkdtemp()
+    antes = {v: os.environ.get(v) for v in ("HOME", "USERPROFILE")}
+    os.environ["HOME"] = os.environ["USERPROFILE"] = casa  # `~` desta prova = pasta temporária
+    try:
+        _emenda3(casa)
+    finally:
+        for v, x in antes.items():
+            if x is None:
+                os.environ.pop(v, None)
+            else:
+                os.environ[v] = x
 
     print("(f) neutralidade")
     with open(os.path.join(ROOT, "tools", "agnostic-denylist.txt"), encoding="utf-8") as fh:

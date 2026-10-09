@@ -1,6 +1,7 @@
 # ADR-123 — Resposta executiva medida por hook de Stop
 
-- **Status:** Aceito
+- **Status:** Aceito, **suplantado em parte pelo ADR-129** (28/09/2026): o hook não bloqueia mais, e o limite
+  fixo de 150 palavras saiu.
 - **Data:** 2026-09-27
 - **Decisores:** dono (Fabricio), 27/09/2026:
   - "CONCISÃO, CLAREZA, informação simples e direta, overview, checklist, ações e ideias encadeadas. NÃO uma
