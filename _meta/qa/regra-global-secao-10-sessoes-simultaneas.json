@@ -1,0 +1,72 @@
+{
+  "bloco": "regra-global-secao-10-sessoes-simultaneas",
+  "papel": "qa_critic",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "escopo_paths": [
+    ".claude/global/CLAUDE-global.md",
+    "CHANGELOG.md",
+    "_meta/qa/regra-global-secao-10-sessoes-simultaneas.json",
+    "_meta/qa/regra-global-secao-10-sessoes-simultaneas.md"
+  ],
+  "atestacao": {
+    "agentId": "a48b780a2814e46e5",
+    "modelo": "sonnet",
+    "autor": "opus",
+    "isolamento": "subagente qa-critic isolado, so leitura; rodada 1 aprovar_com_ressalvas (ALTA: regra citada como vigente antes de instalada; MEDIA: ListAgents/SendMessage sem ressalva, limite fora do Claude Code, debito prose); rodada 2 aprovar_com_ressalvas (BAIXA: evidencia da recusa do Edit, corrigida)"
+  },
+  "postura": {
+    "discovery": "pedido do dono 08/10/2026: estabelecer troca de informacao entre sessoes simultaneas",
+    "rrc": "PASSA",
+    "metodo_senior": "regra agnostica (%USERPROFILE%), protocolo completo no quadro, limites e debito declarados no CHANGELOG"
+  },
+  "resumo": "Secao 10 da regra global: quadro de coordenacao entre sessoes simultaneas; edicao do quadro so com Edit; ListAgents/SendMessage se disponiveis; limite fora do Claude Code; debito prose declarado.",
+  "verificacoes_executadas": [
+    "check_core_agnostic PASS",
+    "test_consistency_closing PASS",
+    "check_rules_parity PASS",
+    "test_resposta_executiva PASS"
+  ],
+  "problemas": [
+    {
+      "severidade": "BAIXA",
+      "local": "CHANGELOG.md",
+      "descricao": "evidencia da recusa do Edit registrada no texto apos rodada 2",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "MEDIA",
+      "local": ".claude/global/CLAUDE-global.md",
+      "descricao": "regra em prosa sem hook ou boot_check que confira o registro no quadro; declarado como debito",
+      "estado": "aceito"
+    }
+  ],
+  "data": "2026-10-09T12:39:53Z",
+  "sha_revisado": "d00aaec52b886c32e6e5e124ba8cb978a61fbcda",
+  "blobs_revisados": {
+    ".claude/global/CLAUDE-global.md": "cd95afc47b6f3d258f868c4e21dd9fe78d2a16e7",
+    "CHANGELOG.md": "0e8d1c3fd3fbe3352eb2d7993009876098b96f86"
+  },
+  "substitui": [
+    {
+      "rodada": 2,
+      "data": null,
+      "recomendacao": "aprovar_com_ressalvas",
+      "sha_revisado": null,
+      "agentId": "a48b780a2814e46e5",
+      "escopo_paths": [
+        ".claude/global/CLAUDE-global.md",
+        "CHANGELOG.md",
+        "_meta/qa/regra-global-secao-10-sessoes-simultaneas.json",
+        "_meta/qa/regra-global-secao-10-sessoes-simultaneas.md"
+      ],
+      "achados_fp": [
+        "BAIXA|changelog.md",
+        "MEDIA|.claude/global/claude-global.md"
+      ],
+      "reinicio": false
+    }
+  ]
+}

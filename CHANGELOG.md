@@ -5,6 +5,20 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### Regra global, seção 10 — Sessões simultâneas: quadro de coordenação (08/10/2026)
+
+- Pedido do dono (08/10/2026): várias sessões (4 no framework, 3 ou mais em projetos de domínio) escreviam nos mesmos
+  repositórios sem trocar informação. Nova seção 10 em `.claude/global/CLAUDE-global.md` (regras do dono, ADR-116).
+- Quadro fora de repositório (`%USERPROFILE%\.claude\coordenacao\QUADRO.md`): registro de sessão, reserva de arquivo,
+  avisos e decisões que valem para várias sessões; mensagens por `ListAgents`/`SendMessage`.
+- O quadro só se edita com `Edit`, que recusa gravar sobre escrita alheia; `Write` e shell regravam o arquivo inteiro.
+- Prova de uso: 4 sessões se registraram e trocaram fatos no mesmo dia; fatos medidos da API por duas sessões
+  entraram no contrato mantido por uma terceira; o `Edit` recusou uma gravação sobre escrita alheia (sessão que mantém o
+  contrato, 09/10/2026, ao gravar um aviso logo depois de outra sessão registrar consumo da API). [CONFIRMADO]
+  A eficácia contra colisão de commit ainda não foi medida. [INFERIDO]
+- Débito declarado: a regra é prosa (nenhum hook ou `boot_check` confere se a sessão está no quadro); sessões fora
+  do Claude Code não a carregam.
+
 ### ADR-120 emenda 3 — Empresa da pasta no boot, regra superada e registro cobrado no fechamento (04/10/2026)
 
 - **Correção:** `~\` dos caminhos do `INDICE-PROJETOS.md` não era expandido; nenhum projeto da empresa era resolvido
