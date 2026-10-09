@@ -365,6 +365,32 @@ def main():
                 else:
                     os.environ[v] = val
 
+        print("emenda 4: atalho de pasta (macOS /var -> /private/var; unidade mapeada no Windows)")
+        # atalho SIMULADO: realpath troca o prefixo da pasta temporária por outro (sem criar link de verdade)
+        base_n = os.path.normcase(os.path.normpath(os.path.abspath(base)))
+        base_real = os.path.join(tempfile.gettempdir(), "atalho-simulado-" + os.path.basename(base))
+        real_orig = os.path.realpath
+
+        def real_falso(p, *a, **kw):
+            n = os.path.normcase(os.path.normpath(os.path.abspath(p)))
+            return base_real + n[len(base_n):] if n == base_n or n.startswith(base_n + os.sep) else real_orig(p, *a, **kw)
+        os.path.realpath = real_falso
+        try:
+            try:
+                emp_atalho = k.resolver_empresa(raiz, os.path.join(base_real, "projeto-alfa", "sub"))[0]
+            except k.Recusa as e:
+                emp_atalho = f"RECUSA: {e}"
+            check("pasta na forma resolvida (atalho) resolve a empresa pelo índice escrito", emp_atalho == "alfa",
+                  emp_atalho)
+            idents = k.identificadores_de_empresa(raiz)
+            check("identificador guarda o caminho ESCRITO do índice, não o resolvido",
+                  os.path.normcase(os.path.normpath(proj_b)) in idents and not any(v.startswith(os.path.normcase(base_real))
+                                                                                     for v in idents), list(idents))
+            check("texto de assunto com o caminho escrito continua reprovando",
+                  bool(k.verificar_assunto(f"Arquivo em {os.path.join(proj_b, 'q.sql')}.", idents, "alfa")))
+        finally:
+            os.path.realpath = real_orig
+
         print("identificadores")
         arq = os.path.join(raiz, "assuntos", "erp-estoque", "DICIONARIO.md")
         original = open(arq, encoding="utf-8").read()

@@ -12,6 +12,7 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 - Prova: `test_conhecimento_isolamento` (emenda 4: 5 casos).
 - CI no Linux (falhava no `main`): nome de repositório com `\` agora é separado em qualquer sistema (`_nome_repo`);
   o canário de caminho de projeto em `assuntos/` espera "identificador de empresa", o achado nos dois sistemas.
+- CI no macOS: a comparação pasta atual × índice aceita atalhos resolvidos (`/var` → `/private/var`); o caminho guardado continua o escrito, para o detector de vazamento em `assuntos/` seguir casando.
 
 ### Regra global, seção 10 — Sessões simultâneas: quadro de coordenação (08/10/2026)
 

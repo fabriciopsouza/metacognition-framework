@@ -372,8 +372,18 @@ def _projetos(raiz):
     return out
 
 
-def _contem(base, alvo):
+def _dentro(base, alvo):
     return alvo == base or alvo.startswith(base.rstrip(os.sep) + os.sep)
+
+
+def _contem(base, alvo):
+    """`alvo` está em `base`, na forma escrita ou com atalhos resolvidos (no macOS /var é atalho de /private/var).
+    A forma resolvida só entra AQUI: o caminho guardado continua o escrito, que é o que o texto de `assuntos/` cita
+    (com realpath em `_norm_caminho`, unidade mapeada virava UNC e o detector de vazamento deixava de casar)."""
+    if _dentro(base, alvo):
+        return True
+    real = lambda p: os.path.normcase(os.path.normpath(os.path.realpath(p)))  # noqa: E731
+    return _dentro(real(base), real(alvo))
 
 
 def projetos_da_pasta(raiz, cwd=None):
@@ -660,7 +670,7 @@ def verificar(raiz, trabalhos_dir=None, hoje=None, empresa=None):
                 continue
             bruto = _expandir(v)  # `~\` também: senão o bloqueio de outra empresa seria pulado (emenda 4)
             alvo = _norm_caminho(bruto) if (os.path.isabs(bruto) or re.match(r"^[A-Za-z]:[\\/]", bruto)) else None
-            dono = next((emp for c, emp, _r in projetos if alvo and (alvo == c or alvo.startswith(c.rstrip(os.sep) + os.sep))), None)
+            dono = next((emp for c, emp, _r in projetos if alvo and _contem(c, alvo)), None)
             if dono and e["escopo"] != f"empresas/{dono}":
                 ach.append(f"{e['arquivo']} · {e['nome']}: **{k}:** aponta para caminho de projeto de outra empresa "
                            f"ou de empresa a partir de {e['escopo'].split('/')[0]} — bloqueante (isolamento entre empresas)")
