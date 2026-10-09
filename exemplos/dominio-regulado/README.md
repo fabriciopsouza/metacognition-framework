@@ -18,6 +18,13 @@
 | `compliance-profile-financeiro.json` | relato financeiro/contábil | SOX, Sarbanes-Oxley, Basel |
 | `compliance-profile-infosec.json` | segurança da informação | ISO 27001, SOC 2 |
 | `compliance-profile-farma-anvisa.json` | sistemas computadorizados em BPF de medicamentos (Brasil) | RDC 658/2022, IN 134/2022, IN 138/2022, Guia 33/2020 |
+| `compliance-profile-anp-combustiveis.json` | sistemas de movimentação, estoque, medição e qualidade na distribuição de combustíveis (Brasil) | Res. ANP 950/2023, 729/2018, 868/2022, 894/2022, 898/2022; INMETRO |
+
+**Camada privada da empresa (ADR-128):**
+- Procedimento interno e tolerância da empresa não entram aqui.
+- Eles ficam em `perfis/compliance-profile-<perfil>.json`, na biblioteca privada da empresa.
+- O projeto que declara `**Empresa:** <e>` na Parte A recebe a soma do perfil público com essa camada.
+- Com a empresa declarada e a biblioteca ausente na máquina, o kit é recusado.
 
 **Perfil com peças por categoria (`categorias_software`)** precisa do mapa `<profile>-mapa-normas.md` ao lado:
 toda peça do perfil com norma, artigo e marca de confiança. Confere: `python tools/regulado.py mapa <perfil.json>`

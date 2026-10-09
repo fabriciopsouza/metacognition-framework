@@ -350,5 +350,24 @@ class TestSnippet(unittest.TestCase):
         self.assertFalse(kc._snippet(text).endswith("…"))
 
 
+class TestConsoleSemUtf8(unittest.TestCase):
+
+    def test_recall_em_cp1252_nao_quebra(self):
+        """Console Windows em cp1252: o relatório tem '→' e quebrava com UnicodeEncodeError (28/09/2026)."""
+        import subprocess
+        with tempfile.TemporaryDirectory() as d:
+            with open(os.path.join(d, "execution-report-2026-06-01-x.md"), "w", encoding="utf-8") as fh:
+                self.assertIn("Auditor de liveness universal", REPORT_FULL)  # a seta tem de cair em trecho impresso
+                fh.write(REPORT_FULL.replace("Auditor de liveness universal", "Auditor → liveness universal"))
+            env = dict(os.environ, PYTHONIOENCODING="cp1252", PYTHONDONTWRITEBYTECODE="1")
+            cli = [sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "knowledge_catalog.py"),
+                   "--intake-dir", d, "--out-dir", d]
+            subprocess.run(cli + ["--build"], capture_output=True, env=env)
+            r = subprocess.run(cli + ["--recall", "--context", "gate hook"], capture_output=True, env=env)
+            self.assertNotIn(b"UnicodeEncodeError", r.stderr, r.stderr[-500:])
+            self.assertEqual(r.returncode, 0, r.stderr[-500:])
+            self.assertIn("Insights Relevantes".encode(), r.stdout)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

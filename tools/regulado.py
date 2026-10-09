@@ -32,11 +32,14 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import spec_fonte  # noqa: E402
 
 PERFIS_DIR = os.path.join(ROOT, "exemplos", "dominio-regulado")
+# Camada privada (ADR-128): `**Empresa:** <e>` na Parte A soma ao perfil público o arquivo
+# <biblioteca da empresa>/perfis/compliance-profile-<perfil>.json. A biblioteca é resolvida por conhecimento.py.
+RAIZ_CONHECIMENTO = os.path.join(ROOT, "docs", "_private", "conhecimento")
 KIT_COMUM_SEM_PERFIL = ["TAP", "especificacao", "HANDOFF", "glossario", "cronograma"]
 COLS_RISCO = ["risco", "requisito", "falha", "impacto", "probabilidade", "detecção", "classe", "mitigação", "teste"]
 COLS_TESTE = ["teste", "requisito", "categoria", "roteiro", "esperado", "resultado", "evidência", "nome e data"]
 CLASSES = {"alto", "médio", "medio", "baixo"}
-CAMPOS = ["Impacto regulado", "Perfil regulado", "Sistema", "Categoria de software",
+CAMPOS = ["Impacto regulado", "Perfil regulado", "Empresa", "Sistema", "Categoria de software",
           "Categoria decidida por", "Requisitos confirmados por"]
 # Definição de requisito: "- REQ-01:", "* REQ-01:", "1. REQ-01 —", "- **REQ-01:**". Toda outra menção a
 # REQ-nn na Parte A sem definição é acusada: formato desconhecido não pode sumir em silêncio.
@@ -51,7 +54,8 @@ class Recusa(Exception):
 
 
 def _campo(texto, nome):
-    m = re.search(rf"(?im)^\s*[-*]?\s*\*\*{re.escape(nome)}:\*\*\s*(.+?)\s*$", texto or "")
+    # [ \t], nunca \s: com o valor vazio, \s atravessava a quebra de linha e devolvia a linha do campo seguinte
+    m = re.search(rf"(?im)^[ \t]*[-*]?[ \t]*\*\*{re.escape(nome)}:\*\*[ \t]*(.*?)[ \t]*$", texto or "")
     return m.group(1).strip() if m else ""
 
 
@@ -100,6 +104,55 @@ def _refs(v, prefixo):
     return set(re.findall(rf"\b{prefixo}-\d+\b", str(v or "")))
 
 
+_METADADOS = {"profile", "note", "orgao", "wires_to"}  # descrevem o arquivo; não são exigência da norma
+
+
+def _somar(base, extra, via=""):
+    """(perfil somado, conflitos). A camada privada só ACRESCENTA: chave nova entra, dicionários somam por chave,
+    listas se unem sem repetir. Nula, troca de tipo ou valor simples diferente do público é conflito e o público fica:
+    a camada não pode enfraquecer a exigência da norma (null apagava os testes obrigatórios; QA do ADR-128)."""
+    out, conflitos = dict(base), []
+    for k, v in extra.items():
+        nome, atual = f"{via}{k}", out.get(k)
+        if k.startswith("_") or k in _METADADOS:
+            continue  # descrição da camada, não exigência; `profile` já foi conferido em camada_privada
+        if v is None:
+            conflitos.append(f"{nome} nulo")
+        elif k not in out:
+            out[k] = v
+        elif isinstance(v, dict) and isinstance(atual, dict):
+            out[k], sub = _somar(atual, v, nome + ".")
+            conflitos += sub
+        elif isinstance(v, list) and isinstance(atual, list):
+            out[k] = atual + [x for x in v if x not in atual]
+        elif v != atual:
+            conflitos.append(f"{nome} ({atual!r} -> {v!r})")
+    return out, conflitos
+
+
+def camada_privada(perfil_nome, empresa):
+    """(camada ou None, caminho, erro ou None). Biblioteca da empresa ausente na máquina é erro: liberar sem os
+    procedimentos internos seria falso PASS."""
+    import conhecimento  # noqa: E402  (resolve biblioteca interna ou externa da empresa, ADR-120)
+    d = conhecimento.dir_empresa(RAIZ_CONHECIMENTO, empresa)
+    if not os.path.isdir(d):
+        return None, d, (f"empresa '{empresa}' declarada, mas a biblioteca dela não está nesta máquina ({d}): "
+                         f"a camada privada do perfil não foi lida")
+    p = os.path.join(d, "perfis", f"compliance-profile-{perfil_nome.lower()}.json")
+    if not os.path.isfile(p):
+        return None, p, None
+    try:
+        with open(p, encoding="utf-8-sig") as fh:
+            camada = json.load(fh)
+    except ValueError as e:
+        return None, p, f"camada privada ilegível ({p}): {e}"
+    if not isinstance(camada, dict):
+        return None, p, f"camada privada {p} não é um objeto JSON ({type(camada).__name__})"
+    if str(camada.get("profile", perfil_nome)).lower() != perfil_nome.lower():
+        return None, p, f"camada privada {p} é do perfil '{camada.get('profile')}', não de '{perfil_nome}'"
+    return camada, p, None
+
+
 def carregar(spec):
     """Tudo que os comandos usam, lido pelo leitor único (spec_fonte)."""
     req = spec_fonte.ler_parte(spec, "requisitos") or ""
@@ -114,6 +167,25 @@ def carregar(spec):
         if os.path.isfile(caminho):
             with open(caminho, encoding="utf-8") as fh:
                 perfil = json.load(fh)
+    # Lista do que é ACEITO (redesenho após 3 rodadas de QA, ADR-128): vazio, placeholder na forma do modelo
+    # (`<...>` ou `<...> | nenhuma`), 'nenhuma' ou nome da biblioteca. Todo o resto é achado — nunca some calado.
+    # Valor INTEIRO: só o travessão (" — "/" – ") separa comentário. O hífen não: "acme - filial" viraria "acme" e a
+    # camada de outra empresa entraria calada (rodada 4 do QA).
+    empresa = re.split(r"\s+[—–]\s+", _campo(req, "Empresa"))[0].strip().lower()
+    camada, camada_path, erro_camada = None, "", None
+    if re.fullmatch(r"<[^<>|]*>(\s*\|\s*nenhuma)?", empresa):
+        empresa = ""  # modelo não preenchido = empresa não declarada (o campo é opcional)
+    elif empresa and not re.fullmatch(r"[a-z0-9][a-z0-9_.-]*", empresa):
+        erro_camada = (f"**Empresa:** '{empresa}' fora do formato da biblioteca (minúsculas, dígitos, _ . -): "
+                       f"a camada privada não foi lida")
+        empresa = ""
+    if perfil is not None and empresa and empresa != "nenhuma":
+        camada, camada_path, erro_camada = camada_privada(perfil_nome, empresa)
+        if camada:
+            perfil, conflitos = _somar(perfil, camada)
+            if conflitos:
+                erro_camada = (f"camada privada {camada_path} tenta alterar ou remover exigência do perfil público "
+                               f"(só pode acrescentar): {'; '.join(conflitos)}")
     duplicados = [c for c in CAMPOS if len(re.findall(
         rf"(?im)^\s*[-*]?\s*\*\*{re.escape(c)}:\*\*", req)) > 1]
     return {
@@ -123,6 +195,7 @@ def carregar(spec):
         "duplicados": duplicados,
         "impacto": _valor(req, "Impacto regulado").lower(),
         "perfil_nome": perfil_nome, "perfil": perfil,
+        "empresa": empresa, "camada_privada": camada_path if camada else "", "erro_camada": erro_camada,
         "categoria": _valor(req, "Categoria de software"),
         "sistema": _campo(req, "Sistema"),
         "decidida_por": _campo(req, "Categoria decidida por"),
@@ -143,6 +216,8 @@ def registro(d):
         ach.append(f"perfil '{d['perfil_nome']}' sem arquivo compliance-profile-{d['perfil_nome'].lower()}.json")
     if d["impacto"] == "sim" and d["perfil_nome"].lower() == "nenhum":
         ach.append("projeto com impacto regulado declarado sem perfil regulado")
+    if d.get("erro_camada"):
+        ach.append(d["erro_camada"])
     return ach
 
 
@@ -317,6 +392,9 @@ def main(argv):
         print(f"RECUSADO: {spec} não é um arquivo único de especificação (marca {spec_fonte.MARCA})")
         return 2
     try:
+        d = carregar(spec)
+        if d.get("camada_privada"):
+            print(f"camada privada: {d['camada_privada']} (empresa {d['empresa']})")
         if cmd == "kit":
             print("\n".join(f"- {p}" for p in kit(spec)))
             return 0

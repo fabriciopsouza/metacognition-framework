@@ -522,6 +522,10 @@ def cmd_patterns(out_dir: str) -> int:
 # ── Entry point ───────────────────────────────────────────────────────────────
 
 def main() -> None:
+    try:  # console Windows em cp1252 quebrava no primeiro "→" do relatório (UnicodeEncodeError)
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
     ap = argparse.ArgumentParser(
         description="Catálogo de insights + RAG léxico offline sobre corpus de relatórios (ADR-068)."
     )
