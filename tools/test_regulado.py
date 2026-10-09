@@ -233,6 +233,123 @@ def main():
         check("sem requisitos, riscos e testes não passa com perfil mínimo",
               {"nenhum requisito numerado na Parte A (formato `- REQ-01: ...`)", "Parte F sem risco registrado",
                "Parte G sem teste registrado"} <= set(ach), ach)
+
+        print("(i) camada privada da empresa (ADR-128)")
+        raiz = tempfile.mkdtemp()
+        with open(os.path.join(raiz, "conhecimento.json"), "w", encoding="utf-8") as fh:
+            json.dump({}, fh)
+        os.makedirs(os.path.join(raiz, "empresas", "acme", "perfis"))
+        with open(os.path.join(raiz, "empresas", "acme", "perfis", "compliance-profile-teste-sintetico.json"), "w",
+                  encoding="utf-8") as fh:
+            json.dump({"profile": "teste-sintetico", "testes_obrigatorios_com_impacto": ["procedimento interno X"],
+                       "categorias_software": {"4": ["peca-interna"]}}, fh)
+        os.makedirs(os.path.join(raiz, "empresas", "beta"))
+        raiz_orig = regulado.RAIZ_CONHECIMENTO
+        regulado.RAIZ_CONHECIMENTO = raiz
+        try:
+            com = troca("- **Sistema:**", "- **Empresa:** acme\n- **Sistema:**")
+            ach = rodar(com)
+            check("camada privada soma teste obrigatório da empresa",
+                  "categoria de teste obrigatória ausente: procedimento interno X" in ach, ach)
+            check("camada privada soma peça ao kit, sem repetir as públicas",
+                  rodar(com, "kit") == ["TAP", "especificacao", "peca-c4a", "peca-c4b", "peca-interna"], rodar(com, "kit"))
+            check("sem **Empresa:** a camada privada não é lida", rodar(BASE) == [], rodar(BASE))
+            ach = rodar(com.replace("**Empresa:** acme", "**Empresa:** beta"))
+            check("empresa sem camada para o perfil = só o perfil público", ach == [], ach)
+            ach = rodar(com.replace("**Empresa:** acme", "**Empresa:** ausente"))
+            check("empresa declarada sem biblioteca na máquina reprova",
+                  any("não está nesta máquina" in a for a in ach), ach)
+            check("... e o kit é recusado", str(rodar(com.replace("**Empresa:** acme", "**Empresa:** ausente"), "kit"))
+                  .startswith("RECUSA"))
+            with open(os.path.join(raiz, "empresas", "beta", "compliance-profile-x.json"), "w") as fh:
+                fh.write("{}")
+            os.makedirs(os.path.join(raiz, "empresas", "beta", "perfis"))
+            with open(os.path.join(raiz, "empresas", "beta", "perfis", "compliance-profile-teste-sintetico.json"), "w",
+                      encoding="utf-8") as fh:
+                json.dump({"profile": "outro-perfil"}, fh)
+            ach = rodar(com.replace("**Empresa:** acme", "**Empresa:** beta"))
+            check("camada de outro perfil reprova", any("não de 'teste-sintetico'" in a for a in ach), ach)
+            base = {"a": {"b": [1, {"c": 2}]}, "l": [{"padrao": "x"}], "s": "pub"}
+            foto = json.dumps(base, sort_keys=True)
+            soma, conf = regulado._somar(base, {"a": {"b": [3], "d": 4}, "l": [{"padrao": "y"}, {"padrao": "x"}],
+                                                "s": "pub", "n": "novo"})
+            check("soma não altera o perfil público (aninhado)", json.dumps(base, sort_keys=True) == foto, base)
+            check("soma une listas sem repetir e acrescenta chave nova, sem conflito",
+                  soma == {"a": {"b": [1, {"c": 2}, 3], "d": 4}, "l": [{"padrao": "x"}, {"padrao": "y"}], "s": "pub",
+                           "n": "novo"} and conf == [], (soma, conf))
+            for extra, trecho in (({"l": None}, "l nulo"), ({"a": {"b": None}}, "a.b nulo"), ({"s": "priv"}, "s ('pub'"),
+                                  ({"l": {"x": 1}}, "l ("), ({"a": ["lista"]}, "a (")):
+                soma, conf = regulado._somar(base, extra)
+                check(f"camada não enfraquece o público: {extra} vira conflito e o público fica",
+                      any(trecho in c for c in conf) and json.dumps(soma, sort_keys=True) == foto, (soma, conf))
+            meta = {"_doc": "p", "note": "p", "orgao": "p"}
+            soma, conf = regulado._somar(meta, {"_doc": "c", "note": "c", "orgao": "c", "_x": ["peça"]})
+            check("metadados divergentes (_doc, note, orgao, _x) ficam fora da soma, sem conflito",
+                  conf == [] and soma == meta, (soma, conf))
+            with open(os.path.join(raiz, "empresas", "acme", "perfis", "compliance-profile-teste-sintetico.json"), "w",
+                      encoding="utf-8") as fh:
+                json.dump({"profile": "teste-sintetico", "testes_obrigatorios_com_impacto": None}, fh)
+            ach = rodar(com)
+            check("camada com testes obrigatórios nulos reprova (não apaga a exigência pública)",
+                  any("só pode acrescentar" in a for a in ach), ach)
+            with tempfile.TemporaryDirectory() as dd:
+                sp = os.path.join(dd, "spec.md")
+                with open(sp, "w", encoding="utf-8") as fh:
+                    fh.write(com)
+                publico = regulado.carregar(sp)["perfil"]  # com a camada nula já gravada
+            check("após conflito, o perfil carregado mantém a exigência pública",
+                  bool(publico.get("testes_obrigatorios_com_impacto")), publico.get("testes_obrigatorios_com_impacto"))
+            with open(os.path.join(raiz, "empresas", "acme", "perfis", "compliance-profile-teste-sintetico.json"), "w",
+                      encoding="utf-8") as fh:
+                json.dump({"profile": "Teste-Sintetico", "note": "camada da empresa", "_doc": "procedimentos internos",
+                           "testes_obrigatorios_com_impacto": ["procedimento interno X"]}, fh)
+            ach = rodar(com)
+            check("metadados da camada (_doc, note, profile em maiúsculas) não viram conflito",
+                  not any("só pode acrescentar" in a for a in ach)
+                  and "categoria de teste obrigatória ausente: procedimento interno X" in ach, ach)
+            with open(os.path.join(raiz, "empresas", "acme", "perfis", "compliance-profile-teste-sintetico.json"), "w",
+                      encoding="utf-8") as fh:
+                json.dump({"profile": 5}, fh)
+            ach = rodar(com)
+            check("camada com 'profile' não textual reprova sem traceback", any("não de 'teste-sintetico'" in a for a in ach), ach)
+            with open(os.path.join(raiz, "empresas", "acme", "perfis", "compliance-profile-teste-sintetico.json"), "w",
+                      encoding="utf-8") as fh:
+                json.dump({"profile": "teste-sintetico", "testes_obrigatorios_com_impacto": ["procedimento interno X"],
+                           "categorias_software": {"4": ["peca-interna"]}}, fh)
+            for valor in ("Acme Ltda", "café", "acme|beta", "<acme", "acme>", "<a> | outra", "acme - filial"):
+                ach = rodar(com.replace("**Empresa:** acme", f"**Empresa:** {valor}"))
+                check(f"empresa fora do formato ('{valor}') reprova, não some",
+                      any("fora do formato da biblioteca" in a for a in ach), ach)
+            ach = rodar(com.replace("**Empresa:** acme", "**Empresa:** acme — matriz"))
+            check("travessão separa comentário: 'acme — matriz' é a empresa acme",
+                  "categoria de teste obrigatória ausente: procedimento interno X" in ach, ach)
+            import contextlib
+            import io
+            with tempfile.TemporaryDirectory() as dd:
+                sp = os.path.join(dd, "spec.md")
+                with open(sp, "w", encoding="utf-8") as fh:
+                    fh.write(com)
+                saida = io.StringIO()
+                with contextlib.redirect_stdout(saida):
+                    regulado.main(["regulado.py", "kit", sp])
+            check("a saída diz qual camada privada foi usada", "camada privada:" in saida.getvalue()
+                  and "(empresa acme)" in saida.getvalue(), saida.getvalue())
+            modelo = open(os.path.join(ROOT, "docs", "specs", "_template-spec-unico", "spec.md"), encoding="utf-8").read()
+            linha_modelo = next(ln for ln in modelo.splitlines() if ln.lstrip("- ").startswith("**Empresa:**"))
+            ach = rodar(com.replace("- **Empresa:** acme", linha_modelo))
+            check("placeholder do modelo em **Empresa:** = não declarada, sem achado", ach == [], ach)
+            ach = rodar(com.replace("- **Empresa:** acme", "- **Empresa:**"))
+            check("**Empresa:** vazia não lê a linha do campo seguinte", ach == [], ach)
+            check("campo vazio devolve vazio, não o campo seguinte",
+                  regulado._campo("- **Empresa:**\n- **Sistema:** X", "Empresa") == "")
+            with open(os.path.join(raiz, "empresas", "beta", "perfis", "compliance-profile-teste-sintetico.json"), "w",
+                      encoding="utf-8") as fh:
+                json.dump(["não", "é", "objeto"], fh)
+            ach = rodar(com.replace("**Empresa:** acme", "**Empresa:** beta"))
+            check("camada que não é objeto JSON vira achado, não exceção",
+                  any("não é um objeto JSON" in a for a in ach), ach)
+        finally:
+            regulado.RAIZ_CONHECIMENTO = raiz_orig
     finally:
         regulado.PERFIS_DIR = original
 
@@ -268,6 +385,14 @@ def main():
               not any(re.search(r"especificacao-(de-configuracao|funcional)", x) for x in c["3"]), c["3"])
         check("farma: categoria 4 com especificação de configuração",
               "especificacao-de-configuracao" in c["4"], c["4"])
+
+    anp = os.path.join(regulado.PERFIS_DIR, "compliance-profile-anp-combustiveis.json")
+    if os.path.isfile(anp):
+        p = json.load(open(anp, encoding="utf-8"))
+        pecas = regulado.pecas_do_perfil(p)
+        check("anp: sem peça de validação de sistema importada do farma (D3)",
+              not any(re.search(r"(?i)^eru$|validacao|matriz|roteiro-de-testes", x) for x in pecas), pecas)
+        check("anp: trilha de auditoria não exigida", p["controls"]["audit_trail"]["required"] is False)
 
     print("(h) mapa peça -> norma ao lado do perfil")
     for f in sorted(os.listdir(regulado.PERFIS_DIR)):

@@ -50,7 +50,8 @@ Verifique: entregue a documentação a quem não participou e peça o próximo p
 - Mudança e versão → `python tools/mudancas_spec.py <spec.md> --out-dir <pasta>`.
 - **Impacto regulado** → as peças vêm do **perfil regulado** declarado no projeto (um por tipo de regulação):
   `python tools/regulado.py kit <spec.md>` lista; `python tools/regulado.py documento <tipo> <spec.md> --out-dir
-  <pasta>` gera.
+  <pasta>` gera. Procedimento interno da empresa entra pela camada privada: `**Empresa:** <e>` na Parte A soma
+  `perfis/compliance-profile-<perfil>.json` da biblioteca da empresa (ADR-128).
 
 Adote o menor conjunto que passa no §1: peça a mais é o mesmo defeito que esta skill combate. A tabela antiga por
 porte está em `conjunto-graduado-anterior.md`.
