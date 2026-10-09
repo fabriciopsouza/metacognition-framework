@@ -1,45 +1,38 @@
 {
   "bloco": "adr-120-emenda-4-til-no-bloqueio-de-outra-empresa",
-  "rodada": 4,
+  "rodada": 5,
   "passou": true,
-  "recomendacao": "aprovar_com_ressalvas",
+  "recomendacao": "aprovar",
   "autor_modelo": "claude-opus-5-5",
   "critico_modelo": "claude-sonnet-5",
   "heterogeneo": true,
   "atestacao": {
-    "agentId": "afa4a16b1612eccaa",
+    "agentId": "a60db010e24e641a7",
     "modelo": "claude-sonnet-5"
   },
   "problemas": [
     {
       "severidade": "BAIXA",
-      "local": "tools/test_conhecimento_isolamento.py:379-382",
-      "descricao": "negativa do caso (b) comparava com lower(), vazia no POSIX",
+      "local": "tools/test_conhecimento_isolamento.py:378",
+      "descricao": "startswith sem separador no simulador",
       "estado": "corrigido",
-      "fix": "os.path.normcase(base_real)"
+      "fix": "n == nb or n.startswith(nb + os.sep)"
     },
     {
       "severidade": "BAIXA",
-      "local": "tools/conhecimento.py:673",
-      "descricao": "projeto-atalho para pasta de outra empresa pode atribuir Evidência pelo caminho resolvido",
+      "local": "tools/test_conhecimento_isolamento.py:377",
+      "descricao": "base_real sem normcase no primeiro ramo",
       "estado": "aceito",
-      "fix": "bloqueia a mais (lado seguro); declarado na ADR"
-    },
-    {
-      "severidade": "BAIXA",
-      "local": "tools/conhecimento.py:385-386",
-      "descricao": "realpath por projeto em rede fora do ar pode ser lento",
-      "estado": "aceito",
-      "fix": "declarado na ADR"
+      "fix": "inofensivo: _contem aplica normcase"
     }
   ],
   "verificacoes_executadas": [
-    "crítico: canário PASS; leitura de _norm_caminho, _dentro, _contem e do bloqueio",
-    "autor: 2 mutações mortas com FAIL limpo"
+    "crítico: canário PASS; 2 mutações reexecutadas em cópia, mortas",
+    "autor: canário PASS; mutações mortas"
   ],
-  "steelman": "a segunda tentativa com realpath poderia mascarar o caminho escrito; ela só entra quando a forma escrita não casa, e o identificador guardado continua o escrito",
-  "data": "2026-10-09T15:55:43Z",
-  "sha_revisado": "ae19998dede92641867f65ba7ef313ab33d4366e",
+  "steelman": "o simulador poderia aceitar qualquer caminho; só devolve intacto o que está sob o diretório simulado inexistente",
+  "data": "2026-10-09T17:21:31Z",
+  "sha_revisado": "c50cac563225c35355bfcc2cd9ca206f75013b48",
   "substitui": [
     {
       "rodada": 1,
@@ -79,7 +72,20 @@
         "ALTA|tools/conhecimento.py:_norm_caminho"
       ],
       "reinicio": false
+    },
+    {
+      "rodada": 4,
+      "data": "2026-10-09T15:55:43Z",
+      "recomendacao": "aprovar_com_ressalvas",
+      "sha_revisado": "ae19998dede92641867f65ba7ef313ab33d4366e",
+      "agentId": "afa4a16b1612eccaa",
+      "escopo_paths": [],
+      "achados_fp": [
+        "BAIXA|tools/conhecimento.py:385-386",
+        "BAIXA|tools/conhecimento.py:673",
+        "BAIXA|tools/test_conhecimento_isolamento.py:379-382"
+      ],
+      "reinicio": false
     }
-  ],
-  "substitui_reprovacao": true
+  ]
 }

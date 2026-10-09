@@ -373,7 +373,12 @@ def main():
 
         def real_falso(p, *a, **kw):
             n = os.path.normcase(os.path.normpath(os.path.abspath(p)))
-            return base_real + n[len(base_n):] if n == base_n or n.startswith(base_n + os.sep) else real_orig(p, *a, **kw)
+            if n == base_n or n.startswith(base_n + os.sep):
+                return base_real + n[len(base_n):]
+            nb = os.path.normcase(base_real)
+            if n == nb or n.startswith(nb + os.sep):
+                return n  # já está na forma "resolvida": o realpath real expandiria nome curto (RUNNER~1) ou /var
+            return real_orig(p, *a, **kw)
         os.path.realpath = real_falso
         try:
             try:
