@@ -5,6 +5,12 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-120 emenda 4 — Caminho com `~` também no bloqueio de outra empresa (09/10/2026)
+
+- `conhecimento.py verificar`: **Evidência:** e **Aponta para:** com `~\` dentro do projeto de outra empresa passam a
+  ser bloqueantes. Antes o bloqueio só via caminho absoluto e o `~` passava se o arquivo existisse. [CONFIRMADO]
+- Prova: `test_conhecimento_isolamento` (emenda 4: 5 casos).
+
 ### Regra global, seção 10 — Sessões simultâneas: quadro de coordenação (08/10/2026)
 
 - Pedido do dono (08/10/2026): várias sessões (4 no framework, 3 ou mais em projetos de domínio) escreviam nos mesmos

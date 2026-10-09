@@ -1,0 +1,50 @@
+{
+  "bloco": "adr-120-emenda-4-til-no-bloqueio-de-outra-empresa",
+  "rodada": 1,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "autor_modelo": "claude-opus-5-5",
+  "critico_modelo": "claude-sonnet-5",
+  "heterogeneo": true,
+  "atestacao": {
+    "agentId": "ad0e92ad2bc54cd7c",
+    "modelo": "claude-sonnet-5"
+  },
+  "problemas": [
+    {
+      "severidade": "BAIXA",
+      "local": "tools/test_conhecimento_isolamento.py",
+      "descricao": "título do bloco da emenda 4 não cobria o caso de bloqueio entre empresas",
+      "estado": "corrigido",
+      "fix": "título ajustado"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "tools/test_conhecimento_isolamento.py",
+      "descricao": "espaço faltando depois de '='",
+      "estado": "corrigido",
+      "fix": "espaço acrescentado"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "docs/adr/120-biblioteca-de-conhecimento-metodo-e-verificador.md",
+      "descricao": "fim de arquivo sem quebra e linha em branco dupla antes da emenda 4",
+      "estado": "corrigido",
+      "fix": "normalizado"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "tools/test_conhecimento_isolamento.py",
+      "descricao": "~ sozinho ou com crase sem caso no canário",
+      "estado": "aceito",
+      "fix": "coberto por leitura do código; declarado na ADR"
+    }
+  ],
+  "verificacoes_executadas": [
+    "crítico: test_conhecimento_isolamento.py PASS 0 falhas; leitura de _expandir, _norm_caminho, _projetos, resolver_empresa, identificadores_de_empresa",
+    "autor: caso AL-C6 falha no código do main e passa com a correção (mutação morta)"
+  ],
+  "steelman": "a correção poderia mudar o tratamento de caminho relativo; _expandir devolve o texto intacto quando não começa com ~, e _caminho_existe recebe o v original",
+  "data": "2026-10-09T11:00:20Z",
+  "sha_revisado": "e07a75ca830d4d90564c0327a506091bed1198ff"
+}

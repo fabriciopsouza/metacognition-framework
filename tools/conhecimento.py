@@ -650,7 +650,7 @@ def verificar(raiz, trabalhos_dir=None, hoje=None, empresa=None):
             v = e["campos"].get(k)
             if not v or re.fullmatch(r"<[^>]*>", v.strip()):
                 continue
-            bruto = v.strip().strip("`")
+            bruto = _expandir(v)  # `~\` também: senão o bloqueio de outra empresa seria pulado (emenda 4)
             alvo = _norm_caminho(bruto) if (os.path.isabs(bruto) or re.match(r"^[A-Za-z]:[\\/]", bruto)) else None
             dono = next((emp for c, emp, _r in projetos if alvo and (alvo == c or alvo.startswith(c.rstrip(os.sep) + os.sep))), None)
             if dono and e["escopo"] != f"empresas/{dono}":

@@ -324,6 +324,47 @@ def main():
             if os.path.normcase(os.path.join(raiz, k.DIR_HASHES, nome)) == os.path.normcase(k.arquivo_hashes(raiz, "gama")):
                 os.remove(os.path.join(raiz, k.DIR_HASHES, nome))
 
+        print("emenda 4: caminho com ~ (perfis de usuário diferentes; bloqueio de outra empresa)")
+        casa = os.path.join(base, "casa")
+        os.makedirs(os.path.join(casa, "proj-alfa-casa", "sub"))
+        os.makedirs(os.path.join(casa, "proj-beta-casa"))
+        escrever(os.path.join(casa, "proj-alfa-casa", "q.sql"), "select 1;")
+        env_orig = {v: os.environ.get(v) for v in ("USERPROFILE", "HOME")}
+        os.environ["USERPROFILE"] = os.environ["HOME"] = casa
+        idx = os.path.join(raiz, "INDICE-PROJETOS.md")
+        idx_orig = open(idx, encoding="utf-8").read()
+        acrescentar(idx, "| Casa A | alfa | — | ~\\proj-alfa-casa | repo-alfa-casa | aberto | ~/proj-alfa-casa/q.sql | — |\n"
+                         "| Casa B | beta | — | ~/proj-beta-casa | repo-beta-casa | aberto | — | — |\n")
+        k.publicar_identificadores(raiz, "alfa")  # o repositório novo da alfa é identificador dela
+        arq = os.path.join(raiz, "empresas", "alfa", "estoque", "consultas.md")
+        original = open(arq, encoding="utf-8").read()
+        try:
+            check("~ no índice: diretório dentro do projeto resolve a empresa",
+                  k.resolver_empresa(raiz, os.path.join(casa, "proj-alfa-casa", "sub"))[0] == "alfa")
+            check("~ no índice: o caminho e a especificação existem nesta máquina (sem achado)",
+                  k.verificar(raiz, empresa="alfa") == [], k.verificar(raiz, empresa="alfa"))
+            acrescentar(arq, consulta("AL-C4 com til", "consulta com til?", "- **Aponta para:** ~\\proj-alfa-casa\\q.sql\n"))
+            check("Aponta para com ~ que existe passa", k.verificar(raiz, empresa="alfa") == [], k.verificar(raiz, empresa="alfa"))
+            escrever(arq, original)
+            acrescentar(arq, consulta("AL-C5 til inexistente", "consulta?", "- **Aponta para:** ~/proj-alfa-casa/nao.sql\n"))
+            check("Aponta para com ~ que não existe reprova",
+                  any("AL-C5" in a and "não existe" in a for a in k.verificar(raiz, empresa="alfa")))
+            escrever(arq, original)
+            acrescentar(arq, consulta("AL-C6 til cruzado", "consulta?", "- **Evidência:** ~\\proj-beta-casa\\x.sql\n"))
+            ach = k.verificar(raiz, empresa="alfa")
+            check("~ apontando para projeto de outra empresa é bloqueante e não cita a outra",
+                  any("AL-C6" in a and "outra empresa" in a and "bloqueante" in a for a in ach)
+                  and not any("beta" in a.lower() for a in ach), ach)
+        finally:
+            escrever(arq, original)
+            escrever(idx, idx_orig)
+            k.publicar_identificadores(raiz, "alfa")
+            for v, val in env_orig.items():
+                if val is None:
+                    os.environ.pop(v, None)
+                else:
+                    os.environ[v] = val
+
         print("identificadores")
         arq = os.path.join(raiz, "assuntos", "erp-estoque", "DICIONARIO.md")
         original = open(arq, encoding="utf-8").read()
