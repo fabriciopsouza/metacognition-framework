@@ -73,6 +73,16 @@
 
 - Pesquisa, fonte, material de apoio e evidência vão para arquivo (md, docx, lista) com link e data
   de acesso, antes de embasar resposta, pergunta ou melhoria. Nada fica só no chat.
+- **Pesquisas: repositório central (11/10/2026), vale para todo projeto deste PC.** Toda pesquisa (pedido,
+  texto gerado, revisão adversarial) vai para `C:\Users\<usuario>\pesquisas` (`%USERPROFILE%\pesquisas`;
+  GitHub privado `pesquisas`), numa pasta `AAAA-MM-DD_<assunto>` com `META.md` (metadados e histórico de
+  versões), `prompt.md`, `relatorio.md` e `qa.md`. Nova revisão = versão +1 no `META.md`; o git guarda o
+  anterior. Commit só da própria pasta: `git commit -m "<msg>" -- <pasta>`; `python tools\indice.py` gera o
+  índice. Regras no `README.md` de lá; o legado anterior a 11/10/2026 está em `LEGADO.md` e migra por decisão.
+- **Isolamento (seção 9):** pesquisa com dado de uma empresa (processo, números, nomes, documentos) fica no
+  repositório privado do projeto dessa empresa, em `pesquisas\AAAA-MM-DD_<assunto>\`, com a mesma estrutura;
+  no central não entra conteúdo dela; a biblioteca da empresa recebe só os fatos confirmados, no formato dela.
+  O projeto de origem de uma pesquisa geral guarda só o índice ou ponteiro, nunca uma cópia.
 
 ## 6. Plano e comandos de sessão
 

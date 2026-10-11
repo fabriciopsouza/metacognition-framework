@@ -5,6 +5,22 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### Regra global, seção 5 — Pesquisas em repositório central (11/10/2026)
+
+- Pedido do dono (11/10/2026): "todas as pesquisas devem ser salvas em um repositório centralizado, em pastas
+  específicas de cada pesquisa, datada, versionada, no GitHub, incluindo os textos gerados; aplicar a cada projeto".
+- `.claude/global/CLAUDE-global.md`, seção 5: toda pesquisa vai para `%USERPROFILE%\pesquisas` (GitHub privado
+  `pesquisas`), pasta `AAAA-MM-DD_<assunto>` com `META.md`, `prompt.md`, `relatorio.md`, `qa.md`; versão no `META.md`;
+  commit só da própria pasta, com caminho no commit (`-- <pasta>`); índice por `tools\indice.py`. [CONFIRMADO]
+- Isolamento (seção 9): pesquisa com dado de empresa fica no repositório privado do projeto dela, em `pesquisas\`, com
+  a mesma estrutura; a biblioteca recebe só fatos confirmados, no formato dela (o verificador da biblioteca não aceita
+  pasta de pesquisa). Pesquisa geral: o projeto de origem guarda só ponteiro. [CONFIRMADO]
+- Legado: 9 pastas de pesquisa anteriores (108 arquivos) inventariadas em `LEGADO.md` do repositório central; migração
+  por decisão do dono. [CONFIRMADO]
+- Prova de uso: série de 15 pesquisas do painel de atendimento criada no repositório central em 11/10 (`f64f5c8`),
+  com a Pesquisa 01 migrada (v2) e as sessões em andamento redirecionadas.
+- Débito declarado: a regra é prosa (sem gate que verifique se a pesquisa foi parar no repositório). [INFERIDO]
+
 ### ADR-120 emenda 4 — Caminho com `~` também no bloqueio de outra empresa (09/10/2026)
 
 - `conhecimento.py verificar`: **Evidência:** e **Aponta para:** com `~\` dentro do projeto de outra empresa passam a
