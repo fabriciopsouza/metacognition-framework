@@ -4,3 +4,4 @@ Uma linha por projeto. Caminhos absolutos. "—" quando não houver. Projetos de
 
 | Projeto | Empresa | Perfil regulado | Caminho | Repositório | Estado | Especificação | Dicionário |
 |---|---|---|---|---|---|---|---|
+| Produto de BI declarativo (painel por arquivo, provas embutidas) | — (produto do dono) | não | C:\Users\fabriciosouza\produto-bi | https://github.com/fabriciopsouza/produto-bi (privado) | aberto | C:\Users\fabriciosouza\produto-bi\docs\ESPECIFICACAO-PRODUTO.md | C:\Users\fabriciosouza\produto-bi\docs\ESPECIFICACAO-PRODUTO.md, seção 2 (Glossário) |
