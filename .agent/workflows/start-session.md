@@ -29,21 +29,28 @@ Primeiro turno de cada sessão. Obrigatório.
    checkpoint · arquivos recentes). Custam ~0 de output e não erram extração (caso real 2026-06-11:
    regex ad-hoc no `## Em aberto` reportou "vazio" com 6 itens presentes). Ler history diretamente
    SÓ por exceção declarada (retomada profunda · auditoria/process-critic · consulta a method-audit).
-   Campos do STATUS: onde paramos · ADRs aceitos · nomenclaturas · próximo passo · riscos · **WIP**
-   (itens em aberto reconciliados) · **debt retrospective** (gaps detectados no 2.5, se houver).
+   O STATUS é insumo interno; a resposta ao dono segue o molde do passo 4.
 3.5. **Trabalhos em aberto — OFERECER, não só listar (ADR-100):** `python tools/trabalhos.py listar`
    (o `boot_check` já o executa e resume). Cada trabalho aberto traz **objetivo · o que foi feito ·
    o que está pendente · próximo passo e o que ele decide**. **Enquanto o status for `aberto`, o
    trabalho reaparece a cada sessão** — é o mecanismo que impede o handoff de se perder.
-   **O agente DEVE mencioná-lo na resposta de abertura**, ainda que o dono traga outro assunto: um
-   registro que existe e não é oferecido é igual a não existir. Detalhe:
+   **O agente DEVE oferecê-lo na resposta de abertura**, ainda que o dono traga outro assunto: um
+   registro que existe e não é oferecido é igual a não existir. Na abertura, a oferta é a linha de
+   contagem em "Pendências" e os mais recentes como opções em "Sua ação" (passo 4). Detalhe:
    `python tools/trabalhos.py mostrar --slug <slug>`.
    **Só o dono encerra:** `python tools/trabalhos.py tratar --slug <slug> [--nota "..."]`.
    Ao FECHAR um bloco que deixa pendência, registrar/atualizar com
    `python tools/trabalhos.py registrar --slug <s> --nome ... --objetivo ... --pendente ... --proximo ...`
    — é o passo que transforma o Pacote P14 (efêmero) em pendência que sobrevive à sessão.
-4. Responder: "Sessão aberta. [STATUS 2-3 linhas] [se houver trabalho aberto: citar nome + próximo
-   passo] Retomar o próximo passo ou mudou direção?"
+4. Responder no **molde curto (17/10/2026, pedido do dono)**. Os passos 1 a 3.5 alimentam esta
+   resposta, mas não aparecem nela como relatório:
+   - **Resultado:** 1 frase (sessão aberta, registrada no quadro, o que foi ou não escrito).
+   - **Estado:** tabela de no máximo 5 linhas: repositório e branch (caminho absoluto) · o que está sem
+     commit · sessões vivas no mesmo repositório · checagem de abertura (só se falhou).
+   - **Pendências:** só o que exige ação do dono. Contagem de trabalhos abertos em 1 linha, com o
+     comando para ver (`python tools/trabalhos.py listar`). Sem listar branch, ADR ou item um a um.
+   - **Sua ação:** lista das frentes possíveis, uma linha cada, com o que é (trabalhos abertos mais
+     recentes · retomar o último checkpoint · outro assunto). O dono escolhe; a sessão não decide.
 
 ## Bloqueios
 Sem briefing.md → primeira tarefa é criá-lo. Sem 00-glossario.md → bloquear

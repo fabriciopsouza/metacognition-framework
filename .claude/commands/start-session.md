@@ -23,8 +23,7 @@ Execute o **protocolo canônico de abertura de sessão** do framework, seguindo
 3. **Reconciliar WIP:** cruzar `## Em aberto` do `history.md` com branches do git e ADRs em `Proposto`.
 4. **Retrospective gate:** revisar o último bloco entregue desde o último PASS do process-critic
    (checklist binário adversarial — assumir que há gap).
-5. **STATUS (2-3 linhas):** onde paramos · ADRs aceitos · nomenclaturas · próximo passo · riscos · WIP.
-   Responder: "Sessão aberta. [STATUS] Retomar o próximo passo ou mudou direção?"
+5. **Resposta:** molde curto do passo 4 de `.agent/workflows/start-session.md`.
 
 > Equivalente a dizer **"iniciar"** — ambos disparam este protocolo (ADR-024). No IDE, os hooks de
 > SessionStart já rodam sync/modo/agnosticismo automaticamente; este comando garante o protocolo

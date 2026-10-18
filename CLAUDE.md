@@ -37,8 +37,9 @@ Método de projeto, da abertura à operação, em uma página: `guia/METODO-DE-P
   escopo declarado, não abrem escopo novo. Detalhe: `.agent/rules/06-confirmacao-interativa.md`.
 - **Não abandonar trabalho em curso (ADR-112):** tarefa em andamento ou programada É CONCLUÍDA.
   Mensagem nova não cancela: pausa, responde, RETOMA e termina. Exceção única — ordem
-  simultaneamente CLARA, IMPERATIVA e sem margem de interpretação. Pergunta de status, crítica,
-  pedido novo, `"ok"`/`"siga"` NÃO param nada. Detalhe:
+  simultaneamente CLARA, IMPERATIVA e sem margem de interpretação. Pergunta de status, crítica ao resultado,
+  pedido novo, `"ok"`/`"siga"` NÃO param nada. **Mudança de direção** (emenda 1): pausa, a
+  resposta é só sobre ela, e espera a decisão. Complemento entra completo na resposta final. Detalhe:
   `.agent/rules/07-nao-abandonar-trabalho-em-curso.md`.
 - **Modos de execução (ADR-005):** default · avançado · autosuficiente, ratchet forward-only
   em `~/.claude/framework-mode.json`. Detalhe: `_shared/execution-modes/SKILL.md`.
