@@ -71,6 +71,32 @@ descobrir semanas depois que nada foi terminado. A saída explícita está decla
 controle. O canário garante que a regra não seja apagada em silêncio e que ela viaje. O cumprimento
 é cobrável em revisão, não imposto por código.
 
+## Emenda 1 (17/10/2026) — mudança de direção pausa e pergunta
+
+**Status:** Aceito, por ordem do dono. **EMENDA** a seção Decisão. "Pausa, responde, retoma" passa
+a ter uma exceção, a mudança de direção. "Crítica ao resultado" continua sem parar nada, porque
+ajusta o que já está sendo entregue. "Mudança de assunto" também continua, quando o assunto novo
+não toca o trabalho em curso.
+
+**Contexto.** O dono, em 17/10: *"o pmo não está segurando os trabalhos na direção desejada, ou pelo
+menos quando a direção muda não está claro o suficiente. o aviso se perde pois vc vai trabalhando.
+tem que parar. tem que ser só sobre a mudança, depois demais assuntos"*. E também: *"qd interrompo
+com prompt para complementar vc corta a resposta que deveria ser completa"*. A versão original
+mandava pausar, responder e retomar. Em mudança de direção, isso fazia o aviso da mudança se perder
+no meio do trabalho retomado.
+
+**Decisão.**
+1. **Mudança de direção** muda o que deve ser entregue ou o caminho para entregar. Ela pausa o
+   trabalho, sem descartá-lo. A resposta trata só da mudança, e depois o agente espera a decisão.
+2. **Complemento** ajusta o que já está sendo entregue. Ele entra no trabalho, o trabalho segue, e a
+   resposta final traz completo o que o complemento pediu.
+3. **Dúvida entre os dois:** vale a mudança de direção. A recusa a "perguntar a cada mensagem"
+   continua valendo, porque pergunta, status e "ok" não entram nessa dúvida.
+
+O texto operacional, com a tabela de casos, está em `.agent/rules/07-nao-abandonar-trabalho-em-curso.md`.
+A seção 6 de `.claude/global/CLAUDE-global.md` leva a regra a todo projeto. É adição por ordem do
+dono (régua §0). O cumprimento é cobrável em revisão; nenhum hook o impõe.
+
 ## Alternativas recusadas
 
 **Tratar a mensagem mais recente como prioridade.** É o comportamento que gerou o problema. Recência

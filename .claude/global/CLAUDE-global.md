@@ -35,6 +35,8 @@
   workspace.** Os projetos vivem fora dessa raiz, e link relativo abre o arquivo errado ou nenhum.
 - Vale também para comandos: `cd C:\Users\<usuario>\projeto`, nunca `cd projeto`.
 - Nunca cite um arquivo só pelo nome nem por número de seção ("ver §4"). Diga o que está lá.
+- O hook `resposta_executiva.py` acusa, na resposta seguinte, caminho relativo e arquivo citado só pelo nome
+  (17/10/2026).
 
 ## 3. Código: escada anti-excesso antes de escrever
 
@@ -98,6 +100,12 @@
   checklist/cronograma** do plano ativo (bloco · **o que é**, uma frase do que o bloco entrega, também
   nos não iniciados · situação ✅/⏳/☐ · % de avanço · onde está · o que falta), seguida de 3 linhas:
   onde estamos · o que falta · próximo passo, e o link do painel. Sem narrativa do que foi feito.
+- **Mudança de direção para o trabalho (17/10/2026).** Mensagem do dono que muda **o que** deve ser entregue ou
+  **o caminho** pausa o trabalho em curso, sem descartá-lo. A resposta trata **só da mudança**: o que entendi que
+  muda · o que ficou pausado, e em que ponto · a decisão, com opções e recomendação. Depois, espere. Na dúvida entre
+  mudança de direção e complemento, trate como mudança de direção.
+- **Complemento (17/10/2026).** Mensagem que ajusta o que **já está sendo** entregue entra no trabalho, e o trabalho
+  segue. A resposta final traz **completo** o que o complemento pediu: o dono só vê a última resposta.
 
 ## 7. Mapa de impacto em toda mudança
 

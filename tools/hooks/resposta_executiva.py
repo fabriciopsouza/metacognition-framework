@@ -17,7 +17,10 @@ O que é medido na mensagem final (e no texto intermediário do turno):
   3. tabela de decisão (cabeçalho com "Decisão") sem recomendação;
   4. duas tabelas seguidas sem título entre elas (não se vê onde começa cada assunto);
   5. prosa longa (sinal, não limite: acima de PROSA_SINAL palavras fora de tabela e código, sem pedido de detalhe
-     ou de artefato) — pergunta se dá para organizar em tabela ou lista sem perder contexto.
+     ou de artefato) — pergunta se dá para organizar em tabela ou lista sem perder contexto;
+  6. caminho relativo ou arquivo citado só pelo nome, na mensagem final, fora de bloco de código (regra global,
+     seção 2, 17/10/2026): link cujo alvo não é absoluto, ou nome de arquivo com extensão conhecida sem unidade
+     de disco, `~`, `%VAR%` nem `/` na frente.
 
 Uso: python resposta_executiva.py --hook | --lembrete   (JSON do evento no stdin)
      python resposta_executiva.py --medir <transcript.jsonl>
@@ -47,6 +50,25 @@ _ARTEFATO = re.compile(r"(?i)\b(escrev\w*|ger[ea]\w*|cri[ea]\w*|redij\w*|redig\w
                        r"mand[ea]\w*|envi[ea]\w*|prepar\w*)\b.{0,60}\b(adr|spec\w*|especifica\w*|"
                        r"relat[oó]rio|documento|doc|readme|pop|runbook|e-?mail|mensagem|texto|ata|proposta|prompt|"
                        r"post|artigo|carta|parecer)\b|\b(quero|precis\w*)\b.{0,30}\b(prompt|texto|e-?mail|mensagem)\b")
+# Caminho (regra global, seção 2). Extensão em lista fechada: "v1.2" e "e/ou" não são arquivo. Atalho declarado:
+# .js e .ts ficam fora porque "Node.js" e "Next.js" são produto, não arquivo; projeto JS/TS pede incluí-los com
+# exigência de separador no caminho.
+_EXT = r"(?:md|py|ps1|psm1|json|jsonl|ya?ml|toml|ini|cfg|txt|csv|xlsx|xlsm|docx|pptx|pdf|sql|tsx|html|sh|bat|cmd)"
+_URL = re.compile(r"(?i)\b[a-z][a-z0-9+.-]*://[^\s)>\]`]+")
+_LINK = re.compile(r"\]\(([^)\s]+)\)")
+_ABSOLUTO = re.compile(r"(?i)^<?(file:|https?:|mailto:|#|/|~|%\w+%|[a-z]:[\\/])")
+# Caminho absoluto inteiro, com espaço no meio ("C:\Users\x y\a.md"), consumido antes da busca de nomes; vira
+# "/abs" para não sobrar o trecho depois do espaço (achado MÉDIA do QA, 17/10/2026).
+# Estrutura exigida: pastas separadas por barra; espaço só dentro de um segmento (até 4 palavras); vírgula, ";" e
+# ":" encerram. Sem isso, "C:\Users\pasta, veja README.md" engolia o README.md (achado MÉDIA, rodada 2). Limite
+# declarado: até 4 palavras depois da última barra de um absoluto viram um caminho só ("C:\pasta e notas.md",
+# "cd C:\x\y e leia a.md"): o nome solto ali não é acusado.
+_SEG = r"[^\s\\/,;:`|<>()\[\]]+?(?: [^\s\\/,;:`|<>()\[\]]+?){0,3}?"
+_ABS_TRECHO = re.compile(r"(?i)(?:[a-z]:[\\/]|\\\\|~[\\/]|%\w+%[\\/]|\$env:\w+[\\/]|\$\w+[\\/])(?:" + _SEG +
+                         r"[\\/])*" + _SEG + r"\." + _EXT + r"\b")
+# Nome de arquivo sem nada absoluto na frente: o lookbehind barra o meio de "~/a.md", "%VAR%\a.md" e "a@b.md".
+_ARQUIVO = re.compile(r"(?<![\w:/\\.~%$@-])((?:[\w.-]+[\\/])*[\w-][\w.-]*\." + _EXT + r")(?![\w/\\-])", re.I)
+_LINHA_MAX = 2000  # texto patológico ("a.a.a." x 10^4) deixava a regex quadrática; linha real é bem menor
 _DECISAO = re.compile(r"(?i)decis")  # "Opções" sozinho é tabela de referência, não decisão pendente
 _RECOMENDA = re.compile(r"(?i)recomend")
 
@@ -139,6 +161,23 @@ def tabelas(texto):
     return out
 
 
+def relativos(texto):
+    """Caminhos não absolutos fora de bloco de código: alvos de link e nomes de arquivo soltos (até 3)."""
+    achados = []
+    for ln in _linhas_fora_de_codigo(texto):
+        ln = _ABS_TRECHO.sub("/abs", _URL.sub("/abs", ln[:_LINHA_MAX]))
+        for alvo in _LINK.findall(ln):
+            if not _ABSOLUTO.match(alvo):
+                achados.append(alvo)
+        resto = _LINK.sub("]", ln)  # alvo de link já medido; URL e absoluto já viraram "/abs"
+        achados += _ARQUIVO.findall(resto)
+    vistos = []
+    for a in achados:
+        if a not in vistos:
+            vistos.append(a)
+    return vistos[:3]
+
+
 def medir(pedido, textos):
     """Achados sobre o turno (vazio = resposta no formato)."""
     if not textos:
@@ -158,6 +197,10 @@ def medir(pedido, textos):
             motivos.append(f"tabela de decisão sem coluna de recomendação: {cab[:70]}")
         if entre is not None and not any(s for s in entre):
             motivos.append(f"tabela colada na anterior, sem título entre elas: {cab[:70]}")
+    rel = relativos(final)
+    if rel:
+        motivos.append("caminho relativo ou só o nome do arquivo (" + ", ".join(f"`{r}`" for r in rel) +
+                       "): use o caminho absoluto, com link file:/// (regra global, seção 2)")
     n = prosa(final)
     if n > PROSA_SINAL and not _DETALHE.search(pedido or "") and not _ARTEFATO.search(pedido or ""):
         motivos.append(f"prosa longa ({n} palavras fora de tabela e código) — sinal, não limite: dá para organizar "

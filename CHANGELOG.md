@@ -5,6 +5,26 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### Hook `resposta_executiva.py` — acusa caminho relativo (17/10/2026)
+
+- Motivo (dono, 17/10/2026): "peço path e vc manda relativo e não absoluto". [CONFIRMADO]
+- `tools/hooks/resposta_executiva.py`, achado 6: na mensagem final, fora de bloco de código, acusa alvo de link não
+  absoluto e nome de arquivo (lista fechada de extensões) sem unidade, `~`, `%VAR%` ou `/` na frente. Não bloqueia;
+  o achado volta antes da resposta seguinte (ADR-129). [CONFIRMADO]
+- Medido em 12 transcripts recentes: 10 de 28 respostas finais citavam arquivo só pelo nome ou relativo; nenhum
+  falso positivo na amostra. [CONFIRMADO]
+- Atalho declarado: `.js` e `.ts` fora da lista ("Node.js" é produto). [CONFIRMADO]
+
+### ADR-112 emenda 1 — Mudança de direção pausa e pergunta; abertura curta (17/10/2026)
+
+- Motivo (dono, 17/10/2026): o aviso de mudança se perdia no meio do trabalho, e o complemento saía cortado da
+  resposta final. [CONFIRMADO]
+- Regra 07 e seção 6 da regra global: mudança de direção (muda o que entregar ou o caminho) pausa e espera a
+  decisão; complemento (ajusta o que já está sendo entregue) entra completo na resposta final. [CONFIRMADO]
+- `start-session` (workflow, passo 4): abertura no molde curto com resultado, estado, pendências e "Sua ação".
+  [CONFIRMADO]
+- Débito: nenhum hook impõe a pausa; o cumprimento é cobrado na revisão. [INFERIDO]
+
 ### Regra global, seção 5 — Pesquisas em repositório central (11/10/2026)
 
 - Pedido do dono (11/10/2026): "todas as pesquisas devem ser salvas em um repositório centralizado, em pastas
