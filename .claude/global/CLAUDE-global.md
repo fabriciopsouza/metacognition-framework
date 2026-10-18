@@ -35,6 +35,8 @@
   workspace.** Os projetos vivem fora dessa raiz, e link relativo abre o arquivo errado ou nenhum.
 - Vale também para comandos: `cd C:\Users\<usuario>\projeto`, nunca `cd projeto`.
 - Nunca cite um arquivo só pelo nome nem por número de seção ("ver §4"). Diga o que está lá.
+- O hook `resposta_executiva.py` acusa, na resposta seguinte, caminho relativo e arquivo citado só pelo nome
+  (17/10/2026).
 
 ## 3. Código: escada anti-excesso antes de escrever
 

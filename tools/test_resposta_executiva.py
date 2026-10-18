@@ -213,6 +213,22 @@ def main():
     rc, a = rodar([user("<br> no texto? explique em detalhe"), asst(PROSA(400))])
     check("HTML colado pelo dono (<br>) continua sendo pedido dele", a == [], a)
 
+    print("(j) caminho absoluto (regra global, seção 2)")
+    for texto in ("Veja `tools/hooks/resposta_executiva.py`.", "Alterei [o hook](tools/hooks/x.py).",
+                  "Arquivo: docs\\adr\\112.md", "Mudou o `CHANGELOG.md`.", "C:\\Users\\pasta, veja README.md",
+                  "pasta C:\\Users\\fab: leia a.md", "cd ~/proj; edite a.md", "$HOME e depois o README.md",
+                  "custa $5 e leia a.md", "C:\\x\\a.md e README.md"):
+        rc, a = rodar([user("faça"), asst(texto)])
+        check(f"relativo vira achado: {texto!r}", tem(a, "caminho relativo"), a)
+    for texto in ("[C:\\Users\\f\\repo\\a.md](file:///C:/Users/f/repo/a.md)", "Em ~/.claude/CLAUDE.md e %USERPROFILE%\\x.md",
+                  "PR: https://github.com/o/r/blob/main/README.md", "Node.js e v1.2 e e/ou", "/home/u/a.py",
+                  "```\npython tools/x.py\n```\nFeito.", "[seção](#resultado)", "C:\\Users\\x y\\a.md",
+                  "[R](<C:\\a b\\c.md>)", "a@b.md e $HOME/a.md", "\\\\servidor\\share\\a.md"):
+        rc, a = rodar([user("faça"), asst(texto)])
+        check(f"absoluto, URL ou código não vira achado: {texto[:40]!r}", not tem(a, "caminho relativo"), a)
+    rc, a = rodar([user("faça"), asst("Rodei `tools/a.py`."), tool_use(), tool_result(), asst(EXEC)])
+    check("relativo só no texto intermediário não conta (o dono vê a final)", a == [], a)
+
     print("(i) regra e wiring")
     glob = open(os.path.join(ROOT, ".claude", "global", "CLAUDE-global.md"), encoding="utf-8").read()
     check("regra global cita o hook e o critério sem número fixo",

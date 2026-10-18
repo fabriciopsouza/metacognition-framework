@@ -5,6 +5,16 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### Hook `resposta_executiva.py` — acusa caminho relativo (17/10/2026)
+
+- Motivo (dono, 17/10/2026): "peço path e vc manda relativo e não absoluto". [CONFIRMADO]
+- `tools/hooks/resposta_executiva.py`, achado 6: na mensagem final, fora de bloco de código, acusa alvo de link não
+  absoluto e nome de arquivo (lista fechada de extensões) sem unidade, `~`, `%VAR%` ou `/` na frente. Não bloqueia;
+  o achado volta antes da resposta seguinte (ADR-129). [CONFIRMADO]
+- Medido em 12 transcripts recentes: 10 de 28 respostas finais citavam arquivo só pelo nome ou relativo; nenhum
+  falso positivo na amostra. [CONFIRMADO]
+- Atalho declarado: `.js` e `.ts` fora da lista ("Node.js" é produto). [CONFIRMADO]
+
 ### ADR-112 emenda 1 — Mudança de direção pausa e pergunta; abertura curta (17/10/2026)
 
 - Motivo (dono, 17/10/2026): o aviso de mudança se perdia no meio do trabalho, e o complemento saía cortado da
