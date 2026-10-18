@@ -1,0 +1,75 @@
+{
+  "bloco": "adr-112-emenda-2-trava-de-rumo-e-produto-novo",
+  "rodada": 1,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "autor_modelo": "claude-opus-5-5",
+  "critico_modelo": "claude-sonnet-5-5",
+  "heterogeneo": true,
+  "atestacao": {
+    "agentId": "a02a337c0116c9fe1",
+    "modelo": "claude-sonnet-5-5",
+    "autor": "claude-opus-5-5"
+  },
+  "escopo_paths": [
+    ".agent/rules/07-nao-abandonar-trabalho-em-curso.md",
+    ".agent/skills/discovery/SKILL.md",
+    ".agent/skills/pmo/SKILL.md",
+    ".claude/global/CLAUDE-global.md",
+    "CHANGELOG.md",
+    "capabilities.json",
+    "docs/adr/112-nao-abandonar-trabalho-em-curso.md",
+    "docs/specs/_template-spec-unico/spec.md",
+    "tools/plano.py",
+    "tools/test_plano.py"
+  ],
+  "problemas": [
+    {
+      "severidade": "BAIXA",
+      "local": "tools/plano.py:221",
+      "descricao": "atende: p1 minusculo reprovava com mensagem enganosa",
+      "estado": "corrigido",
+      "fix": "findall com (?i) e upper; caso no canario"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "tools/plano.py:LEGADO_SEM_PEDIDO",
+      "descricao": "legado por nome de pasta",
+      "estado": "aceito",
+      "fix": "atalho declarado; alvos so de docs/specs deste repo"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": ".agent/skills/discovery/SKILL.md",
+      "descricao": "5 perguntas x poucas por vez sem frase de ligacao",
+      "estado": "corrigido",
+      "fix": "frase: excecao em um lote"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "capabilities.json:2262",
+      "descricao": "nota do plano.py nao cita a checagem 9",
+      "estado": "corrigido",
+      "fix": "nota atualizada; build_capabilities e test_capabilities PASS"
+    }
+  ],
+  "verificacoes_executadas": [
+    "critico: test_plano, plano verificar, test_regulado, test_capabilities PASS; grep sem chamador externo de plano.verificar",
+    "autor: test_plano PASS apos ressalvas; check_rules_parity, test_consistency_closing, test_resposta_executiva PASS"
+  ],
+  "steelman": "a checagem poderia reprovar projetos externos do dono; nenhum hook a chama fora deste repo",
+  "data": "2026-10-18T12:20:26Z",
+  "sha_revisado": "e3e5763408a0c997cc0b98d3690a17430d04087f",
+  "blobs_revisados": {
+    ".agent/rules/07-nao-abandonar-trabalho-em-curso.md": "1bd507349e68a74491344af34af48caa0b50d85c",
+    ".agent/skills/discovery/SKILL.md": "8e7ab2f896e21d9c09641cd1441dbad932e6c5a8",
+    ".agent/skills/pmo/SKILL.md": "3645a1d716d30ca7f5e1931fba1869c4bcfa2f07",
+    ".claude/global/CLAUDE-global.md": "6fbecf940c61a7e7d7ffa15d4d7a7815ea1bcdac",
+    "CHANGELOG.md": "f7e32428f47e05c4f25a26a5b01a596b0ba3495c",
+    "capabilities.json": "8e0a760db33eb91ae94671a674f470a7e62e80e3",
+    "docs/adr/112-nao-abandonar-trabalho-em-curso.md": "0152aab61fa57d8cf35b8e5242a05fb4cce85042",
+    "docs/specs/_template-spec-unico/spec.md": "a8c0f07525741ea554807fb5d4a0fd3fa5b3c22f",
+    "tools/plano.py": "d4e997570138afdf9d86fdf5f8d06df40acfb4e2",
+    "tools/test_plano.py": "9779fd8593d57612bdd838a75c95eba08162cbec"
+  }
+}
