@@ -5,6 +5,17 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-112 emenda 2 — Trava de rumo, produto novo e mensagem fora de contexto (18/10/2026)
+
+- Motivo: no caso do produto de BI, um exemplo do dono virou escopo (cerca de 28 h fora do pedido), e o R1 passou nos
+  testes mas foi reprovado na tela. Decisões D1a e D2a do dono. [CONFIRMADO]
+- `tools/plano.py`, checagem 9: Parte A com `### Pedido literal do dono` (`P<n>`); tarefa sem `atende: P<n>` reprova;
+  as 2 specs anteriores só recebem aviso. Canário `tools/test_plano.py`, grupo (h). [CONFIRMADO]
+- Modelo de spec: seção do pedido literal, `atende:` na tarefa e critério 7 (demonstração ao dono em produto com
+  tela). [CONFIRMADO]
+- Skills `pmo` (trava de rumo, núcleo × extra na aprovação em lote) e `discovery` (5 perguntas de produto novo);
+  regra 07 e regra global, seção 6 (mensagem fora de contexto). [CONFIRMADO]
+
 ### Hook `resposta_executiva.py` — acusa caminho relativo (17/10/2026)
 
 - Motivo (dono, 17/10/2026): "peço path e vc manda relativo e não absoluto". [CONFIRMADO]

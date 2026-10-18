@@ -5,7 +5,8 @@
   (b) cada regra, quebrada isoladamente, reprova com o achado dela;
   (c) exceções legítimas não reprovam (bloco sem tarefas no avanço; [~] citado no Replanejamento);
   (d) `--avisar` informa e não bloqueia;
-  (e) TODAS as especificações reais em docs/specs passam — é isto que barra o plano enganoso neste repositório.
+  (e) TODAS as especificações reais em docs/specs passam — é isto que barra o plano enganoso neste repositório;
+  (h) trava de rumo: tarefa sem `atende: P<n>` do Pedido literal do dono reprova; spec legada só é avisada.
 
 Uso: python tools/test_plano.py   (exit 0 PASS; 1 FAIL)
 """
@@ -41,6 +42,10 @@ BASE = """<!-- spec-unico:v1 -->
 # Parte A — Requisitos
 - REQ-01: algo
 
+### Pedido literal do dono
+- P1: "faça x e y" (10/09/2026)
+- P2: "e z" (10/09/2026)
+
 # Parte B — Aceite
 - **Requisitos aprovados pelo dono em:** 10/09/2026 · **Aceite escrito em:** 11/09/2026
 
@@ -50,10 +55,10 @@ BASE = """<!-- spec-unico:v1 -->
 
 # Tarefas
 ### B1 — primeiro bloco
-- [x] T1 fazer x — prova: `tools/x.py`
-- [ ] T2 fazer y
+- [x] T1 fazer x atende: P1 — prova: `tools/x.py`
+- [ ] T2 fazer y atende: P1
 ### B2 — segundo bloco
-- [x] T3 fazer z (PR #123)
+- [x] T3 fazer z atende: P2 (PR #123)
 - [~] T4 adiado
 
 # Mapa de impacto
@@ -103,7 +108,7 @@ def main():
     casos = [
         ("seção obrigatória ausente", troca("# Mapa de impacto\n", "# Outra coisa\n"), "seção obrigatória ausente: Mapa de impacto"),
         ("decisão pendente sem quem age", troca("| ⏳ pendente | **dono** |", "| ⏳ pendente | — |"), "D1: decisão pendente sem 'Quem age'"),
-        ("tarefa feita sem prova", troca("- [x] T1 fazer x — prova: `tools/x.py`", "- [x] T1 fazer x"), "T1 marcada [x] sem prova"),
+        ("tarefa feita sem prova", troca("- [x] T1 fazer x atende: P1 — prova: `tools/x.py`", "- [x] T1 fazer x atende: P1"), "T1 marcada [x] sem prova"),
         ("replanejada sem registro", troca("| 12/09/2026 | T4 |", "| 12/09/2026 | T9 |"), "T4 replanejada [~] sem linha"),
         ("avanço que não bate", troca("B1 50%", "B1 90%"), "Avanço de B1: painel diz 90%, as tarefas dão 50%"),
         ("mapa sem situação", troca("| canários | sim | ✅ test_x |", "| canários | sim | |"), "'canários' muda e está sem situação"),
@@ -123,7 +128,7 @@ def main():
     print("(c) exceções legítimas")
     ach, _ = rodar(troca("B1 50% · B2 100%", "B1 50% · B9 30%"))
     check("bloco do avanço sem lista de tarefas não reprova", ach == [], ach)
-    ach, _ = rodar(troca("- [x] T3 fazer z (PR #123)", "- [x] T3 fazer z — ver `docs/adr/001-x.md`"))
+    ach, _ = rodar(troca("- [x] T3 fazer z atende: P2 (PR #123)", "- [x] T3 fazer z atende: P2 — ver `docs/adr/001-x.md`"))
     check("arquivo citado entre crases vale como prova", ach == [], ach)
 
     print("(d) --avisar")
@@ -142,9 +147,9 @@ def main():
           and "| B2 — segundo bloco | 1/1 | `████████████` | 100% |" in base_painel, plano.painel(BASE))
     ach, _ = rodar(troca("| 1/2 | `██████░░░░░░` | 50% |", "| 1/2 | `██████░░░░░░` | 80% |", base_painel))
     check("% editado à mão no painel reprova", any("painel de fases diferente" in a for a in ach), ach)
-    ach, _ = rodar(troca("- [ ] T2 fazer y", "- [x] T2 fazer y — prova: `x.py`", base_painel).replace("B1 50%", "B1 100%"))
+    ach, _ = rodar(troca("- [ ] T2 fazer y atende: P1", "- [x] T2 fazer y atende: P1 — prova: `x.py`", base_painel).replace("B1 50%", "B1 100%"))
     check("tarefa marcada sem regenerar o painel reprova", any("painel de fases diferente" in a for a in ach), ach)
-    _, p = rodar(troca("B1 50%", "B1 100%", troca("- [ ] T2 fazer y", "- [x] T2 fazer y — prova: `x.py`")))
+    _, p = rodar(troca("B1 50%", "B1 100%", troca("- [ ] T2 fazer y atende: P1", "- [x] T2 fazer y atende: P1 — prova: `x.py`")))
     plano.escrever_painel(p)
     check("--escrever insere o painel e o plano passa", plano.verificar(p) == [], plano.verificar(p))
     plano.escrever_painel(p)
@@ -162,8 +167,8 @@ def main():
           and rodar(exemplo)[0] == [], rodar(exemplo)[0])
 
     print("(g) cronograma")
-    crono = troca("- [ ] T2 fazer y", "- [ ] T2 fazer y — prazo: 20/10/2026 · depende: T1").replace(
-        "- [x] T1 fazer x — prova: `tools/x.py`", "- [x] T1 fazer x — prova: `tools/x.py` · prazo: 10/10/2026")
+    crono = troca("- [ ] T2 fazer y atende: P1", "- [ ] T2 fazer y atende: P1 — prazo: 20/10/2026 · depende: T1").replace(
+        "- [x] T1 fazer x atende: P1 — prova: `tools/x.py`", "- [x] T1 fazer x atende: P1 — prova: `tools/x.py` · prazo: 10/10/2026")
     ach, _ = rodar(crono)
     check("cronograma coerente passa", ach == [], ach)
     ach, _ = rodar(crono.replace("depende: T1", "depende: T1."))
@@ -184,6 +189,39 @@ def main():
     ]:
         ach, _ = rodar(texto)
         check(f"cronograma: {nome} reprova", any(trecho in a for a in ach), ach)
+
+    print("(h) trava de rumo (checagem 9)")
+    for nome, texto, trecho in [
+        ("sem a seção do pedido literal", troca("### Pedido literal do dono\n", "### Outra coisa\n"), "sem '### Pedido literal"),
+        ("seção sem item", troca('- P1: "faça x e y" (10/09/2026)\n- P2: "e z" (10/09/2026)\n', "texto solto\n"),
+         "sem nenhum item"),
+        ("tarefa sem atende", troca("T2 fazer y atende: P1", "T2 fazer y"), "T2 sem 'atende: P<n>'"),
+        ("tarefa atende pedido inexistente", troca("T3 fazer z atende: P2", "T3 fazer z atende: P9"),
+         "T3 atende P9, que não está"),
+        ("item P fora da seção não vale", troca('- P2: "e z" (10/09/2026)\n', "") .replace("- REQ-01: algo", "- REQ-01: algo\n- P2: x"),
+         "T3 atende P2, que não está"),
+    ]:
+        ach, _ = rodar(texto)
+        check(f"rumo: {nome} reprova", any(trecho in a for a in ach), ach)
+    ach, _ = rodar(troca("# Parte A — Requisitos\n", "# Parte A — Requisitos\n## Identificação\n- caso: x\n"))
+    check("rumo: seção abaixo de um '##' dentro da Parte A vale", ach == [], ach)
+    ach, _ = rodar(troca("### Pedido literal do dono\n", "```\n### Pedido literal do dono\n```\n"))
+    check("rumo: seção dentro de bloco de código não vale", any("sem '### Pedido literal" in a for a in ach), ach)
+    ach, _ = rodar(troca("T3 fazer z atende: P2", "T3 fazer z atende: P1, P2"))
+    check("rumo: atende com vários pedidos passa", ach == [], ach)
+    ach, _ = rodar(troca("T3 fazer z atende: P2", "T3 fazer z Atende: p2."))
+    check("rumo: caixa e ponto final no atende não reprovam", ach == [], ach)
+    ach, _ = rodar(troca("- [~] T4 adiado", "- [~] T4 adiado sem atende"))
+    check("rumo: tarefa replanejada [~] não exige atende", ach == [], ach)
+    modelo = os.path.join(ROOT, "docs", "specs", "_template-spec-unico", "spec.md")
+    check("rumo: o modelo de spec que se clona já passa", plano.verificar(modelo) == [], plano.verificar(modelo))
+    d = os.path.join(tempfile.mkdtemp(), sorted(plano.LEGADO_SEM_PEDIDO)[0])
+    os.makedirs(d)
+    p = os.path.join(d, "spec.md")
+    with open(p, "w", encoding="utf-8") as fh:
+        fh.write(troca("### Pedido literal do dono\n", "### Outra coisa\n"))
+    av = []
+    check("rumo: spec legada só recebe aviso, não reprova", plano.verificar(p, av) == [] and av, (av,))
 
     print("(e) especificações reais deste repositório")
     r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "plano.py"), "verificar"],

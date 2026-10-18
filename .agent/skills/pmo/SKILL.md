@@ -34,6 +34,15 @@ retrabalho. NUNCA escreve código de produção — SEMPRE delega.
 4. Decidir: claro → abordagem em 3 linhas → delegar; ambíguo → UMA pergunta.
 5. DESCONHECIDO crítico → escalar.
 
+## Trava de rumo (ADR-112 emenda 2, 18/10/2026)
+1. **Antes de cada bloco**, cite o pedido literal que ele atende (`P<n>` do `### Pedido literal do dono`). Bloco
+   que não atende nenhum volta ao dono em uma linha, antes de começar: "isto não está no seu pedido; faço?".
+2. **Aprovação em lote** ("conforme recomendação" para várias decisões) só vale para o que atende a um `P<n>`.
+   O plano separa **núcleo** (atende) de **extra** (não atende), e o extra precisa de um sim próprio.
+3. **Mudança de direção** e **mensagem fora de contexto** seguem a regra 07: pausa e pergunta, ou desconsidera
+   com uma linha em Pendências.
+4. Mecanismo: `python tools/plano.py verificar` reprova tarefa sem `atende: P<n>` (checagem 9).
+
 ## Roteamento por confiança
 `.agent/rules/04-confidence-routing.md`: alta → linear; baixa/regulado → reflexivo
 (`_shared/high-stakes-gate`).

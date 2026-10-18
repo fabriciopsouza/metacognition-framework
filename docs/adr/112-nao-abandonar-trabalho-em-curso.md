@@ -97,6 +97,30 @@ O texto operacional, com a tabela de casos, está em `.agent/rules/07-nao-abando
 A seção 6 de `.claude/global/CLAUDE-global.md` leva a regra a todo projeto. É adição por ordem do
 dono (régua §0). O cumprimento é cobrável em revisão; nenhum hook o impõe.
 
+## Emenda 2 (18/10/2026) — trava de rumo, produto novo e mensagem fora de contexto
+
+**Status:** Aceito; decisões D1a e D2a do dono em 18/10/2026. **EMENDA** a emenda 1, acrescentando casos.
+
+**Contexto.** No caso do produto de BI (16 e 17/10/2026), a lista que o dono chamou de *"EXEMPLO de REFERENCIA, nao
+exaustivo"* virou escopo. Foram cerca de 28 h e 320 chamadas de ferramenta num leitor fiscal, aprovado com outras
+14 decisões num "conforme recomendação". O R1 passou em 145 testes e foi reprovado quando o dono viu a tela. Nada
+ligava a tarefa ao pedido.
+
+**Decisão.**
+1. **Pedido literal do dono** vira seção da Parte A da spec (`### Pedido literal do dono`, itens `P<n>`). Toda
+   tarefa cita `atende: P<n>`. `tools/plano.py verificar` reprova o que não cita (checagem 9). As duas specs
+   abertas antes da regra só recebem aviso (D1a; atalho declarado em `LEGADO_SEM_PEDIDO`).
+2. **PMO:** bloco sem `P<n>` volta ao dono antes de começar. Aprovação em lote só cobre o núcleo, e o extra pede
+   um sim próprio (`.agent/skills/pmo/SKILL.md`).
+3. **Discovery, produto novo:** 5 perguntas antes de construir: o que é e para quem · geral ou de domínio ·
+   exemplo ou escopo · como o dono verá que está pronto · o que fica de fora (`.agent/skills/discovery/SKILL.md`).
+4. **Produto com tela:** o critério de aceite inclui demonstração vista pelo dono, com print ou link e data (D2a;
+   critério 7 do modelo de spec).
+5. **Mensagem fora de contexto** (de outra sessão): é desconsiderada, com uma linha em Pendências, e o trabalho
+   segue (linha nova na tabela da regra 07; molde dado pelo dono, 18/10/2026).
+
+**Régua §0.** Adição por ordem do dono. Os itens 1 e 2 são o mecanismo que faltou à regra escrita do PMO.
+
 ## Alternativas recusadas
 
 **Tratar a mensagem mais recente como prioridade.** É o comportamento que gerou o problema. Recência

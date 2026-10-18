@@ -59,6 +59,11 @@
 > Verificação: `python tools/regulado.py verificar <spec.md> --planejamento` durante o projeto;
 > sem `--planejamento` na liberação (todo teste executado, com evidência, nome e data).
 
+### Pedido literal do dono
+> Frases do dono, copiadas sem reescrever, com data. Toda tarefa cita `atende: P<n>` (`tools/plano.py`, checagem 9).
+> Exemplo que o dono deu é exemplo: registrar "(exemplo, não escopo)" quando ele disser.
+- P1: "<frase literal do dono>" (<dd/mm/aaaa>)
+
 ### Requisitos numerados
 - REQ-01: <requisito verificável>
 
@@ -193,6 +198,7 @@ Dimensões/dados sabidos ausentes mas não impedem entrega?
 | 4 | <ex.: DIV/0 explícito> | inspeção da fórmula | ☐ |
 | 5 | <ex.: toda afirmação numérica classificada> | ver `_shared/confidence-classification` | ☐ |
 | 6 | <ex.: número rastreável à query/arquivo de origem> | trilha decisão→fonte | ☐ |
+| 7 | <produto com tela: o dono viu a tela e aprovou (apague se não há tela)> | demonstração ao dono, com print ou link e data; teste verde não substitui | ☐ |
 
 ## Test cases obrigatórios (referência: `_shared/output-format`)
 
@@ -473,7 +479,7 @@ Legenda: `[ ]` a fazer · `[x]` feito, **com prova** ao lado · `[~]` replanejad
 > gerada dele — não mantenha as duas à mão.
 
 ### <entregável> (faz o papel de épico)
-- [ ] T1 <quem precisa · o quê · para quê> — aceite: <critério da Parte B>
+- [ ] T1 <quem precisa · o quê · para quê> — atende: P1 · aceite: <critério da Parte B>
 
 # Mapa de impacto
 > O que mais muda junto com este bloco. Cada linha: situação e prova.
