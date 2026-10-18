@@ -12,7 +12,10 @@ Reprova o que torna o plano enganoso para quem o lê (regra: o dono decide pelo 
   6. aceite datado antes da aprovação dos requisitos (Parte B);
   7. painel de fases (entre `<!-- painel:inicio -->` e `<!-- painel:fim -->`) diferente do que as tarefas geram —
      % editado à mão ou tarefa marcada sem regenerar;
-  8. cronograma: `prazo:` ilegível, `depende:` de tarefa inexistente, prazo antes do prazo da dependência.
+  8. cronograma: `prazo:` ilegível, `depende:` de tarefa inexistente, prazo antes do prazo da dependência;
+  9. trava de rumo (ADR-112 emenda 2, 18/10/2026): sem `### Pedido literal do dono` na Parte A (itens `- P1: "..."`),
+     ou tarefa (exceto `[~]`) sem `atende: P<n>` que exista ali. Specs anteriores à regra (LEGADO_SEM_PEDIDO) só
+     recebem aviso, sem reprovar (decisão D1a do dono).
 
 Cronograma: na linha da tarefa, `prazo: dd/mm/aaaa` e, se houver, `depende: T1, T2`.
 
@@ -38,6 +41,12 @@ _DATA = re.compile(r"\b(\d{1,2})/(\d{1,2})/(\d{4})\b")
 _PROVA = re.compile(r"(?i)\bprova\b|#\d{2,}|`[^`]+\.(?:py|md|json|xlsx|csv|html|docx|sql|ps1|sh|txt)`")
 _TAREFA = re.compile(r"^\s*-\s*\[([ xX~])\]\s*(T[\w.-]*\d[\w.-]*)?\s*(.*)$")
 _VAZIO = {"", "—", "-", "n/a"}
+_PEDIDO_SEC = re.compile(r"(?im)^###\s+Pedido literal do dono\b")
+_PEDIDO_ITEM = re.compile(r"^\s*-\s*(P\d+)\s*:")
+_ATENDE = re.compile(r"(?i)\batende:\s*((?:P\d+(?:\s*,\s*|\s+e\s+|\s*))+)")
+# Atalho declarado: specs abertas antes da trava de rumo (18/10/2026) só recebem aviso. Spec nova não entra aqui;
+# quando estas duas fecharem ou ganharem a seção, a lista esvazia.
+LEGADO_SEM_PEDIDO = {"b3-documentacao-regulada", "isolamento-empresas-biblioteca"}
 
 
 def _vazio(v):
@@ -180,7 +189,50 @@ def _achados_cronograma(texto):
     return ach
 
 
-def verificar(spec):
+def achados_rumo(texto):
+    """Checagem 9: todo trabalho aponta para um pedido literal do dono (o caso do BI: 28 h num leitor fiscal que
+    ninguém pediu, aprovado em bloco porque nada ligava a tarefa ao pedido)."""
+    parte_a, dentro_a = [], False  # a Parte A inteira, até o próximo H1 (ela tem `##` dentro)
+    for ln, fora, h1 in spec_fonte._linhas_classificadas(texto):
+        if h1:
+            dentro_a = bool(re.match(r"(?i)^#\s+Parte A\b", ln))
+            continue
+        if dentro_a and fora:
+            parte_a.append(ln)
+    if not any(_PEDIDO_SEC.match(ln) for ln in parte_a):
+        return ["sem '### Pedido literal do dono' na Parte A (itens '- P1: \"frase do dono\" (data)'): o PMO não tem "
+                "contra o que conferir o rumo"]
+    ids, dentro = set(), False
+    for ln in parte_a:
+        if ln.startswith("#"):
+            dentro = bool(_PEDIDO_SEC.match(ln))
+            continue
+        m = _PEDIDO_ITEM.match(ln) if dentro else None
+        if m:
+            ids.add(m.group(1))
+    if not ids:
+        return ["'### Pedido literal do dono' sem nenhum item '- P1: ...'"]
+    ach = []
+    for t in tarefas(texto):
+        if t["marca"] == "~":
+            continue
+        nome = t["id"] or t["texto"][:40]
+        m = _ATENDE.search(t["linha"])
+        citados = [c.upper() for c in re.findall(r"(?i)P\d+", m.group(1))] if m else []
+        if not citados:
+            ach.append(f"tarefa {nome} sem 'atende: P<n>': a que pedido do dono ela serve?")
+        for c in citados:
+            if c not in ids:
+                ach.append(f"tarefa {nome} atende {c}, que não está no Pedido literal do dono")
+    return ach
+
+
+def _legado(spec):
+    return os.path.basename(os.path.dirname(os.path.abspath(spec))) in LEGADO_SEM_PEDIDO
+
+
+def verificar(spec, avisos=None):
+    """Achados que reprovam. Em spec legada, os da checagem 9 vão para `avisos` (lista), se dada."""
     texto = open(spec, encoding="utf-8-sig").read()
     spec_fonte.validar_unico(texto)
     blocos = _blocos(texto)
@@ -257,6 +309,12 @@ def verificar(spec):
         ach.append("painel de fases diferente do que as tarefas geram (% editado à mão ou tarefa marcada sem "
                    "regenerar) — rode: python tools/plano.py painel <spec.md> --escrever")
     ach += _achados_cronograma(texto)
+    rumo = achados_rumo(texto)
+    if _legado(spec):
+        if avisos is not None:
+            avisos += rumo
+    else:
+        ach += rumo
     return ach
 
 
@@ -302,14 +360,17 @@ def main(argv):
         alvos = [p for p in spec_fonte.alvos_unicos(ROOT) if "_template" not in p.replace("\\", "/")]
     total = 0
     for spec in alvos:
+        legado = []
         try:
-            ach = verificar(spec)
+            ach = verificar(spec, legado)
         except (OSError, spec_fonte.SpecInvalida) as e:
             ach = [f"ilegível: {e}"]
         rel = os.path.relpath(spec, ROOT)
         print(f"{'FAIL' if ach else 'OK  '} {rel}")
         for a in ach:
             print(f"   - {a}")
+        for a in legado:
+            print(f"   ~ aviso (spec anterior à trava de rumo): {a}")
         total += len(ach)
     print("-" * 50)
     print("RESULTADO:", (f"{'AVISO' if avisar else 'FAIL'} ({total})" if total else "PASS"))

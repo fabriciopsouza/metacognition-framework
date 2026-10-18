@@ -126,6 +126,24 @@ inventar não é. A diferença é onde a dúvida aparece: na conversa, na hora, 
 
    **Candidate-skill surface (ADR-010 §ii-b):** se ao longo do discovery emergir gap recorrente que não cabe em edição cirúrgica, surfacear como **proposta de skill nova** no `## Antecipações` do output — **NÃO criar**. Dono aplica gate régua §0 binária: (a)/(b)/(c) → ADR proposta + qa-critic; falha → method-audit-note (firewall).
 
+## Produto novo: 5 perguntas antes de construir (ADR-112 emenda 2, 18/10/2026)
+
+Caso que gerou a regra: o pedido de "software de BI" foi atendido sem perguntar se era ferramenta geral, e uma
+lista que o dono chamou de "exemplo, não exaustivo" virou escopo. Foram 28 h construindo um leitor fiscal que
+ninguém pediu. Antes da primeira linha de produto novo, faça estas perguntas **em conversa**, com recomendação,
+e registre as respostas, literais, em `### Pedido literal do dono` da Parte A:
+
+1. **O que é, em uma frase, e para quem?**
+2. **Geral ou de um domínio?** Ferramenta para qualquer assunto, ou para um cliente ou setor?
+3. **O que você citou é exemplo ou escopo?** Cada lista do dono recebe essa pergunta.
+4. **Como você vai ver que está pronto?** Para produto com tela, a resposta é uma demonstração vista pelo
+   dono (critério 7 da Parte B); teste verde não substitui.
+5. **O que fica de fora?**
+
+As cinco são as que sempre mudam o trabalho; por isso valem como exceção ao "poucas por vez" acima, em um lote
+só. Pergunta que não muda o trabalho (cobrança, hospedagem, dono do produto) só entra se o dono trouxer. As
+dimensões abaixo vêm depois destas cinco, nunca no lugar delas.
+
 ## Elicitação-consultiva de PRODUTO (banco agnóstico — ADR-033, obrigatório p/ produto recorrente)
 Quando a entrega for **produto recorrente** (software, dado, pipeline, relatório que vira ferramenta),
 carregar `_shared/discovery/elicitation-dimensions.md` e **endereçar cada dimensão universal** —

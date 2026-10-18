@@ -27,6 +27,7 @@ Faltando qualquer uma das três, nada é cancelado.
 | muda **o que** deve ser entregue ou **o caminho** (troca o objetivo, diz que o trabalho foi para o lugar errado) | mudança de direção | pausa; responde **só** sobre a mudança; espera |
 | ajusta **o que já está sendo** entregue (detalhe, correção, crítica ao resultado, pedido a mais no mesmo objetivo) | complemento | incorpora e segue |
 | pergunta, status, `"ok"`, `"siga"`, silêncio, assunto novo que não toca o trabalho | nem um nem outro | responde e retoma |
+| não pertence a esta sessão (aprovação ou trecho de outra conversa, colado aqui por engano) | fora de contexto | desconsidera; uma linha em Pendências: de onde parece vir e onde mandar; o trabalho segue sem mudar |
 
 **Resposta à mudança de direção:** o que entendi que muda · o que ficou pausado, e
 em que ponto · a decisão (retomar, descartar ou seguir o novo rumo), com

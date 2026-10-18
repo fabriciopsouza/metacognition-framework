@@ -106,6 +106,8 @@
   mudança de direção e complemento, trate como mudança de direção.
 - **Complemento (17/10/2026).** Mensagem que ajusta o que **já está sendo** entregue entra no trabalho, e o trabalho
   segue. A resposta final traz **completo** o que o complemento pediu: o dono só vê a última resposta.
+- **Mensagem fora de contexto (18/10/2026).** Trecho ou aprovação que pertence a outra sessão é desconsiderado:
+  uma linha em Pendências diz de onde parece vir e onde mandar; o trabalho segue sem mudar.
 
 ## 7. Mapa de impacto em toda mudança
 
