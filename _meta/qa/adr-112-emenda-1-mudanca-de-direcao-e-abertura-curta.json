@@ -1,0 +1,103 @@
+{
+  "bloco": "adr-112-emenda-1-mudanca-de-direcao-e-abertura-curta",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "autor_modelo": "claude-opus-5-5",
+  "critico_modelo": "claude-sonnet-5-5",
+  "heterogeneo": true,
+  "atestacao": {
+    "agentId": "a729e5d9ba8863d52",
+    "modelo": "claude-sonnet-5-5",
+    "autor": "claude-opus-5-5"
+  },
+  "escopo_paths": [
+    ".claude/global/CLAUDE-global.md",
+    ".agent/rules/07-nao-abandonar-trabalho-em-curso.md",
+    "docs/adr/112-nao-abandonar-trabalho-em-curso.md",
+    ".agent/workflows/start-session.md",
+    ".claude/commands/start-session.md",
+    "CLAUDE.md",
+    "CHANGELOG.md"
+  ],
+  "problemas": [
+    {
+      "severidade": "BAIXA",
+      "local": ".claude/global/CLAUDE-global.md:104",
+      "descricao": "na duvida sem recorte direcao x complemento",
+      "estado": "corrigido",
+      "fix": "recorte copiado da regra 07"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "CLAUDE.md:40",
+      "descricao": "digesto diz critica sem distinguir resultado de rumo",
+      "estado": "corrigido",
+      "fix": "critica ao resultado"
+    }
+  ],
+  "verificacoes_executadas": [
+    "critico: check_rules_parity PASS; test_consistency_closing PASS (124 ADRs, 0 ponteiro morto)",
+    "critico: recusa do achado 3 da rodada 1 sustentada"
+  ],
+  "steelman": "a recusa do achado 3 poderia ser vies do autor; o critico confirmou que a alternativa e o defeito literal do pedido",
+  "data": "2026-10-18T02:37:05Z",
+  "sha_revisado": "7f41d65de312694198566740a902ed7f9188d0fa",
+  "blobs_revisados": {
+    ".claude/global/CLAUDE-global.md": "bd509a25ba9499748c9def16328389da3619bcee",
+    ".agent/rules/07-nao-abandonar-trabalho-em-curso.md": "79a578d5b29aa592ec33a17de7c6f235f282ce6c",
+    "docs/adr/112-nao-abandonar-trabalho-em-curso.md": "1c51594fda984397f1a266bb031cbd3714a8ef36",
+    ".agent/workflows/start-session.md": "0e18f0b7271bdfd5b247a99e6e9ca18889d65779",
+    ".claude/commands/start-session.md": "d89d5891729d51fe95345d87658a347da5cbf629",
+    "CLAUDE.md": "d6b28f7cd4bdf2af27dd1c85f96c1508d3de1b18",
+    "CHANGELOG.md": "e7603f3d07e9dcdc5a1f3831c3aaa27660951689"
+  },
+  "substitui": [
+    {
+      "rodada": 1,
+      "data": "2026-10-18T02:35:46Z",
+      "recomendacao": "corrigir",
+      "sha_revisado": "7f41d65de312694198566740a902ed7f9188d0fa",
+      "agentId": "a95a9fb90d4bcef13",
+      "escopo_paths": [
+        ".claude/global/CLAUDE-global.md",
+        ".agent/rules/07-nao-abandonar-trabalho-em-curso.md",
+        "docs/adr/112-nao-abandonar-trabalho-em-curso.md",
+        ".agent/workflows/start-session.md",
+        ".claude/commands/start-session.md",
+        "CLAUDE.md",
+        "CHANGELOG.md"
+      ],
+      "achados_fp": [
+        "ALTA|.agent/rules/07-nao-abandonar-trabalho-em-curso.md:24",
+        "ALTA|.agent/rules/07-nao-abandonar-trabalho-em-curso.md:6",
+        "BAIXA|changelog.md",
+        "MEDIA|.agent/rules/07-nao-abandonar-trabalho-em-curso.md:50",
+        "MEDIA|.agent/workflows/start-session.md:32",
+        "MEDIA|.claude/commands/start-session.md:27"
+      ],
+      "reinicio": false
+    },
+    {
+      "rodada": 2,
+      "data": "2026-10-18T02:35:47Z",
+      "recomendacao": "aprovar_com_ressalvas",
+      "sha_revisado": "7f41d65de312694198566740a902ed7f9188d0fa",
+      "agentId": "a729e5d9ba8863d52",
+      "escopo_paths": [
+        ".claude/global/CLAUDE-global.md",
+        ".agent/rules/07-nao-abandonar-trabalho-em-curso.md",
+        "docs/adr/112-nao-abandonar-trabalho-em-curso.md",
+        ".agent/workflows/start-session.md",
+        ".claude/commands/start-session.md",
+        "CLAUDE.md",
+        "CHANGELOG.md"
+      ],
+      "achados_fp": [
+        "BAIXA|.claude/global/claude-global.md:104",
+        "BAIXA|claude.md:40"
+      ],
+      "reinicio": false
+    }
+  ]
+}
