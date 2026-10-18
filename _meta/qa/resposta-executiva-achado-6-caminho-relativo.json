@@ -1,0 +1,88 @@
+{
+  "bloco": "resposta-executiva-achado-6-caminho-relativo",
+  "autor_modelo": "claude-opus-5-5",
+  "critico_modelo": "claude-sonnet-5-5",
+  "heterogeneo": true,
+  "escopo_paths": [
+    ".claude/global/CLAUDE-global.md",
+    "CHANGELOG.md",
+    "tools/hooks/resposta_executiva.py",
+    "tools/test_resposta_executiva.py"
+  ],
+  "rodada": 3,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "atestacao": {
+    "agentId": "a06de585158e1688a",
+    "modelo": "claude-sonnet-5-5",
+    "autor": "claude-opus-5-5"
+  },
+  "problemas": [
+    {
+      "severidade": "BAIXA",
+      "local": "tools/hooks/resposta_executiva.py:_SEG",
+      "descricao": "ate 4 palavras apos a ultima barra engolem nome solto",
+      "estado": "aceito",
+      "fix": "limite ampliado no comentario"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "tools/hooks/resposta_executiva.py:relativos",
+      "descricao": "7 ms por linha patologica",
+      "estado": "aceito",
+      "fix": "linear, aceitavel"
+    }
+  ],
+  "verificacoes_executadas": [
+    "critico: canario PASS; casos das rodadas 1 e 2 sem regressao; 8 padroes patologicos <= 8 ms por linha",
+    "autor: amostra real 12 transcripts, 10 de 28 respostas com achado, todos verdadeiros"
+  ],
+  "steelman": "o achado poderia so medir sem efeito; volta ao modelo antes da resposta seguinte",
+  "data": "2026-10-18T02:47:16Z",
+  "sha_revisado": "28925795aab06d38926184175d8b374fbae20458",
+  "blobs_revisados": {
+    ".claude/global/CLAUDE-global.md": "1e53a6552264e8e0e6490a3a6d54bcb29ea45719",
+    "CHANGELOG.md": "e1a32991aba1e42928149270cb4aa8034118e3a7",
+    "tools/hooks/resposta_executiva.py": "7263a471c0b637a6bb57f450c12bbddad693f9bb",
+    "tools/test_resposta_executiva.py": "3fe16656eb38d1a1af578b9d4d3f74eff81d1dcd"
+  },
+  "substitui": [
+    {
+      "rodada": 1,
+      "data": "2026-10-18T02:47:15Z",
+      "recomendacao": "corrigir",
+      "sha_revisado": "28925795aab06d38926184175d8b374fbae20458",
+      "agentId": "aabefb0ccc2808edb",
+      "escopo_paths": [
+        ".claude/global/CLAUDE-global.md",
+        "CHANGELOG.md",
+        "tools/hooks/resposta_executiva.py",
+        "tools/test_resposta_executiva.py"
+      ],
+      "achados_fp": [
+        "BAIXA|tools/hooks/resposta_executiva.py:_arquivo",
+        "BAIXA|tools/hooks/resposta_executiva.py:relativos",
+        "MEDIA|tools/hooks/resposta_executiva.py:_arquivo"
+      ],
+      "reinicio": false
+    },
+    {
+      "rodada": 2,
+      "data": "2026-10-18T02:47:15Z",
+      "recomendacao": "corrigir",
+      "sha_revisado": "28925795aab06d38926184175d8b374fbae20458",
+      "agentId": "aa225487b67cc864f",
+      "escopo_paths": [
+        ".claude/global/CLAUDE-global.md",
+        "CHANGELOG.md",
+        "tools/hooks/resposta_executiva.py",
+        "tools/test_resposta_executiva.py"
+      ],
+      "achados_fp": [
+        "MEDIA|tools/hooks/resposta_executiva.py:_abs_trecho"
+      ],
+      "reinicio": false
+    }
+  ],
+  "substitui_reprovacao": true
+}
