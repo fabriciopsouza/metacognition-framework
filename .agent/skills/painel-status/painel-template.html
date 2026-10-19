@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Painel de status</title>
+<style>
+/* Painel de status (skill painel-status). Só o bloco de dados JSON muda entre relatórios.
+   Tema: segue o tema do sistema operacional (claro ou escuro), decisão declarada na skill. */
+:root{
+  --bg:#F4F5F7; --panel:#FFFFFF; --ink:#1C2127; --ink-2:#4B5560; --line:#DCE0E6; --accent:#006BA4;
+  --ok:#0B6B35; --wip:#8A5A00; --todo:#5F6368; --track:#E7EAEE;
+  --f:"IBM Plex Sans","Segoe UI",system-ui,sans-serif; --m:ui-monospace,"Cascadia Mono",Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{--bg:#15181C;--panel:#1D2126;--ink:#E7EAEE;--ink-2:#A8B0BA;--line:#333A42;--accent:#7FB2D6;--ok:#6CCB93;--wip:#E3B55A;--todo:#9AA3AD;--track:#2A3037;color-scheme:dark}}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f);font-size:14px;line-height:1.45;margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:22px 40px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1{font-size:24px;font-weight:700;margin:0}
+.meta{color:var(--ink-2);font-size:13px;margin:2px 0 0}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.k,.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;min-width:0}
+.k b{display:block;font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+.k span{font-size:12px;color:var(--ink-2);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.k small{display:block;color:var(--ink-2);font-size:12px;margin-top:2px}
+h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);margin:0 0 10px;font-weight:700}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);font-weight:700}
+.st{font-weight:700;white-space:nowrap}.st.ok{color:var(--ok)}.st.wip{color:var(--wip)}.st.todo{color:var(--todo)}
+.bar{height:6px;background:var(--track);border-radius:3px;overflow:hidden;min-width:70px;margin-top:4px}.bar i{display:block;height:100%;background:var(--accent)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+@media (max-width:760px){.two{grid-template-columns:minmax(0,1fr)}}
+ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.lines p{margin:0 0 6px}
+code{font-family:var(--m);font-size:12px}
+.grp{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.g{border:1px solid var(--line);border-radius:6px;padding:8px 10px}.g b{font-family:var(--m);font-size:13px}.g div{font-size:12px;color:var(--ink-2)}
+.fontes{font-size:12px;color:var(--ink-2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><h1 id="titulo"></h1><p class="meta" id="meta"></p></header>
+  <section class="kpis" id="kpis" aria-label="Resumo"></section>
+  <section class="card"><h2>Blocos do plano</h2><div class="tbl"><table>
+    <thead><tr><th>Bloco</th><th>O que é</th><th>Situação</th><th>%</th><th>Onde está</th><th>O que falta</th></tr></thead>
+    <tbody id="blocos"></tbody></table></div></section>
+  <section class="card" id="sec-grupos"><h2 id="titulo-grupos"></h2><div class="grp" id="grupos"></div></section>
+  <div class="two">
+    <section class="card lines"><h2>Agora</h2>
+      <p><b>Onde estamos:</b> <span id="onde"></span></p>
+      <p><b>O que falta:</b> <span id="falta"></span></p>
+      <p><b>Próximo passo:</b> <span id="proximo"></span></p></section>
+    <section class="card"><h2>Com o dono</h2><ul id="comdono"></ul></section>
+  </div>
+  <section class="card fontes"><h2>Fontes conferidas</h2><ul id="fontes"></ul></section>
+</div>
+<!-- DADOS: único trecho que muda entre relatórios. JSON com todo "<" escrito como \u003c. -->
+<script type="application/json" id="dados">
+{
+ "titulo": "Painel do projeto",
+ "meta": "Situação em dd/mm/aaaa, hh:mm",
+ "kpis": [["Entregas feitas","0","de 0 planejadas"],["Em andamento","0",""],["Revisões aprovadas","0",""],["Decisões com o dono","0",""]],
+ "blocos": [["1. Bloco","O que o bloco entrega","todo",0,"onde está","o que falta"]],
+ "tituloGrupos": "Entregas por grupo",
+ "grupos": [["Grupo","situação"]],
+ "onde": "", "falta": "", "proximo": "",
+ "comDono": ["Nada pendente"],
+ "fontes": ["fonte conferida — dd/mm/aaaa hh:mm"]
+}
+</script>
+<script>
+const D=JSON.parse(document.getElementById("dados").textContent);
+const L={ok:"✅ concluído",wip:"⏳ em andamento",todo:"☐ não iniciado"};
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pct=p=>Math.max(0,Math.min(100,Number(p)||0));
+const st=s=>Object.prototype.hasOwnProperty.call(L,s)?s:"todo";
+const t=(id,v)=>{document.getElementById(id).textContent=v??"";};
+t("titulo",D.titulo);t("meta",D.meta);document.title=D.titulo||"Painel de status";
+document.getElementById("kpis").innerHTML=(D.kpis||[]).map(([r,v,n])=>`<div class="k"><span>${esc(r)}</span><b>${esc(v)}</b><small>${esc(n)}</small></div>`).join("");
+document.getElementById("blocos").innerHTML=(D.blocos||[]).map(([b,o,s,p,w,f])=>`<tr><td>${esc(b)}</td><td>${esc(o)}</td><td class="st ${st(s)}">${L[st(s)]}</td><td>${pct(p)}%<div class="bar" aria-hidden="true"><i style="width:${pct(p)}%"></i></div></td><td><code>${esc(w)}</code></td><td>${esc(f)}</td></tr>`).join("");
+t("titulo-grupos",D.tituloGrupos||"Entregas por grupo");
+if(!D.grupos||!D.grupos.length){document.getElementById("sec-grupos").hidden=true;}
+else document.getElementById("grupos").innerHTML=D.grupos.map(([g,s])=>`<div class="g"><b>${esc(g)}</b><div>${esc(s)}</div></div>`).join("");
+t("onde",D.onde);t("falta",D.falta);t("proximo",D.proximo);
+document.getElementById("comdono").innerHTML=(D.comDono||[]).map(x=>`<li>${esc(x)}</li>`).join("");
+document.getElementById("fontes").innerHTML=(D.fontes||[]).map(x=>`<li>${esc(x)}</li>`).join("");
+</script>
+</body>
+</html>

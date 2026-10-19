@@ -1,0 +1,117 @@
+{
+  "bloco": "skill-painel-status",
+  "rodada": 3,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "autor_modelo": "claude-opus-5-5",
+  "critico_modelo": "claude-sonnet-5-5",
+  "heterogeneo": true,
+  "atestacao": {
+    "agentId": "a3e91059e6464e16d",
+    "modelo": "claude-sonnet-5-5",
+    "autor": "claude-opus-5-5"
+  },
+  "escopo_paths": [
+    ".agent/skills/painel-status/SKILL.md",
+    ".agent/skills/painel-status/painel-template.html",
+    "_meta/qa/skill-painel-status.json",
+    "_meta/qa/skill-painel-status.md"
+  ],
+  "problemas": [
+    {
+      "severidade": "ALTA",
+      "local": "painel-template.html",
+      "descricao": "r1: classe de estado sem escape permitia injecao de atributo",
+      "estado": "corrigido",
+      "fix": "st() restrito a ok/wip/todo com hasOwnProperty"
+    },
+    {
+      "severidade": "MEDIA",
+      "local": "SKILL.md passo 3 e template",
+      "descricao": "r1/r2: </script> no dado fechava o bloco; regra de escape gravada sem a barra",
+      "estado": "corrigido",
+      "fix": "dados em script application/json com JSON.parse e regra literal \\u003c"
+    },
+    {
+      "severidade": "MEDIA",
+      "local": "SKILL.md",
+      "descricao": "r1: pasta central misturava empresas",
+      "estado": "corrigido",
+      "fix": "regra de isolamento: empresa -> repositorio privado; indeterminada -> perguntar ao dono"
+    },
+    {
+      "severidade": "MEDIA",
+      "local": "SKILL.md pass_criteria",
+      "descricao": "r1: fonte conferida nao verificavel; ordem de colunas e sem narrativa ausentes",
+      "estado": "corrigido",
+      "fix": "fontes com data no status.md, marca INFERIDO, colunas na ordem, nada fora da tabela"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "painel-template.html",
+      "descricao": "r3: elemento null nas listas quebra o painel",
+      "estado": "aceito",
+      "fix": "passo 3 manda conferir o formato antes de gerar"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "SKILL.md",
+      "descricao": "r3: colisao de slug sem criterio de 'outro projeto'",
+      "estado": "aceito",
+      "fix": "regra manda perguntar ao dono na duvida"
+    }
+  ],
+  "verificacoes_executadas": [
+    "autor: validate_skills.py PASS, test_skill_contract.py PASS, test_core_no_vendor.py PASS; JSON.parse do bloco de dados e new Function do script OK",
+    "critico: leitura dos dois arquivos, analise de injecao, validate_skills e test_skill_contract (r2)"
+  ],
+  "steelman": "um gerador por script (em vez de prosa) eliminaria os riscos de formato; registrado como debito de mecanizacao no campo enforcement",
+  "sha_revisado": "163f0d6f3da487f6aff23ff7a7578a0a93bd2eb7",
+  "blobs_revisados": {
+    ".agent/skills/painel-status/SKILL.md": "d371b50ebf399645a7e604e3afd6aa0bec6904a4",
+    ".agent/skills/painel-status/painel-template.html": "c7288987641bae352a16ca8c19da555e51029930"
+  },
+  "data": "2026-10-19T19:38:23Z",
+  "substitui": [
+    {
+      "rodada": 3,
+      "data": "2026-10-19T19:37:42Z",
+      "recomendacao": "aprovar",
+      "sha_revisado": "163f0d6f3da487f6aff23ff7a7578a0a93bd2eb7",
+      "agentId": "a3e91059e6464e16d",
+      "escopo_paths": [
+        ".agent/skills/painel-status/SKILL.md",
+        ".agent/skills/painel-status/painel-template.html"
+      ],
+      "achados_fp": [
+        "ALTA|painel-template.html",
+        "BAIXA|painel-template.html",
+        "BAIXA|skill.md",
+        "MEDIA|skill.md",
+        "MEDIA|skill.md pass_criteria",
+        "MEDIA|skill.md passo 3 e template"
+      ],
+      "reinicio": false
+    },
+    {
+      "rodada": 3,
+      "data": "2026-10-19T19:38:10Z",
+      "recomendacao": "aprovar",
+      "sha_revisado": "163f0d6f3da487f6aff23ff7a7578a0a93bd2eb7",
+      "agentId": "a3e91059e6464e16d",
+      "escopo_paths": [
+        ".agent/skills/painel-status/SKILL.md",
+        ".agent/skills/painel-status/painel-template.html"
+      ],
+      "achados_fp": [
+        "ALTA|painel-template.html",
+        "BAIXA|painel-template.html",
+        "BAIXA|skill.md",
+        "MEDIA|skill.md",
+        "MEDIA|skill.md pass_criteria",
+        "MEDIA|skill.md passo 3 e template"
+      ],
+      "reinicio": false
+    }
+  ]
+}
