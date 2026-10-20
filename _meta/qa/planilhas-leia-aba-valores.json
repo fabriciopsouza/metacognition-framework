@@ -1,0 +1,63 @@
+{
+  "bloco": "planilhas-leia-aba-valores",
+  "papel": "qa_critic",
+  "rodada": 3,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "resumo": "LEIA da planilha de confirmacao citava a aba VALORES POR CATEGORIA mesmo quando ela nao existe (achado no envio da rodada 1 do ssma-plataforma). Texto agora condicional a d['valores']; teste novo cobre os dois ramos; mutacao (condicao -> True) reprova o teste.",
+  "verificacoes_executadas": [
+    "r2: test_planilhas_projeto.py PASS; apontou falta de teste da condicao (MEDIO)",
+    "r3: test_planilhas_projeto.py PASS (0 falhas)",
+    "r3: mutacao d['valores'] -> True em copia no TEMP: teste 'sem valores' FALHA (mutacao capturada)",
+    "r3: confirmacao_v7.xlsx do ssma-plataforma so com abas LEIA e REGRAS e texto 'da aba REGRAS'"
+  ],
+  "problemas": [
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/test_planilhas_projeto.py",
+      "descricao": "r2: nenhum teste cobria o texto condicional da LEIA; corrigido com asserts nos dois ramos"
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "aceito",
+      "local": "tools/test_planilhas_projeto.py",
+      "descricao": "r3: valores lista/dict vazio nao testado; comportamento coerente (falsy), so observacao"
+    }
+  ],
+  "escopo_paths": [
+    "tools/planilhas_projeto.py",
+    "tools/test_planilhas_projeto.py",
+    "_meta/qa/planilhas-leia-aba-valores.json",
+    "_meta/qa/planilhas-leia-aba-valores.md"
+  ],
+  "atestacao": {
+    "agentId": "a14b2e7b552c30792",
+    "prova_transcript": "sha256:38574f669d80ed610e045828c2d99becabc73155a0c015537abcbe56770a4360",
+    "modelo": "sonnet",
+    "modelo_autor": "claude-opus-5-5",
+    "isolamento": "subagente qa-critic isolado, read-only por instrucao",
+    "provas": [
+      {
+        "agentId": "a5f59298c3a326e1f",
+        "prova_transcript": "sha256:6526507d53180b1afbcf78bff74ee11ed665627f238a63cf45ba7ca0ea4379f2"
+      },
+      {
+        "agentId": "a14b2e7b552c30792",
+        "prova_transcript": "sha256:38574f669d80ed610e045828c2d99becabc73155a0c015537abcbe56770a4360"
+      }
+    ]
+  },
+  "postura": {
+    "discovery": "inline: defeito observado na planilha enviada ao SSMA (ssma-plataforma, 20/10/2026)",
+    "rrc": "N/A: correcao de texto de uma linha",
+    "metodo_senior": "N/A: sem fonte canonica nova"
+  },
+  "data": "2026-10-20T22:16:22Z",
+  "sha_revisado": "35b1638762d0da81eedf951d9e6e737fea80beca",
+  "blobs_revisados": {
+    "tools/planilhas_projeto.py": "95b3efdd52992223abb1784e3e6952c198cb6a97",
+    "tools/test_planilhas_projeto.py": "711178b9edbaa77e58dbfb927b90a3e37dc762a5"
+  }
+}
