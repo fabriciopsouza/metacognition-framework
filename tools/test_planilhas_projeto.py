@@ -176,6 +176,14 @@ def main():
         check("as duas planilhas v1 existem", os.path.isfile(c1) and os.path.isfile(v1), os.listdir(out))
         wb = pp._abrir(c1)
         check("abas da confirmação", wb.sheetnames == ["LEIA", "REGRAS", "VALORES POR CATEGORIA"], wb.sheetnames)
+        faz = {r[0].value: r[1].value for r in wb["LEIA"].iter_rows()}.get("O que a área faz") or ""
+        check("LEIA cita VALORES POR CATEGORIA quando a aba existe", "abas REGRAS e VALORES POR CATEGORIA" in faz, faz)
+        dsv = pp.carregar(spec); dsv["valores"] = None
+        csv_ = os.path.join(d, "sem_valores.xlsx"); pp.montar_confirmacao(dsv, 1, csv_)
+        wsv = pp._abrir(csv_)
+        faz = {r[0].value: r[1].value for r in wsv["LEIA"].iter_rows()}.get("O que a área faz") or ""
+        check("sem valores: só a aba REGRAS e a LEIA não cita aba inexistente",
+              wsv.sheetnames == ["LEIA", "REGRAS"] and "da aba REGRAS" in faz and "VALORES" not in faz, (wsv.sheetnames, faz))
         h = cab(c1, "REGRAS")
         check("REGRAS com 13 colunas e o rótulo do projeto", len(h) == 13 and h[4] == "Como fica no ERPX", h)
         ids = [r[0].value for r in wb["REGRAS"].iter_rows(min_row=2)]

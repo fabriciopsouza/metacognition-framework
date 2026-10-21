@@ -462,7 +462,8 @@ def montar_confirmacao(d, versao, destino):
     wb = openpyxl.Workbook()
     wb.remove(wb.active)
     leia = list(d["leia"]) + [
-        ("O que a área faz", "Em cada linha das abas REGRAS e VALORES POR CATEGORIA, preencha só as três últimas "
+        ("O que a área faz", f"Em cada linha {'das abas REGRAS e VALORES POR CATEGORIA' if d['valores'] else 'da aba REGRAS'}, "
+         "preencha só as três últimas "
          "colunas (em amarelo): Área confirma? (Sim, Não ou Com correção), Correção da área e Nome e data. "
          "Não altere as outras colunas, os títulos nem a ordem."),
         ("Versão", f"v{versao}, gerada em {datetime.date.today():%d/%m/%Y} do arquivo único "
