@@ -1,0 +1,85 @@
+{
+  "bloco": "skill-painel-status-cronograma",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "autor_modelo": "claude-opus-5-5",
+  "critico_modelo": "claude-sonnet-5-5",
+  "heterogeneo": true,
+  "atestacao": {
+    "agentId": "ade61bb1c0ebd6121",
+    "modelo": "claude-sonnet-5-5",
+    "autor": "claude-opus-5-5"
+  },
+  "escopo_paths": [
+    ".agent/skills/painel-status/SKILL.md",
+    ".agent/skills/painel-status/painel-template.html",
+    "CHANGELOG.md",
+    "_meta/qa/skill-painel-status-cronograma.json",
+    "_meta/qa/skill-painel-status-cronograma.md"
+  ],
+  "sha_revisado": "35b1638762d0da81eedf951d9e6e737fea80beca",
+  "blobs_revisados": {
+    ".agent/skills/painel-status/SKILL.md": "75cdf3ab57503252ea486fce3d599fe774e37a1a",
+    ".agent/skills/painel-status/painel-template.html": "c00b1b399fbb5973bd35afe3e5de703f17dcdb9d",
+    "CHANGELOG.md": "7fc9390593b6c2d7fa75a2fdf731e2635fb3eac5"
+  },
+  "problemas": [
+    {
+      "severidade": "MEDIA",
+      "local": "SKILL.md",
+      "descricao": "r1 (agentId a992e9d4b2bf52845): citava cronograma-painel.json, inexistente no repo",
+      "estado": "corrigido",
+      "fix": "referencia removida; o bloco JSON da secao e autossuficiente"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "painel-template.html per()",
+      "descricao": "r1: texto do leitor de tela 'a em aberto'",
+      "estado": "corrigido",
+      "fix": "'desde dd/mm/aaaa, em aberto'"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "painel-template.html eixo e rotulos",
+      "descricao": "r1: ano omitido em periodo que cruza o ano",
+      "estado": "corrigido",
+      "fix": "dd/mm/aa quando o periodo cruza o ano"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "painel-template.html .cr-ml",
+      "descricao": "r1: list-style:none sem role=list",
+      "estado": "corrigido",
+      "fix": "role=list nas duas listas"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "SKILL.md",
+      "descricao": "r1: 'vai ate hoje' sem hoje",
+      "estado": "corrigido",
+      "fix": "frase ajustada"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "processo",
+      "descricao": "r1/r2: teste Playwright fora do repositorio; sem canario da secao",
+      "estado": "aberto",
+      "fix": "debito declarado no CHANGELOG"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "teste",
+      "descricao": "r2: sem caso dirigido a periodo maior que 2 anos ou hoje em ano diferente; a logica cobre",
+      "estado": "aberto",
+      "fix": "nenhum exigido"
+    }
+  ],
+  "verificacoes_executadas": [
+    "autor: testar.py (Playwright, 11 casos x 390/1366 x claro/escuro) FALHAS 0; sem rolagem horizontal; contraste minimo 6,29 claro e 6,08 escuro; sem o campo, DOM e pixels iguais ao template de origin/main",
+    "autor: validate_skills.py PASS, test_skill_contract.py PASS, test_core_no_vendor.py PASS, test_core_agnostic.py PASS, test_adr_changelog_sync.py PASS",
+    "critico r1 e r2: leitura dos 3 arquivos, reexecucao de testar.py (FALHAS 0), validate_skills e test_skill_contract PASS"
+  ],
+  "steelman": "dado invalido nao quebra, secao some sem o campo (provado por pixels), CSS sem biblioteca; um canario versionado protegeria contra regressao futura",
+  "data": "2026-10-21T12:15:26Z"
+}

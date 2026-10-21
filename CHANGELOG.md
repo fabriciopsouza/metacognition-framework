@@ -5,6 +5,18 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### Skill `painel-status` 1.2.0 — seção Cronograma (21/10/2026)
+
+- Motivo: pedido do dono (anseio A44, regra global): o painel de status mostra o cronograma. [CONFIRMADO]
+- `.agent/skills/painel-status/painel-template.html`: campo opcional `cronograma` (`marcos`, `etapas`, `hoje`) gera a
+  seção entre os cartões e a tabela: barras por etapa no eixo de tempo, % na barra, marcos, linha "hoje" e lista para
+  leitor de tela; CSS sem biblioteca. Sem o campo, DOM e pixels iguais ao painel anterior (medido a 390 e 1366 px,
+  claro e escuro). [CONFIRMADO]
+- Dado inválido (data fora do formato, `fim` nulo ou antes do início, `pct` fora de 0–100, lista vazia) não quebra o
+  painel; contraste mínimo medido 6,29 (claro) e 6,08 (escuro). [CONFIRMADO]
+- Débito declarado: o teste de renderização (Playwright) ficou fora do repositório; canário próprio da skill segue
+  pendente. [CONFIRMADO]
+
 ### ADR-112 emenda 2 — Trava de rumo, produto novo e mensagem fora de contexto (18/10/2026)
 
 - Motivo: no caso do produto de BI, um exemplo do dono virou escopo (cerca de 28 h fora do pedido), e o R1 passou nos
