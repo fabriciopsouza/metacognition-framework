@@ -1,8 +1,8 @@
 ---
 name: painel-status
 description: "Ativar quando o dono pedir status, status report, painel, situação, onde estamos, ou ao fechar um bloco de trabalho que mude o plano. No chat: tabela de blocos (Bloco · O que é · Situação ✅/⏳/☐ · % · Onde está · O que falta), 3 linhas (onde estamos · o que falta · próximo passo), caminho do painel e link — sem narrativa. No arquivo (painel HTML): além disso, 4 números de resumo, entregas por grupo, o que está com o dono e as fontes conferidas; salvo em pasta de recuperação fácil e, se o ambiente publicar páginas, republicado no mesmo endereço. NÃO ativar para resposta pontual sem relação com o plano."
-version: 1.2.0
-source: "pedido do dono, 19/10/2026: 'manter o status report como Painel, como skill para você e para o framework; respostas neste formato sempre que possível, salvas em pasta de fácil recuperação'; 21/10/2026 (A44): seção Cronograma no painel"
+version: 1.2.1
+source: "pedido do dono, 19/10/2026: 'manter o status report como Painel, como skill para você e para o framework; respostas neste formato sempre que possível, salvas em pasta de fácil recuperação'; 21/10/2026 (A44): seção Cronograma no painel; 21/10/2026: endereços https do painel devem ser links, no mesmo local do texto"
 last_review: 2026-10-21
 role_order: null
 consumes:
@@ -10,7 +10,7 @@ consumes:
 produces:
   - "resposta de status no chat (tabela + 3 linhas + caminho + link)"
   - "painel HTML datado, ULTIMO.html, status.md e link.txt na pasta de status do projeto"
-pass_criteria: "PASS sse: (1) a tabela no chat tem as 6 colunas na ordem Bloco · O que é · Situação · % · Onde está · O que falta, todo bloco do plano (inclusive não iniciado) e nenhuma frase fora da tabela, das 3 linhas, do caminho e do link; (2) o status.md lista as fontes conferidas com data e hora, e todo número sem fonte aparece com a marca INFERIDO; (3) foram salvos AAAA-MM-DD_HHMMSS_status.html, ULTIMO.html e status.md na pasta de status do projeto escolhida pela regra de isolamento; (4) a resposta termina com o caminho absoluto do ULTIMO.html em link file:/// e, se houver, o link publicado; (5) se o objeto de dados traz `cronograma` com ao menos uma etapa ou marco, o painel mostra a seção Cronograma entre os cartões e a tabela; sem o campo, nenhuma seção nova aparece."
+pass_criteria: "PASS sse: (1) a tabela no chat tem as 6 colunas na ordem Bloco · O que é · Situação · % · Onde está · O que falta, todo bloco do plano (inclusive não iniciado) e nenhuma frase fora da tabela, das 3 linhas, do caminho e do link; (2) o status.md lista as fontes conferidas com data e hora, e todo número sem fonte aparece com a marca INFERIDO; (3) foram salvos AAAA-MM-DD_HHMMSS_status.html, ULTIMO.html e status.md na pasta de status do projeto escolhida pela regra de isolamento; (4) a resposta termina com o caminho absoluto do ULTIMO.html em link file:/// e, se houver, o link publicado; (5) se o objeto de dados traz `cronograma` com ao menos uma etapa ou marco, o painel mostra a seção Cronograma entre os cartões e a tabela; sem o campo, nenhuma seção nova aparece; (6) todo endereço https nos campos meta, onde, falta, próximo, comDono, fontes e nas colunas Onde está e O que falta aparece como link clicável no mesmo lugar do texto, e nenhum outro texto vira link ou HTML."
 confidence_required: true
 enforcement:
   ide: "self-declared: prosa, sem gancho nem canário próprio (débito de mecanização declarado: um verificador do status.md pode conferir colunas, fontes e marca INFERIDO)"
@@ -106,3 +106,10 @@ Visual: CSS sem biblioteca, tema claro e escuro, sem rolagem horizontal a 390 px
 - Comando permanente `status` do dono: responder ANTES de continuar o trabalho, só com o item 6.
 - Sempre que possível, outras respostas de acompanhamento usam a mesma estrutura (tabela + 3 linhas).
 - O tema do painel segue o tema do sistema operacional (claro ou escuro), decisão declarada.
+- **Links (1.2.1):** endereços `https://` nos textos do painel viram links; o texto continua escapado. Vale para
+  `meta`, `onde`, `falta`, `proximo`, `comDono`, `fontes` e as colunas Onde está e O que falta dos blocos; o link
+  fica no mesmo lugar do texto e abre em nova aba. `http:`, `javascript:` e outros esquemas continuam texto; título,
+  números, "O que é" e grupos nunca viram link. Pontuação final (`.`, `,`, `;`, `:`, `!`, `?`) e `)` sem `(`
+  correspondente ficam fora do link; `&` no fim fica dentro. `https` colado a letra, dígito ou `_` antes (ex.:
+  `xhttps://`) não vira link. Limite declarado: reticências (`…`), aspas tipográficas (`’`, `»`) e espaço de largura
+  zero (U+200B) colados ao fim entram no link; separar o endereço com espaço. Escrever o endereço completo, com `https://`.

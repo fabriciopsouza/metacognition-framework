@@ -5,6 +5,21 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### Skill `painel-status` 1.2.1 — endereços https viram links (21/10/2026)
+
+- Motivo: pedido do dono (21/10/2026, regra global): o endereço publicado do painel aparece como link, no mesmo local
+  do texto. [CONFIRMADO]
+- `.agent/skills/painel-status/painel-template.html`: função `lk` escapa o texto e transforma só endereços `https://`
+  em `<a target="_blank" rel="noopener">`; aplicada a `meta`, `onde`, `falta`, `proximo`, `comDono`, `fontes` e às
+  colunas Onde está e O que falta. `&` faz parte do endereço; pontuação final e `)` sem par ficam fora. Link com a cor
+  de destaque do tema e quebra de linha em endereço longo. [CONFIRMADO]
+- Teste (Playwright, 390 e 1366 px, claro e escuro): `<script>`, `onerror`, `javascript:`, `http:` e aspas não viram
+  link nem HTML; texto visível idêntico ao original; sem rolagem horizontal; contraste do link 5,29 (claro) e 7,12
+  (escuro). Débito mantido: o teste fica fora do repositório, sem canário próprio da skill. [CONFIRMADO]
+- QA r1 (qa-critic, Sonnet): aprovado com ressalvas, sem injeção; `&` no fim do endereço não ganha mais `;` no
+  texto visível, `https` colado a letra ou dígito não vira link, e o limite de `…`, `’`, `»` e U+200B colados ao
+  endereço ficou documentado na skill. [CONFIRMADO]
+
 ### Skill `painel-status` 1.2.0 — seção Cronograma (21/10/2026)
 
 - Motivo: pedido do dono (anseio A44, regra global): o painel de status mostra o cronograma. [CONFIRMADO]
