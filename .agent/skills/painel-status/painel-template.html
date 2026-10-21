@@ -10,10 +10,11 @@
 :root{
   --bg:#F4F5F7; --panel:#FFFFFF; --ink:#1C2127; --ink-2:#4B5560; --line:#DCE0E6; --accent:#006BA4;
   --ok:#0B6B35; --wip:#8A5A00; --todo:#5F6368; --track:#E7EAEE;
+  --ok-bg:#DDEFE4; --wip-bg:#F6EAD2; --todo-bg:#F4F5F7;
   --f:"IBM Plex Sans","Segoe UI",system-ui,sans-serif; --m:ui-monospace,"Cascadia Mono",Consolas,monospace;
   color-scheme:light;
 }
-@media (prefers-color-scheme: dark){:root{--bg:#15181C;--panel:#1D2126;--ink:#E7EAEE;--ink-2:#A8B0BA;--line:#333A42;--accent:#7FB2D6;--ok:#6CCB93;--wip:#E3B55A;--todo:#9AA3AD;--track:#2A3037;color-scheme:dark}}
+@media (prefers-color-scheme: dark){:root{--bg:#15181C;--panel:#1D2126;--ink:#E7EAEE;--ink-2:#A8B0BA;--line:#333A42;--accent:#7FB2D6;--ok:#6CCB93;--wip:#E3B55A;--todo:#9AA3AD;--track:#2A3037;--ok-bg:#1F3A2B;--wip-bg:#3D3220;--todo-bg:#353C44;color-scheme:dark}}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f);font-size:14px;line-height:1.45;margin:0;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:22px 40px}
@@ -41,6 +42,35 @@ code{font-family:var(--m);font-size:12px}
 .grp{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
 .g{border:1px solid var(--line);border-radius:6px;padding:8px 10px}.g b{font-family:var(--m);font-size:13px}.g div{font-size:12px;color:var(--ink-2)}
 .fontes{font-size:12px;color:var(--ink-2)}
+/* Cronograma (opcional): só existe quando o JSON traz "cronograma"; criado pelo script, sem biblioteca. */
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.cr-meta{font-size:12px;color:var(--ink-2);margin:-4px 0 10px}
+.cr-plot{overflow:hidden;display:flex;flex-direction:column;gap:6px}
+.cr-row{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:2px 12px;align-items:center}
+.cr-lab{font-size:13px;min-width:0;overflow-wrap:anywhere}.cr-lab small{display:block;color:var(--ink-2);font-size:12px}
+.cr-trk{position:relative;height:24px;background:var(--track);border-radius:4px;min-width:0}
+.cr-trk.ax{background:none;height:34px;border-bottom:1px solid var(--line);border-radius:0}
+.cr-trk.mk{background:none;height:22px}
+.cr-t,.cr-hl{position:absolute;font-size:11px;color:var(--ink-2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.cr-t{bottom:2px;background:var(--panel);padding:0 2px;z-index:2}.cr-hl{top:0;color:var(--ink);font-weight:700}
+.cr-h{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;background:var(--accent);z-index:1}
+.cr-trk.ax .cr-h{top:16px;bottom:0}
+.cr-bar{position:absolute;top:2px;bottom:2px;min-width:4px;border:1.5px solid var(--x);background:var(--xb);border-radius:3px;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;padding-bottom:3px}
+.cr-bar.open{border-right-style:dashed;border-top-right-radius:0;border-bottom-right-radius:0}
+.cr-bar i{position:absolute;left:0;bottom:0;height:4px;background:var(--x)}
+/* texto acima da linha de hoje (z-index 1), com fundo próprio: a linha não cruza o número */
+.cr-bar span,.cr-p{font-size:12px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;position:relative;z-index:2;padding:0 2px;line-height:1.2}
+.cr-bar span{background:var(--xb)}
+.cr-p{position:absolute;top:50%;transform:translateY(-50%);white-space:nowrap;background:var(--track)}
+.cr-nd{position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--ink-2)}
+.cr-c.ok{--x:var(--ok);--xb:var(--ok-bg)}.cr-c.wip{--x:var(--wip);--xb:var(--wip-bg)}.cr-c.todo{--x:var(--todo);--xb:var(--todo-bg)}
+.cr-m{position:absolute;top:50%;z-index:2;width:10px;height:10px;border:2px solid var(--x);background:var(--panel);transform:translate(-50%,-50%) rotate(45deg)}
+.cr-m.real{background:var(--x)}
+.cr-mi{position:absolute;top:50%;z-index:2;transform:translateY(-50%);font-size:11px;font-weight:700;white-space:nowrap}
+.cr-ml{list-style:none;padding:0;margin:12px 0 0;font-size:13px}
+.cr-leg{font-size:12px;color:var(--ink-2);margin:10px 0 0}
+@media (max-width:600px){.cr-row{grid-template-columns:minmax(0,1fr)}.cr-row.cr-x .cr-lab{display:none}.cr-q{display:none}}
 </style>
 </head>
 <body>
@@ -90,6 +120,55 @@ else document.getElementById("grupos").innerHTML=D.grupos.map(([g,s])=>`<div cla
 t("onde",D.onde);t("falta",D.falta);t("proximo",D.proximo);
 document.getElementById("comdono").innerHTML=(D.comDono||[]).map(x=>`<li>${esc(x)}</li>`).join("");
 document.getElementById("fontes").innerHTML=(D.fontes||[]).map(x=>`<li>${esc(x)}</li>`).join("");
+/* Cronograma (opcional). Sem "cronograma" no JSON, ou sem etapa nem marco, nada é criado e o painel fica igual.
+   Dado inválido não quebra: data fora do formato AAAA-MM-DD ou inexistente vira "sem data"; pct fora de 0–100 é
+   limitado e não numérico vira "—"; fim null = etapa em aberto até hoje; fim antes do início vira o próprio início. */
+(function(){
+const C=D.cronograma;if(!C||typeof C!=="object"||Array.isArray(C))return;
+const DIA=864e5,lista=v=>Array.isArray(v)?v.filter(x=>x&&typeof x==="object"&&!Array.isArray(x)):[];
+const dt=s=>{if(typeof s!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(s))return null;const[a,m,d]=s.split("-").map(Number),x=new Date(Date.UTC(a,m-1,d));
+  return x.getUTCFullYear()===a&&x.getUTCMonth()===m-1&&x.getUTCDate()===d?x.getTime():null;};
+const br=t=>{const x=new Date(t);return String(x.getUTCDate()).padStart(2,"0")+"/"+String(x.getUTCMonth()+1).padStart(2,"0")+"/"+x.getUTCFullYear();};
+let dm=t=>br(t).slice(0,5);const num=v=>typeof v==="number"&&Number.isFinite(v)?v:null;
+const hoje=dt(C.hoje);
+const E=lista(C.etapas).map(e=>{let i=dt(e.inicio),f=dt(e.fim);if(i===null)i=f;if(i!==null&&f!==null&&f<i)f=i;
+  const p=num(e.pct),h=num(e.horas_ativas);return{nome:e.nome,s:st(e.situacao),i,f,p:p===null?null:Math.round(pct(p)),h:h!==null&&h>=0?h:null};});
+const M=lista(C.marcos).map(m=>{const r=dt(m.data_real),pv=dt(m.data_prevista);return{id:m.id,nome:m.nome,s:st(m.situacao),r,pv,t:r!==null?r:pv};});
+if(!E.length&&!M.length)return;
+const pts=[hoje];E.forEach(e=>pts.push(e.i,e.f));M.forEach(m=>pts.push(m.t));const ok=pts.filter(x=>x!==null);
+const lo=ok.length?Math.min(...ok):0,hi=ok.length?Math.max(...ok)+DIA:0,pos=t=>(t-lo)/(hi-lo)*100;
+if(ok.length&&new Date(lo).getUTCFullYear()!==new Date(hi-DIA).getUTCFullYear())dm=t=>br(t).slice(0,6)+br(t).slice(8);/* período em 2 anos: dd/mm/aa */
+const al=p=>p<12?`left:${p}%`:p>88?`left:${p}%;transform:translateX(-100%)`:`left:${p}%;transform:translateX(-50%)`;
+const hr=h=>h===null?"":" · "+h.toLocaleString("pt-BR",{maximumFractionDigits:1})+" h";
+const pt=p=>p===null?"—":p+"%";
+const linhaHoje=hoje===null?"":`<div class="cr-h" style="left:${pos(hoje+DIA/2)}%"></div>`;
+const per=e=>e.i===null?"sem datas":e.f===null?"desde "+br(e.i)+", em aberto":br(e.i)+" a "+br(e.f);
+let rows="";
+if(ok.length){
+  const vis=new Set();const tk=[0,1,.5,.25,.75].map(q=>{const t=q===1?hi-DIA:lo+Math.round((hi-DIA-lo)*q/DIA)*DIA;if(vis.has(t))return"";vis.add(t);return`<span class="cr-t${q===.25||q===.75?" cr-q":""}" style="${al(q===1?100:pos(t))}">${dm(t)}</span>`;}).join("");
+  const hl=hoje===null?"":`<span class="cr-hl" style="${al(pos(hoje+DIA/2))}">hoje ${dm(hoje)}</span>`;
+  rows+=`<div class="cr-row cr-x"><div class="cr-lab"></div><div class="cr-trk ax">${hl}${tk}${linhaHoje}</div></div>`;
+  const md=M.filter(m=>m.t!==null);
+  if(md.length)rows+=`<div class="cr-row"><div class="cr-lab"><b>Marcos</b></div><div class="cr-trk mk">${linhaHoje}${md.map(m=>{const p=pos(m.t+DIA/2);
+    const c=`clamp(8px,${p}%,calc(100% - 8px))`;/* losango sempre dentro da faixa; rótulo do lado com espaço */
+    return`<span class="cr-m cr-c ${m.s}${m.r!==null?" real":""}" style="left:${c}"></span><span class="cr-mi" style="${p>88?`right:calc(100% - ${c} + 10px)`:`left:calc(${c} + 10px)`}">${esc(m.id)}</span>`;}).join("")}</div></div>`;
+}
+rows+=E.map(e=>{let tr;
+  if(e.i===null||!ok.length)tr=`<span class="cr-nd">sem datas</span>`;
+  else{const fim=e.f!==null?e.f+DIA:(hoje!==null?Math.max(hoje,e.i)+DIA:hi),l=pos(e.i),w=pos(fim)-l,txt=pt(e.p);
+    const fill=`<i style="width:${e.p===null?0:e.p}%"></i>`;
+    tr=w>=15?`<div class="cr-bar cr-c ${e.s}${e.f===null?" open":""}" style="left:${l}%;width:${w}%">${fill}<span>${txt}</span></div>`
+      :`<div class="cr-bar cr-c ${e.s}${e.f===null?" open":""}" style="left:${l}%;width:${w}%">${fill}</div><span class="cr-p" style="${l+w<=80?`left:calc(${l+w}% + 4px)`:`right:calc(${100-l}% + 4px)`}">${txt}</span>`;}
+  return`<div class="cr-row"><div class="cr-lab">${L[e.s].split(" ")[0]} <b>${esc(e.nome)}</b><small>${per(e).replace(/\d\d\/\d\d\/\d{4}/g,x=>dm(dt(x.split("/").reverse().join("-"))))}${hr(e.h)}</small></div><div class="cr-trk">${linhaHoje}${tr}</div></div>`;}).join("");
+const sr=E.map(e=>`<li>Etapa ${esc(e.nome)}: ${per(e)}; ${L[e.s].split(" ").slice(1).join(" ")}; ${e.p===null?"percentual não informado":e.p+"% concluído"}${e.h===null?"":"; "+hr(e.h).slice(3).replace(" h"," horas ativas")}.</li>`).join("");
+const ml=M.map(m=>`<li><span aria-hidden="true">${m.r!==null?"◆":"◇"}</span> <b>${esc(m.id)}</b> ${esc(m.nome)} — previsto ${m.pv===null?"sem data":br(m.pv)} · real ${m.r===null?"—":br(m.r)} · ${L[m.s]}</li>`).join("");
+const sec=document.createElement("section");sec.className="card";sec.id="sec-crono";sec.setAttribute("aria-labelledby","h-crono");
+sec.innerHTML=`<h2 id="h-crono">Cronograma</h2><p class="cr-meta">${ok.length?`Período ${br(lo)} a ${br(hi-DIA)}`:"Sem datas válidas"}${hoje===null?"":` · hoje ${br(hoje)}`}</p>`+
+  (E.length?`<ul class="sr" role="list">${sr}</ul>`:"")+`<div class="cr-plot" aria-hidden="true">${rows}</div>`+
+  (M.length?`<ul class="cr-ml" role="list" aria-label="Marcos">${ml}</ul>`:"")+
+  `<p class="cr-leg" aria-hidden="true">Barra = período da etapa (borda tracejada: em aberto) · faixa inferior = % concluído · ◆ marco cumprido, ◇ previsto · linha azul = hoje</p>`;
+document.getElementById("kpis").after(sec);
+})();
 </script>
 </body>
 </html>
