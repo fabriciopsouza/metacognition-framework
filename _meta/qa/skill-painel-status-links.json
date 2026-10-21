@@ -1,0 +1,66 @@
+{
+  "bloco": "skill-painel-status-links",
+  "rodada": 1,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "autor_modelo": "claude-opus-5-5",
+  "critico_modelo": "claude-sonnet-5-5",
+  "heterogeneo": true,
+  "atestacao": {
+    "agentId": "a7c141ca6dc7886bd",
+    "modelo": "claude-sonnet-5-5",
+    "autor": "claude-opus-5-5"
+  },
+  "escopo_paths": [
+    ".agent/skills/painel-status/SKILL.md",
+    ".agent/skills/painel-status/painel-template.html",
+    "CHANGELOG.md",
+    "_meta/qa/skill-painel-status-links.json",
+    "_meta/qa/skill-painel-status-links.md"
+  ],
+  "problemas": [
+    {
+      "severidade": "MEDIA",
+      "local": "painel-template.html lk()",
+      "descricao": "A1: endereco terminando em & ganhava ';' no texto visivel (o laco de pontuacao final tirava o ';' de '&amp;')",
+      "estado": "corrigido",
+      "fix": "'&amp;' no fim e unidade: o laco para quando u termina em '&amp;'; casos a&, a&; e a&& no teste"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "painel-template.html lk()",
+      "descricao": "A2: regex sem ancora; 'xhttps://x.com' virava link",
+      "estado": "corrigido",
+      "fix": "lookbehind (?<![A-Za-z0-9_]); casos xhttps:// e 1https:// no teste"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "SKILL.md",
+      "descricao": "A3: reticencias, aspas tipograficas e U+200B colados ao fim entram no link",
+      "estado": "aceito",
+      "fix": "limite documentado na regra Links (1.2.1) do SKILL.md, sem mudanca de codigo"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "processo",
+      "descricao": "teste Playwright fora do repositorio; sem canario proprio da skill",
+      "estado": "aceito",
+      "fix": "debito declarado no CHANGELOG (mesmo do 1.2.0)"
+    }
+  ],
+  "verificacoes_executadas": [
+    "critico r1 (a7c141ca6dc7886bd): revisao read-only dos 3 arquivos; nenhuma injecao; achados A1-A3",
+    "autor apos r1: painel-links-teste.py (Playwright, 390/1366 x claro/escuro, inclui a&, a&;, a&&, xhttps://, 1https://) FALHAS 0 no template do framework e na copia local; controle contra o template anterior falha",
+    "autor apos r1: tools/run_canaries.py 98 PASS 1 SKIP 0 FAIL (de 99)",
+    "autor: validate_skills, test_skill_contract, test_core_no_vendor, test_core_agnostic, test_adr_changelog_sync PASS (antes da r1; mudanca da r1 restrita a lk() e prosa)",
+    "blobs_revisados omitido: as correcoes A1/A2/A3 foram aplicadas depois da r1 e nao foram revisadas pelo critico"
+  ],
+  "steelman": "texto continua escapado antes do link; so https vira link; correcoes A1/A2 cobertas por casos dirigidos",
+  "data": "2026-10-21T20:17:05Z",
+  "sha_revisado": "9a2cce0a5ed86f7f637b118d31f4a3124bb82e88",
+  "blobs_revisados": {
+    ".agent/skills/painel-status/SKILL.md": "487aaaf4c59fd0a322a382f10536fcde61ee9aa5",
+    ".agent/skills/painel-status/painel-template.html": "5341b9fa534eb82ea0f531b8dc93da9125eedda2",
+    "CHANGELOG.md": "5a0356bb388b9985965653f851e189bb5ef9e343"
+  }
+}

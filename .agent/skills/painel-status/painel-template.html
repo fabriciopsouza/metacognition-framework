@@ -21,6 +21,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--f);font-size:14px;l
 .wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
 h1{font-size:24px;font-weight:700;margin:0}
 .meta{color:var(--ink-2);font-size:13px;margin:2px 0 0}
+a{color:var(--accent);overflow-wrap:anywhere}
 .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 @media (max-width:760px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .k,.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;min-width:0}
@@ -111,15 +112,20 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 const pct=p=>Math.max(0,Math.min(100,Number(p)||0));
 const st=s=>Object.prototype.hasOwnProperty.call(L,s)?s:"todo";
 const t=(id,v)=>{document.getElementById(id).textContent=v??"";};
-t("titulo",D.titulo);t("meta",D.meta);document.title=D.titulo||"Painel de status";
+/* links clicáveis: escapa o texto e transforma só endereços https em <a>, abrindo em nova aba. Opera sobre o texto
+   já escapado: &amp; faz parte do endereço; outra entidade, espaço ou < encerra. Pontuação final (.,;:!?) e ) sem (
+   correspondente ficam fora do link; &amp; no fim é unidade. https colado a letra, dígito ou _ não vira link. */
+const lk=s=>esc(s).replace(/(?<![A-Za-z0-9_])https:\/\/(?:[^\s<&]|&amp;)+/g,u=>{let r="";for(;;){const c=u.slice(-1);if(u.endsWith("&amp;"))break;if(".,;:!?".includes(c)||(c===")"&&(u.match(/\(/g)||[]).length<(u.match(/\)/g)||[]).length)){r=c+r;u=u.slice(0,-1);}else break;}return u.length>8?`<a href="${u}" target="_blank" rel="noopener">${u}</a>${r}`:u+r;});
+const h=(id,v)=>{document.getElementById(id).innerHTML=lk(v);};
+t("titulo",D.titulo);h("meta",D.meta);document.title=D.titulo||"Painel de status";
 document.getElementById("kpis").innerHTML=(D.kpis||[]).map(([r,v,n])=>`<div class="k"><span>${esc(r)}</span><b>${esc(v)}</b><small>${esc(n)}</small></div>`).join("");
-document.getElementById("blocos").innerHTML=(D.blocos||[]).map(([b,o,s,p,w,f])=>`<tr><td>${esc(b)}</td><td>${esc(o)}</td><td class="st ${st(s)}">${L[st(s)]}</td><td>${pct(p)}%<div class="bar" aria-hidden="true"><i style="width:${pct(p)}%"></i></div></td><td><code>${esc(w)}</code></td><td>${esc(f)}</td></tr>`).join("");
+document.getElementById("blocos").innerHTML=(D.blocos||[]).map(([b,o,s,p,w,f])=>`<tr><td>${esc(b)}</td><td>${esc(o)}</td><td class="st ${st(s)}">${L[st(s)]}</td><td>${pct(p)}%<div class="bar" aria-hidden="true"><i style="width:${pct(p)}%"></i></div></td><td><code>${lk(w)}</code></td><td>${lk(f)}</td></tr>`).join("");
 t("titulo-grupos",D.tituloGrupos||"Entregas por grupo");
 if(!D.grupos||!D.grupos.length){document.getElementById("sec-grupos").hidden=true;}
 else document.getElementById("grupos").innerHTML=D.grupos.map(([g,s])=>`<div class="g"><b>${esc(g)}</b><div>${esc(s)}</div></div>`).join("");
-t("onde",D.onde);t("falta",D.falta);t("proximo",D.proximo);
-document.getElementById("comdono").innerHTML=(D.comDono||[]).map(x=>`<li>${esc(x)}</li>`).join("");
-document.getElementById("fontes").innerHTML=(D.fontes||[]).map(x=>`<li>${esc(x)}</li>`).join("");
+h("onde",D.onde);h("falta",D.falta);h("proximo",D.proximo);
+document.getElementById("comdono").innerHTML=(D.comDono||[]).map(x=>`<li>${lk(x)}</li>`).join("");
+document.getElementById("fontes").innerHTML=(D.fontes||[]).map(x=>`<li>${lk(x)}</li>`).join("");
 /* Cronograma (opcional). Sem "cronograma" no JSON, ou sem etapa nem marco, nada é criado e o painel fica igual.
    Dado inválido não quebra: data fora do formato AAAA-MM-DD ou inexistente vira "sem data"; pct fora de 0–100 é
    limitado e não numérico vira "—"; fim null = etapa em aberto até hoje; fim antes do início vira o próprio início. */
