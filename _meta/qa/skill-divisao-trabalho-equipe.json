@@ -1,0 +1,65 @@
+{
+  "bloco": "skill-divisao-trabalho-equipe",
+  "papel": "qa_critic",
+  "rodada": 1,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "resumo": "Skill nova divisao-trabalho-equipe (pedido do dono 22/10/2026): dividir trabalho entre aprendizes pela capacidade, agenda por pessoa, checklist de execucao por gate. Ressalvas corrigidas antes do commit: nomes AGGREGATE/MINIFS com _xlfn, validacao dentro do planejador, limitacao do coringa declarada, formato da equipe, enforcement prose.",
+  "verificacoes_executadas": [
+    "leitura SKILL.md e skills irmas",
+    "diff contra a implementacao de referencia (so docstring)",
+    "execucao isolada de planejar() com feriado, coringa, dependencia e apos_dependencias",
+    "autor: guardas testados (dias_semana vazio e coringa sem aprendiz recusados)"
+  ],
+  "problemas": [
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "SKILL.md passo 6",
+      "descricao": "nomes localizados AGREGAR/MINIMOSES; trocados por _xlfn.AGGREGATE/_xlfn.MINIFS"
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "agenda_equipe.py",
+      "descricao": "sem validacao: dias vazios, horas invalidas, coringa sem aprendiz; _conferir() acrescentado"
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "SKILL.md",
+      "descricao": "limitacao do coringa Aprendiz (qualquer) declarada"
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "aceito",
+      "local": "capabilities.json",
+      "descricao": "skill fora do capabilities.json, debito geral compartilhado com painel-status"
+    }
+  ],
+  "escopo_paths": [
+    ".agent/skills/divisao-trabalho-equipe/SKILL.md",
+    ".agent/skills/divisao-trabalho-equipe/agenda_equipe.py",
+    "_meta/qa/skill-divisao-trabalho-equipe.json",
+    "_meta/qa/skill-divisao-trabalho-equipe.md"
+  ],
+  "atestacao": {
+    "agentId": "a0e2a782f72d49fcc",
+    "prova_transcript": "sha256:55afbffb460ca842fd058e7c81b93a7ec9d2fe4a2c2e05f180908f5a688cd33d",
+    "modelo": "sonnet",
+    "modelo_autor": "claude-opus-5-5",
+    "isolamento": "subagente qa-critic isolado, read-only por instrucao"
+  },
+  "postura": {
+    "discovery": "inline: pedido literal do dono em 22/10/2026, implementacao de referencia no ssma-plataforma",
+    "rrc": "N/A: skill de metodo, sem fonte normativa",
+    "metodo_senior": "N/A: sem fonte canonica nova"
+  },
+  "data": "2026-10-22T13:11:58Z",
+  "sha_revisado": "407718e2a4cf2ea3b872f90da995d45f86576e29",
+  "blobs_revisados": {
+    ".agent/skills/divisao-trabalho-equipe/SKILL.md": "3acaea246266ae354acb38cb0f357ed1d65aabdf",
+    ".agent/skills/divisao-trabalho-equipe/agenda_equipe.py": "4424e9672d7f1fb66722745cbcbec3f53a89ab12"
+  }
+}
