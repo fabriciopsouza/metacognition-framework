@@ -5,7 +5,6 @@ version: 1.0.0
 source: "pedido do dono, 22/10/2026: 'preciso utilizar a mão de obra dos aprendizes, são 3, 2 pela manhã e 1 pela tarde, e cada um tem 4 h/dia, 4 dias/semana. A ideia é poder dividir trabalho paralelo, ou sequencial entre pessoas diferentes, de forma clara, objetiva, direta, e explicativa quando necessário. Pedi a criação desta habilidade ou skill na documentação de projeto ágil ou em paralelo a esta'"
 last_review: 2026-10-22
 role_order: null
-enforcement: prose
 consumes:
   - "plano do projeto com tarefas, dependências e aceite (ex.: estado.json)"
   - "equipe: papel, turno, horas por dia, dias da semana; feriados"
@@ -13,6 +12,14 @@ produces:
   - "tarefas por executante com datas calculadas pela capacidade"
   - "agenda por pessoa (planilha e Markdown)"
   - "checklist de execução por gate, nunca sobrescrito em uso"
+pass_criteria: "PASS sse: (1) toda tarefa de pessoa da equipe tem executante, horas positivas, passos, aceite e dependências, e cabe num turno ou declara a continuação; (2) as datas vêm de agenda_equipe.planejar com a capacidade declarada (horas por dia, dias da semana, feriados, folga) e estão marcadas como previsão, nunca prazo combinado; (3) nenhuma conferência é feita por quem criou o que confere; (4) dado real e permissão ampla ficam só com a coordenação, e a permissão de construção é retirada antes de dado real; (5) o checklist de execução por gate tem Painel por pessoa (feitos, total, %, erros, próximo passo, passo com erro), Roteiro com Quem, Turno e Espere antes, Leia antes e Histórico, e nunca sobrescreve versão em uso; (6) as fórmulas do Painel foram abertas no Excel real e não mostram #NOME?."
+confidence_required: true
+enforcement:
+  ide: "self-declared: prosa mais o guarda de entrada em agenda_equipe.py (_conferir); débito de mecanização declarado: um verificador do plano pode conferir os itens 1 a 3"
+  chat: "self-declared: o agente segue o fluxo e as regras de quebra do trabalho"
+shared_refs:
+  - _shared/output-format
+  - _shared/confidence-classification
 ---
 
 # divisao-trabalho-equipe — dividir o trabalho entre pessoas, pela capacidade de cada uma
