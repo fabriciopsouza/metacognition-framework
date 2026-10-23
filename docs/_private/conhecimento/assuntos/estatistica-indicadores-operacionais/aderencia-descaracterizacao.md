@@ -20,8 +20,8 @@ Transformação (o que pode mudar):
 Prova:
 1. Rodar as mesmas análises nos originais e nos transformados, em 30 sorteios independentes; aprovado = 30 de 30. Se todas as análises forem sem escala, o fator secreto não influi: o teste mede ruído, deslocamento e permutação.
 2. Critérios: participação ±1 p.p. e mesmos 3 primeiros; Pareto e Gini ±1 p.p.; índice mensal ±0,02 (total) e ±0,03 (grupo), mesmo mês de pico; CV ±10% relativo; dia da semana ±0,02; correlação com mesmo sinal quando |r| ≥ 0,1, ±0,05 por defasagem e mesma melhor defasagem; WAPE ± máx(1 p.p.; 10%) e mesmo melhor modelo; taxas ±2 p.p. (proporção) ou ±0,5 p.p. (pontualidade).
-3. Controles negativos obrigatórios, com alvos fixados antes e limite numérico (cada alvo adere em no máximo 2 de 10 rodadas): escala por família (alvos: mix e Pareto), datas +10 dias (alvos: dia da semana, dispersão, previsão semanal), ruído de 30% (alvos: correlação, índice mensal, pontualidade).
-4. Fixar antes de rodar os mínimos por grupo (ex.: 30 registros por período); ajustá-los depois no mesmo dado enfraquece a prova.
+3. Controles negativos obrigatórios, com alvos definidos pelo que cada transformação ataca e limite numérico (cada alvo adere em no máximo 2 de 10 rodadas): escala por família (alvos: mix e Pareto), datas +10 dias (alvos: dia da semana, dispersão, previsão semanal), ruído de 30% (alvos: correlação, índice mensal, pontualidade).
+4. Sem semente gravada (o fator secreto não pode ser recuperado), as contagens dos controles variam entre execuções; registrar o veredito da execução usada. Fixar antes de rodar os mínimos por grupo (ex.: 30 registros por período); ajustá-los depois no mesmo dado enfraquece a prova.
 5. Publicar só fatores sem escala, arredondados.
 
 Limites: aderência prova que a mesma lógica chega ao mesmo resultado, não que a lógica está certa; correlação perto de zero só reproduz "sem relação"; taxa não escalada passa por construção (o teste só confirma que o ruído é pequeno).
