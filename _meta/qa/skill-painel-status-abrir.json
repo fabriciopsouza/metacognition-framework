@@ -1,0 +1,72 @@
+{
+  "bloco": "skill-painel-status-abrir",
+  "rodada": 1,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "autor_modelo": "claude-opus-5-5",
+  "critico_modelo": "claude-sonnet-5-5",
+  "heterogeneo": true,
+  "atestacao": {
+    "agentId": "af5e102eceabc6177",
+    "modelo": "claude-sonnet-5-5",
+    "autor": "claude-opus-5-5"
+  },
+  "escopo_paths": [
+    ".agent/skills/painel-status/SKILL.md",
+    "CHANGELOG.md",
+    "_meta/qa/skill-painel-status-abrir.json",
+    "_meta/qa/skill-painel-status-abrir.md"
+  ],
+  "problemas": [
+    {
+      "severidade": "MEDIA",
+      "local": "SKILL.md passo 5",
+      "descricao": "A1: como abrir o ULTIMO.html local",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "MEDIA",
+      "local": "SKILL.md Regras (comando status)",
+      "descricao": "A2: abrir o painel faz parte da resposta",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "SKILL.md last_review",
+      "descricao": "A3: last_review 2026-10-24",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "SKILL.md source",
+      "descricao": "A4: pedido de 24/10 no source",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "SKILL.md pass_criteria",
+      "descricao": "A5: criterio (7) painel aberto",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "CHANGELOG.md 1.2.2",
+      "descricao": "A6: mecanismo marcado INFERIDO",
+      "estado": "corrigido"
+    }
+  ],
+  "verificacoes_executadas": [
+    "git diff --cached: 0 CR no diff",
+    "grep 1.2.1: so historico",
+    "leitura integral do SKILL.md",
+    "leitura de tools/qa_evidence.py",
+    "nao executado: squad_gate, run_canaries, validate_skills"
+  ],
+  "steelman": "mudanca minima e localizada; nao altera template nem contrato de saida",
+  "data": "2026-10-24T22:28:31Z",
+  "sha_revisado": "179313f2e2063274f4fb6c7fd8a82c748e8aee21",
+  "blobs_revisados": {
+    ".agent/skills/painel-status/SKILL.md": "52404163e60bad94093a84819eb539125660430f",
+    "CHANGELOG.md": "ec25d0043a1c9621c2662844bfaa8a69da210e68"
+  }
+}

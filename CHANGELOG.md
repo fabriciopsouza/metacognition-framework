@@ -5,6 +5,14 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### Skill `painel-status` 1.2.2 — abrir o painel na tela do dono (24/10/2026)
+
+- Motivo: pedido do dono (24/10/2026): "qd peço status report quero O DASH DO PROJETO" e "isso já funcionava, pq
+  parou?". Republicar por `url` um artifact de outra conversa não abre a página; a sessão respondia só com tabela e
+  link. Sintoma [CONFIRMADO]; mecanismo [INFERIDO].
+- `.agent/skills/painel-status/SKILL.md` passo 5: depois de republicar, abrir o painel (Artifact `action: "open"`);
+  sem página publicada, abrir o `ULTIMO.html`. [CONFIRMADO]
+
 ### Skill `painel-status` 1.2.1 — endereços https viram links (21/10/2026)
 
 - Motivo: pedido do dono (21/10/2026, regra global): o endereço publicado do painel aparece como link, no mesmo local
