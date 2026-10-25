@@ -54,8 +54,9 @@ Write-Ok "git e gh instalados"
 
 # 2. Git config global (so seta se nao existir; nao sobrescreve)
 Write-Step "Verificando git config global"
-$currentEmail = git config --global user.email 2>$null
-$currentName  = git config --global user.name 2>$null
+# git config com stderr (ex.: ~/.gitconfig malformado) abortaria sob 'Stop': trata como ausente.
+$currentEmail = try { git config --global user.email 2>$null } catch { '' }
+$currentName  = try { git config --global user.name 2>$null } catch { '' }
 
 if (-not $currentEmail) {
     if (-not $GitEmail) {
