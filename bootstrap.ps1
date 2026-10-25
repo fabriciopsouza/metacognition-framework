@@ -143,10 +143,20 @@ if (-not (Test-Path $ownersFile)) {
 # Hook-preserving, idempotente, com backup/validação. MESMA rotina que o sync-global
 # invoca a cada abertura do repo (self-heal) — derrota o clobber do mode-apply
 # (execution-modes §5 manda "preservar hooks", mas isso é prosa; aqui vira mecanismo).
+#
+# PORQUE o ErrorActionPreference local (instalacao real de 25/10/2026, PC novo): no Windows
+# PowerShell 5.1, com 'Stop' global, a linha que o filho escreve no stderr — o AVISO normal
+# "[ensure-global-wiring] wiring (re)aplicada" — vira NativeCommandError TERMINANTE, mesmo com
+# `2>$null`. O script abortava aqui e o passo seguinte (sync-global: regras globais, qa-critic,
+# skills) nunca rodava, sem mensagem de falha. O codigo de saida do filho e' o que decide.
 $ensureWiring = Join-Path $ProjectDir 'tools\hooks\ensure-global-wiring.ps1'
 if (Test-Path $ensureWiring) {
+    $eapAnterior = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
     & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $ensureWiring -RepoDir $ProjectDir 2>$null
-    switch ($LASTEXITCODE) {
+    $codigoWiring = $LASTEXITCODE
+    $ErrorActionPreference = $eapAnterior
+    switch ($codigoWiring) {
         10      { Write-Ok "hooks globais wirados: SessionStart inject-global + UserPromptSubmit route-gate (ADR-027)" }
         0       { Write-Ok "hooks globais ja wirados; preservando" }
         default { Write-Warn "ensure-global-wiring codigo $LASTEXITCODE; ver ~/.claude/settings.json.heal.bak" }
@@ -159,8 +169,13 @@ if (Test-Path $ensureWiring) {
 $syncScript = Join-Path $ProjectDir '.claude\hooks\sync-global.ps1'
 if (Test-Path $syncScript) {
     Write-Step "Rodada inicial do sync-global"
+    $eapAnterior = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'   # mesmo motivo do wiring acima
     & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $syncScript | Out-Null
-    Write-Ok "Sync inicial executado"
+    $codigoSync = $LASTEXITCODE
+    $ErrorActionPreference = $eapAnterior
+    if ($codigoSync -eq 0) { Write-Ok "Sync inicial executado" }
+    else { Write-Warn "sync-global saiu com codigo $codigoSync; rode-o a mao: $syncScript" }
 }
 
 # 7. Resumo final

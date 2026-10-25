@@ -5,6 +5,12 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### Correção — `bootstrap.ps1` abortava antes de instalar regras globais e qa-critic (25/10/2026)
+
+- Motivo: instalação real num PC novo em 25/10/2026. No Windows PowerShell 5.1, com `$ErrorActionPreference = 'Stop'`, o aviso normal que `ensure-global-wiring.ps1` escreve no stderr virava `NativeCommandError` terminante, mesmo com `2>$null`. O script parava sem mensagem de falha e o passo do `sync-global` (regras globais, qa-critic, skills) nunca rodava. [CONFIRMADO]
+- `bootstrap.ps1`: as duas chamadas a processo filho rodam com `ErrorActionPreference = 'Continue'` local, e quem decide é o código de saída; o sync agora avisa quando falha, em vez de dizer "executado". [CONFIRMADO]
+- Prova: instalação em `USERPROFILE` vazio e temporário. Versão antiga: para no wiring, sem `CLAUDE.md` nem `qa-critic.md`. Versão nova: chega ao fim e instala os dois. Sem canário automático: o comportamento depende do PowerShell 5.1 do Windows e o runner é multiplataforma. [CONFIRMADO]
+
 ### Skill `painel-status` 1.2.2 — abrir o painel na tela do dono (24/10/2026)
 
 - Motivo: pedido do dono (24/10/2026): "qd peço status report quero O DASH DO PROJETO" e "isso já funcionava, pq
