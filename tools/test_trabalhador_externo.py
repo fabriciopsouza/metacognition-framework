@@ -196,6 +196,26 @@ def run():
     if ruins_lidas != 1 or "corrompida" not in pagina:
         fails.append(f"linha corrompida tem de ser contada e avisada na pagina (contadas={ruins_lidas})")
 
+    # (14b) painel do plano: escapado, na ordem pedida pelo dono, e arquivo ilegivel nao derruba a pagina
+    pp = mon.painel_path()
+    with open(pp, "w", encoding="utf-8") as fh:
+        json.dump({"titulo": "Plano <i>x</i>", "entregas": [["Entregas feitas", "3", "de 6"]],
+                   "blocos": [["E0-3", "<script>alert(2)</script>", "wip", 75, "branch", "QA"]],
+                   "comDono": ["decidir <b>algo</b>"]}, fh)
+    pagina = open(mon.gerar(), encoding="utf-8").read()
+    if "<script>alert(2)" in pagina or "<b>algo</b>" in pagina or "<i>x</i>" in pagina:
+        fails.append("o painel do plano injetou texto sem escapar (XSS)")
+    ordem = [pagina.find(s) for s in ("Entregas feitas", "Etapas</small>", "Blocos do plano", "Etapas por trabalho",
+                                      "Consumo por trabalhador")]
+    if -1 in ordem or ordem != sorted(ordem):
+        fails.append(f"ordem do painel errada (posicoes {ordem}): entregas, trilha, plano, etapas, consumo")
+    with open(pp, "w", encoding="utf-8") as fh:
+        fh.write("{quebrado")
+    pagina = open(mon.gerar(), encoding="utf-8").read()
+    if "ilegível" not in pagina or "Consumo por trabalhador" not in pagina:
+        fails.append("painel ilegivel tem de ser avisado sem derrubar a trilha")
+    os.remove(pp)
+
     # (15) monitor quebrado nunca derruba a chamada
     original = mon.gerar
     mon.gerar = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("monitor caiu"))
