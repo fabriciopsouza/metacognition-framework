@@ -241,8 +241,11 @@ def run():
         fails.append("trabalhador externo so com falhas aparece como Claude Code")
     if pt["so-falhas"]["poupado"] != 0 or pt["gemini-pro"]["poupado"] != 120:
         fails.append("linha do trabalhador soma tokens de chamada que falhou (diverge do card)")
-    if "Tokens processados fora do Claude" not in mon.html_pagina(poup):
+    pag_poup = mon.html_pagina(poup)
+    if "Tokens processados fora do Claude" not in pag_poup:
         fails.append("card de tokens processados fora do Claude ausente da pagina")
+    if "0 processados fora do Claude (etapas OK)" not in pag_poup:
+        fails.append("linha na tela do trabalhador so com falhas nao mostra 0 processados (usa tokens de falha)")
     # eventos "status ..." antigos nao contam como etapa
     antes = len(mon.ler()[0])
     with open(os.environ["TRABALHADOR_REGISTRO"], "a", encoding="utf-8") as fh:
@@ -257,8 +260,9 @@ def run():
     if "Blocos do plano" not in open(mon.gerar(), encoding="utf-8").read():
         fails.append("painel com BOM virou ilegivel")
     os.remove(mon.painel_path())
-    if len(mon.ler()[0]) != antes:
-        fails.append("evento de status antigo foi contado como etapa")
+    obtido = len(mon.ler()[0])
+    if obtido != antes:
+        fails.append(f"descarte de eventos de status errou a contagem (esperado {antes}, obtido {obtido})")
 
     # (15) monitor quebrado nunca derruba a chamada
     original = mon.gerar
