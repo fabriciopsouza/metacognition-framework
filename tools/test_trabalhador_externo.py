@@ -216,6 +216,21 @@ def run():
         fails.append("painel ilegivel tem de ser avisado sem derrubar a trilha")
     os.remove(pp)
 
+    # (14c) tokens poupados do Claude: so etapa externa sem falha conta; Codex sem tokens vira "sem medicao"
+    poup = [{"trabalho": "p", "etapa": "a", "via": "agy", "trabalhador": "gemini-pro", "status": "OK",
+             "tokens_entrada": 100, "tokens_saida": 20},
+            {"trabalho": "p", "etapa": "b", "via": "agy", "trabalhador": "gemini-pro", "status": "FALHOU",
+             "tokens_entrada": 999, "tokens_saida": 999},
+            {"trabalho": "p", "etapa": "c", "via": "claude-code", "quem": "autor Opus", "status": "OK",
+             "tokens_entrada": 5000, "tokens_saida": 5000},
+            {"trabalho": "p", "etapa": "d", "via": "claude-code", "quem": "codex gpt (exec)", "status": "OK"}]
+    tp, _, _ = mon.agregar(poup)
+    if (tp["poupado"], tp["fora"], tp["fora_sem_medida"]) != (120, 2, 1):
+        fails.append(f"tokens poupados errados: {tp['poupado']}, fora {tp['fora']}, sem medida {tp['fora_sem_medida']}"
+                     "; esperado 120, 2, 1")
+    if "Tokens poupados do Claude" not in mon.html_pagina(poup):
+        fails.append("card de tokens poupados ausente da pagina")
+
     # (15) monitor quebrado nunca derruba a chamada
     original = mon.gerar
     mon.gerar = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("monitor caiu"))

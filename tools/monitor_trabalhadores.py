@@ -90,9 +90,20 @@ def _num(v):
     return v if isinstance(v, (int, float)) and not isinstance(v, bool) else 0
 
 
+VIAS_FORA = ("agy", "ollama", "codex")
+
+
+def _fora(ln):
+    """Etapa executada fora do Claude: via externa, ou Codex registrado como evento do Claude Code."""
+    quem = (ln.get("trabalhador") or ln.get("quem") or "").lower()
+    return ln.get("via") in VIAS_FORA or quem.startswith("codex")
+
+
 def agregar(linhas):
-    tot = {"etapas": len(linhas), "ok": 0, "ruins": 0, "em_curso": 0, "tok_in": 0, "tok_out": 0, "seg": 0.0}
-    por_trab = defaultdict(lambda: {"chamadas": 0, "tok_in": 0, "tok_out": 0, "ruins": 0, "familia": "", "via": ""})
+    tot = {"etapas": len(linhas), "ok": 0, "ruins": 0, "em_curso": 0, "tok_in": 0, "tok_out": 0, "seg": 0.0,
+           "poupado": 0, "fora": 0, "fora_sem_medida": 0}
+    por_trab = defaultdict(lambda: {"chamadas": 0, "tok_in": 0, "tok_out": 0, "ruins": 0, "familia": "", "via": "",
+                                    "fora": False, "sem_medida": 0})
     trabalhos = OrderedDict()
     # EM-CURSO so conta se for o registro mais recente daquela etapa: o fecho posterior o substitui
     ultimo = {}
@@ -114,6 +125,16 @@ def agregar(linhas):
         p["ruins"] += st in RUINS
         p["familia"] = ln.get("familia") or p["familia"]
         p["via"] = ln.get("via") or p["via"]
+        if _fora(ln) and st not in RUINS:
+            # estimativa: o que a IA externa processou e o Claude deixou de processar (ADR-131)
+            medido = ln.get("tokens_entrada") is not None or ln.get("tokens_saida") is not None
+            tot["fora"] += 1
+            p["fora"] = True
+            if medido:
+                tot["poupado"] += _num(ln.get("tokens_entrada")) + _num(ln.get("tokens_saida"))
+            else:
+                tot["fora_sem_medida"] += 1
+                p["sem_medida"] += 1
         trabalhos.setdefault(ln.get("trabalho") or "-", []).append(ln)
     return tot, dict(por_trab), trabalhos
 
@@ -225,11 +246,17 @@ def html_pagina(linhas, ruins=0, painel=None, erro_painel=None):
     if erro_painel:
         p.append(f"<div class='painel alerta'>Plano do painel ilegível ({e(erro_painel)}); mostrando só a trilha.</div>")
     topo, corpo = html_plano(painel) if painel else ("", "")
-    p.append(topo)
+    nota = f"estimativa: processados fora do Claude em {tot['fora']} etapa(s)"
+    if tot["fora_sem_medida"]:
+        nota += f"; {tot['fora_sem_medida']} sem medição de tokens"
+    poupado = (f"<div class='kpi' style='--k:var(--ok)'><small>Tokens poupados do Claude</small>"
+               f"<b>{_fmt(tot['poupado'])}</b><small>{e(nota)}</small></div>")
+    # o card fica na primeira linha: junto das entregas, ou abrindo a linha da trilha quando nao ha plano
+    p.append(topo.replace("<section class='kpis'>", "<section class='kpis'>" + poupado, 1) if topo else "")
     kp = [("Etapas", _fmt(tot["etapas"]), "var(--acc)"), ("Concluídas", _fmt(tot["ok"]), "var(--ok)"),
           ("Com problema", _fmt(tot["ruins"]), "var(--bad)"), ("Em curso", _fmt(tot["em_curso"]), "var(--run)"),
           ("Tokens enviados", _fmt(tot["tok_in"]), "var(--acc2)"), ("Tokens recebidos", _fmt(tot["tok_out"]), "var(--acc2)")]
-    p.append("<section class='kpis'>" + "".join(
+    p.append("<section class='kpis'>" + ("" if topo else poupado) + "".join(
         f"<div class='kpi' style='--k:{c}'><small>{e(n)}</small><b>{v}</b></div>" for n, v, c in kp) + "</section>")
     p.append(corpo)
     p.append("<h2 class='secao'>Etapas por trabalho</h2>")
@@ -277,11 +304,16 @@ def html_pagina(linhas, ruins=0, painel=None, erro_painel=None):
         p.append("<section class='painel'><h2>Consumo por trabalhador</h2>")
         for nome, x in sorted(por_trab.items(), key=lambda kv: -(kv[1]["tok_in"] + kv[1]["tok_out"])):
             w = round(100 * (x["tok_in"] + x["tok_out"]) / maior)
-            onde = "fora do Claude Code" if x["via"] in ("agy", "ollama") else ("portão de dado" if x["via"] == "portao" else "Claude Code")
+            onde = "fora do Claude Code" if x["fora"] else ("portão de dado" if x["via"] == "portao" else "Claude Code")
+            poup = ""
+            if x["fora"]:
+                poup = f" · poupou {_fmt(x['tok_in'] + x['tok_out'])} do Claude"
+                if x["sem_medida"]:
+                    poup += f" · {x['sem_medida']} sem medição"
             p.append(f"<div class='barra'><div><strong>{e(nome)}</strong><div class='meta'>{e(onde)}</div></div>"
                      f"<div class='trilho' role='img' aria-label='{w}% do maior consumo'><i style='width:{max(w, 2)}%'></i></div>"
                      f"<div class='meta'>{x['chamadas']} etapa(s) · {_fmt(x['tok_in'] + x['tok_out'])} tokens"
-                     f"{' · ' + str(x['ruins']) + ' com problema' if x['ruins'] else ''}</div></div>")
+                     f"{' · ' + str(x['ruins']) + ' com problema' if x['ruins'] else ''}{e(poup)}</div></div>")
         p.append("</section>")
     p.append(f"</div><script>{JS}</script></body></html>")
     return "".join(p)
