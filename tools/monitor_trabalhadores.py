@@ -94,11 +94,15 @@ def agregar(linhas):
     tot = {"etapas": len(linhas), "ok": 0, "ruins": 0, "em_curso": 0, "tok_in": 0, "tok_out": 0, "seg": 0.0}
     por_trab = defaultdict(lambda: {"chamadas": 0, "tok_in": 0, "tok_out": 0, "ruins": 0, "familia": "", "via": ""})
     trabalhos = OrderedDict()
-    for ln in linhas:
+    # EM-CURSO so conta se for o registro mais recente daquela etapa: o fecho posterior o substitui
+    ultimo = {}
+    for i, ln in enumerate(linhas):
+        ultimo[(ln.get("trabalho"), ln.get("etapa"))] = i
+    for i, ln in enumerate(linhas):
         st = ln.get("status", "")
         tot["ok"] += st == "OK"
         tot["ruins"] += st in RUINS
-        tot["em_curso"] += st == "EM-CURSO"
+        tot["em_curso"] += st == "EM-CURSO" and ultimo.get((ln.get("trabalho"), ln.get("etapa"))) == i
         tot["tok_in"] += _num(ln.get("tokens_entrada"))
         tot["tok_out"] += _num(ln.get("tokens_saida"))
         tot["seg"] += _num(ln.get("segundos"))

@@ -477,6 +477,13 @@ def run():
     except OSError:
         print("aviso: hardlink nao suportado aqui; caso A6 nao rodou")
 
+    # (monitor) EM-CURSO substituido por registro posterior da mesma etapa nao conta como em curso
+    tot, _, _ = mon.agregar([{"trabalho": "t", "etapa": "QA", "status": "EM-CURSO"},
+                             {"trabalho": "t", "etapa": "QA", "status": "OK"},
+                             {"trabalho": "t", "etapa": "outra", "status": "EM-CURSO"}])
+    if tot["em_curso"] != 1:
+        fails.append(f"monitor contou {tot['em_curso']} em curso; esperado 1 (a etapa fechada saiu)")
+
     if fails:
         print("FAIL:")
         for x in fails:
