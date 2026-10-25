@@ -8,7 +8,7 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 ### Correção — `bootstrap.ps1` abortava antes de instalar regras globais e qa-critic (25/10/2026)
 
 - Motivo: instalação real num PC novo em 25/10/2026. No Windows PowerShell 5.1, com `$ErrorActionPreference = 'Stop'`, o aviso normal que `ensure-global-wiring.ps1` escreve no stderr virava `NativeCommandError` terminante, mesmo com `2>$null`. O script parava sem mensagem de falha e o passo do `sync-global` (regras globais, qa-critic, skills) nunca rodava. [CONFIRMADO]
-- `bootstrap.ps1`: as duas chamadas a processo filho rodam com `ErrorActionPreference = 'Continue'` local, e quem decide é o código de saída; o sync agora avisa quando falha, em vez de dizer "executado". [CONFIRMADO]
+- `bootstrap.ps1`: função única `Invoke-Nativo` roda comando nativo com `ErrorActionPreference = 'Continue'` local, restaurado em `finally`, e devolve o código de saída, que decide. Aplicada às três chamadas sujeitas ao defeito: `gh auth status` (no PC novo, sem login, abortava antes do fallback `gh auth login`; achado médio da QA r1), o wiring dos ganchos e o sync. O sync avisa quando falha, em vez de dizer "executado". [CONFIRMADO]
 - Prova: instalação em `USERPROFILE` vazio e temporário. Versão antiga: para no wiring, sem `CLAUDE.md` nem `qa-critic.md`. Versão nova: chega ao fim e instala os dois. Sem canário automático: o comportamento depende do PowerShell 5.1 do Windows e o runner é multiplataforma. [CONFIRMADO]
 
 ### Skill `painel-status` 1.2.2 — abrir o painel na tela do dono (24/10/2026)
