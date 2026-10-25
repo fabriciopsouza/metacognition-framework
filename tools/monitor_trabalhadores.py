@@ -38,6 +38,8 @@ def registro_path():
 def ler(caminho=None):
     caminho = caminho or registro_path()
     linhas, ruins = [], 0
+    # Eventos "status ..." gravados em 25/10/2026 para desenhar o plano na trilha: o plano agora vem de
+    # painel.json, e esses eventos nao sao etapas; ficam fora da contagem (registro append-only, nao se apaga).
     if os.path.exists(caminho):
         with open(caminho, encoding="utf-8") as f:
             for ln in f:
@@ -57,6 +59,8 @@ def ler(caminho=None):
                         d[k] = str(d[k])
                 if not d.get("status"):
                     d["status"] = "?"
+                if str(d.get("quem", "")).endswith("(status)") and str(d.get("etapa", "")).startswith("status "):
+                    continue
                 linhas.append(d)
     return linhas, ruins
 
@@ -196,7 +200,7 @@ padding:8px;border-bottom:1px solid var(--line)}td{padding:9px 8px;border-bottom
 td .trilho{height:6px;margin-top:4px;min-width:60px}td code{font-size:12px;word-break:break-word}
 .grupos{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
 .g{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
-.duas{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}.duas .painel{margin-bottom:18px}
+.duas{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:18px}.duas .painel{margin-bottom:18px}
 .painel p{margin:6px 0}.painel ul{margin:6px 0;padding-left:20px}details.painel>summary{cursor:pointer}
 @media (max-width:640px){.barra{grid-template-columns:1fr}.kpi b{font-size:22px}}
 """
@@ -245,17 +249,25 @@ def html_pagina(linhas, ruins=0, painel=None, erro_painel=None):
         p.append(f"<div class='painel alerta'>{ruins} linha(s) corrompida(s) na trilha foram ignoradas na contagem.</div>")
     if erro_painel:
         p.append(f"<div class='painel alerta'>Plano do painel ilegível ({e(erro_painel)}); mostrando só a trilha.</div>")
-    topo, corpo = html_plano(painel) if painel else ("", "")
-    nota = f"estimativa: processados fora do Claude em {tot['fora']} etapa(s)"
+    topo, corpo = "", ""
+    if painel:
+        try:
+            topo, corpo = html_plano(painel)
+        except Exception as ex:  # plano fora do formato nunca derruba a pagina da trilha
+            p.append(f"<div class='painel alerta'>Plano do painel fora do formato ({e(type(ex).__name__)}); "
+                     "mostrando só a trilha.</div>")
+    nota = (f"economia bruta: o que IAs externas processaram em {tot['fora']} etapa(s); o custo do Claude para "
+            "preparar e ler não é descontado")
     if tot["fora_sem_medida"]:
-        nota += f"; {tot['fora_sem_medida']} sem medição de tokens"
-    poupado = (f"<div class='kpi' style='--k:var(--ok)'><small>Tokens poupados do Claude</small>"
+        nota += f"; {tot['fora_sem_medida']} etapa(s) sem medição"
+    poupado = (f"<div class='kpi' style='--k:var(--ok)'><small>Tokens processados fora do Claude</small>"
                f"<b>{_fmt(tot['poupado'])}</b><small>{e(nota)}</small></div>")
     # o card fica na primeira linha: junto das entregas, ou abrindo a linha da trilha quando nao ha plano
     p.append(topo.replace("<section class='kpis'>", "<section class='kpis'>" + poupado, 1) if topo else "")
     kp = [("Etapas", _fmt(tot["etapas"]), "var(--acc)"), ("Concluídas", _fmt(tot["ok"]), "var(--ok)"),
           ("Com problema", _fmt(tot["ruins"]), "var(--bad)"), ("Em curso", _fmt(tot["em_curso"]), "var(--run)"),
-          ("Tokens enviados", _fmt(tot["tok_in"]), "var(--acc2)"), ("Tokens recebidos", _fmt(tot["tok_out"]), "var(--acc2)")]
+          ("Tokens enviados (só etapas medidas)", _fmt(tot["tok_in"]), "var(--acc2)"),
+          ("Tokens recebidos (só etapas medidas)", _fmt(tot["tok_out"]), "var(--acc2)")]
     p.append("<section class='kpis'>" + ("" if topo else poupado) + "".join(
         f"<div class='kpi' style='--k:{c}'><small>{e(n)}</small><b>{v}</b></div>" for n, v, c in kp) + "</section>")
     p.append(corpo)
@@ -307,7 +319,7 @@ def html_pagina(linhas, ruins=0, painel=None, erro_painel=None):
             onde = "fora do Claude Code" if x["fora"] else ("portão de dado" if x["via"] == "portao" else "Claude Code")
             poup = ""
             if x["fora"]:
-                poup = f" · poupou {_fmt(x['tok_in'] + x['tok_out'])} do Claude"
+                poup = f" · {_fmt(x['tok_in'] + x['tok_out'])} processados fora do Claude"
                 if x["sem_medida"]:
                     poup += f" · {x['sem_medida']} sem medição"
             p.append(f"<div class='barra'><div><strong>{e(nome)}</strong><div class='meta'>{e(onde)}</div></div>"
@@ -325,15 +337,21 @@ def painel_path(caminho_registro=None):
 
 
 def ler_painel(caminho=None):
-    """Plano do status (blocos, entregas, agora, com o dono), opcional. Devolve (dados, erro):
-    sem arquivo -> (None, None); arquivo invalido -> (None, motivo), e a pagina avisa sem cair."""
+    """Plano do status, opcional. Devolve (dados, erro): sem arquivo -> (None, None); arquivo invalido ->
+    (None, motivo), e a pagina avisa sem cair. Formato (todas as chaves opcionais):
+      titulo, meta, onde, falta, proximo: texto
+      entregas: [[rotulo, valor, nota], ...]            cards do topo
+      blocos:   [[bloco, o que e, situacao, pct 0-100, onde esta, o que falta], ...]
+                situacao: "ok" (concluido), "wip" (em andamento), "todo" (nao iniciado); outro valor = "todo"
+      grupos:   [[grupo, situacao em texto], ...]
+      comDono, fontes: [texto, ...]"""
     caminho = caminho or painel_path()
     if not os.path.exists(caminho):
         return None, None
     try:
-        with open(caminho, encoding="utf-8") as f:
+        with open(caminho, encoding="utf-8-sig") as f:
             d = json.load(f)
-    except (OSError, ValueError) as ex:
+    except (OSError, ValueError, RecursionError) as ex:
         return None, f"{type(ex).__name__}: {ex}"
     if not isinstance(d, dict):
         return None, "o painel tem de ser um objeto JSON"
@@ -350,7 +368,7 @@ SIT = {"ok": ("concluído", "var(--ok)"), "wip": ("em andamento", "var(--run)"),
 def _pct(v):
     try:
         return max(0, min(100, round(float(v))))
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         return 0
 
 
@@ -372,7 +390,7 @@ def html_plano(d):
                      "<th>O que é</th><th>Situação</th><th>%</th><th>Onde está</th><th>O que falta</th></tr></thead><tbody>")
         for b in blocos:
             b = list(b) + [""] * (6 - len(b))
-            nome, cor = SIT.get(b[2], SIT["todo"])
+            nome, cor = SIT.get(b[2] if isinstance(b[2], str) else "", SIT["todo"])
             p = _pct(b[3])
             corpo.append(f"<tr><td><strong>{e(b[0])}</strong></td><td>{e(b[1])}</td>"
                          f"<td><span class='chip' style='color:{cor}'>{nome}</span></td>"

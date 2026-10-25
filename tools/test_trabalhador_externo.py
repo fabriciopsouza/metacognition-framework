@@ -56,6 +56,7 @@ def run():
     tmp = tempfile.mkdtemp(prefix="test-trab-")
     os.environ["TRABALHADOR_REGISTRO"] = os.path.join(tmp, "registro.jsonl")
     os.environ["TRABALHADOR_PEDIDOS"] = os.path.join(tmp, "pedidos")  # [QA r3 A5] nao herda de fora
+    os.environ.pop("TRABALHADOR_PAINEL", None)  # o teste grava e apaga o painel: nunca o painel real do dono
 
     def vias(f):
         return {"agy": f, "ollama": f}
@@ -199,12 +200,17 @@ def run():
     # (14b) painel do plano: escapado, na ordem pedida pelo dono, e arquivo ilegivel nao derruba a pagina
     pp = mon.painel_path()
     with open(pp, "w", encoding="utf-8") as fh:
-        json.dump({"titulo": "Plano <i>x</i>", "entregas": [["Entregas feitas", "3", "de 6"]],
-                   "blocos": [["E0-3", "<script>alert(2)</script>", "wip", 75, "branch", "QA"]],
-                   "comDono": ["decidir <b>algo</b>"]}, fh)
+        json.dump({"titulo": "Plano <i>x</i>", "meta": "<u>m</u>", "entregas": [["Entregas feitas", "3", "de 6"]],
+                   "blocos": [["E0-3", "<script>alert(2)</script>", "wip", 75, "branch", "QA"],
+                              ["x", "y", ["ok"], float("inf"), "z", "w"]],
+                   "grupos": [["<s>g</s>", "<s>s</s>"]], "onde": "<em>o</em>", "falta": "<em>f</em>",
+                   "comDono": ["decidir <b>algo</b>"], "fontes": ["<q>fonte</q>"]}, fh)
     pagina = open(mon.gerar(), encoding="utf-8").read()
-    if "<script>alert(2)" in pagina or "<b>algo</b>" in pagina or "<i>x</i>" in pagina:
+    if any(t in pagina for t in ("<script>alert(2)", "<b>algo</b>", "<i>x</i>", "<u>m</u>", "<s>g</s>", "<s>s</s>",
+                                 "<em>o</em>", "<em>f</em>", "<q>fonte</q>")):
         fails.append("o painel do plano injetou texto sem escapar (XSS)")
+    if "Blocos do plano" not in pagina:
+        fails.append("situacao fora do formato ou pct infinito derrubou o plano")
     ordem = [pagina.find(s) for s in ("Entregas feitas", "Etapas</small>", "Blocos do plano", "Etapas por trabalho",
                                       "Consumo por trabalhador")]
     if -1 in ordem or ordem != sorted(ordem):
@@ -228,8 +234,14 @@ def run():
     if (tp["poupado"], tp["fora"], tp["fora_sem_medida"]) != (120, 2, 1):
         fails.append(f"tokens poupados errados: {tp['poupado']}, fora {tp['fora']}, sem medida {tp['fora_sem_medida']}"
                      "; esperado 120, 2, 1")
-    if "Tokens poupados do Claude" not in mon.html_pagina(poup):
-        fails.append("card de tokens poupados ausente da pagina")
+    if "Tokens processados fora do Claude" not in mon.html_pagina(poup):
+        fails.append("card de tokens processados fora do Claude ausente da pagina")
+    # eventos "status ..." antigos nao contam como etapa
+    antes = len(mon.ler()[0])
+    with open(os.environ["TRABALHADOR_REGISTRO"], "a", encoding="utf-8") as fh:
+        fh.write(json.dumps({"trabalho": "p", "etapa": "status E0-4", "quem": "PMO (status)", "status": "EM-CURSO"}) + "\n")
+    if len(mon.ler()[0]) != antes:
+        fails.append("evento de status antigo foi contado como etapa")
 
     # (15) monitor quebrado nunca derruba a chamada
     original = mon.gerar
