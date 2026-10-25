@@ -229,17 +229,29 @@ def run():
              "tokens_entrada": 999, "tokens_saida": 999},
             {"trabalho": "p", "etapa": "c", "via": "claude-code", "quem": "autor Opus", "status": "OK",
              "tokens_entrada": 5000, "tokens_saida": 5000},
-            {"trabalho": "p", "etapa": "d", "via": "claude-code", "quem": "codex gpt (exec)", "status": "OK"}]
-    tp, _, _ = mon.agregar(poup)
+            {"trabalho": "p", "etapa": "d", "via": "claude-code", "quem": "codex gpt (exec)", "status": "EM-CURSO"},
+            {"trabalho": "p", "etapa": "d", "via": "claude-code", "quem": "codex gpt (exec)", "status": "OK"},
+            {"trabalho": "p", "etapa": "e", "via": "ollama", "trabalhador": "so-falhas", "status": "FALHOU",
+             "tokens_entrada": 5}]
+    tp, pt, _ = mon.agregar(poup)
     if (tp["poupado"], tp["fora"], tp["fora_sem_medida"]) != (120, 2, 1):
         fails.append(f"tokens poupados errados: {tp['poupado']}, fora {tp['fora']}, sem medida {tp['fora_sem_medida']}"
-                     "; esperado 120, 2, 1")
+                     "; esperado 120, 2, 1 (abertura EM-CURSO e fecho OK da mesma etapa contam uma vez)")
+    if not pt["so-falhas"]["fora"]:
+        fails.append("trabalhador externo so com falhas aparece como Claude Code")
     if "Tokens processados fora do Claude" not in mon.html_pagina(poup):
         fails.append("card de tokens processados fora do Claude ausente da pagina")
     # eventos "status ..." antigos nao contam como etapa
     antes = len(mon.ler()[0])
     with open(os.environ["TRABALHADOR_REGISTRO"], "a", encoding="utf-8") as fh:
-        fh.write(json.dumps({"trabalho": "p", "etapa": "status E0-4", "quem": "PMO (status)", "status": "EM-CURSO"}) + "\n")
+        fh.write(json.dumps({"quando": "2026-10-25T20:20:00-03:00", "trabalho": "p", "etapa": "status E0-4",
+                             "quem": "PMO (status)", "status": "EM-CURSO"}) + "\n")
+    # painel salvo com BOM (padrao do PowerShell 5) e lido
+    with open(mon.painel_path(), "w", encoding="utf-8-sig") as fh:
+        json.dump({"blocos": [["b", "o", "ok", 100, "w", "f"]]}, fh)
+    if "Blocos do plano" not in open(mon.gerar(), encoding="utf-8").read():
+        fails.append("painel com BOM virou ilegivel")
+    os.remove(mon.painel_path())
     if len(mon.ler()[0]) != antes:
         fails.append("evento de status antigo foi contado como etapa")
 

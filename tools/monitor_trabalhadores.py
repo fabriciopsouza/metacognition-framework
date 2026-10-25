@@ -59,7 +59,8 @@ def ler(caminho=None):
                         d[k] = str(d[k])
                 if not d.get("status"):
                     d["status"] = "?"
-                if str(d.get("quem", "")).endswith("(status)") and str(d.get("etapa", "")).startswith("status "):
+                if (str(d.get("quem", "")).endswith("(status)") and str(d.get("etapa", "")).startswith("status ")
+                        and str(d.get("quando", "")).startswith("2026-10-25")):
                     continue
                 linhas.append(d)
     return linhas, ruins
@@ -129,11 +130,13 @@ def agregar(linhas):
         p["ruins"] += st in RUINS
         p["familia"] = ln.get("familia") or p["familia"]
         p["via"] = ln.get("via") or p["via"]
-        if _fora(ln) and st not in RUINS:
-            # estimativa: o que a IA externa processou e o Claude deixou de processar (ADR-131)
+        if _fora(ln):
+            p["fora"] = True
+        # conta etapa concluida (OK), nao linha: o EM-CURSO de abertura e o fecho OK da mesma etapa contam uma vez
+        if _fora(ln) and st == "OK":
+            # economia bruta: o que a IA externa processou e o Claude deixou de processar (ADR-131)
             medido = ln.get("tokens_entrada") is not None or ln.get("tokens_saida") is not None
             tot["fora"] += 1
-            p["fora"] = True
             if medido:
                 tot["poupado"] += _num(ln.get("tokens_entrada")) + _num(ln.get("tokens_saida"))
             else:
