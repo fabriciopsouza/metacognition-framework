@@ -2,11 +2,11 @@
   "schema_version": 1,
   "note": "FONTE UNICA da politica de modelo por papel+risco (ADR-078). Antes vivia em 3 lugares divergentes: suggest_model hardcoded (so opus/sonnet, cego ao tier acima), frontmatter dos subagentes (sonnet fixo) e prosa (ADR-018). Consumidores: tools/handoff.py (sugestao de modelo no Pacote P14), orquestrador ao spawnar subagente (Agent model:<id>), _meta/subagent-isolation.md (escada). Atualizar modelo novo = editar AQUI (dado), nao codigo. Canario: test_handoff.py valida schema + regras.",
   "model_ids": {
-    "_comment": "IDs de modelo por familia. Trocar um ID e' decisao registravel como qualquer outra deste arquivo: 'opus' passou de claude-opus-4-8 para claude-opus-5 no WIP desta branch e foi commitado SEM justificativa - unico campo do arquivo sem anotacao, achado do QA final da sessao 19/08/2026. O valor esta correto (opus-5 e' o standard atual e e' o baseline_author), mas o registro faltava, e este arquivo e' justamente o que o ADR-111 nasceu para proteger de decisao nao-vista. Em 20/08/2026 o 2o QA (Fable) achou o IRMAO do mesmo defeito: `sonnet` dizia 'claude-sonnet-4-6' enquanto as tres atestacoes desta serie registravam 'claude-sonnet-5' — o dado falsificava a pratica. Corrigido. A licao que o repo ja tinha escrita ('licao corrige o irmao NA MESMA iteracao') nao foi aplicada quando o opus foi anotado; foi preciso outro critico. Quem trocar um ID daqui: diga por que, aqui.",
-    "fable": "claude-fable-5",
-    "opus": "claude-opus-5",
-    "sonnet": "claude-sonnet-5",
-    "haiku": "claude-haiku-4-5-20251001"
+    "_comment": "IDs de modelo por familia. Trocar um ID e' decisao registravel como qualquer outra deste arquivo: 'opus' passou de claude-opus-4-8 para claude-opus-5 no WIP desta branch e foi commitado SEM justificativa - unico campo do arquivo sem anotacao, achado do QA final da sessao 19/08/2026. O valor esta correto (opus-5 e' o standard atual e e' o baseline_author), mas o registro faltava, e este arquivo e' justamente o que o ADR-111 nasceu para proteger de decisao nao-vista. Em 20/08/2026 o 2o QA (Fable) achou o IRMAO do mesmo defeito: `sonnet` dizia 'claude-sonnet-4-6' enquanto as tres atestacoes desta serie registravam 'claude-sonnet-5' — o dado falsificava a pratica. Corrigido. A licao que o repo ja tinha escrita ('licao corrige o irmao NA MESMA iteracao') nao foi aplicada quando o opus foi anotado; foi preciso outro critico. Quem trocar um ID daqui: diga por que, aqui. TROCA DE 25/10/2026 (ADR-131, autor Opus 5.5): os quatro IDs passaram a geracao atual — fable 5 -> 5.1, opus 5 -> 5.5, sonnet 5 -> 5.5, haiku 4.5 -> 5.5. Motivo: o dono opera hoje com Opus 5.5, Sonnet 5.5 e Fable 5.1 (palavras dele, 25/10/2026: 'opus 5.5 qa / sonnet 5.5 em geral nesta linha de trabalho, eventualmente fable com qa opus'); os IDs antigos continuam servidos, mas o dado descrevia uma pratica que nao existe mais. A FAMILIA de cada chave nao mudou, entao nenhuma regra de tier ou escada muda com esta troca.",
+    "fable": "claude-fable-5-1",
+    "opus": "claude-opus-5-5",
+    "sonnet": "claude-sonnet-5-5",
+    "haiku": "claude-haiku-5-5"
   },
   "tiers": {
     "max": {
@@ -212,5 +212,51 @@
     "_leia": "Ordem do MENOS para o MAIS capaz. E a espinha da regra relativa: o executor roda no default (baseline_author.model), o 1o QA um degrau ABAIXO e o 2o QA um degrau ACIMA - este ultimo APENAS com autorizacao ativa do dono (qa_final_duplo.passo_2.autorizacao). Modelo novo entra AQUI, na posicao certa, e a regra de QA se ajusta sozinha - sem editar prosa e sem editar codigo.",
     "por_que_relativa": "presa a nome, a regra envelhece a cada lancamento e alguem tem de lembrar de atualizar tres lugares. Relativa, ela sobrevive ao lancamento. E mantem o custo sob controle: o critico barato vem primeiro e derruba o obvio; o caro so paga o que sobrou.",
     "borda": "se o default estiver na ponta da escada, o degrau que faltaria nao existe: use o degrau disponivel mais proximo e DECLARE no veredito. Nunca cair no mesmo modelo do autor em silencio (ADR-018)."
+  },
+  "trabalhadores_externos": {
+    "_leia": "ADR-131. Modelos chamados por programa FORA do Claude Code (CLI sem tela ou modelo local), executados por tools/trabalhador_externo.py. Preenche o degrau 1 da heterogeneity_ladder (familia diferente) sem depender do hub de arquivos. NAO sao familias de model_ids: nao entram em tier, escada nem qa_final_duplo, porque o subagente do Claude Code nao os alcanca e a procedencia do ADR-108 nao os reconhece. Saida de trabalhador externo e' CONSULTIVA: pre-revisao, candidato a sabotagem, rascunho de teste. Nunca substitui o qa-critic nem o veredito de juncao.",
+    "classes_de_dado": {
+      "_leia": "Ordem do MENOS para o MAIS restrito. Cada repositorio declara a sua em `.agent/classe-de-dado.json` ({\"classe\": \"<nome>\", \"origem\": \"<quem decidiu e onde>\"}), escrito pela sessao do PROPRIO repositorio (write-isolation). Sem declaracao, ou com valor desconhecido, vale a classe mais restrita: o executor nunca presume que o dado pode sair.",
+      "ordem": ["publico", "sintetico", "empresa"],
+      "publico": "so dado e codigo publicavel; nada de cliente nem de empresa",
+      "sintetico": "codigo proprio com dado gerado ou de base publica, por regra escrita do repositorio; nenhum dado de cliente ou empresa",
+      "empresa": "contem ou pode conter dado de empresa ou de pessoa (nomes, valores, planilhas reais); so pode ir a trabalhador que nao sai da maquina"
+    },
+    "sem_declaracao": "empresa",
+    "trabalhadores": {
+      "gemini-pro": {
+        "via": "agy",
+        "modelo": "gemini-4-argon-medium",
+        "familia": "gemini",
+        "sai_da_maquina": true,
+        "dados_aceitos": ["publico", "sintetico"],
+        "uso": "revisao heterogenea de documento e codigo (familia diferente do autor Claude); leitura de material longo"
+      },
+      "gemini-flash": {
+        "via": "agy",
+        "modelo": "gemini-3.8-flash-low",
+        "familia": "gemini",
+        "sai_da_maquina": true,
+        "dados_aceitos": ["publico", "sintetico"],
+        "uso": "tarefa barata e repetitiva com conferencia por script; nunca julgamento final (errou contagem simples no teste de 25/10/2026)"
+      },
+      "sonnet-agy": {
+        "via": "agy",
+        "modelo": "claude-sonnet-5-5-medium",
+        "familia": "claude",
+        "sai_da_maquina": true,
+        "dados_aceitos": ["publico", "sintetico"],
+        "uso": "mesma familia do autor, cota de outro provedor; serve para volume, NAO conta como familia diferente"
+      },
+      "local-qwen": {
+        "via": "ollama",
+        "modelo": "qwen2.5-coder:14b",
+        "familia": "qwen",
+        "sai_da_maquina": false,
+        "dados_aceitos": ["publico", "sintetico", "empresa"],
+        "num_ctx": 32768,
+        "uso": "unico trabalhador aceito para repositorio de classe empresa; geracao de rascunho de teste e candidato a sabotagem, conferidos por execucao"
+      }
+    }
   }
 }

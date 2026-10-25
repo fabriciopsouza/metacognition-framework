@@ -1,7 +1,7 @@
 <!-- GERADO por tools/build_capabilities.py a partir de capabilities.json — NAO editar a mao -->
 # CAPABILITIES — indice de capacidades (nivel 1: id + title)
 
-> **114 capacidades** — 102 ✅ PROVIDES · 12 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
+> **115 capacidades** — 103 ✅ PROVIDES · 12 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
 > **Como usar (file-first, boot):** leia esta lista p/ achar o `id`; o registro completo (mecanismo · canario · ADR · doc) vem por **`python tools/build_capabilities.py --show <id>`** ou `grep -A8 '"<id>"' capabilities.json`. Nao reexplore o repo antes disto.
 > **Manutencao:** feature nova -> +1 registro em `capabilities.json` + `python tools/build_capabilities.py`. Canario barra canario orfao (cobertura).
 
@@ -119,6 +119,7 @@
 - ✅ `squad-enforcement-gate` — Enforcement deterministico do squad: manifesto de papeis + gate com atestacao de isolamento — ADVISORY no CI (ativacao desacoplada, ADR-104)
 - ✅ `squad-gate-git-hook` — Instalador do pre-commit que faz o squad-gate rodar sozinho, com escapatoria declarada
 - ✅ `sycophancy-canary` — Canario adversarial anti-sicofancia (nao concordar para agradar)
+- ✅ `trabalhador-externo` — Trabalhador externo orquestrado: outra familia ou modelo local por programa, com portao de dado fail-closed por classe do repositorio, saida validada e trilha de auditoria com monitor
 - ✅ `trabalhos-registro` — Registro persistente de trabalhos: handoff sobrevive a sessao e e oferecido ate ser tratado
 - 🟡 `validation-reporting` — Metodo de validacao ponto a ponto com reporte legivel por humano que decide
 - ✅ `veredito-fail-closed` — Veredito aprovativo com achado bloqueante nao resolvido e' rejeitado pelo gate
