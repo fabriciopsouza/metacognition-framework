@@ -108,7 +108,7 @@ def agregar(linhas):
     tot = {"etapas": len(linhas), "ok": 0, "ruins": 0, "em_curso": 0, "tok_in": 0, "tok_out": 0, "seg": 0.0,
            "poupado": 0, "fora": 0, "fora_sem_medida": 0}
     por_trab = defaultdict(lambda: {"chamadas": 0, "tok_in": 0, "tok_out": 0, "ruins": 0, "familia": "", "via": "",
-                                    "fora": False, "sem_medida": 0})
+                                    "fora": False, "sem_medida": 0, "poupado": 0})
     trabalhos = OrderedDict()
     # EM-CURSO so conta se for o registro mais recente daquela etapa: o fecho posterior o substitui
     ultimo = {}
@@ -138,7 +138,9 @@ def agregar(linhas):
             medido = ln.get("tokens_entrada") is not None or ln.get("tokens_saida") is not None
             tot["fora"] += 1
             if medido:
-                tot["poupado"] += _num(ln.get("tokens_entrada")) + _num(ln.get("tokens_saida"))
+                n = _num(ln.get("tokens_entrada")) + _num(ln.get("tokens_saida"))
+                tot["poupado"] += n
+                p["poupado"] += n  # a linha do trabalhador usa a mesma regra do card
             else:
                 tot["fora_sem_medida"] += 1
                 p["sem_medida"] += 1
@@ -322,7 +324,7 @@ def html_pagina(linhas, ruins=0, painel=None, erro_painel=None):
             onde = "fora do Claude Code" if x["fora"] else ("portão de dado" if x["via"] == "portao" else "Claude Code")
             poup = ""
             if x["fora"]:
-                poup = f" · {_fmt(x['tok_in'] + x['tok_out'])} processados fora do Claude"
+                poup = f" · {_fmt(x['poupado'])} processados fora do Claude (etapas OK)"
                 if x["sem_medida"]:
                     poup += f" · {x['sem_medida']} sem medição"
             p.append(f"<div class='barra'><div><strong>{e(nome)}</strong><div class='meta'>{e(onde)}</div></div>"

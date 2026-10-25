@@ -239,6 +239,8 @@ def run():
                      "; esperado 120, 2, 1 (abertura EM-CURSO e fecho OK da mesma etapa contam uma vez)")
     if not pt["so-falhas"]["fora"]:
         fails.append("trabalhador externo so com falhas aparece como Claude Code")
+    if pt["so-falhas"]["poupado"] != 0 or pt["gemini-pro"]["poupado"] != 120:
+        fails.append("linha do trabalhador soma tokens de chamada que falhou (diverge do card)")
     if "Tokens processados fora do Claude" not in mon.html_pagina(poup):
         fails.append("card de tokens processados fora do Claude ausente da pagina")
     # eventos "status ..." antigos nao contam como etapa
@@ -246,6 +248,9 @@ def run():
     with open(os.environ["TRABALHADOR_REGISTRO"], "a", encoding="utf-8") as fh:
         fh.write(json.dumps({"quando": "2026-10-25T20:20:00-03:00", "trabalho": "p", "etapa": "status E0-4",
                              "quem": "PMO (status)", "status": "EM-CURSO"}) + "\n")
+        fh.write(json.dumps({"quando": "2026-11-02T10:00:00-03:00", "trabalho": "p", "etapa": "status real",
+                             "quem": "PMO (status)", "status": "OK"}) + "\n")
+    antes += 1  # evento com outra data e etapa real: conta
     # painel salvo com BOM (padrao do PowerShell 5) e lido
     with open(mon.painel_path(), "w", encoding="utf-8-sig") as fh:
         json.dump({"blocos": [["b", "o", "ok", 100, "w", "f"]]}, fh)
