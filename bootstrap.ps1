@@ -32,6 +32,16 @@ function Write-Step($msg) { Write-Host "==> $msg" -ForegroundColor Cyan }
 function Write-Ok($msg)   { Write-Host "    OK  $msg" -ForegroundColor Green }
 function Write-Warn($msg) { Write-Host "    !!  $msg" -ForegroundColor Yellow }
 
+# Roda um comando nativo sem que o stderr dele aborte o script (Windows PowerShell 5.1 com
+# ErrorActionPreference 'Stop' transforma stderr redirecionado em erro terminante). Restaura a
+# preferencia em finally e devolve o codigo de saida, que e' o que decide.
+function Invoke-Nativo([scriptblock]$bloco) {
+    $eapAnterior = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try { & $bloco | Out-Null; return $LASTEXITCODE }
+    finally { $ErrorActionPreference = $eapAnterior }
+}
+
 # 1. Pre-checks: git e gh instalados
 Write-Step "Verificando pre-requisitos (git, gh)"
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
@@ -44,8 +54,9 @@ Write-Ok "git e gh instalados"
 
 # 2. Git config global (so seta se nao existir; nao sobrescreve)
 Write-Step "Verificando git config global"
-$currentEmail = git config --global user.email 2>$null
-$currentName  = git config --global user.name 2>$null
+# git config com stderr (ex.: ~/.gitconfig malformado) abortaria sob 'Stop': trata como ausente.
+$currentEmail = try { git config --global user.email 2>$null } catch { '' }
+$currentName  = try { git config --global user.name 2>$null } catch { '' }
 
 if (-not $currentEmail) {
     if (-not $GitEmail) {
@@ -69,8 +80,8 @@ if (-not $currentName) {
 
 # 3. gh CLI autenticado
 Write-Step "Verificando autenticacao gh CLI"
-$ghStatus = gh auth status 2>&1
-if ($LASTEXITCODE -ne 0) {
+$codigoGh = Invoke-Nativo { gh auth status 2>&1 }
+if ($codigoGh -ne 0) {
     Write-Warn "gh CLI nao autenticado. Abrindo fluxo interativo..."
     gh auth login
     if ($LASTEXITCODE -ne 0) { throw "gh auth login falhou" }
@@ -143,13 +154,19 @@ if (-not (Test-Path $ownersFile)) {
 # Hook-preserving, idempotente, com backup/validação. MESMA rotina que o sync-global
 # invoca a cada abertura do repo (self-heal) — derrota o clobber do mode-apply
 # (execution-modes §5 manda "preservar hooks", mas isso é prosa; aqui vira mecanismo).
+#
+# PORQUE o ErrorActionPreference local (instalacao real de 25/10/2026, PC novo): no Windows
+# PowerShell 5.1, com 'Stop' global, a linha que o filho escreve no stderr — o AVISO normal
+# "[ensure-global-wiring] wiring (re)aplicada" — vira NativeCommandError TERMINANTE, mesmo com
+# `2>$null`. O script abortava aqui e o passo seguinte (sync-global: regras globais, qa-critic,
+# skills) nunca rodava, sem mensagem de falha. O codigo de saida do filho e' o que decide.
 $ensureWiring = Join-Path $ProjectDir 'tools\hooks\ensure-global-wiring.ps1'
 if (Test-Path $ensureWiring) {
-    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $ensureWiring -RepoDir $ProjectDir 2>$null
-    switch ($LASTEXITCODE) {
+    $codigoWiring = Invoke-Nativo { & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $ensureWiring -RepoDir $ProjectDir 2>$null }
+    switch ($codigoWiring) {
         10      { Write-Ok "hooks globais wirados: SessionStart inject-global + UserPromptSubmit route-gate (ADR-027)" }
         0       { Write-Ok "hooks globais ja wirados; preservando" }
-        default { Write-Warn "ensure-global-wiring codigo $LASTEXITCODE; ver ~/.claude/settings.json.heal.bak" }
+        default { Write-Warn "ensure-global-wiring codigo $codigoWiring; ver ~/.claude/settings.json.heal.bak" }
     }
 } else {
     Write-Warn "tools/hooks/ensure-global-wiring.ps1 ausente; wiring global pulado (abra o repo-framework p/ sync)"
@@ -159,8 +176,9 @@ if (Test-Path $ensureWiring) {
 $syncScript = Join-Path $ProjectDir '.claude\hooks\sync-global.ps1'
 if (Test-Path $syncScript) {
     Write-Step "Rodada inicial do sync-global"
-    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $syncScript | Out-Null
-    Write-Ok "Sync inicial executado"
+    $codigoSync = Invoke-Nativo { & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $syncScript }
+    if ($codigoSync -eq 0) { Write-Ok "Sync inicial executado" }
+    else { Write-Warn "sync-global saiu com codigo $codigoSync; rode-o a mao: $syncScript" }
 }
 
 # 7. Resumo final
