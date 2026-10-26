@@ -202,6 +202,10 @@ CAMPOS_CONHECIDOS = frozenset({
     # nao e' retroativo, e fabricar procedencia para veredito velho seria o teatro que
     # este ADR combate.
     "blobs_revisados",
+    # CUSTO DA RODADA (ADR-132 B2, 26/10/2026). `qa_evidence.py` passou a aceitar e validar
+    # estes dois campos, mas eles nao foram declarados aqui: o primeiro veredito que os usou
+    # (o do proprio B2) foi barrado como "achado escondido". Mesma licao da cadeia acima.
+    "tokens", "duracao_s",
     # marcados por load_evidence a partir do disco, nunca vindos do JSON
     "_arquivo", "_sha256",
 })

@@ -1,0 +1,69 @@
+{
+  "bloco": "adr-132-b5-web",
+  "papel": "qa_critic",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "veredito": "aprovar",
+  "sha_revisado": "91892eb57a3dd01dbdac90a8758b875e8b6799e7",
+  "resumo": "B5 da ADR-132: faixas de QA no PROMPT-CHAT-WEB-v4.5.md. R1 aprovou com ressalva media (3 gatilhos de F2 omitidos), corrigida; R2 aprovou.",
+  "verificacoes_executadas": [
+    "gatilhos do prompt web x regra global secao 1",
+    "contradicoes no restante do prompt (linha 34, secao 3.5)",
+    "CHANGELOG x diff",
+    "canarios web e escrita PASS (autor)"
+  ],
+  "problemas": [
+    {
+      "severidade": "medio",
+      "local": "PROMPT-CHAT-WEB-v4.5.md",
+      "descricao": "3 gatilhos de F2 omitidos",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "baixo",
+      "local": "PROMPT-CHAT-WEB-v4.5.md",
+      "descricao": "linha 34 'QA adversarial declarado' x F0 sem papel de QA",
+      "estado": "aceito como nota"
+    }
+  ],
+  "escopo_paths": [
+    "CHANGELOG.md",
+    "PROMPT-CHAT-WEB-v4.5.md",
+    "_meta/qa/adr-132-b5-web.json",
+    "_meta/qa/adr-132-b5-web.md"
+  ],
+  "tokens": 74514,
+  "duracao_s": 37,
+  "atestacao": {
+    "agentId": "a0df6a4583abf2840",
+    "prova_transcript": "sha256:5bc9b509b5689ecc4e867fffd9e58da0ff728bfabd3f8ba52f877d0aa357ec2f",
+    "modelo": "claude-sonnet-5-5",
+    "modelo_autor": "claude-opus-5-5",
+    "isolamento": "subagente qa-critic isolado, read-only por instrucao; diff salvo antes; prova = sha256 do resultado devolvido transcrito em scratchpad/b5/qa-rN.txt",
+    "provas": [
+      {
+        "agentId": "a88d2bdf2f65ddaa1",
+        "prova_transcript": "sha256:2b46f16a67bdd026f7b254ccfb19ac2ed198046ef73a6e006b7a307a54b49c98",
+        "rodada": 1,
+        "tokens": 39374,
+        "duracao_s": 21
+      },
+      {
+        "agentId": "a0df6a4583abf2840",
+        "prova_transcript": "sha256:5bc9b509b5689ecc4e867fffd9e58da0ff728bfabd3f8ba52f877d0aa357ec2f",
+        "rodada": 2,
+        "tokens": 35140,
+        "duracao_s": 16
+      }
+    ]
+  },
+  "postura": {
+    "adversarial": "criterio 1 comparou gatilho a gatilho com a regra global; foi assim que a omissao apareceu"
+  },
+  "data": "2026-10-26",
+  "blobs_revisados": {
+    "CHANGELOG.md": "ce45ecf8717b98225439688ea8866dda96403fd5",
+    "PROMPT-CHAT-WEB-v4.5.md": "ab5d2235af9ca5e29728538a968cdea8e0965fc6"
+  }
+}

@@ -4,7 +4,8 @@ determinístico e fail-closed:
  (a) tabela-verdade EXAUSTIVA: os 9 combos (prob,impacto)∈{1,2,3}² → {score,gate,tier} exatos;
  (b) scores possíveis == {1,2,3,4,6,9} (5/7/8 impossíveis como produto — guarda contra matriz torta);
  (c) fail-closed: prob/impacto fora de 1–3, ou item sem campos, ou --items vazio → erro/exit 1;
- (d) agregação worst-case correta; (e) determinismo (2 chamadas idênticas).
+ (d) agregação worst-case correta; (e) determinismo (2 chamadas idênticas);
+ (i) faixa de QA do ADR-132: gatilho de F2 nunca resulta F0/F1.
 Sem isto, "o gate de risco é determinístico" seria prosa. Fail-closed (exit 1 se diverge).
 
 Uso: python tools/test_risk_score.py   (exit 0 PASS; 1 se falha)
@@ -171,8 +172,49 @@ def main():
         if saida.get("itens") and "hitl" not in saida["itens"][0]:
             fails.append("campo 'hitl' ausente do item — agregação não é auditável")
 
+    # (i) FAIXA DE QA (ADR-132). Exaustivo: todo subconjunto não-vazio de gatilhos, cruzado com
+    #     todo subconjunto de atributos de F0 (inclusive os 3), dá F2 — gatilho nunca vira F0/F1.
+    import itertools
+    def subconjuntos(xs):
+        return [list(c) for n in range(len(xs) + 1) for c in itertools.combinations(xs, n)]
+    for g in subconjuntos(rs.GATILHOS_F2):
+        for a in subconjuntos(rs.ATRIBUTOS_F0):
+            r = rs.faixa(g, a)["faixa"]
+            esperado = "F2" if g else ("F0" if len(a) == len(rs.ATRIBUTOS_F0) else "F1")
+            if r != esperado:
+                fails.append(f"faixa(gatilhos={g}, f0={a}) = {r}, esperado {esperado}")
+    if len(rs.GATILHOS_F2) != 7 or len(rs.ATRIBUTOS_F0) != 3:
+        fails.append("lista de gatilhos/atributos mudou sem ADR (ADR-132: 7 gatilhos, 3 atributos)")
+    for g, a in ((["regulad"], []), ([], ["reversível"]), (["regulado"], ["x"])):
+        try:
+            rs.faixa(g, a)
+            fails.append(f"faixa aceitou nome desconhecido {g}/{a} (erro de digitação viraria F0/F1)")
+        except ValueError:
+            pass
+    todos_f0 = ["--f0", "reversivel", "--f0", "copia", "--f0", "conferivel_script"]
+    for argv, exit_esp, faixa_esp, porque in (
+        (["--gatilho", "irreversivel", *todos_f0], 0, "F2", "gatilho + 3 atributos -> F2"),
+        (["--nenhum-gatilho", *todos_f0], 0, "F0", "sem gatilho + 3 atributos -> F0"),
+        (["--nenhum-gatilho", "--f0", "copia"], 0, "F1", "sem gatilho, atributo faltando -> F1"),
+        (todos_f0, 1, None, "omitir gatilho não é declarar nenhum"),
+        (["--gatilho", "regulado", "--nenhum-gatilho"], 1, None, "gatilho e nenhum ao mesmo tempo"),
+        (["--gatilho", "regulad"], 1, None, "gatilho com erro de digitação"),
+        (["--prob", "1", "--impact", "1", "--gatilho", "regulado"], 1, None, "mistura com --prob"),
+    ):
+        proc = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "risk_score.py"), *argv],
+                              capture_output=True, text=True, cwd=ROOT, stdin=subprocess.DEVNULL)
+        if proc.returncode != exit_esp:
+            fails.append(f"faixa CLI exit {proc.returncode} != {exit_esp} para {argv} ({porque})")
+        elif faixa_esp:
+            try:
+                veio = json.loads(proc.stdout)["faixa"]
+            except Exception as e:
+                veio = f"saída ilegível ({e})"
+            if veio != faixa_esp:
+                fails.append(f"faixa CLI {veio} != {faixa_esp} para {argv} ({porque})")
+
     print(f"risk_score: tabela-verdade 9 combos (+hitl) + scores {{1,2,3,4,6,9}} + fail-closed + "
-          f"agregação + HITL>=6 + exit-codes + determinismo — {'OK' if not fails else 'FAIL'}")
+          f"agregação + HITL>=6 + exit-codes + determinismo + faixa de QA (ADR-132) — {'OK' if not fails else 'FAIL'}")
     for f in fails:
         print("  -", f)
     print("-" * 50)

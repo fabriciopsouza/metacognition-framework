@@ -1,7 +1,7 @@
 <!-- GERADO por tools/build_capabilities.py a partir de capabilities.json — NAO editar a mao -->
 # CAPABILITIES — indice de capacidades (nivel 1: id + title)
 
-> **115 capacidades** — 103 ✅ PROVIDES · 12 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
+> **116 capacidades** — 104 ✅ PROVIDES · 12 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
 > **Como usar (file-first, boot):** leia esta lista p/ achar o `id`; o registro completo (mecanismo · canario · ADR · doc) vem por **`python tools/build_capabilities.py --show <id>`** ou `grep -A8 '"<id>"' capabilities.json`. Nao reexplore o repo antes disto.
 > **Manutencao:** feature nova -> +1 registro em `capabilities.json` + `python tools/build_capabilities.py`. Canario barra canario orfao (cobertura).
 
@@ -95,7 +95,7 @@
 - ✅ `projeto-docs-derivados` — Backlog, cronograma e status report DERIVADOS do estado real — quadro que nao envelhece
 - ✅ `qa-attestation-provenance` — Procedencia do veredito de qa-critic: hash do relatorio real do subagente conferido contra o log do harness
 - ✅ `qa-circuit-breaker` — Circuit breaker do laco autor-revisor: 3 rodadas sem aprovacao ou 2 com os mesmos achados travam a proxima gravacao ate redesenho ou ordem do dono
-- ✅ `qa-evidence-gate` — qa-evidence (fail-closed): release exige veredito qa-critic aprovativo persistido em _meta/qa/ (ADR-074 emenda 2)
+- ✅ `qa-evidence-gate` — qa-evidence (fail-closed): release exige veredito qa-critic aprovativo persistido em _meta/qa/ (ADR-074 emenda 2); tokens e duracao_s opcionais por rodada e por prova, validados e somados no --list (ADR-132)
 - ✅ `qa-evidence-integrity` — Canario de integridade da evidencia de QA: .json e .md do mesmo bloco nao podem contar historias opostas
 - 🟡 `readiness-gate` — Gate pre-developer: valida alinhamento requirements+ADR antes de J3
 - ✅ `regras-globais-do-dono` — Regras permanentes do dono valem em toda pasta: revisao adversarial em subagente e caminho absoluto
@@ -106,13 +106,14 @@
 - ✅ `repo-sync-boot` — Sync do repo no boot: dim.1 vs proprio upstream (pull seguro) + dim.2 ORTOGONAL vs branch de integracao (origin/HEAD) com marker persistente repetido por-turno (ADR-084)
 - ✅ `research-evidence` — NAO SEI so vale depois de busca provada: >= K dominios distintos com prova, ou ratificacao humana
 - ✅ `resposta-executiva` — Resposta executiva medida por hook: o Stop mede a estrutura sem bloquear e o UserPromptSubmit devolve os achados antes da resposta seguinte
-- ✅ `risk-gate` — Gating deterministico por risco (prob x impacto -> gate + tier P0-P3); recast externo (ADR-086) sob P15, forma agnostica (categorias = blueprint)
+- ✅ `risk-gate` — Gating deterministico por risco (prob x impacto -> gate + tier P0-P3); recast externo (ADR-086) sob P15, forma agnostica (categorias = blueprint) + faixa de QA F0/F1/F2 por gatilhos declarados (ADR-132: gatilho de F2 nunca vira F0/F1)
 - 🟡 `route-gate` — Lembrete de rota deterministico 1x/sessao (UserPromptSubmit), fail-open
 - ✅ `rules-parity-guard` — Anti-drift das 4 regras inviolaveis entre arquivos de autoridade (sem violar SSoT §6.5)
 - ✅ `service-valuation` — Valoracao de servico por valor entregue, com memoria de calculo rastreavel
 - ✅ `shadow-drift-alarm` — Deriva das distribuicoes publicadas vira numero; falta de medicao nao vira aprovacao
 - ✅ `shadow-sync` — Hook que auto-casa o espelho publicado com origin no boot (reset --hard mecanico, so em shadow)
 - ✅ `shadow-write-guard` — Write-isolation: NEGA push de shadow E push pra remote != canonical (escreve so no proprio repo; read livre)
+- ✅ `sibling-sweep` — Varredura de irmaos antes do revisor: texto antigo trocado pelo autor que sobrou em outro arquivo (git grep literal, respeita .gitignore, historico fora por padrao; exit 1 se sobrou) — ADR-132
 - 🟡 `skill-contract` — Valida o contrato minimo de frontmatter das skills (ADR-013)
 - ✅ `spec-arquivo-unico` — Especificacao em arquivo unico (spec.md) lida pelos 4 gates de spec, com prova de mesmo veredito e perda zero frente ao formato antigo
 - ✅ `spec-depth-gate` — Profundidade minima de spec (linter anti-spec-rasa)

@@ -5,6 +5,21 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-132, bloco B5 — faixas de QA no prompt de chat web (26/10/2026)
+
+- Motivo: pedido do dono (26/10/2026): "se tarefa simples, método framework web adaptado com estas mudanças que fizemos se fizer sentido". O prompt web ainda mandava QA adversarial em toda entrega. [CONFIRMADO]
+- `PROMPT-CHAT-WEB-v4.5.md`, o prompt único do chat web: roteamento por faixa (F2 com gatilhos, QA completo, revisão humana e revisão em conversa nova ou outra IA; F1 com uma passada do papel de QA no fim; F0 com classificação e conferência, sem papel de QA), o fluxo do squad e a regra 9 da lista final. No chat não há subagente nem troca de modelo: a revisão independente vira recomendação explícita ao dono. [CONFIRMADO]
+- Prova: os canários do prompt web, da exportação web, dos coaches web e da norma de escrita passam. Limite: os repositórios derivados (web premium e público) só recebem a mudança na próxima publicação, que hoje depende do GitHub Actions, parado por cobrança. [CONFIRMADO]
+
+### ADR-132, bloco B2 — faixa por script, varredura de irmãos e tokens por rodada (26/10/2026)
+
+- Motivo: os três limites que o ADR-132 deixou para este bloco. A faixa era só declarada pelo autor; metade dos vereditos da série de 39 rodadas citava "irmão" ou "mesmo defeito"; nenhum veredito registrava tokens. [CONFIRMADO]
+- Faixa por script: `python tools/risk_score.py --gatilho <nome>` ou `--nenhum-gatilho --f0 <atributo>` devolve F0, F1 ou F2 com o motivo. Os 7 gatilhos e os 3 atributos de F0 vivem numa constante única desse arquivo, citada pela regra global; nome com erro de digitação e gatilho omitido sem `--nenhum-gatilho` são recusados. [CONFIRMADO]
+- Varredura de irmãos: `python tools/varrer_irmaos.py "texto antigo"` lista cada ocorrência remanescente (busca literal, arquivos rastreados e novos, respeita o .gitignore, deixa CHANGELOG, ADRs e vereditos de fora por padrão) e sai 1 se sobrou algo. [CONFIRMADO]
+- Tokens por rodada: o gravador de vereditos de QA aceita `tokens` e `duracao_s` opcionais no veredito e em cada prova da atestação, recusa tipo errado, guarda o total da rodada anterior na cadeia ao regravar e soma os tokens na listagem. Vereditos antigos continuam válidos. [CONFIRMADO]
+- Prova: canários de risco, de evidência de QA e o novo canário da varredura cobrem os três; o de risco testa as 1.024 combinações de gatilhos e atributos e prova que nenhuma das 1.016 com gatilho resulta F0 ou F1. 17 sabotagens aplicadas em cópia, todas detectadas. [CONFIRMADO]
+- Correção achada ao gravar o primeiro veredito com `tokens` (o do próprio B2): o portão de commit do squad recusava os dois campos novos como chave desconhecida e travava todo commit com eles. Declarados na lista de campos conhecidos do portão; canário novo cruza o veredito com métricas contra o portão, e a sabotagem que remove a declaração faz o canário falhar. [CONFIRMADO]
+
 ### ADR-132 — QA proporcional por faixa, cinco princípios de execução e sessão por fase (26/10/2026)
 
 - Motivo: pedido do dono (26/10/2026): "será que precisava de revisao adversarial em tudo? uma tarefa simples dessa?" e "dá pra simplificar? Dá pra cortar? Entao ok!", sem "baixar a qualidade atual". Medição de 130 vereditos: desperdício concentrado em laço (25 de 28 reprovações numa série), nenhum registro de tokens. Pesquisa com 32 fontes em `C:\Users\fabriciosouza\pesquisas\2026-10-26_qa-proporcional-orquestracao-multi-ia\`. [CONFIRMADO]

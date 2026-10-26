@@ -25,6 +25,9 @@ Uso:
     python tools/risk_score.py --prob 3 --impact 3      # item único inline
     python tools/risk_score.py --items r.json --gate-exit   # BLOQUEIA (exit 2) se hitl_requerido
     (importável: from risk_score import score_item, aggregate_gate, hitl_required)
+    python tools/risk_score.py --gatilho regulado            # faixa de QA (ADR-132) -> F2
+    python tools/risk_score.py --nenhum-gatilho --f0 reversivel --f0 copia --f0 conferivel_script  # -> F0
+    (importável: from risk_score import faixa, GATILHOS_F2, ATRIBUTOS_F0)
 
 Exit 0 = liberado; exit 1 = entrada inválida (fail-closed); exit 2 = HITL requerido, SÓ com
 `--gate-exit` (sem a flag o veredito é a saída e o exit é 0 mesmo com FAIL — compat. ADR-086).
@@ -42,6 +45,12 @@ GATE_ORDER = {"NONE": 0, "ADVISORY": 1, "CONCERNS": 2, "FAIL": 3}
 # Alcança 2×3, 3×2 e 3×3. NÃO alcança 1×3 (raro × catastrófico = 3) — lacuna ACEITA
 # explicitamente pelo dono ao escolher o corte multiplicativo; ver ADR-096 §Consequências.
 HITL_MIN_SCORE = 6
+
+# FAIXA DE QA (ADR-132). Fonte única dos gatilhos: a regra global seção 1 os descreve em prosa e
+# aponta para cá. Basta um gatilho -> F2. Sem gatilho e os 3 atributos -> F0. Senão -> F1.
+GATILHOS_F2 = ("regulado", "irreversivel", "numero_decisao", "dado_empresa_sai",
+               "permissao_credencial", "multi_sessao_sistema_pessoa", "regra_release_adr")
+ATRIBUTOS_F0 = ("reversivel", "copia", "conferivel_script")
 
 
 def _gate(score):
@@ -83,6 +92,22 @@ def score_item(prob, impact):
     score = prob * impact
     return {"prob": prob, "impact": impact, "score": score, "gate": _gate(score),
             "tier": _tier(score), "hitl": _hitl(score)}
+
+
+def faixa(gatilhos, atributos_f0=()):
+    """Faixa de QA (ADR-132) a partir do que o autor declarou. Nome fora das listas -> ValueError
+    (fail-closed: gatilho com erro de digitação não pode virar "nenhum gatilho")."""
+    gatilhos, atributos_f0 = list(gatilhos), list(atributos_f0)
+    desconhecidos = [g for g in gatilhos if g not in GATILHOS_F2] +                     [a for a in atributos_f0 if a not in ATRIBUTOS_F0]
+    if desconhecidos:
+        raise ValueError(f"nome desconhecido {desconhecidos}; gatilhos: {GATILHOS_F2}; "
+                         f"atributos F0: {ATRIBUTOS_F0}")
+    if gatilhos:
+        return {"faixa": "F2", "motivo": "gatilho de F2: " + ", ".join(sorted(set(gatilhos)))}
+    faltam = [a for a in ATRIBUTOS_F0 if a not in atributos_f0]
+    if faltam:
+        return {"faixa": "F1", "motivo": "sem gatilho de F2; falta para F0: " + ", ".join(faltam)}
+    return {"faixa": "F0", "motivo": "sem gatilho de F2; reversível, com cópia e conferível por script"}
 
 
 def aggregate_gate(results):
@@ -143,7 +168,26 @@ def main(argv):
     ap.add_argument("--gate-exit", action="store_true",
                     help=f"exit 2 se algum item tem score >= {HITL_MIN_SCORE} (HITL obrigatório). "
                          "Sem a flag, o exit é 0 e o veredito é a saída (compat. ADR-086).")
+    ap.add_argument("--gatilho", action="append", choices=GATILHOS_F2,
+                    help="faixa de QA (ADR-132): gatilho de F2 presente (repetível)")
+    ap.add_argument("--nenhum-gatilho", action="store_true",
+                    help="faixa de QA: afirma que nenhum gatilho de F2 se aplica")
+    ap.add_argument("--f0", action="append", choices=ATRIBUTOS_F0,
+                    help="faixa de QA: atributo de F0 verdadeiro (repetível)")
     args = ap.parse_args(argv[1:])
+
+    if args.gatilho or args.nenhum_gatilho or args.f0:
+        # Omitir gatilho não é declarar "nenhum": sem --gatilho, --nenhum-gatilho é obrigatório.
+        if args.items or args.prob is not None or args.impact is not None:
+            print("ERRO (fail-closed): faixa de QA não se mistura com --items/--prob/--impact",
+                  file=sys.stderr)
+            return 1
+        if bool(args.gatilho) == args.nenhum_gatilho:
+            print("ERRO (fail-closed): declare --gatilho X (um ou mais) OU --nenhum-gatilho",
+                  file=sys.stderr)
+            return 1
+        print(json.dumps(faixa(args.gatilho or [], args.f0 or []), ensure_ascii=False))
+        return 0
 
     try:
         if args.items:

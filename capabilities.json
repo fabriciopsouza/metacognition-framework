@@ -1166,7 +1166,7 @@
   },
   {
    "id": "qa-evidence-gate",
-   "title": "qa-evidence (fail-closed): release exige veredito qa-critic aprovativo persistido em _meta/qa/ (ADR-074 emenda 2)",
+   "title": "qa-evidence (fail-closed): release exige veredito qa-critic aprovativo persistido em _meta/qa/ (ADR-074 emenda 2); tokens e duracao_s opcionais por rodada e por prova, validados e somados no --list (ADR-132)",
    "status": "PROVIDES",
    "ai_owner": "claude",
    "mechanism": "tools/qa_evidence.py",
@@ -1333,7 +1333,7 @@
   },
   {
    "id": "risk-gate",
-   "title": "Gating deterministico por risco (prob x impacto -> gate + tier P0-P3); recast externo (ADR-086) sob P15, forma agnostica (categorias = blueprint)",
+   "title": "Gating deterministico por risco (prob x impacto -> gate + tier P0-P3); recast externo (ADR-086) sob P15, forma agnostica (categorias = blueprint) + faixa de QA F0/F1/F2 por gatilhos declarados (ADR-132: gatilho de F2 nunca vira F0/F1)",
    "status": "PROVIDES",
    "enforcement": "fail-closed",
    "ai_owner": "claude",
@@ -1354,6 +1354,30 @@
     "para": "HITL_MIN_SCORE = 99",
     "canario": "tools/test_risk_score.py",
     "espera": "hitl_required esperado True (tem um 6), veio False"
+   }
+  },
+  {
+   "id": "sibling-sweep",
+   "title": "Varredura de irmaos antes do revisor: texto antigo trocado pelo autor que sobrou em outro arquivo (git grep literal, respeita .gitignore, historico fora por padrao; exit 1 se sobrou) — ADR-132",
+   "status": "PROVIDES",
+   "enforcement": "fail-closed",
+   "ai_owner": "claude",
+   "mechanism": "tools/varrer_irmaos.py",
+   "test": "tools/test_varrer_irmaos.py",
+   "adr": "docs/adr/132-qa-proporcional-por-faixa.md",
+   "cross_ai": false,
+   "tags": [
+    "qa",
+    "anti-loop",
+    "deterministic",
+    "canary"
+   ],
+   "mutacao": {
+    "arquivo": "tools/varrer_irmaos.py",
+    "de": "return 1 if achados else 0",
+    "para": "return 0",
+    "canario": "tools/test_varrer_irmaos.py",
+    "espera": "exit 0 != 1 (-i)"
    }
   },
   {

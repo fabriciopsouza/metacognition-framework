@@ -22,6 +22,11 @@ Schema do veredito (compativel com o Output JSON do qa-critic SKILL):
                                  metodo_senior ("aplicado: <path>"|"N/A: <razao>"). Para fechar release,
                                  rrc DEVE ser PASSA.
   steelman       (opcional) str
+  tokens         (opcional) int >=0   tokens gastos pelo revisor nesta rodada (ADR-132, B2)
+  duracao_s      (opcional) num >=0   duracao da rodada em segundos. Os dois tambem valem em cada
+                                 item de `atestacao.provas` (as outras execucoes). Tipo errado =
+                                 recusa; ausentes = veredito antigo, continua valido. Regravar o
+                                 bloco guarda o total da rodada anterior em `substitui[].tokens`.
   data           (auto)     str ISO UTC (preenchido se ausente)
 
 CLI:
@@ -157,6 +162,39 @@ def validate_problemas(problemas):
         if faltam:
             erros.append(f"problemas[{i}] sem {faltam} (schema: severidade, local, descricao)")
     return erros
+
+
+def _num_ok(v, inteiro):
+    """bool e' int em Python: True passaria como 1 token. NaN/inf tambem nao sao medida."""
+    if isinstance(v, bool):
+        return False
+    if inteiro:
+        return isinstance(v, int) and v >= 0
+    return isinstance(v, (int, float)) and v >= 0 and v != float("inf")  # NaN falha no >= 0
+
+
+def validate_metricas(verdict):
+    """`tokens` (int>=0) e `duracao_s` (num>=0), opcionais, no veredito e em cada prova (ADR-132)."""
+    erros, alvos = [], [("veredito", verdict)]
+    at = verdict.get("atestacao")
+    if isinstance(at, dict) and isinstance(at.get("provas"), list):
+        alvos += [(f"atestacao.provas[{i}]", p) for i, p in enumerate(at["provas"])
+                  if isinstance(p, dict)]
+    for onde, d in alvos:
+        if "tokens" in d and not _num_ok(d["tokens"], True):
+            erros.append(f"{onde}.tokens={d['tokens']!r} (esperado inteiro >= 0)")
+        if "duracao_s" in d and not _num_ok(d["duracao_s"], False):
+            erros.append(f"{onde}.duracao_s={d['duracao_s']!r} (esperado numero >= 0)")
+    return erros
+
+
+def tokens_da_rodada(v):
+    """Soma de tokens do veredito e das suas provas; None se nenhum registra."""
+    at = v.get("atestacao") if isinstance(v.get("atestacao"), dict) else {}
+    vals = [v.get("tokens")] + [p.get("tokens") for p in (at.get("provas") or [])
+                                if isinstance(p, dict)]
+    vals = [x for x in vals if isinstance(x, int) and not isinstance(x, bool)]
+    return sum(vals) if vals else None
 
 
 def _head_sha():
@@ -338,6 +376,9 @@ def write_artifact(verdict, when=None):
     pe = validate_problemas(verdict.get("problemas"))
     if pe:
         raise ValueError("veredito invalido — itens de 'problemas' fora do schema: " + "; ".join(pe))
+    me = validate_metricas(verdict)
+    if me:
+        raise ValueError("veredito invalido — metricas fora do schema: " + "; ".join(me))
     se = validate_substitui(verdict.get("substitui"))
     if se:
         raise ValueError("veredito invalido — `substitui` fora do schema: " + "; ".join(se))
@@ -468,6 +509,10 @@ def write_artifact(verdict, when=None):
                 "achados_fp": _achados_fp(anterior),
                 "reinicio": destrava_breaker(anterior),
             }
+            # Tokens da rodada anterior (ADR-132, B2): sem isto, regravar o bloco apagaria o custo
+            # das rodadas passadas. So' entra quando existe, para nao mudar assinaturas antigas.
+            if tokens_da_rodada(anterior) is not None:
+                assinatura["tokens"] = tokens_da_rodada(anterior)
             if assinatura not in historico:
                 historico.append(assinatura)
             verdict["substitui"] = historico
@@ -663,8 +708,13 @@ def main(argv=None):
             if f.endswith(".json"):
                 v = json.load(open(os.path.join(QA_DIR, f), encoding="utf-8"))
                 rel = f" release=v{v['release']}" if v.get("release") else ""
+                # tokens = rodada atual (veredito + provas) + rodadas anteriores (substitui)
+                parc = [tokens_da_rodada(v)] + [a.get("tokens") for a in (v.get("substitui") or [])
+                                                if isinstance(a, dict)]
+                parc = [x for x in parc if isinstance(x, int) and not isinstance(x, bool)]
+                tok = f" tokens={sum(parc)}" if parc else ""
                 print(f"{f}: passou={v.get('passou')} rec={v.get('recomendacao')}{rel} "
-                      f"problemas={len(v.get('problemas') or [])}")
+                      f"problemas={len(v.get('problemas') or [])}{tok}")
         return 0
 
     if not args.from_json:
