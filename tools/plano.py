@@ -365,7 +365,10 @@ def main(argv):
             ach = verificar(spec, legado)
         except (OSError, spec_fonte.SpecInvalida) as e:
             ach = [f"ilegível: {e}"]
-        rel = os.path.relpath(spec, ROOT)
+        try:
+            rel = os.path.relpath(spec, ROOT)
+        except ValueError:  # Windows: spec em outro drive (ex.: pasta temporaria no C:, repositorio no E:)
+            rel = os.path.abspath(spec)
         print(f"{'FAIL' if ach else 'OK  '} {rel}")
         for a in ach:
             print(f"   - {a}")
