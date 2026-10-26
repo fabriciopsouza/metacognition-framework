@@ -122,3 +122,24 @@
 - ADR-006 §"Convivência com ADR-004" e §"Convivência com ADR-005"
 - ADR-007 §"Pendências e follow-ups"
 - WORKING-CONTEXT noturno: [`docs/_intake/WORKING-CONTEXT-2026-05-27.md`](../_intake/WORKING-CONTEXT-2026-05-27.md)
+
+---
+
+## Débito de comportamento do agente (26/10/2026)
+
+### DB-26-10-A. Pergunta ao dono sobre o que já está respondido trava o trabalho
+- **Descrição:** ao fechar um bloco, o agente terminou a resposta com "Sua ação: diga 'segue'" e parou, embora o dono
+  tivesse ordenado, na mensagem imediatamente anterior, seguir com Opus autor e Sonnet revisor e "Siga sempre pelo
+  recomendado!". A pergunta repetiu o que já estava respondido e travou a fila.
+- **Fala do dono (26/10/2026, literal):** "pq pergunta o que esta respondido previamente? INCLUIR COMO DEBITO, so se a
+  duvida ou clareza REALMENTE nao for suficiente, ou se ocorrer mudança de rumo, etc caso contrario NAO PODE TRAVAR O
+  TRABALHO perguntando algo que JA ESTA RESPONDIDO, e logo acima."
+- **Regra a incorporar:** pergunta ao dono só quando (a) a clareza realmente não basta, (b) há mudança de rumo, ou
+  (c) a ação é irreversível sem recomendação clara. Ordem permanente ("siga a recomendada") ou instrução na conversa
+  vale para os blocos seguintes da mesma fila: o agente executa o próximo item recomendado e informa no fechamento.
+  O molde "Sua ação" do CLAUDE.md global (seção 4) não pode virar pedido de licença para o que já foi autorizado.
+- **Onde mexe:** CLAUDE.md global (seção 4, fechamento; seção 6, plano aprovado), hook `resposta_executiva.py`
+  (acusar "Sua ação" que repete autorização já dada na conversa), skill de orquestração.
+- **Origem:** sessão `orcamento-natulab-fd`, projeto orcamento-natulab.
+- **Gatilho de reativação:** imediato (ordem do dono).
+- **Status:** aberto.
