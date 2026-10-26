@@ -62,7 +62,7 @@ Método de projeto, da abertura à operação, em uma página: `guia/METODO-DE-P
   `tools/model-policy.json` (ADR-078).
 - **QA bicelular (ADR-011/045, princípio 13):** junções J0–J6 com gate binário (`/handoff`
   workflow); DENTRO: itera até PASS · ENTRE: forward-only; process-critic (qa-critic subagente
-  isolado, modelo ≠ autor — escada ADR-078) fecha todo BLOCO com poder de rewind; TODO QA é
+  isolado, modelo ≠ autor — escada ADR-078) fecha todo BLOCO F1/F2 com poder de rewind (faixas: ADR-132); TODO QA é
   adversarial; SUPLANTA×EMENDA por seção do ADR. **Cada PASS deixa rastro:**
   `python tools/qa_evidence.py --junction J_n ...` (ledger, ADR-077).
 - **Runtime gates (ADR-021/022/027/029/030/077):** compaction-gate · mission-gate · route-gate ·

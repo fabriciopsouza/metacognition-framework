@@ -57,7 +57,7 @@ Depois: implementar → **qa-critic adversarial, 1 rodada, modelo um degrau abai
   requisito de se auto-aprovar — a mesma razão pela qual o grau completo exige a Parte B
   escrita depois da aprovação da Parte A, e ratificada pelo revisor;
 - a **rodada de qa-critic**. Um grau que dispensa o crítico é `--no-verify` com nome bonito;
-- o **process-critic do ADR-011**, que é obrigatório ao fim de todo BLOCO entregue — e uma
+- o **process-critic do ADR-011**, que é obrigatório ao fim de todo BLOCO entregue nas faixas F1 e F2 (ADR-132) — e uma
   feature `--quick` é um bloco entregue. Aqui ele não é cortado, é **fundido**: a única rodada
   de qa-critic usa o mesmo subagente isolado (modelo ≠ autor) e carrega **os dois chapéis** —
   o achado substantivo e o checklist de conformidade de processo —, declarando cada um em

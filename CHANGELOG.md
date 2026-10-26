@@ -5,6 +5,13 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-132 — QA proporcional por faixa, cinco princípios de execução e sessão por fase (26/10/2026)
+
+- Motivo: pedido do dono (26/10/2026): "será que precisava de revisao adversarial em tudo? uma tarefa simples dessa?" e "dá pra simplificar? Dá pra cortar? Entao ok!", sem "baixar a qualidade atual". Medição de 130 vereditos: desperdício concentrado em laço (25 de 28 reprovações numa série), nenhum registro de tokens. Pesquisa com 32 fontes em `C:\Users\fabriciosouza\pesquisas\2026-10-26_qa-proporcional-orquestracao-multi-ia\`. [CONFIRMADO]
+- Regra global seção 1: gatilhos de F2 definidos uma vez (regulado, irreversível, número para decisão, dado de empresa saindo da máquina, permissão/segurança/credencial, várias sessões/sistemas/pessoas, regra, release ou ADR); F2 com spec revisada antes, script no meio e process-critic no fim; F1 (sem gatilho) com 1 revisão e máx. 2 rodadas; F0 (sem gatilho, reversível, com cópia, conferível por script) sem subagente; na dúvida, a mais alta. Mandato do process-critic ressalvado para F1/F2 em `qa-critic`, `handoff.md`, `checkpoint.md`, `feature-plan.md`, `traceability`, `CLAUDE.md`, `AGENT-FRAMEWORK.md` e três guias. Seção 3: cinco princípios de execução. Seção 6: sessão por fase a partir do `tools/handoff.py`. [CONFIRMADO]
+- Skill `qa-critic` 1.4.0: o disparo condicional virou a regra das faixas; revisor recebe critério e diff, achado fora do critério vira nota, quem acha não valida. [CONFIRMADO]
+- Limite: a faixa é declarada pelo autor até existir classificador por script (próximo bloco); "máx. 2 rodadas" é proposta a recalibrar com tokens por rodada. [INFERIDO]
+
 ### Correção — `bootstrap.ps1` abortava antes de instalar regras globais e qa-critic (25/10/2026)
 
 - Motivo: instalação real num PC novo em 25/10/2026. No Windows PowerShell 5.1, com `$ErrorActionPreference = 'Stop'`, o aviso normal que `ensure-global-wiring.ps1` escreve no stderr virava `NativeCommandError` terminante, mesmo com `2>$null`. O script parava sem mensagem de falha e o passo do `sync-global` (regras globais, qa-critic, skills) nunca rodava. [CONFIRMADO]

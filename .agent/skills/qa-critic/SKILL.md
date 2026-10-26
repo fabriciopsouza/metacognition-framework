@@ -1,9 +1,9 @@
 ---
 name: qa-critic
 description: "Ativar SEMPRE após o developer, antes de qualquer aprovação. Validação adversarial — hipótese default é que existe bug. Idealmente modelo diferente do developer. Flexível."
-version: 1.3.0
+version: 1.4.0
 source: "SQUAD v1.1.0 (qa-critic) — enxuto"
-last_review: 2026-09-25
+last_review: 2026-10-26
 role_order: 4
 consumes:
   - "output do developer"
@@ -46,16 +46,31 @@ rodar o qa-critic em **família de modelo diferente** do developer quando o ambi
 (`Agent(... model: <distinto>)` no Claude Code; ver `_meta/subagent-isolation.md`). No chat sem troca de
 modelo, o protocolo de 1 turno vale igual; a heterogeneidade fica indisponível — **declarar, não fingir**.
 
-**Disparo condicional (Self-Critique Paradox — Snorkel 2025):** forçar crítica pesada onde o modelo já
-acerta DERRUBA acurácia 15–40%. Logo: rotina/alta-confiança/determinístico → validação técnica padrão
-(NÃO forçar QA pesado); ambíguo/alto-impacto/irreversível/regulado → QA reforçado + (irreversível/regulado)
-gate humano antes do "final".
+**Faixa do bloco (ADR-132; regra global seção 1).** O orquestrador declara a faixa antes de executar;
+na dúvida, a mais alta.
+- **Gatilhos de F2** (basta um): regulado; irreversível; número para decisão; dado de empresa saindo da
+  máquina; permissão, segurança ou credencial; várias sessões, sistemas ou pessoas; regra do framework,
+  release ou ADR.
+- **F2 complexo/alto risco:** revisão da spec antes de executar (J1/J2), conferência por script nas
+  junções do meio, process-critic do conjunto no fim; limite de rodadas da ADR-118; gate humano se
+  irreversível/regulado.
+- **F1 padrão** (nenhum gatilho de F2): o process-critic é a revisão única no fim; máx. 2 rodadas.
+- **F0 simples** (nenhum gatilho de F2 + reversível, cópia do original, conferível por script):
+  **sem subagente**; fecha com classificação de confiança e conferência executada, declaradas na
+  resposta final.
 
-> **Não revoga "hipótese default = EXISTE BUG" (ADR-011 "TODO QA é adversarial").** O QA adversarial
-> **básico** (validar cada critério do `validation.md`, postura de bug-default) é **sempre** aplicado.
-> O que é condicional é o QA **reforçado** (steelman elaborado + múltiplos ângulos): em rotina de alta
-> confiança, o básico basta; forçar o reforçado onde o modelo já acerta é que derruba acurácia. Silenciar
-> o reforçado ≠ pular o adversarial — usar "disparo condicional" para dispensar QA legítimo é abuso da regra.
+Em F1 e F2 o revisor recebe **o critério de aceite e o que mudou**, não a conversa do autor. Achado
+fora do critério vira **nota**, não rodada: revisor instruído a achar falha sempre acha alguma
+(Claude Code best practices), e forçar crítica pesada onde o modelo já acerta derruba acurácia
+(Self-Critique Paradox — Snorkel 2025). Revisão sem informação nova não melhora o resultado: a rodada
+seguinte só existe com correção feita ou fato novo. **Quem acha não valida** (padrão da
+`cloudflare/security-audit-skill`): achado contestado é conferido por agente novo ou por execução.
+
+> **Não revoga "hipótese default = EXISTE BUG" (ADR-011 "TODO QA é adversarial").** Em F1 e F2 o QA
+> adversarial **básico** (cada critério do `validation.md`, postura de bug-default) é **sempre**
+> aplicado; o **reforçado** (steelman elaborado, múltiplos ângulos) é para F2. Classificar como F0 o que
+> não cumpre os critérios da F0 é revisar abaixo da faixa (regra global seção 1). Quando um
+> process-critic posterior encontrar uma F0 indevida, ela é achado dele.
 
 > **Veredito herda o vocabulário da modalidade ativa** (não inventa termo novo): como **junction-critic J4**
 > → `APROVADO_LIMPO` (reprovar = mais uma iteração no mesmo artefato, sem REPROVADO terminal); como
@@ -70,7 +85,7 @@ gate humano antes do "final".
 
 2. **Process-critic final (PC — adversarial do bloco completo, com REWIND):** mesma instância qa-critic em subagente isolado, **escopo expandido**: revisa bloco inteiro (ADR + skill edits + docs + CHANGELOG + history). **Crítica em 4 dimensões (v1.12.1):** (i) **lógica/código** — bugs, edge cases, regressão; (ii) **spec/validation** — cobertura dos REQ + critério binário; (iii) **doc consistência** — cross-references válidas, contagens em sync, nomenclatura uniforme; (iv) **process compliance** — J0-J5 gates passaram com evidência objetiva, RRC executado, citações de ADR rastreáveis. Detém **poder de rewind cascata** para qualquer junção anterior (J0-J5). Veredito: `APROVADO_LIMPO` → autoriza merge/tag; `REPROVADO_REWIND J_i` → rewind cascata; downstream re-roda. **Pós-rewind: junções afetadas re-passam binárias (iterações OK; forward-only restaura).**
 
-**Disparo do process-critic:** (a) final de cada BLOCO APROVADO (mandatório), (b) on-demand do dono, (c) opcional em `/checkpoint` substantivo (backstop). `/checkpoint` default = save-point + RRC, NÃO process-critic automático.
+**Disparo do process-critic:** (a) final de cada BLOCO APROVADO de faixa F1 ou F2 (mandatório; F0 fecha sem subagente, ADR-132), (b) on-demand do dono, (c) opcional em `/checkpoint` substantivo (backstop). `/checkpoint` default = save-point + RRC, NÃO process-critic automático.
 
 ## Checklist mínimo
 Nomes aderem ao glossário · edge cases · DIV/0 explícito · agregação no nível certo ·

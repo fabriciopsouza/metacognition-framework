@@ -69,7 +69,7 @@ dono provoca"). A cada turno, antes de cumprir um pedido:
 2. **Classificar confiança** (CONFIRMADO/INFERIDO/DESCONHECIDO) e **declarar a ROTA** (ADR-027).
 3. **Entregável** (código/ADR/decisão/número) → **qa-critic adversarial ISOLADO** (modelo ≠ autor, ADR-074/011)
    é OBRIGATÓRIO **por default** — itera **até PASS binário** DENTRO da junção; ENTRE junções é forward-only;
-   o **process-critic é o único com poder de rewind** (ADR-011). Não rodar qa-critic = bloco não fecha.
+   o **process-critic é o único com poder de rewind** (ADR-011). Não rodar qa-critic = bloco não fecha (faixas F1 e F2; F0 fecha com conferência executada, ADR-132).
 4. **Elicitação/pesquisa** céticas e **exaustivas** antes de declarar DESCONHECIDO.
 
 **Canônico-prevalece (default — o dono apontou que não era):** decisão/binding/nome de campo/abordagem

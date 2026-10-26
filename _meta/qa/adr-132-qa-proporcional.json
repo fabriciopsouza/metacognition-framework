@@ -1,0 +1,158 @@
+{
+  "bloco": "adr-132-qa-proporcional",
+  "papel": "qa_critic",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "sha_revisado": "d084443597b3c234d5250e6263be909a5858d69b",
+  "resumo": "ADR-132: faixas F0/F1/F2 de QA, cinco principios e sessao por fase. R1 reprovou (2 altos: gatilhos de alto risco ausentes em F0/F1; mandato antigo do process-critic vivo em 4 textos). Correcao: gatilhos de F2 definidos uma vez e F0/F1 = nenhum gatilho; mandato ressalvado para F1/F2. R2 aprovou com ressalvas (5 textos residuais, permissao/credencial sem gatilho, frase truncada), todas corrigidas sem nova rodada.",
+  "verificacoes_executadas": [
+    "r1: leitura do diff contra relatorio de pesquisa, ADR-011/110/118 e skill qa-critic",
+    "r2: conferencia dos achados r1; test_adr_changelog_sync.py PASS; check_rules_parity.py PASS; test_capabilities nao barra"
+  ],
+  "problemas": [
+    {
+      "severidade": "alto",
+      "descricao": "r1: F0/F1 sem gatilhos de alto risco",
+      "estado": "corrigido",
+      "local": ".agent/skills/qa-critic/SKILL.md"
+    },
+    {
+      "severidade": "alto",
+      "descricao": "r1: process-critic mandatorio em todo bloco em 4 textos",
+      "estado": "corrigido",
+      "local": ".agent/workflows/handoff.md"
+    },
+    {
+      "severidade": "medio",
+      "descricao": "r1: quem decide a faixa / F0 sem freio",
+      "estado": "corrigido parcialmente; limite declarado no ADR",
+      "local": ".claude/global/CLAUDE-global.md"
+    },
+    {
+      "severidade": "medio",
+      "descricao": "r1: abuso so na skill",
+      "estado": "corrigido",
+      "local": ".claude/global/CLAUDE-global.md"
+    },
+    {
+      "severidade": "medio",
+      "descricao": "r1/r2: mapa de impacto (10 textos)",
+      "estado": "corrigido",
+      "local": "docs/adr/132-qa-proporcional-por-faixa.md"
+    },
+    {
+      "severidade": "baixo",
+      "descricao": "r1: D5 e descartes",
+      "estado": "corrigido",
+      "local": "docs/adr/132-qa-proporcional-por-faixa.md"
+    },
+    {
+      "severidade": "baixo",
+      "descricao": "r2: permissao/credencial sem gatilho",
+      "estado": "corrigido: virou gatilho de F2",
+      "local": ".claude/global/CLAUDE-global.md"
+    },
+    {
+      "severidade": "baixo",
+      "descricao": "r2: frase truncada na skill",
+      "estado": "corrigido",
+      "local": ".agent/skills/qa-critic/SKILL.md"
+    }
+  ],
+  "escopo_paths": [
+    ".agent/skills/qa-critic/SKILL.md",
+    ".agent/workflows/checkpoint.md",
+    ".agent/workflows/feature-plan.md",
+    ".agent/workflows/handoff.md",
+    ".claude/global/CLAUDE-global.md",
+    "AGENT-FRAMEWORK.md",
+    "CHANGELOG.md",
+    "CLAUDE.md",
+    "_shared/traceability/SKILL.md",
+    "docs/adr/132-qa-proporcional-por-faixa.md",
+    "guia/COMO-FOI-CONSTRUIDO.md",
+    "guia/GUIA-EQUIPE.md",
+    "guia/METODO-DE-PROJETO.md",
+    "_meta/qa/adr-132-qa-proporcional.json",
+    "_meta/qa/adr-132-qa-proporcional.md"
+  ],
+  "atestacao": {
+    "agentId": "aa3b306bdb1abaaae",
+    "prova_transcript": "sha256:83c2697d035edd1c51a6cfcd1f0c18afcf5f5ed58864999e98f1deac68a1a9a3",
+    "modelo": "claude-sonnet-5-5",
+    "modelo_autor": "claude-opus-5-5",
+    "isolamento": "subagente qa-critic isolado, read-only por instrucao explicita; trabalho protegido por patch em scratchpad antes de cada rodada. O .output do agente estava vazio no disco: a prova e' o sha256 do resultado devolvido pelo agente, transcrito em scratchpad/b1-backup/qa-rN.txt",
+    "provas": [
+      {
+        "agentId": "a577d8640eb343e06",
+        "prova_transcript": "sha256:266fdd582c3f450b61782f55048d2e27c822b59c6abdf8bc86ebe07f393b55db",
+        "rodada": 1
+      },
+      {
+        "agentId": "aa3b306bdb1abaaae",
+        "prova_transcript": "sha256:83c2697d035edd1c51a6cfcd1f0c18afcf5f5ed58864999e98f1deac68a1a9a3",
+        "rodada": 2
+      }
+    ]
+  },
+  "postura": {
+    "adversarial": "criterio 1 pedia brecha de alto risco por redacao; foi assim que os dois altos apareceram"
+  },
+  "nao_verificado": [
+    "suite completa de canarios ainda rodando na branch"
+  ],
+  "data": "2026-10-26",
+  "blobs_revisados": {
+    ".agent/skills/qa-critic/SKILL.md": "3675bb8458c1773711aa5c6136aea72eae0d5f6c",
+    ".agent/workflows/checkpoint.md": "3df995e56abc584fa1e443bbefd00d252c4a3d0d",
+    ".agent/workflows/feature-plan.md": "fb32864599df544a25f4cfa701332dffee73f639",
+    ".agent/workflows/handoff.md": "4e43c80f52507c64dfc94b264374eb560fe0c2ec",
+    ".claude/global/CLAUDE-global.md": "227dd87182c5e2c3c0731f920fd4b05bc80bc6f1",
+    "AGENT-FRAMEWORK.md": "90b241609da0d5f109c8585acdea4e6a2ae585e5",
+    "CHANGELOG.md": "57bb900a91951bc36b92abfafe76f27a157bea13",
+    "CLAUDE.md": "903e5c390f8bc71c37775d924aa6b5538027408e",
+    "_shared/traceability/SKILL.md": "503bf37735fc3b11e4101235ba0dd5b4ddb4aba3",
+    "docs/adr/132-qa-proporcional-por-faixa.md": "0bb5634ca574070a780ec408153e1a3b27aca1f4",
+    "guia/COMO-FOI-CONSTRUIDO.md": "04c0349724836fdf996e0a4d224bf50318220372",
+    "guia/GUIA-EQUIPE.md": "94ae42e0a4faa0a97d44b9b6ccbff0aad1f9abaa",
+    "guia/METODO-DE-PROJETO.md": "81ca052f495308aa6083524c1b4e461b0839d32f"
+  },
+  "substitui": [
+    {
+      "rodada": 2,
+      "data": "2026-10-26",
+      "recomendacao": "aprovar_com_ressalvas",
+      "sha_revisado": "d084443+stage",
+      "agentId": "aa3b306bdb1abaaae",
+      "escopo_paths": [
+        ".agent/skills/qa-critic/SKILL.md",
+        ".agent/workflows/checkpoint.md",
+        ".agent/workflows/feature-plan.md",
+        ".agent/workflows/handoff.md",
+        ".claude/global/CLAUDE-global.md",
+        "AGENT-FRAMEWORK.md",
+        "CHANGELOG.md",
+        "CLAUDE.md",
+        "_shared/traceability/SKILL.md",
+        "docs/adr/132-qa-proporcional-por-faixa.md",
+        "guia/COMO-FOI-CONSTRUIDO.md",
+        "guia/GUIA-EQUIPE.md",
+        "guia/METODO-DE-PROJETO.md",
+        "_meta/qa/adr-132-qa-proporcional.json",
+        "_meta/qa/adr-132-qa-proporcional.md"
+      ],
+      "achados_fp": [
+        "ALTO|.agent/skills/qa-critic/skill.md",
+        "ALTO|.agent/workflows/handoff.md",
+        "BAIXO|.agent/skills/qa-critic/skill.md",
+        "BAIXO|.claude/global/claude-global.md",
+        "BAIXO|docs/adr/132-qa-proporcional-por-faixa.md",
+        "MEDIO|.claude/global/claude-global.md",
+        "MEDIO|docs/adr/132-qa-proporcional-por-faixa.md"
+      ],
+      "reinicio": false
+    }
+  ]
+}
