@@ -5,6 +5,12 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-132, bloco B5 — faixas de QA no prompt de chat web (26/10/2026)
+
+- Motivo: pedido do dono (26/10/2026): "se tarefa simples, método framework web adaptado com estas mudanças que fizemos se fizer sentido". O prompt web ainda mandava QA adversarial em toda entrega. [CONFIRMADO]
+- `PROMPT-CHAT-WEB-v4.5.md`, o prompt único do chat web: roteamento por faixa (F2 com gatilhos, QA completo, revisão humana e revisão em conversa nova ou outra IA; F1 com uma passada do papel de QA no fim; F0 com classificação e conferência, sem papel de QA), o fluxo do squad e a regra 9 da lista final. No chat não há subagente nem troca de modelo: a revisão independente vira recomendação explícita ao dono. [CONFIRMADO]
+- Prova: os canários do prompt web, da exportação web, dos coaches web e da norma de escrita passam. Limite: os repositórios derivados (web premium e público) só recebem a mudança na próxima publicação, que hoje depende do GitHub Actions, parado por cobrança. [CONFIRMADO]
+
 ### ADR-132, bloco B2 — faixa por script, varredura de irmãos e tokens por rodada (26/10/2026)
 
 - Motivo: os três limites que o ADR-132 deixou para este bloco. A faixa era só declarada pelo autor; metade dos vereditos da série de 39 rodadas citava "irmão" ou "mesmo defeito"; nenhum veredito registrava tokens. [CONFIRMADO]
