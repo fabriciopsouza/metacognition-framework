@@ -1,0 +1,151 @@
+{
+  "bloco": "adr-132-b2-mecanismos",
+  "papel": "qa_critic",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "sha_revisado": "bb483e6ae9b095f59e3a82d106b10005fa7f9120",
+  "resumo": "B2 da ADR-132: faixa por script (risk_score.faixa, GATILHOS_F2), varredura de irmaos (varrer_irmaos.py) e tokens/duracao por rodada no qa_evidence. Autor Opus em subagente: 100 PASS/1 SKIP/0 FAIL, 17 sabotagens mortas. QA Sonnet r1 aprovou; 3 notas baixas sem nova rodada (regra ADR-132: achado fora do criterio vira nota). R1 aprovou; ao gravar o veredito com tokens o squad_gate barrou (campos nao declarados): defeito real corrigido na causa com canario provado por sabotagem; R2 aprovou com ressalvas baixas pre-existentes.",
+  "verificacoes_executadas": [
+    "faixa x regra global seção 1",
+    "132 JSON de _meta/qa no validador novo: 0 recusados",
+    "varrer_irmaos: texto inexistente exit 0, repo invalido exit 2",
+    "5 canarios do bloco PASS"
+  ],
+  "problemas": [
+    {
+      "severidade": "baixo",
+      "local": "tools/risk_score.py",
+      "descricao": "espacos residuais na linha de desconhecidos em faixa()",
+      "estado": "aceito como nota"
+    },
+    {
+      "severidade": "baixo",
+      "local": "tools/risk_score.py",
+      "descricao": "--help nao diz que --f0 exige --nenhum-gatilho",
+      "estado": "aceito como nota"
+    },
+    {
+      "severidade": "baixo",
+      "local": "tools/varrer_irmaos.py",
+      "descricao": "binario ignorado sem declarar o limite",
+      "estado": "aceito como nota"
+    },
+    {
+      "severidade": "baixo",
+      "local": "tools/squad_gate.py",
+      "descricao": "tokens/duracao_s nao declarados em CAMPOS_CONHECIDOS travavam o commit (achado pelo proprio gate)",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "baixo",
+      "local": "tools/squad_gate.py",
+      "descricao": "redesenho e override_dono ausentes de CAMPOS_CONHECIDOS (pre-existente)",
+      "estado": "aceito como nota; registrado em trabalhos"
+    },
+    {
+      "severidade": "baixo",
+      "local": "tools/squad_gate.py",
+      "descricao": "gate nao le atestacao.provas: achado em provas fica invisivel (pre-existente)",
+      "estado": "aceito como nota; decisao do dono, registrado em trabalhos"
+    }
+  ],
+  "escopo_paths": [
+    ".claude/global/CLAUDE-global.md",
+    "CAPABILITIES.md",
+    "CHANGELOG.md",
+    "_meta/qa/adr-132-b2-mecanismos.json",
+    "_meta/qa/adr-132-b2-mecanismos.md",
+    "capabilities.json",
+    "docs/adr/132-qa-proporcional-por-faixa.md",
+    "guia/web/index.html",
+    "tools/qa_evidence.py",
+    "tools/risk_score.py",
+    "tools/squad_gate.py",
+    "tools/test_qa_evidence.py",
+    "tools/test_risk_score.py",
+    "tools/test_varrer_irmaos.py",
+    "tools/varrer_irmaos.py",
+    "_meta/qa/adr-132-b2-mecanismos.json",
+    "_meta/qa/adr-132-b2-mecanismos.md"
+  ],
+  "tokens": 43967,
+  "duracao_s": 85,
+  "atestacao": {
+    "agentId": "af9cb8a6f1a5b5e42",
+    "prova_transcript": "sha256:51a2fe862b9dda5d0b79910b6d192172f18681de66f1e2dd33da96ab8eefc4fc",
+    "modelo": "claude-sonnet-5-5",
+    "modelo_autor": "claude-opus-5-5",
+    "isolamento": "subagente qa-critic isolado, read-only por instrucao; diff salvo em scratchpad/b2.patch antes; .output do agente vazio no disco, prova = sha256 do resultado devolvido transcrito em scratchpad/b2/qa-r1.txt",
+    "provas": [
+      {
+        "agentId": "abeb28d3950e0b377",
+        "prova_transcript": "sha256:5f5ce031f576e19c3286ead6cf72c8fcc28012474904e7e4fea1c788aa22bc57",
+        "rodada": 1,
+        "tokens": 43689,
+        "duracao_s": 41
+      },
+      {
+        "agentId": "af9cb8a6f1a5b5e42",
+        "prova_transcript": "sha256:51a2fe862b9dda5d0b79910b6d192172f18681de66f1e2dd33da96ab8eefc4fc",
+        "rodada": 2,
+        "tokens": 43967,
+        "duracao_s": 85
+      }
+    ]
+  },
+  "postura": {
+    "adversarial": "criterio 2 exigiu carregar todos os vereditos antigos no validador novo para provar que nada antigo passou a ser recusado"
+  },
+  "nao_verificado": [
+    "as 17 sabotagens do autor nao foram re-executadas pelo revisor"
+  ],
+  "data": "2026-10-26",
+  "blobs_revisados": {
+    ".claude/global/CLAUDE-global.md": "b6e410816067dd05500b125d13eb54dc99defd4a",
+    "CAPABILITIES.md": "173960f92e7c4beeebd48f647a4cd1e9755c1b20",
+    "CHANGELOG.md": "352e15a05c8176b86b429c20e54921a5d9910b19",
+    "capabilities.json": "617a9e86f192df3a927277bd5ee55df2fea9aaa7",
+    "docs/adr/132-qa-proporcional-por-faixa.md": "63c17e5c16633b073dbf9fc6856d5b57095da8d9",
+    "guia/web/index.html": "24d83fe39cbcfd4d6a29fbb88ef17e1c6f7ca147",
+    "tools/qa_evidence.py": "2cd4eb5f6a2efda6ebcc493e675a8e816b07aacd",
+    "tools/risk_score.py": "d18f81bee3d5a910d2257e60a4e597f47bbb0898",
+    "tools/squad_gate.py": "9ead8950711586e3ea64f01f374274762417ce22",
+    "tools/test_qa_evidence.py": "25fcdc65fb8896b4e63768da1607149dbbdb3baa",
+    "tools/test_risk_score.py": "8769d2492ed210bdea1a44b0a6dc1852ef912a6a",
+    "tools/test_varrer_irmaos.py": "6334938a01c20269270bf51476eaa21b470882ae",
+    "tools/varrer_irmaos.py": "7bd698f87449d21b7cfa0bf9f4c2b2271ae57791"
+  },
+  "substitui": [
+    {
+      "rodada": 1,
+      "data": "2026-10-26",
+      "recomendacao": "aprovar",
+      "sha_revisado": "bb483e6ae9b095f59e3a82d106b10005fa7f9120",
+      "agentId": "abeb28d3950e0b377",
+      "escopo_paths": [
+        ".claude/global/CLAUDE-global.md",
+        "CAPABILITIES.md",
+        "CHANGELOG.md",
+        "capabilities.json",
+        "docs/adr/132-qa-proporcional-por-faixa.md",
+        "guia/web/index.html",
+        "tools/qa_evidence.py",
+        "tools/risk_score.py",
+        "tools/test_qa_evidence.py",
+        "tools/test_risk_score.py",
+        "tools/test_varrer_irmaos.py",
+        "tools/varrer_irmaos.py",
+        "_meta/qa/adr-132-b2-mecanismos.json",
+        "_meta/qa/adr-132-b2-mecanismos.md"
+      ],
+      "achados_fp": [
+        "BAIXO|tools/risk_score.py",
+        "BAIXO|tools/varrer_irmaos.py"
+      ],
+      "reinicio": false,
+      "tokens": 87378
+    }
+  ]
+}

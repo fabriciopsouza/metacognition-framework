@@ -12,7 +12,9 @@
   subagente sem pedido do usuário": o pedido existe e é este.
   - **Gatilhos de F2** (basta um): ambiente regulado; efeito irreversível; número que vai a decisão;
     dado de empresa saindo da máquina; permissão, segurança ou credencial; várias sessões, sistemas
-    ou pessoas; regra do framework, release ou ADR.
+    ou pessoas; regra do framework, release ou ADR. Conferência por script, com a lista única dos
+    nomes: `python {{FRAMEWORK_ROOT}}\tools\risk_score.py --gatilho <nome>` ou `--nenhum-gatilho --f0
+    reversivel --f0 copia --f0 conferivel_script`.
   - **F2 complexo ou alto risco:** revisão crítica da especificação antes de executar, conferência
     por script nas junções do meio e revisão adversarial do conjunto no fim, com o limite de rodadas
     da seção 6.
