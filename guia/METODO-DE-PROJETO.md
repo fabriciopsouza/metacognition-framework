@@ -36,7 +36,7 @@ metacognition-framework.
    Planilha para a área: cada gravação é vN+1; a anterior só é apagada depois de o gerador comparar as respostas.
 4. Arquivo com dado sensível fica fora do git e é marcado `--sensivel` no manifesto.
 5. Não há perfil regulado padrão: o projeto declara o seu, ou "nenhum".
-6. Cada bloco termina com revisão adversarial em subagente isolado de modelo diferente (regra global, seção 1).
+6. Cada bloco termina com revisão proporcional à faixa: F1 e F2 com revisão adversarial em subagente isolado de modelo diferente; F0 com conferência executada (regra global, seção 1; ADR-132).
 
 ## 4. Onde está o detalhe
 

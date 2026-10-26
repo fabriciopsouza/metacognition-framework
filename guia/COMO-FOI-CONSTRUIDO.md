@@ -33,7 +33,7 @@ O que existe **de fato**, hoje:
 - **Roteamento dos papéis operacionais testado 33/33** (papéis A–F do conjunto de avaliação; o roteamento do `discovery` tem casos escritos mas em *design-time*, execução pendente — declarado, não inflado).
 - **Hooks de runtime com testes-canário que TENTAM furá-los** (effect-gate, compaction-gate, mission-gate) —
   e que falham o build se um caso passar errado.
-- **QA adversarial heterogêneo** (modelo de família diferente do que gerou) em cada bloco entregue.
+- **QA adversarial heterogêneo** (modelo de família diferente do que gerou) em cada bloco entregue das faixas F1 e F2 (ADR-132).
 - **Um caso real, regulado:** um recálculo com *baseline golden* (REQ-001..011 entregues), validado com
   **delta 0.000000** contra o baseline — ou seja, saída idêntica à referência aprovada, medida.
 

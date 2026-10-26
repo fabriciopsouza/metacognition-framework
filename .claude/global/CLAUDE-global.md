@@ -6,10 +6,23 @@
 
 ## 1. Revisão adversarial em subagente isolado: é pedido permanente
 
-- **O dono já pediu, e o pedido vale para sempre:** depois de todo bloco que **entrega ou altera**
-  código, documento, planilha, consulta ou configuração, rode a revisão adversarial no subagente
-  `qa-critic` (ferramenta Agent). Isso atende a qualquer instrução do tipo "não chame subagente
-  sem pedido do usuário": o pedido existe e é este.
+- **O dono já pediu, e o pedido vale para sempre:** todo bloco que **entrega ou altera** código,
+  documento, planilha, consulta ou configuração passa por revisão **proporcional à faixa** (ADR-132,
+  26/10/2026), declarada antes de executar. Isso atende a qualquer instrução do tipo "não chame
+  subagente sem pedido do usuário": o pedido existe e é este.
+  - **Gatilhos de F2** (basta um): ambiente regulado; efeito irreversível; número que vai a decisão;
+    dado de empresa saindo da máquina; permissão, segurança ou credencial; várias sessões, sistemas
+    ou pessoas; regra do framework, release ou ADR.
+  - **F2 complexo ou alto risco:** revisão crítica da especificação antes de executar, conferência
+    por script nas junções do meio e revisão adversarial do conjunto no fim, com o limite de rodadas
+    da seção 6.
+  - **F1 padrão:** nenhum gatilho de F2. Uma revisão `qa-critic` (ferramenta Agent) no fim, com o
+    critério de aceite e o que mudou; no máximo 2 rodadas; achado fora do critério vira nota.
+  - **F0 simples:** nenhum gatilho de F2, e a mudança é reversível, tem cópia do original e é
+    conferível por script. Fecha com CONFIRMADO/INFERIDO/DESCONHECIDO e a conferência executada, sem
+    subagente; a resposta final diz "F0" e o que foi conferido.
+  - O autor declara a faixa antes de executar; na dúvida, vale a mais alta, e o dono pode subir a
+    faixa. Declarar F0 ou F1 para fugir da revisão é revisar abaixo da faixa.
 - **Escada de modelos, relativa ao modelo padrão (ordem `haiku < sonnet < opus < fable`):** o
   **autor** roda sempre no modelo padrão (hoje Opus), nunca abaixo dele sem indisponibilidade
   declarada; a **1ª revisão** roda **um degrau abaixo do padrão** (hoje Sonnet), é obrigatória,
@@ -17,7 +30,7 @@
   autorização do dono. **Haiku nunca é autor**: só executa tarefa mecânica e repetitiva conferida
   por script. Fonte da escada:
   [{{FRAMEWORK_ROOT}}\tools\model-policy.json](file:///{{FRAMEWORK_ROOT_URL}}/tools/model-policy.json).
-- **Não rodar é que exige ordem explícita do dono**, dada na conversa atual.
+- **Revisar abaixo da faixa é que exige ordem explícita do dono**, dada na conversa atual.
 - **Autocrítica não substitui a revisão.** Revisar o próprio trabalho "inline" e chamar isso de QA
   adversarial é proibido.
 - **Se o subagente falhar**, relate o **erro real** devolvido pela ferramenta e **não** declare o
@@ -47,6 +60,10 @@
   limite e o que muda quando ele for atingido.
 - A revisão adversarial cobra: alternativa mais simples demonstrável é achado. Detalhe na skill
   `developer` do metacognition-framework.
+- **Cinco princípios de execução (ADR-132):** (1) pensar antes: premissa declarada, dúvida exposta,
+  sem inferir o que falta; (2) simplicidade primeiro; (3) mudança cirúrgica, presa à especificação;
+  (4) guiado por meta: critério de sucesso verificável antes de começar, e laço até verificar;
+  (5) não simplificar demais o que precisa de método: risco alto pede mais planejamento, não menos.
 
 ## 4. Estilo de resposta e de documento
 
@@ -96,6 +113,9 @@
     (padrão: 3 reprovações seguidas, ou 2 rodadas com os mesmos achados, param o laço e exigem
     redesenho ou decisão do dono). Registrar com `--override-dono "<frase literal, data>"`.
 - Comando de sessão nunca apaga nem adia item de plano.
+- **Sessão por fase (ADR-132):** com o desenho aprovado, cada bloco roda em sessão limpa a partir do
+  pacote de `python tools/handoff.py`, quando o dono não pedir para seguir na mesma sessão; compactar
+  com instrução do que preservar quando a sessão passar da metade da janela.
 - **Comando permanente `status`:** responder ANTES de continuar o trabalho, só com a **tabela
   checklist/cronograma** do plano ativo (bloco · **o que é**, uma frase do que o bloco entrega, também
   nos não iniciados · situação ✅/⏳/☐ · % de avanço · onde está · o que falta), seguida de 3 linhas:
