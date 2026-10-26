@@ -38,6 +38,8 @@ def registro_path():
 def ler(caminho=None):
     caminho = caminho or registro_path()
     linhas, ruins = [], 0
+    # Eventos "status ..." gravados em 25/10/2026 para desenhar o plano na trilha: o plano agora vem de
+    # painel.json, e esses eventos nao sao etapas; ficam fora da contagem (registro append-only, nao se apaga).
     if os.path.exists(caminho):
         with open(caminho, encoding="utf-8") as f:
             for ln in f:
@@ -57,6 +59,9 @@ def ler(caminho=None):
                         d[k] = str(d[k])
                 if not d.get("status"):
                     d["status"] = "?"
+                if (str(d.get("quem", "")).endswith("(status)") and str(d.get("etapa", "")).startswith("status ")
+                        and str(d.get("quando", "")).startswith("2026-10-25")):
+                    continue
                 linhas.append(d)
     return linhas, ruins
 
@@ -90,9 +95,20 @@ def _num(v):
     return v if isinstance(v, (int, float)) and not isinstance(v, bool) else 0
 
 
+VIAS_FORA = ("agy", "ollama", "codex")
+
+
+def _fora(ln):
+    """Etapa executada fora do Claude: via externa, ou Codex registrado como evento do Claude Code."""
+    quem = (ln.get("trabalhador") or ln.get("quem") or "").lower()
+    return ln.get("via") in VIAS_FORA or quem.startswith("codex")
+
+
 def agregar(linhas):
-    tot = {"etapas": len(linhas), "ok": 0, "ruins": 0, "em_curso": 0, "tok_in": 0, "tok_out": 0, "seg": 0.0}
-    por_trab = defaultdict(lambda: {"chamadas": 0, "tok_in": 0, "tok_out": 0, "ruins": 0, "familia": "", "via": ""})
+    tot = {"etapas": len(linhas), "ok": 0, "ruins": 0, "em_curso": 0, "tok_in": 0, "tok_out": 0, "seg": 0.0,
+           "poupado": 0, "fora": 0, "fora_sem_medida": 0}
+    por_trab = defaultdict(lambda: {"chamadas": 0, "tok_in": 0, "tok_out": 0, "ruins": 0, "familia": "", "via": "",
+                                    "fora": False, "sem_medida": 0, "poupado": 0})
     trabalhos = OrderedDict()
     # EM-CURSO so conta se for o registro mais recente daquela etapa: o fecho posterior o substitui
     ultimo = {}
@@ -114,6 +130,20 @@ def agregar(linhas):
         p["ruins"] += st in RUINS
         p["familia"] = ln.get("familia") or p["familia"]
         p["via"] = ln.get("via") or p["via"]
+        if _fora(ln):
+            p["fora"] = True
+        # conta etapa concluida (OK), nao linha: o EM-CURSO de abertura e o fecho OK da mesma etapa contam uma vez
+        if _fora(ln) and st == "OK":
+            # economia bruta: o que a IA externa processou e o Claude deixou de processar (ADR-131)
+            medido = ln.get("tokens_entrada") is not None or ln.get("tokens_saida") is not None
+            tot["fora"] += 1
+            if medido:
+                n = _num(ln.get("tokens_entrada")) + _num(ln.get("tokens_saida"))
+                tot["poupado"] += n
+                p["poupado"] += n  # a linha do trabalhador usa a mesma regra do card
+            else:
+                tot["fora_sem_medida"] += 1
+                p["sem_medida"] += 1
         trabalhos.setdefault(ln.get("trabalho") or "-", []).append(ln)
     return tot, dict(por_trab), trabalhos
 
@@ -167,6 +197,16 @@ box-shadow:0 0 0 4px color-mix(in srgb,var(--d,var(--acc)) 25%,transparent)}
 .res{margin-top:6px;font-size:13px;word-break:break-word}
 a{color:var(--acc)}.vazio{color:var(--mut);text-align:center;padding:40px}
 .alerta{border-color:var(--bad);color:var(--bad)}
+.kpi small+b+small{display:block;margin-top:2px}
+.secao{font-size:15px;margin:22px 0 10px}
+.tab{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:var(--mut);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em;
+padding:8px;border-bottom:1px solid var(--line)}td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+td .trilho{height:6px;margin-top:4px;min-width:60px}td code{font-size:12px;word-break:break-word}
+.grupos{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.g{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.duas{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:18px}.duas .painel{margin-bottom:18px}
+.painel p{margin:6px 0}.painel ul{margin:6px 0;padding-left:20px}details.painel>summary{cursor:pointer}
 @media (max-width:640px){.barra{grid-template-columns:1fr}.kpi b{font-size:22px}}
 """
 
@@ -196,33 +236,47 @@ def _cls(st):
     return "st-OK" if st == "OK" else ("st-EM-CURSO" if st == "EM-CURSO" else "st-RUIM")
 
 
-def html_pagina(linhas, ruins=0):
+def html_pagina(linhas, ruins=0, painel=None, erro_painel=None):
+    """Ordem pedida pelo dono (25/10/2026): cards de entrega, cards da trilha, plano (blocos, grupos, agora, com o
+    dono), linha do tempo das etapas e, por último, consumo por trabalhador."""
     e = html.escape
     tot, por_trab, trabalhos = agregar(linhas)
     agora = _dt.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    titulo = str(painel.get("titulo") or "") if painel else ""
+    titulo = titulo or "Trilha da orquestração"
+    meta_plano = f"{e(str(painel.get('meta')))} · " if painel and painel.get("meta") else ""
     p = [f"<!doctype html><html lang='pt-BR'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>"
-         f"<title>Trilha da orquestração</title><style>{CSS}</style></head><body><div class='wrap'>"
-         f"<header><div><h1><span>Trilha da orquestração</span></h1><div class='sub'>Cada etapa, quem executou, o resultado e o custo. "
+         f"<title>{e(titulo)}</title><style>{CSS}</style></head><body><div class='wrap'>"
+         f"<header><div><h1><span>{e(titulo)}</span></h1><div class='sub'>{meta_plano}Cada etapa, quem executou, o resultado e o custo. "
          f"Atualizado em {e(agora)} · recarrega a cada 20 s</div></div>"
          f"<div class='sub'>Fonte: {e(registro_path())}</div></header>"]
     if ruins:
         p.append(f"<div class='painel alerta'>{ruins} linha(s) corrompida(s) na trilha foram ignoradas na contagem.</div>")
+    if erro_painel:
+        p.append(f"<div class='painel alerta'>Plano do painel ilegível ({e(erro_painel)}); mostrando só a trilha.</div>")
+    topo, corpo = "", ""
+    if painel:
+        try:
+            topo, corpo = html_plano(painel)
+        except Exception as ex:  # plano fora do formato nunca derruba a pagina da trilha
+            p.append(f"<div class='painel alerta'>Plano do painel fora do formato ({e(type(ex).__name__)}); "
+                     "mostrando só a trilha.</div>")
+    nota = (f"economia bruta: o que IAs externas processaram em {tot['fora']} etapa(s); o custo do Claude para "
+            "preparar e ler não é descontado")
+    if tot["fora_sem_medida"]:
+        nota += f"; {tot['fora_sem_medida']} etapa(s) sem medição"
+    poupado = (f"<div class='kpi' style='--k:var(--ok)'><small>Tokens processados fora do Claude</small>"
+               f"<b>{_fmt(tot['poupado'])}</b><small>{e(nota)}</small></div>")
+    # o card fica na primeira linha: junto das entregas, ou abrindo a linha da trilha quando nao ha plano
+    p.append(topo.replace("<section class='kpis'>", "<section class='kpis'>" + poupado, 1) if topo else "")
     kp = [("Etapas", _fmt(tot["etapas"]), "var(--acc)"), ("Concluídas", _fmt(tot["ok"]), "var(--ok)"),
           ("Com problema", _fmt(tot["ruins"]), "var(--bad)"), ("Em curso", _fmt(tot["em_curso"]), "var(--run)"),
-          ("Tokens enviados", _fmt(tot["tok_in"]), "var(--acc2)"), ("Tokens recebidos", _fmt(tot["tok_out"]), "var(--acc2)")]
-    p.append("<section class='kpis'>" + "".join(
+          ("Tokens enviados (só etapas medidas)", _fmt(tot["tok_in"]), "var(--acc2)"),
+          ("Tokens recebidos (só etapas medidas)", _fmt(tot["tok_out"]), "var(--acc2)")]
+    p.append("<section class='kpis'>" + ("" if topo else poupado) + "".join(
         f"<div class='kpi' style='--k:{c}'><small>{e(n)}</small><b>{v}</b></div>" for n, v, c in kp) + "</section>")
-    if por_trab:
-        maior = max(x["tok_in"] + x["tok_out"] for x in por_trab.values()) or 1
-        p.append("<section class='painel'><h2>Consumo por trabalhador</h2>")
-        for nome, x in sorted(por_trab.items(), key=lambda kv: -(kv[1]["tok_in"] + kv[1]["tok_out"])):
-            w = round(100 * (x["tok_in"] + x["tok_out"]) / maior)
-            onde = "fora do Claude Code" if x["via"] in ("agy", "ollama") else ("portão de dado" if x["via"] == "portao" else "Claude Code")
-            p.append(f"<div class='barra'><div><strong>{e(nome)}</strong><div class='meta'>{e(onde)}</div></div>"
-                     f"<div class='trilho' role='img' aria-label='{w}% do maior consumo'><i style='width:{max(w, 2)}%'></i></div>"
-                     f"<div class='meta'>{x['chamadas']} etapa(s) · {_fmt(x['tok_in'] + x['tok_out'])} tokens"
-                     f"{' · ' + str(x['ruins']) + ' com problema' if x['ruins'] else ''}</div></div>")
-        p.append("</section>")
+    p.append(corpo)
+    p.append("<h2 class='secao'>Etapas por trabalho</h2>")
     p.append("<div class='ferr'><input id='q' type='search' placeholder='Filtrar por trabalho, etapa, modelo, texto da resposta' aria-label='Filtrar'>"
              "<button data-f='todos' aria-pressed='true'>Todas</button><button data-f='ok' aria-pressed='false'>Concluídas</button>"
              "<button data-f='ruim' aria-pressed='false'>Com problema</button><button data-f='curso' aria-pressed='false'>Em curso</button></div>")
@@ -262,8 +316,114 @@ def html_pagina(linhas, ruins=0):
                      f"<div class='meta'>{e(quem)} · {e(' · '.join(meta))}{link}</div>"
                      + (f"<div class='res'>{e(x['resumo'])}</div>" if x.get("resumo") else "") + "</li>")
         p.append("</ol></details>")
+    if por_trab:
+        maior = max(x["tok_in"] + x["tok_out"] for x in por_trab.values()) or 1
+        p.append("<section class='painel'><h2>Consumo por trabalhador</h2>")
+        for nome, x in sorted(por_trab.items(), key=lambda kv: -(kv[1]["tok_in"] + kv[1]["tok_out"])):
+            w = round(100 * (x["tok_in"] + x["tok_out"]) / maior)
+            onde = "fora do Claude Code" if x["fora"] else ("portão de dado" if x["via"] == "portao" else "Claude Code")
+            poup = ""
+            if x["fora"]:
+                poup = f" · {_fmt(x['poupado'])} processados fora do Claude (etapas OK)"
+                if x["sem_medida"]:
+                    poup += f" · {x['sem_medida']} sem medição"
+            p.append(f"<div class='barra'><div><strong>{e(nome)}</strong><div class='meta'>{e(onde)}</div></div>"
+                     f"<div class='trilho' role='img' aria-label='{w}% do maior consumo'><i style='width:{max(w, 2)}%'></i></div>"
+                     f"<div class='meta'>{x['chamadas']} etapa(s) · {_fmt(x['tok_in'] + x['tok_out'])} tokens"
+                     f"{' · ' + str(x['ruins']) + ' com problema' if x['ruins'] else ''}{e(poup)}</div></div>")
+        p.append("</section>")
     p.append(f"</div><script>{JS}</script></body></html>")
     return "".join(p)
+
+
+def painel_path(caminho_registro=None):
+    return os.environ.get("TRABALHADOR_PAINEL") or os.path.join(
+        os.path.dirname(caminho_registro or registro_path()), "painel.json")
+
+
+def ler_painel(caminho=None):
+    """Plano do status, opcional. Devolve (dados, erro): sem arquivo -> (None, None); arquivo invalido ->
+    (None, motivo), e a pagina avisa sem cair. Formato (todas as chaves opcionais):
+      titulo, meta, onde, falta, proximo: texto
+      entregas: [[rotulo, valor, nota], ...]            cards do topo
+      blocos:   [[bloco, o que e, situacao, pct 0-100, onde esta, o que falta], ...]
+                situacao: "ok" (concluido), "wip" (em andamento), "todo" (nao iniciado); outro valor = "todo"
+      grupos:   [[grupo, situacao em texto], ...]
+      comDono, fontes: [texto, ...]"""
+    caminho = caminho or painel_path()
+    if not os.path.exists(caminho):
+        return None, None
+    try:
+        with open(caminho, encoding="utf-8-sig") as f:
+            d = json.load(f)
+    except (OSError, ValueError, RecursionError) as ex:
+        return None, f"{type(ex).__name__}: {ex}"
+    if not isinstance(d, dict):
+        return None, "o painel tem de ser um objeto JSON"
+    return d, None
+
+
+def _lista(v):
+    return [x for x in v if isinstance(x, (list, tuple))] if isinstance(v, list) else []
+
+
+SIT = {"ok": ("concluído", "var(--ok)"), "wip": ("em andamento", "var(--run)"), "todo": ("não iniciado", "var(--mut)")}
+
+
+def _pct(v):
+    try:
+        return max(0, min(100, round(float(v))))
+    except (TypeError, ValueError, OverflowError):
+        return 0
+
+
+def html_plano(d):
+    """Cards de entrega e blocos do plano; todo texto escapado."""
+    e = lambda v: html.escape("" if v is None else str(v))  # noqa: E731
+    cores = ("var(--ok)", "var(--run)", "var(--acc)", "var(--bad)", "var(--acc2)")
+    cards = _lista(d.get("entregas"))
+    topo = ""
+    if cards:
+        topo = "<section class='kpis'>" + "".join(
+            f"<div class='kpi' style='--k:{cores[i % len(cores)]}'><small>{e(c[0] if len(c) > 0 else '')}</small>"
+            f"<b>{e(c[1] if len(c) > 1 else '')}</b><small>{e(c[2] if len(c) > 2 else '')}</small></div>"
+            for i, c in enumerate(cards)) + "</section>"
+    corpo = []
+    blocos = _lista(d.get("blocos"))
+    if blocos:
+        corpo.append("<section class='painel'><h2>Blocos do plano</h2><div class='tab'><table><thead><tr><th>Bloco</th>"
+                     "<th>O que é</th><th>Situação</th><th>%</th><th>Onde está</th><th>O que falta</th></tr></thead><tbody>")
+        for b in blocos:
+            b = list(b) + [""] * (6 - len(b))
+            nome, cor = SIT.get(b[2] if isinstance(b[2], str) else "", SIT["todo"])
+            p = _pct(b[3])
+            corpo.append(f"<tr><td><strong>{e(b[0])}</strong></td><td>{e(b[1])}</td>"
+                         f"<td><span class='chip' style='color:{cor}'>{nome}</span></td>"
+                         f"<td>{p}%<div class='trilho' aria-hidden='true'><i style='width:{p}%'></i></div></td>"
+                         f"<td><code>{e(b[4])}</code></td><td>{e(b[5])}</td></tr>")
+        corpo.append("</tbody></table></div></section>")
+    grupos = _lista(d.get("grupos"))
+    if grupos:
+        corpo.append("<section class='painel'><h2>Entregas por grupo</h2><div class='grupos'>" + "".join(
+            f"<div class='g'><strong>{e(g[0] if g else '')}</strong><div class='meta'>{e(g[1] if len(g) > 1 else '')}</div></div>"
+            for g in grupos) + "</div></section>")
+    agora = [(r, d.get(k)) for r, k in (("Onde estamos", "onde"), ("O que falta", "falta"), ("Próximo passo", "proximo"))
+             if d.get(k)]
+    dono = [x for x in d.get("comDono", []) if x] if isinstance(d.get("comDono"), list) else []
+    if agora or dono:
+        corpo.append("<section class='duas'>")
+        if agora:
+            corpo.append("<div class='painel'><h2>Agora</h2>" + "".join(
+                f"<p><strong>{e(r)}:</strong> {e(v)}</p>" for r, v in agora) + "</div>")
+        if dono:
+            corpo.append("<div class='painel'><h2>Com o dono</h2><ul>" + "".join(f"<li>{e(x)}</li>" for x in dono)
+                         + "</ul></div>")
+        corpo.append("</section>")
+    fontes = [x for x in d.get("fontes", []) if x] if isinstance(d.get("fontes"), list) else []
+    if fontes:
+        corpo.append("<details class='painel'><summary><strong>Fontes conferidas</strong></summary><ul>"
+                     + "".join(f"<li>{e(x)}</li>" for x in fontes) + "</ul></details>")
+    return topo, "".join(corpo)
 
 
 def monitor_path(caminho_registro=None):
@@ -272,11 +432,12 @@ def monitor_path(caminho_registro=None):
 
 def gerar(caminho_registro=None):
     linhas, ruins = ler(caminho_registro)
+    painel, erro_painel = ler_painel(painel_path(caminho_registro))
     destino = monitor_path(caminho_registro)
     os.makedirs(os.path.dirname(destino), exist_ok=True)
     tmp = destino + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
-        f.write(html_pagina(linhas, ruins))
+        f.write(html_pagina(linhas, ruins, painel, erro_painel))
     os.replace(tmp, destino)  # troca atomica: o navegador nunca le pagina pela metade
     return destino
 

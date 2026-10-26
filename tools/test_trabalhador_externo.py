@@ -56,6 +56,7 @@ def run():
     tmp = tempfile.mkdtemp(prefix="test-trab-")
     os.environ["TRABALHADOR_REGISTRO"] = os.path.join(tmp, "registro.jsonl")
     os.environ["TRABALHADOR_PEDIDOS"] = os.path.join(tmp, "pedidos")  # [QA r3 A5] nao herda de fora
+    os.environ.pop("TRABALHADOR_PAINEL", None)  # o teste grava e apaga o painel: nunca o painel real do dono
 
     def vias(f):
         return {"agy": f, "ollama": f}
@@ -195,6 +196,73 @@ def run():
     pagina = open(mon.gerar(), encoding="utf-8").read()
     if ruins_lidas != 1 or "corrompida" not in pagina:
         fails.append(f"linha corrompida tem de ser contada e avisada na pagina (contadas={ruins_lidas})")
+
+    # (14b) painel do plano: escapado, na ordem pedida pelo dono, e arquivo ilegivel nao derruba a pagina
+    pp = mon.painel_path()
+    with open(pp, "w", encoding="utf-8") as fh:
+        json.dump({"titulo": "Plano <i>x</i>", "meta": "<u>m</u>", "entregas": [["Entregas feitas", "3", "de 6"]],
+                   "blocos": [["E0-3", "<script>alert(2)</script>", "wip", 75, "branch", "QA"],
+                              ["x", "y", ["ok"], float("inf"), "z", "w"]],
+                   "grupos": [["<s>g</s>", "<s>s</s>"]], "onde": "<em>o</em>", "falta": "<em>f</em>",
+                   "comDono": ["decidir <b>algo</b>"], "fontes": ["<q>fonte</q>"]}, fh)
+    pagina = open(mon.gerar(), encoding="utf-8").read()
+    if any(t in pagina for t in ("<script>alert(2)", "<b>algo</b>", "<i>x</i>", "<u>m</u>", "<s>g</s>", "<s>s</s>",
+                                 "<em>o</em>", "<em>f</em>", "<q>fonte</q>")):
+        fails.append("o painel do plano injetou texto sem escapar (XSS)")
+    if "Blocos do plano" not in pagina:
+        fails.append("situacao fora do formato ou pct infinito derrubou o plano")
+    ordem = [pagina.find(s) for s in ("Entregas feitas", "Etapas</small>", "Blocos do plano", "Etapas por trabalho",
+                                      "Consumo por trabalhador")]
+    if -1 in ordem or ordem != sorted(ordem):
+        fails.append(f"ordem do painel errada (posicoes {ordem}): entregas, trilha, plano, etapas, consumo")
+    with open(pp, "w", encoding="utf-8") as fh:
+        fh.write("{quebrado")
+    pagina = open(mon.gerar(), encoding="utf-8").read()
+    if "ilegível" not in pagina or "Consumo por trabalhador" not in pagina:
+        fails.append("painel ilegivel tem de ser avisado sem derrubar a trilha")
+    os.remove(pp)
+
+    # (14c) tokens poupados do Claude: so etapa externa sem falha conta; Codex sem tokens vira "sem medicao"
+    poup = [{"trabalho": "p", "etapa": "a", "via": "agy", "trabalhador": "gemini-pro", "status": "OK",
+             "tokens_entrada": 100, "tokens_saida": 20},
+            {"trabalho": "p", "etapa": "b", "via": "agy", "trabalhador": "gemini-pro", "status": "FALHOU",
+             "tokens_entrada": 999, "tokens_saida": 999},
+            {"trabalho": "p", "etapa": "c", "via": "claude-code", "quem": "autor Opus", "status": "OK",
+             "tokens_entrada": 5000, "tokens_saida": 5000},
+            {"trabalho": "p", "etapa": "d", "via": "claude-code", "quem": "codex gpt (exec)", "status": "EM-CURSO"},
+            {"trabalho": "p", "etapa": "d", "via": "claude-code", "quem": "codex gpt (exec)", "status": "OK"},
+            {"trabalho": "p", "etapa": "e", "via": "ollama", "trabalhador": "so-falhas", "status": "FALHOU",
+             "tokens_entrada": 5}]
+    tp, pt, _ = mon.agregar(poup)
+    if (tp["poupado"], tp["fora"], tp["fora_sem_medida"]) != (120, 2, 1):
+        fails.append(f"tokens poupados errados: {tp['poupado']}, fora {tp['fora']}, sem medida {tp['fora_sem_medida']}"
+                     "; esperado 120, 2, 1 (abertura EM-CURSO e fecho OK da mesma etapa contam uma vez)")
+    if not pt["so-falhas"]["fora"]:
+        fails.append("trabalhador externo so com falhas aparece como Claude Code")
+    if pt["so-falhas"]["poupado"] != 0 or pt["gemini-pro"]["poupado"] != 120:
+        fails.append("linha do trabalhador soma tokens de chamada que falhou (diverge do card)")
+    pag_poup = mon.html_pagina(poup)
+    if "Tokens processados fora do Claude" not in pag_poup:
+        fails.append("card de tokens processados fora do Claude ausente da pagina")
+    if "0 processados fora do Claude (etapas OK)" not in pag_poup:
+        fails.append("linha na tela do trabalhador so com falhas nao mostra 0 processados (usa tokens de falha)")
+    # eventos "status ..." antigos nao contam como etapa
+    antes = len(mon.ler()[0])
+    with open(os.environ["TRABALHADOR_REGISTRO"], "a", encoding="utf-8") as fh:
+        fh.write(json.dumps({"quando": "2026-10-25T20:20:00-03:00", "trabalho": "p", "etapa": "status E0-4",
+                             "quem": "PMO (status)", "status": "EM-CURSO"}) + "\n")
+        fh.write(json.dumps({"quando": "2026-11-02T10:00:00-03:00", "trabalho": "p", "etapa": "status real",
+                             "quem": "PMO (status)", "status": "OK"}) + "\n")
+    antes += 1  # evento com outra data e etapa real: conta
+    # painel salvo com BOM (padrao do PowerShell 5) e lido
+    with open(mon.painel_path(), "w", encoding="utf-8-sig") as fh:
+        json.dump({"blocos": [["b", "o", "ok", 100, "w", "f"]]}, fh)
+    if "Blocos do plano" not in open(mon.gerar(), encoding="utf-8").read():
+        fails.append("painel com BOM virou ilegivel")
+    os.remove(mon.painel_path())
+    obtido = len(mon.ler()[0])
+    if obtido != antes:
+        fails.append(f"descarte de eventos de status errou a contagem (esperado {antes}, obtido {obtido})")
 
     # (15) monitor quebrado nunca derruba a chamada
     original = mon.gerar
