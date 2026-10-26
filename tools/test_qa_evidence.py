@@ -366,9 +366,77 @@ def conferir_carimbo_de_blobs():
     return falhas
 
 
+def conferir_metricas_aceitas_pelo_gate():
+    """Campo que o qa_evidence aceita tem de ser conhecido pelo squad_gate (ADR-132, B2).
+    Sem isto, o primeiro veredito com `tokens` travou o commit do proprio B2. (falhas)"""
+    import squad_gate
+    v = {"bloco": "x", "passou": True, "recomendacao": "aprovar", "problemas": [],
+         "tokens": 10, "duracao_s": 1.5,
+         "atestacao": {"provas": [{"rodada": 1, "tokens": 10, "duracao_s": 1.5}]}}
+    abertos = squad_gate.achados_bloqueantes_abertos(v)
+    return [f"squad_gate barra veredito com metricas validas: {a.get('descricao', a)}"
+            for a in abertos]
+
+
+def conferir_metricas():
+    """Tokens e duracao por rodada (ADR-132, B2): opcionais, validados, somados no --list e
+    preservados na cadeia quando o bloco e' regravado. (falhas)"""
+    import io
+    import json
+    import tempfile
+    import contextlib
+    import qa_evidence
+
+    falhas = []
+    antes = qa_evidence.QA_DIR
+    qa_evidence.QA_DIR = tempfile.mkdtemp(prefix="metricas-")
+    try:
+        base = dict(bloco="b-metricas", passou=False, recomendacao="corrigir", rodada=1,
+                    data="2026-10-26T00:00:00Z", escopo_paths=["a.py"], problemas=[],
+                    verificacoes_executadas=["rodou"])
+        ruins = (
+            ({"tokens": "100"}, "tokens string"), ({"tokens": -1}, "tokens negativo"),
+            ({"tokens": 1.5}, "tokens fracionario"), ({"tokens": True}, "tokens bool"),
+            ({"duracao_s": "10"}, "duracao string"), ({"duracao_s": -0.1}, "duracao negativa"),
+            ({"duracao_s": float("nan")}, "duracao NaN"), ({"duracao_s": False}, "duracao bool"),
+            ({"atestacao": {"agentId": "a", "provas": [{"agentId": "b", "tokens": "x"}]}},
+             "tokens string numa prova"),
+            ({"atestacao": {"agentId": "a", "provas": [{"agentId": "b", "duracao_s": -5}]}},
+             "duracao negativa numa prova"),
+        )
+        for extra, porque in ruins:
+            try:
+                qa_evidence.write_artifact(dict(base, bloco="b-ruim", **extra))
+                falhas.append(f"metrica invalida aceita ({porque})")
+            except ValueError:
+                pass
+        # antigo (sem metricas) continua valido
+        qa_evidence.write_artifact(dict(base, bloco="b-antigo"))
+        # rodada 1 com 1000 + prova de 500; rodada 2 com 200 e duracao fracionaria
+        qa_evidence.write_artifact(dict(base, tokens=1000, duracao_s=12.5, atestacao={
+            "agentId": "a", "provas": [{"agentId": "b", "tokens": 500, "duracao_s": 3}]}))
+        jp, _ = qa_evidence.write_artifact(dict(base, rodada=2, recomendacao="aprovar",
+                                                passou=True, tokens=200, duracao_s=0))
+        cadeia = json.load(open(jp, encoding="utf-8")).get("substitui") or []
+        if [a.get("tokens") for a in cadeia] != [1500]:
+            falhas.append(f"regravar perdeu os tokens da rodada 1: {[a.get('tokens') for a in cadeia]}")
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            qa_evidence.main(["--list"])
+        linhas = {l.split(":", 1)[0]: l for l in buf.getvalue().splitlines()}
+        if "tokens=1700" not in linhas.get("b-metricas.json", ""):
+            falhas.append(f"--list sem a soma 1700: {linhas.get('b-metricas.json')!r}")
+        if "tokens=" in linhas.get("b-antigo.json", "tokens="):
+            falhas.append("--list inventou tokens para veredito sem metrica")
+    finally:
+        qa_evidence.QA_DIR = antes
+    return falhas
+
+
 def main():
     falhas_cadeia = (conferir_cadeia() + conferir_substitui_malformado()
-                     + conferir_carimbo_de_blobs())
+                     + conferir_carimbo_de_blobs() + conferir_metricas()
+                     + conferir_metricas_aceitas_pelo_gate())
     for f in falhas_cadeia:
         print(f"  FAIL cadeia do ledger: {f}")
     if falhas_cadeia:

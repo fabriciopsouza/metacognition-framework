@@ -46,7 +46,7 @@ Porta (b): reduz tokens e latência em F0 e corta laço em F1, editando regra e 
 
 ## Limites
 - **A faixa é declarada pelo próprio autor, e a F0 não tem revisor.** A defesa até haver classificador por script é parcial: critério verificável, F0 declarada na resposta final com o que foi conferido (o dono vê), e o process-critic do bloco seguinte que a encontrar trata F0 indevida como achado. Não há freio para F0 indevida isolada que ninguém revisite.
-- **"69% dos blocos em 1 ou 2 rodadas" é subestimado** (relatório, D5: blocos sem o campo `rodada` contam como 1). Classificador automático, busca do mesmo erro em outros arquivos antes do revisor e registro de tokens por rodada ficam no bloco B2 do plano (pesquisa, seção 7).
+- **"69% dos blocos em 1 ou 2 rodadas" é subestimado** (relatório, D5: blocos sem o campo `rodada` contam como 1). O bloco B2 (26/10/2026) entregou os três mecanismos: classificador de faixa em `tools/risk_score.py` (`--gatilho`, `--nenhum-gatilho`, `--f0`; nomes na constante `GATILHOS_F2`), busca do mesmo texto em outros arquivos antes do revisor em `tools/varrer_irmaos.py`, e `tokens`/`duracao_s` por rodada em `tools/qa_evidence.py`. O classificador confere a regra, não a declaração: gatilho que o autor omite continua sendo F0 indevida.
 - **"Máx. 2 rodadas" em F1 é proposta**, sem estudo de revisão de código por LLM que a fixe; recalibrar quando houver tokens por rodada.
 - A heterogeneidade (revisor de outra família) continua pelo ADR-131 e pela escada; este ADR não muda o revisor.
 
