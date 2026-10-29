@@ -125,3 +125,43 @@ Declarar, por capacidade: `{parte determinística | parte prosa-pela-porta | fal
 
 **Test cases obrigatórios** para fórmula/cálculo crítico: tabular Normal / Zero /
 NULL / Negativo / Extremo com input, esperado, resultado, status.
+
+## Parte C — Checklist de execução (padrão do dono, 29/10/2026)
+
+Vale para todo checklist que pessoas executam num sistema (cadastro, teste, implantação, rotina), em qualquer projeto
+e repositório. Molde aprovado pelo dono em 29/10/2026: "CLAROS, OBJETIVOS, DIRETOS, PRECISOS e explicam só o
+necessário".
+
+**Formato**
+1. Planilha xlsx, gerada por script versionado no repositório. Nunca checklist em md para quem executa.
+2. Abas, nesta ordem:
+   - **Painel**: "onde parei", erros em aberto e, por parte, feitos, total, % e erros, tudo por fórmula;
+   - **Leia antes**: o que você vai fazer em 3 passos; regras numeradas; palavras usadas, uma linha cada; como
+     marcar (erro = Status Erro e o texto exato da mensagem; não se aplica = Pulado, com o motivo; passo que não
+     serviu = Substituído, sem apagar a linha, e o Painel o desconta do total; print com o nome
+     `S_<Nº>_<item>_<hora>.png`);
+   - **Roteiro**: colunas Parte · Nº · Faça · Onde no runbook · Se der errado · Status · Data/hora · Mensagem de erro
+     ou observação · Resposta do dono. O Status é uma lista (Pendente, Feito, Erro, Pulado, Substituído), com cor por
+     status, filtro e cabeçalho congelado;
+   - **Copiar e colar**: listas e valores para colar no sistema, um por linha, como texto, com o "como colar" no
+     topo. Vale para toda alteração em massa;
+   - **Referência**: os valores esperados;
+   - **Links**: o que anotar durante a execução;
+   - uma aba por runbook usado;
+   - **Histórico**: Versão/data · O que mudou · O que continua valendo.
+
+**Texto de cada passo**
+3. Uma linha do Roteiro é uma ação. Começa pela AÇÃO EM MAIÚSCULAS (ex.: "GUARDAR OS VALORES DE HOJE."), segue o
+   clique a clique numerado (transação > aba > campo como aparece na tela = valor) e termina em como saber que deu certo.
+4. O nome técnico vai só entre parênteses, depois do nome da tela. Termo novo ganha meia frase, uma vez, na aba Leia antes.
+5. "Se der errado" diz a ação: parar ou seguir, não repetir, copiar o texto exato, avisar quem.
+6. Comportamento ainda não visto no sistema leva "(INFERIDO)" ou "a conferir na tela".
+
+**Segurança**
+7. Antes de alterar: guardar os valores de hoje (exportar), alterar 1 item de teste, conferir, e só então o resto.
+8. Alteração em massa com a lista vazia não se executa: há transações que, sem filtro, pegam tudo.
+9. Versão nova tem nome novo. O gerador recusa sobrescrever planilha já marcada.
+
+**Entrega**
+10. Uma versão por entrega. A revisão (QA isolado, lendo como quem executa sozinho, sem ninguém ao lado) vem antes
+    de enviar.

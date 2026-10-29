@@ -1,0 +1,95 @@
+{
+  "bloco": "padrao-checklist-execucao",
+  "papel": "qa_critic",
+  "rodada": 1,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar",
+  "sha_revisado": "5fe68d6b40b423787387a4fe9342f38145dadb73",
+  "resumo": "Parte C do output-format (padrao de checklist de execucao, ordem do dono 29/10) e ponteiros na regra global e no prompt web. R1 PASS com ressalvas nao bloqueantes, todas aplicadas.",
+  "verificacoes_executadas": [
+    "Parte C x molde v2 lido do xlsx e do gerador",
+    "agnosticismo (isolamento entre empresas)",
+    "ponteiros regra global e prompt web",
+    "conflito com Partes A e B",
+    "CHANGELOG x diff",
+    "canarios escrita e web PASS (autor)"
+  ],
+  "problemas": [
+    {
+      "severidade": "baixo",
+      "local": "_shared/output-format/SKILL.md",
+      "descricao": "lacunas do molde: Substituido sem apagar linha, nome do print, erros em aberto, colunas do Historico",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "baixo",
+      "local": "PROMPT-CHAT-WEB-v4.5.md",
+      "descricao": "linha longa e sem alternativa a arquivo no chat",
+      "estado": "corrigido"
+    },
+    {
+      "severidade": "baixo",
+      "local": "_shared/output-format/SKILL.md",
+      "descricao": "item 10 com justificativa no lugar de regra",
+      "estado": "corrigido"
+    }
+  ],
+  "escopo_paths": [
+    "_shared/output-format/SKILL.md",
+    ".claude/global/CLAUDE-global.md",
+    "PROMPT-CHAT-WEB-v4.5.md",
+    "CHANGELOG.md",
+    "_meta/qa/padrao-checklist-execucao.json",
+    "_meta/qa/padrao-checklist-execucao.md"
+  ],
+  "atestacao": {
+    "agentId": "ae671a1ef29fd962c",
+    "prova_transcript": "sha256:51d9b03c7903d6f57b1597cd5084b8b7ce8d6f3965e16835c69010e74925917a",
+    "modelo": "claude-sonnet-5-5",
+    "modelo_autor": "claude-opus-5-5",
+    "isolamento": "subagente qa-critic isolado, read-only por instrucao; prova = sha256 do resultado devolvido transcrito em scratchpad/qa-padrao-r1.txt",
+    "provas": [
+      {
+        "agentId": "ae671a1ef29fd962c",
+        "prova_transcript": "sha256:51d9b03c7903d6f57b1597cd5084b8b7ce8d6f3965e16835c69010e74925917a",
+        "rodada": 1,
+        "tokens": 33379,
+        "duracao_s": 32
+      }
+    ]
+  },
+  "tokens": 33379,
+  "duracao_s": 32,
+  "postura": {
+    "adversarial": "leu o xlsx v2 e o gerador para comparar aba a aba; achou 4 lacunas do molde"
+  },
+  "data": "2026-10-29",
+  "blobs_revisados": {
+    "_shared/output-format/SKILL.md": "04312a87097ac2a7e5b3d81236e3602819647429",
+    ".claude/global/CLAUDE-global.md": "427d8dbbf670f67ab2fcbe996fbd2b13f6ca6c8f",
+    "PROMPT-CHAT-WEB-v4.5.md": "6eef376b2f640454a1ad387b5591406e9c2f5b0b",
+    "CHANGELOG.md": "a9d0206d3e40b1c4ebf5b9591f5e76acd9c90682"
+  },
+  "substitui": [
+    {
+      "rodada": 1,
+      "data": "2026-10-29",
+      "recomendacao": "aprovar_com_ressalvas",
+      "sha_revisado": "5fe68d6b40b423787387a4fe9342f38145dadb73",
+      "agentId": "ae671a1ef29fd962c",
+      "escopo_paths": [
+        "_shared/output-format/SKILL.md",
+        ".claude/global/CLAUDE-global.md",
+        "PROMPT-CHAT-WEB-v4.5.md",
+        "CHANGELOG.md"
+      ],
+      "achados_fp": [
+        "BAIXO|_shared/output-format/skill.md",
+        "BAIXO|prompt-chat-web-v4.5.md"
+      ],
+      "reinicio": false,
+      "tokens": 66758
+    }
+  ]
+}

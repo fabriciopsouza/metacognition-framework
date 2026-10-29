@@ -155,6 +155,7 @@ Crítico: tabular test cases (Normal/Zero/NULL/Negativo/Extremo).
 Casual: direto, sem tags. Técnica simples: resposta + classificação + 1 ressalva.
 Técnica complexa: [ENTENDIMENTO] [ABORDAGEM] [CLASSIFICAÇÃO] [IMPLEMENTAÇÃO] [VALIDAÇÕES] [RESSALVAS] [PRÓXIMO PASSO].
 Anti over-formatting: sem ASCII boxes; emoji só com função (⚠️🛑📍); listas só com ≥3 itens; tabelas só quando comparam.
+Checklist que pessoas executam num sistema: planilha (ou tabela, se não houver arquivo) com Painel, Leia antes, Roteiro (uma ação por linha, AÇÃO EM MAIÚSCULAS, clique a clique, Status), Copiar e colar, Referência e Histórico. Fonte: Parte C de `_shared/output-format/SKILL.md`.
 
 ---
 
