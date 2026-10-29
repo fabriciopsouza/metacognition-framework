@@ -75,6 +75,10 @@
   ("★ Insight" e semelhantes): **esta regra prevalece sobre o estilo de saída explicativo ou de
   aprendizagem do editor.**
 - Toda referência a arquivo com caminho absoluto; instrução com o comando exato.
+- **Checklist que pessoas executam (29/10/2026):** sempre xlsx no molde da Parte C de
+  `_shared/output-format/SKILL.md` do metacognition-framework (Painel, Leia antes, Roteiro com Status,
+  Copiar e colar, Referência, Links, runbooks, Histórico); cada passo começa pela AÇÃO EM MAIÚSCULAS e
+  segue clique a clique; claro, objetivo, direto, preciso, só o necessário. Vale em todo repositório.
 - **Toda resposta é executiva (27/09/2026):** overview, tabela ou checklist, ações encadeadas e o que o
   dono precisa fazer. Detalhe só se pedido. **Pedido ao dono só no fim da resposta final**, nunca no
   meio do processamento: pare e espere, ou termine e peça no fim.

@@ -5,6 +5,11 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### Padrão de checklist de execução (29/10/2026)
+
+- Motivo: ordem do dono (29/10/2026), sobre o checklist v2 da simulação do MRP: "A maneira que vc fez o check list deve ser como TODOS os check lists, de todos os repos, devem ser feitos daqui em diante. CLAROS, OBJETIVOS, DIRETOS, PRECISOS e explicam so o necessario." A v1 do mesmo dia tinha sido recusada pelo dono ("não está claro e objetivo"). [CONFIRMADO]
+- `_shared/output-format/SKILL.md`, Parte C nova (fonte única): formato xlsx e abas, texto de cada passo (AÇÃO EM MAIÚSCULAS, clique a clique, como saber que deu certo), segurança (guardar os valores de hoje, 1 item de teste, lista vazia não executa) e entrega (uma versão, QA antes de enviar). Ponteiros na regra global, seção 4 (`.claude/global/CLAUDE-global.md`), e no prompt do chat web, seção 7. [CONFIRMADO]
+
 ### ADR-132, bloco B5 — faixas de QA no prompt de chat web (26/10/2026)
 
 - Motivo: pedido do dono (26/10/2026): "se tarefa simples, método framework web adaptado com estas mudanças que fizemos se fizer sentido". O prompt web ainda mandava QA adversarial em toda entrega. [CONFIRMADO]
