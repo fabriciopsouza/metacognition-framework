@@ -1,7 +1,7 @@
 <!-- GERADO por tools/build_capabilities.py a partir de capabilities.json — NAO editar a mao -->
 # CAPABILITIES — indice de capacidades (nivel 1: id + title)
 
-> **116 capacidades** — 104 ✅ PROVIDES · 12 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
+> **117 capacidades** — 105 ✅ PROVIDES · 12 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
 > **Como usar (file-first, boot):** leia esta lista p/ achar o `id`; o registro completo (mecanismo · canario · ADR · doc) vem por **`python tools/build_capabilities.py --show <id>`** ou `grep -A8 '"<id>"' capabilities.json`. Nao reexplore o repo antes disto.
 > **Manutencao:** feature nova -> +1 registro em `capabilities.json` + `python tools/build_capabilities.py`. Canario barra canario orfao (cobertura).
 
@@ -122,6 +122,7 @@
 - ✅ `sycophancy-canary` — Canario adversarial anti-sicofancia (nao concordar para agradar)
 - ✅ `trabalhador-externo` — Trabalhador externo orquestrado: outra familia ou modelo local por programa, com portao de dado fail-closed por classe do repositorio, saida validada e trilha de auditoria com monitor
 - ✅ `trabalhos-registro` — Registro persistente de trabalhos: handoff sobrevive a sessao e e oferecido ate ser tratado
+- ✅ `ux-gate` — UX de interface: skill ux-design (perfis, revisao) e gate por medida (caracteres por linha, alinhamento, rolagem, palavras por elemento, acao sem controle)
 - 🟡 `validation-reporting` — Metodo de validacao ponto a ponto com reporte legivel por humano que decide
 - ✅ `veredito-fail-closed` — Veredito aprovativo com achado bloqueante nao resolvido e' rejeitado pelo gate
 - ✅ `verificador-do-plano` — Verificador do plano no arquivo unico: secao obrigatoria, decisao pendente sem quem age, tarefa feita sem prova, % que nao bate, mapa de impacto sem situacao, aceite antes da aprovacao

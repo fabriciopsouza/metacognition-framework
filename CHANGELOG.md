@@ -5,6 +5,18 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-133 — UX de interface: perfis, revisão e gate por medida (30/10/2026)
+
+- Motivo: decisão do dono (30/10/2026, "A" e "a") sobre a pesquisa `2026-10-30_skills-design-ux` (v3): telas de
+  agente saíam com texto longo, desalinhamento, ação sem botão e "cara de IA"; faltava revisão e gate depois de construir.
+- `.agent/skills/ux-design/SKILL.md` (nova, 1.0.0): 5 perfis, plano de tokens revisado antes do código, traços de
+  "cara de IA" (adaptados da Anthropic, Apache-2.0), lente de interface (Vercel, MIT), leis de texto e roteiro do gate.
+- `.agent/skills/qa-critic/SKILL.md` 1.5.0: item de UX no checklist mínimo.
+- `tools/ux_gate.py` e canário `tools/test_ux_gate.py`: caracteres por linha, desalinhamento, rolagem em 360 e
+  1280 px, palavras por tipo e ação sem controle; `capabilities.json` com `ux-gate` (fail-closed, mutação declarada).
+- Prova: canário PASS; mutantes do gate contra o canário 31 de 32 mortos (o vivo é a guarda `__main__`, equivalente).
+  Limites: perfis e limites de título e legenda INFERIDO; extrator Playwright fora dos canários (sem navegador).
+
 ### Padrão de checklist de execução (29/10/2026)
 
 - Motivo: ordem do dono (29/10/2026), sobre o checklist v2 da simulação do MRP: "A maneira que vc fez o check list deve ser como TODOS os check lists, de todos os repos, devem ser feitos daqui em diante. CLAROS, OBJETIVOS, DIRETOS, PRECISOS e explicam so o necessario." A v1 do mesmo dia tinha sido recusada pelo dono ("não está claro e objetivo"). [CONFIRMADO]

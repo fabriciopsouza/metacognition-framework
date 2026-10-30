@@ -1,0 +1,109 @@
+{
+  "bloco": "adr-133-ux-design",
+  "rodada": 4,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "autor_modelo": "claude-opus-5-5",
+  "critico_modelo": "claude-sonnet-5-5",
+  "heterogeneo": true,
+  "atestacao": {
+    "agentId": "aa8e95976bd2c6747",
+    "modelo": "claude-sonnet-5-5",
+    "autor": "claude-opus-5-5"
+  },
+  "escopo_paths": [
+    ".agent/skills/ux-design/SKILL.md",
+    ".agent/skills/qa-critic/SKILL.md",
+    "tools/ux_gate.py",
+    "tools/test_ux_gate.py",
+    "docs/adr/133-ux-design-perfis-revisao-gate.md",
+    "capabilities.json",
+    "CAPABILITIES.md",
+    "CHANGELOG.md",
+    "guia/web/index.html"
+  ],
+  "problemas": [
+    {
+      "severidade": "MEDIA",
+      "local": "tools/ux_gate.py desalinhados",
+      "descricao": "r1: alinhamento acusava centralizado e inline",
+      "estado": "corrigido",
+      "fix": "campo coluna no extrator"
+    },
+    {
+      "severidade": "MEDIA",
+      "local": "tools/ux_gate.py avaliar",
+      "descricao": "r1: retrato malformado saia 1 com traceback",
+      "estado": "corrigido",
+      "fix": "validacao de tipo levanta ValueError (sai 2)"
+    },
+    {
+      "severidade": "MEDIA",
+      "local": "tools/ux_gate.py extrair",
+      "descricao": "r1: erro do Playwright saia 1",
+      "estado": "corrigido",
+      "fix": "except Error do Playwright vira ValueError (sai 2)"
+    },
+    {
+      "severidade": "MEDIA",
+      "local": "tools/test_ux_gate.py",
+      "descricao": "r2: falha do Playwright sem canario",
+      "estado": "corrigido",
+      "fix": "modulo playwright falso em sys.modules"
+    },
+    {
+      "severidade": "MEDIA",
+      "local": "tools/ux_gate.py coluna",
+      "descricao": "r2: caixa centralizada por flex ou margin auto acusada",
+      "estado": "corrigido",
+      "fix": "redesenho: funcao centrado"
+    },
+    {
+      "severidade": "MEDIA",
+      "local": "tools/ux_gate.py centrado",
+      "descricao": "r3: bloco de largura total em pai com padding saia da medida",
+      "estado": "corrigido",
+      "fix": "centrado contra a area de conteudo do pai; executado no Node pelo canario"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "tools/ux_gate.py centrado",
+      "descricao": "r4: barra de rolagem do pai desloca o centro",
+      "estado": "declarado",
+      "fix": "limite no ADR-133"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "tools/test_ux_gate.py",
+      "descricao": "r4: faltavam casos de padding assimetrico e filho largo",
+      "estado": "corrigido",
+      "fix": "2 casos no teste (f)"
+    }
+  ],
+  "verificacoes_executadas": [
+    "python tools/test_ux_gate.py",
+    "python tools/test_core_no_vendor.py",
+    "python tools/test_capabilities.py",
+    "python tools/test_marketing_claims.py",
+    "python tools/test_adr_changelog_sync.py",
+    "sabotagem em copia: centrado contra a borda do pai reprova o teste (f)"
+  ],
+  "canarios": [
+    "python tools/run_canaries.py: 101 PASS, 1 SKIP, 0 FAIL",
+    "python tools/audit_enforcement.py --provar: ux-gate PROVADO",
+    "mutantes do ux_gate.py contra o canario: 40 de 41 mortos (vivo: guarda __main__, equivalente)"
+  ],
+  "data": "2026-10-30T16:25:23Z",
+  "sha_revisado": "f955edcf28a13e08cd761b7fad65512e0eac74f5",
+  "blobs_revisados": {
+    ".agent/skills/ux-design/SKILL.md": "111321bd6c6aa870a09c742306c18b7d2bf47681",
+    ".agent/skills/qa-critic/SKILL.md": "c50bf32245dc8d7028a126d7b4134c108eda432e",
+    "tools/ux_gate.py": "79c8784e3fe9d87811b208e8edf82eb96be4f7ed",
+    "tools/test_ux_gate.py": "74631d24ea69ddddbb7136321662f8211b1eb3a9",
+    "docs/adr/133-ux-design-perfis-revisao-gate.md": "761dd8968dac135dba5bad08155d9a9a5ef0d6a9",
+    "capabilities.json": "1730cea08c2a2a479421a006dffd4334cc23b881",
+    "CAPABILITIES.md": "f08555953ed23b9b413ba7b5171209d1f8d0ab3f",
+    "CHANGELOG.md": "aabb50d5ccd5781339060424065f8f193916e117",
+    "guia/web/index.html": "8708b1abdea89a885e8abbdd0ccba27ef76a4eb0"
+  }
+}

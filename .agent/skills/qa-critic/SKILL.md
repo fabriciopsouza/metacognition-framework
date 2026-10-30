@@ -1,9 +1,9 @@
 ---
 name: qa-critic
 description: "Ativar SEMPRE após o developer, antes de qualquer aprovação. Validação adversarial — hipótese default é que existe bug. Idealmente modelo diferente do developer. Flexível."
-version: 1.4.0
+version: 1.5.0
 source: "SQUAD v1.1.0 (qa-critic) — enxuto"
-last_review: 2026-10-26
+last_review: 2026-10-30
 role_order: 4
 consumes:
   - "output do developer"
@@ -94,6 +94,9 @@ performance aceitável · nenhuma dependência/rename sem ADR · doc proporciona
 (já existia no repo? a biblioteca padrão ou a plataforma fazia? cabia numa linha?). Alternativa mais
 simples **demonstrável** = achado MÉDIA, com a alternativa escrita no achado; suspeita sem alternativa
 concreta não é achado.
+**UX (diff que toca tela, página ou componente visual):** conferir pela skill `ux-design` o perfil declarado, os
+traços de "cara de IA", a lente de interface e as leis de texto, e se o gate rodou nas duas larguras. Achado do gate
+sem exceção declarada no `DESIGN.md` = MÉDIA; gate não executado e não declarado como tal = MÉDIA.
 
 **Segunda passagem com `edge-case-hunter` (ADR-081):** quando o diff/arquivo revisado contém ≥1 de: (a) ≥2 condicionais aninhados; (b) loop com saída não trivial; (c) handler de erro multi-branch; (d) função com >3 retornos distintos — invocar `edge-case-hunter` após o adversarial geral. Output JSON salvo em `_meta/qa/<bloco>-edge-cases.json`.
 
