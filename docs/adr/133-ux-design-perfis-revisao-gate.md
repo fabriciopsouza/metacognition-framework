@@ -46,6 +46,7 @@ do revisor; a skill fica curta e a regra mensurável sai da prosa.
 5. O medidor de alinhamento compara só caixas de bloco que não estão centralizadas na área de conteúdo do pai (sem
    padding e borda); bloco de largura total continua medido. Redesenho em duas etapas: a r1 e a r2 acharam falso
    positivo em layout centralizado; a r3, falso negativo em pai com padding simétrico (3 reprovações seguidas na mesma
-   família; seguida a recomendada da QA sem parar, pela regra D10 do dono); perfis `arrojado` e `outro` usam os limites do corporativo no
+   família; seguida a recomendada da QA sem parar, pela regra D10 do dono). Limite conhecido: pai com barra de
+   rolagem vertical (`overflow: auto`) desloca o centro em ~15 px e a caixa centralizada nele pode ser medida; perfis `arrojado` e `outro` usam os limites do corporativo no
    script, e a diferença deles fica em `data-ux-ignore` e na revisão.
 6. AccessLint: o CLI antigo está arquivado; axe-core é o caminho padrão (QA Sonnet r1, 30/10/2026).

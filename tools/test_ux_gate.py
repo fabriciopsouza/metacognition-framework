@@ -201,6 +201,9 @@ const casos = [
   ['largura total em pai com padding', p16, pai(0, 400), {left: 16, right: 384, width: 368}, false],
   ['caixa centralizada', p16, pai(0, 400), {left: 50, right: 350, width: 300}, true],
   ['caixa estreita a esquerda', p16, pai(0, 400), {left: 16, right: 316, width: 300}, false],
+  ['centralizada com padding assimetrico', {paddingLeft: '40px', paddingRight: '0px'}, pai(0, 400),
+   {left: 70, right: 370, width: 300}, true],
+  ['filho mais largo que o conteudo', p16, pai(0, 400), {left: 0, right: 400, width: 400}, false],
   ['centralizada com borda', {borderLeftWidth: '2px', borderRightWidth: '2px'}, pai(0, 404),
    {left: 52, right: 352, width: 300}, true],
 ];
