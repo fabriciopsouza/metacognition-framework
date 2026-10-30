@@ -2503,7 +2503,7 @@
    "de": "        if tela[\"rolagem\"]:",
    "para": "        if False:",
    "canario": "tools/test_ux_gate.py",
-   "espera": "pagina com rolagem horizontal passa sem achado e o canario reprova"
+   "espera": "FAIL (b) rolagem horizontal"
   }
  }
  ],
