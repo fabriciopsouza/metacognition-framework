@@ -2479,6 +2479,32 @@
    "canario": "tools/test_trabalhador_externo.py",
    "espera": "sem declaracao, trabalhador que sai da maquina tem de ser RECUSADO antes de chamar"
   }
+ },
+ {
+  "id": "ux-gate",
+  "title": "UX de interface: skill ux-design (perfis, revisao) e gate por medida (caracteres por linha, alinhamento, rolagem, palavras por elemento, acao sem controle)",
+  "status": "PROVIDES",
+  "ai_owner": "claude",
+  "mechanism": "tools/ux_gate.py",
+  "test": "tools/test_ux_gate.py",
+  "adr": "docs/adr/133-ux-design-perfis-revisao-gate.md",
+  "doc": ".agent/skills/ux-design/SKILL.md",
+  "cross_ai": false,
+  "enforcement": "fail-closed",
+  "tags": [
+   "ux",
+   "interface",
+   "gate",
+   "acessibilidade"
+  ],
+  "note": "Dono 30/10/2026. impeccable detect e axe-core/AccessLint sao ferramentas externas opcionais rodadas pelo roteiro da skill; sem navegador o gate e declarado nao executado.",
+  "mutacao": {
+   "arquivo": "tools/ux_gate.py",
+   "de": "        if tela[\"rolagem\"]:",
+   "para": "        if False:",
+   "canario": "tools/test_ux_gate.py",
+   "espera": "pagina com rolagem horizontal passa sem achado e o canario reprova"
+  }
  }
  ],
  "registry_waivers": [
