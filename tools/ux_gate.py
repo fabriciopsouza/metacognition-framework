@@ -38,9 +38,18 @@ EXTRATOR = r"""
     if (t === 'p') return 'paragrafo';
     return 'outro';
   };
-  const linhas = el => {  // altura / line-height; sem line-height em px, tops distintos dos retangulos do texto
-    const lh = parseFloat(getComputedStyle(el).lineHeight);
-    if (lh > 0) return Math.max(1, Math.round(el.getBoundingClientRect().height / lh));
+  // Caixa centralizada no pai (flex, margin auto): margens esquerda e direita iguais; nao forma coluna de borda esquerda
+  const centrado = (el, b) => {
+    if (!el.parentElement) return false;
+    const p = el.parentElement.getBoundingClientRect();
+    return b.width < p.width - 1 && Math.abs((b.left - p.left) - (p.right - b.right)) < 1;
+  };
+  const px = v => parseFloat(v) || 0;
+  const linhas = el => {  // altura do conteudo / line-height; sem line-height em px, tops distintos do texto
+    const cs = getComputedStyle(el), lh = parseFloat(cs.lineHeight);
+    const h = el.getBoundingClientRect().height - px(cs.paddingTop) - px(cs.paddingBottom)
+      - px(cs.borderTopWidth) - px(cs.borderBottomWidth);
+    if (lh > 0) return Math.max(1, Math.round(h / lh));
     const rg = document.createRange(); rg.selectNodeContents(el);
     return new Set([...rg.getClientRects()].map(r => Math.round(r.top))).size || 1;
   };
@@ -56,8 +65,7 @@ EXTRATOR = r"""
     out.push({id: i, pai: indice.has(el.parentElement) ? indice.get(el.parentElement) : -1,
       tipo: t, texto: (el.innerText || el.value || '').trim(), linhas: t === 'paragrafo' ? linhas(el) : 1,
       esquerda: b.left, topo: b.top, largura: b.width, altura: b.height, clicavel_sem_controle: clicavel,
-      coluna: !getComputedStyle(el).display.startsWith('inline')
-        && ['start', 'left'].includes(getComputedStyle(el).textAlign)});
+      coluna: !getComputedStyle(el).display.startsWith('inline') && !centrado(el, b)});
   });
   return {rolagem: document.documentElement.scrollWidth > document.documentElement.clientWidth, elementos: out};
 }
@@ -107,7 +115,7 @@ def desalinhados(elementos, largura):
     """Irmaos empilhados (um abaixo do outro) cujas bordas esquerdas quase coincidem, mas nao coincidem."""
     por_pai = {}
     for el in elementos:
-        if el["coluna"]:  # so bloco alinhado a esquerda; centralizado e inline nao formam coluna de borda esquerda
+        if el["coluna"]:  # o extrator marca falso o inline e a caixa centralizada no pai
             por_pai.setdefault(el["pai"], []).append(el)
     achados = []
     for irmaos in por_pai.values():

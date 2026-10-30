@@ -17,6 +17,7 @@ import json
 import os
 import sys
 import tempfile
+import types
 
 sys.dont_write_bytecode = True
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -157,6 +158,30 @@ def test_linha_de_comando():
         if os.path.exists(salvo):
             with open(salvo, encoding="utf-8") as f:
                 checar("(e) retrato salvo", json.load(f) == limpo())
+    # Falha do Playwright (navegador ausente, URL fora do ar) = gate nao executado (2), nunca achado (1).
+    falso = types.ModuleType("playwright.sync_api")
+
+    class Erro(Exception):
+        pass
+
+    def sync_playwright():
+        raise Erro("navegador ausente")
+
+    falso.Error, falso.sync_playwright = Erro, sync_playwright
+    antes = {k: sys.modules.get(k) for k in ("playwright", "playwright.sync_api")}
+    sys.modules["playwright"], sys.modules["playwright.sync_api"] = types.ModuleType("playwright"), falso
+    try:
+        saida = io.StringIO()
+        with contextlib.redirect_stdout(saida):
+            codigo = ux_gate.main(["--url", "http://exemplo.invalid"])
+    finally:
+        for k, v in antes.items():
+            if v is None:
+                sys.modules.pop(k, None)
+            else:
+                sys.modules[k] = v
+    checar(f"(e) falha do Playwright sai 2: {codigo}", codigo == 2
+           and saida.getvalue().startswith("ERRO: Playwright falhou"))
 
 
 if __name__ == "__main__":
