@@ -30,7 +30,7 @@ EXTRATOR = r"""
   const ign = el => el.closest('[data-ux-ignore]') !== null;
   const tipo = el => {
     const t = el.tagName.toLowerCase(), r = el.getAttribute('role');
-    if (['button', 'option', 'summary'].includes(t) || ['button', 'tab', 'option', 'menuitem'].includes(r)) return 'controle';
+    if (['button', 'option'].includes(t) || ['button', 'tab', 'option', 'menuitem'].includes(r)) return 'controle';
     if (t === 'input' && ['button', 'submit', 'reset'].includes(el.type)) return 'controle';
     if (t === 'th') return 'cabecalho';
     if (['h1', 'h2', 'h3'].includes(t)) return 'titulo';
@@ -38,7 +38,9 @@ EXTRATOR = r"""
     if (t === 'p') return 'paragrafo';
     return 'outro';
   };
-  const linhas = el => {
+  const linhas = el => {  // altura / line-height; sem line-height em px, tops distintos dos retangulos do texto
+    const lh = parseFloat(getComputedStyle(el).lineHeight);
+    if (lh > 0) return Math.max(1, Math.round(el.getBoundingClientRect().height / lh));
     const rg = document.createRange(); rg.selectNodeContents(el);
     return new Set([...rg.getClientRects()].map(r => Math.round(r.top))).size || 1;
   };
@@ -53,7 +55,9 @@ EXTRATOR = r"""
     const t = tipo(el);
     out.push({id: i, pai: indice.has(el.parentElement) ? indice.get(el.parentElement) : -1,
       tipo: t, texto: (el.innerText || el.value || '').trim(), linhas: t === 'paragrafo' ? linhas(el) : 1,
-      esquerda: b.left, topo: b.top, largura: b.width, altura: b.height, clicavel_sem_controle: clicavel});
+      esquerda: b.left, topo: b.top, largura: b.width, altura: b.height, clicavel_sem_controle: clicavel,
+      coluna: !getComputedStyle(el).display.startsWith('inline')
+        && ['start', 'left'].includes(getComputedStyle(el).textAlign)});
   });
   return {rolagem: document.documentElement.scrollWidth > document.documentElement.clientWidth, elementos: out};
 }
@@ -69,6 +73,8 @@ def limites(perfil):
 def avaliar(retrato, perfil="corporativo"):
     """Achados (lista de textos) de um retrato {largura: {rolagem, elementos}}; ValueError se malformado."""
     lim = limites(perfil)
+    if type(retrato) is not dict:
+        raise ValueError("retrato deve ser objeto {largura: tela}")
     achados = []
     for largura in LARGURAS:
         tela = retrato.get(str(largura))
@@ -78,6 +84,8 @@ def avaliar(retrato, perfil="corporativo"):
             achados.append(f"{largura}px: rolagem horizontal")
         elementos = tela["elementos"]
         for el in elementos:
+            if type(el) is not dict or type(el.get("texto")) is not str or type(el.get("tipo")) is not str:
+                raise ValueError(f"elemento malformado em {largura}px: {el!r}"[:120])
             texto, tipo = el["texto"], el["tipo"]
             palavras = len(texto.split())
             if tipo in lim and palavras > lim[tipo]:
@@ -99,7 +107,8 @@ def desalinhados(elementos, largura):
     """Irmaos empilhados (um abaixo do outro) cujas bordas esquerdas quase coincidem, mas nao coincidem."""
     por_pai = {}
     for el in elementos:
-        por_pai.setdefault(el["pai"], []).append(el)
+        if el["coluna"]:  # so bloco alinhado a esquerda; centralizado e inline nao formam coluna de borda esquerda
+            por_pai.setdefault(el["pai"], []).append(el)
     achados = []
     for irmaos in por_pai.values():
         irmaos = sorted(irmaos, key=lambda e: e["topo"])
@@ -114,18 +123,21 @@ def desalinhados(elementos, largura):
 
 def extrair(url):
     try:
-        from playwright.sync_api import sync_playwright
+        from playwright.sync_api import Error as ErroPlaywright, sync_playwright
     except ImportError as erro:
         raise ValueError("Playwright ausente: pip install playwright && python -m playwright install chromium") from erro
     retrato = {}
-    with sync_playwright() as p:
-        navegador = p.chromium.launch()
-        for largura in LARGURAS:
-            pagina = navegador.new_page(viewport={"width": largura, "height": 900})
-            pagina.goto(url, wait_until="networkidle")
-            retrato[str(largura)] = pagina.evaluate(EXTRATOR)
-            pagina.close()
-        navegador.close()
+    try:  # navegador ausente, URL fora do ar ou tempo esgotado = gate nao executado (2), nunca "reprovou" (1)
+        with sync_playwright() as p:
+            navegador = p.chromium.launch()
+            for largura in LARGURAS:
+                pagina = navegador.new_page(viewport={"width": largura, "height": 900})
+                pagina.goto(url, wait_until="networkidle")
+                retrato[str(largura)] = pagina.evaluate(EXTRATOR)
+                pagina.close()
+            navegador.close()
+    except ErroPlaywright as erro:
+        raise ValueError(f"Playwright falhou (gate nao executado): {erro}") from erro
     return retrato
 
 

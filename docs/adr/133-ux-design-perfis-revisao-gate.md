@@ -22,9 +22,9 @@
    tokens revisado antes do código, traços de "cara de IA", lente de interface e leis de texto. Regra mensurável vai
    ao gate, não à prosa.
 2. **Checklist do `qa-critic`:** item de UX; achado do gate sem exceção declarada, ou gate omitido sem declaração, é MÉDIA.
-3. **Gate:** `impeccable detect` com versão fixa, telemetria desligada e sem hooks; axe-core ou AccessLint (só uso,
-   sem cópia: sem licença declarada); `tools/ux_gate.py` para caracteres por linha (≤ 80), desalinhamento de irmãos
-   (2 a 16 px), rolagem horizontal em 360 e 1280 px, palavras por tipo de elemento e ação sem controle.
+3. **Gate:** `impeccable detect` com versão fixa, telemetria desligada e sem hooks; axe-core (AccessLint só como
+   alternativa conferida, sem cópia: sem licença declarada); `tools/ux_gate.py` para caracteres por linha (≤ 80),
+   desalinhamento de irmãos em bloco alinhado à esquerda (2 a 16 px), rolagem horizontal em 360 e 1280 px, palavras por tipo de elemento e ação sem controle.
 4. **Dependências** (novas, opcionais, só no momento do gate): Node para `npx`, Chrome ou Edge, Playwright para
    Python. Sem elas o gate é declarado **não executado**, nunca aprovado.
 
@@ -37,6 +37,11 @@ do revisor; a skill fica curta e a regra mensurável sai da prosa.
    teto de 16 px que separa quase-alinhamento de recuo intencional.
 2. INFERIDO: o pacote npm `impeccable@4.8.0` corresponde à tag `cli-v4.8.0`; conferir antes do primeiro uso.
 3. O extrator Playwright de `tools/ux_gate.py` não roda nos canários (sem navegador na máquina de construção); o
-   canário cobre a avaliação sobre o retrato e o caminho `--url` com o extrator substituído.
+   canário cobre a avaliação sobre o retrato e o caminho `--url` com o extrator substituído. Falha do Playwright
+   (navegador ausente, URL fora do ar) sai 2, "não executado". O extrator rodou num site real por outra sessão
+   (30/10/2026: 211 elementos por largura, sem achado), via `--retrato`.
+5. O medidor de alinhamento só compara blocos alinhados à esquerda; perfis `arrojado` e `outro` usam os limites do
+   corporativo no script, e a diferença deles fica em `data-ux-ignore` e na revisão.
+6. AccessLint: o CLI antigo está arquivado; axe-core é o caminho padrão (QA Sonnet r1, 30/10/2026).
 4. Textos de terceiros entram traduzidos e resumidos, com crédito e licença na própria skill (Apache-2.0 da Anthropic,
    MIT da Vercel).

@@ -28,7 +28,7 @@ FALHAS = []
 
 def el(i, tipo, texto, topo, esquerda=16, linhas=1, pai=0, altura=20, clicavel=False):
     return {"id": i, "pai": pai, "tipo": tipo, "texto": texto, "linhas": linhas, "esquerda": esquerda,
-            "topo": topo, "largura": 300, "altura": altura, "clicavel_sem_controle": clicavel}
+            "topo": topo, "largura": 300, "altura": altura, "clicavel_sem_controle": clicavel, "coluna": True}
 
 
 def limpo():
@@ -94,6 +94,9 @@ def test_alinhamento_sem_falso_positivo():
     r = limpo()
     r["360"]["elementos"][2].update(esquerda=21, pai=9)  # outro pai: nao e irmao
     checar("(c) outro pai", achados(r) == [])
+    r = limpo()
+    r["360"]["elementos"][2].update(esquerda=21, coluna=False)  # centralizado ou inline: nao e coluna esquerda
+    checar("(c) centralizado ou inline", achados(r) == [])
 
 
 def test_perfis_e_malformado():
@@ -107,6 +110,14 @@ def test_perfis_e_malformado():
                                    "corporativo")):
         try:
             achados(retrato, perfil)
+            checar(f"(d) {nome} devia ser erro", False)
+        except ValueError:
+            pass
+    for nome, retrato in (("retrato lista", []), ("elemento nao objeto", {**limpo(), "360": {"rolagem": False,
+                          "elementos": [5]}}), ("texto numero", {**limpo(), "360": {"rolagem": False,
+                          "elementos": [{**el(1, "titulo", "x", 0), "texto": 5}]}})):
+        try:
+            achados(retrato)
             checar(f"(d) {nome} devia ser erro", False)
         except ValueError:
             pass

@@ -36,12 +36,12 @@ shared_refs:
 | corporativo (padrão) | grade rígida, 1 família tipográfica, 1 cor de destaque, densidade média | — |
 | minimalista | muito espaço, poucos elementos, sem decoração | legenda ≤ 8 palavras |
 | moderno | tipografia de destaque, hierarquia forte, um único momento de movimento | — |
-| arrojado | um elemento ousado, o resto disciplinado | alinhamento pode quebrar só no elemento declarado (`data-ux-ignore`) |
-| outro | direção escrita pelo dono no `DESIGN.md` | definidos no `DESIGN.md` |
+| arrojado | um elemento ousado, o resto disciplinado | como corporativo no script; o elemento ousado leva `data-ux-ignore` |
+| outro | direção escrita pelo dono no `DESIGN.md` | como corporativo no script; regra própria do dono revisada à mão |
 
 ## Fluxo
 
-1. **Perfil:** ler o `DESIGN.md`; sem ele, perguntar o perfil ou usar `corporativo` e declarar.
+1. **Perfil:** ler o `DESIGN.md`, se existir; sem ele, perguntar o perfil ou usar `corporativo` e declarar.
 2. **Plano antes do código:** cores (4 a 6 hex nomeados), tipos e papéis, layout com regra de alinhamento
    (esquerda, centro, justificado) e princípios do que torna esta tela própria do assunto.
 3. **Revisar o plano contra o pedido:** o que sairia igual em qualquer pedido parecido é trocado, dizendo o quê e por quê.
@@ -84,12 +84,16 @@ grade, borda ou base · sem barra de rolagem inútil · layout aguenta texto cur
 | # | Medida | Comando | Reprova quando |
 |---|---|---|---|
 | 1 | Traços de "cara de IA" | `IMPECCABLE_NO_TELEMETRY=1 npx impeccable@4.8.0 detect <URL> --json` (só `detect`; sem hooks; versão fixa, INFERIDO que o pacote npm siga a tag `cli-v4.8.0`) | exit 2 |
-| 2 | Contraste, alvo, rótulos | `npx @axe-core/cli <URL>` ou o CLI do AccessLint (só usar, não copiar: sem licença declarada) | violação séria ou crítica |
-| 3 | Caracteres por linha (≤ 80), desalinhamento (2 a 16 px), rolagem em 360 e 1280 px, palavras por tipo, ação sem controle | `python tools/ux_gate.py --url <URL> --perfil <perfil>` (precisa de Playwright para Python) | exit 1 |
+| 2 | Contraste, alvo, rótulos | `npx @axe-core/cli <URL>` (precisa de Chrome); AccessLint só como alternativa conferida antes (sem licença declarada: só usar, não copiar) | violação séria ou crítica |
+| 3 | Caracteres por linha (≤ 80), desalinhamento de bloco alinhado à esquerda (2 a 16 px), rolagem em 360 e 1280 px, palavras por tipo, ação sem controle | `python tools/ux_gate.py --url <URL> --perfil <perfil>` | exit 1 |
 | 4 | Captura nas duas larguras | Playwright, anexada à revisão visual | — |
 
-Exceção legítima (tabela larga, bloco de código): atributo `data-ux-ignore` no elemento e motivo no `DESIGN.md`.
-Sem Node, navegador ou Playwright na máquina: declarar o gate como **não executado**, nunca como aprovado.
+Pré-teste (o navegador abre de fato): `python -c "from playwright.sync_api import sync_playwright as s; p=s().start(); p.chromium.launch().close(); p.stop()"`.
+Sem Playwright: rodar a constante `EXTRATOR` de `tools/ux_gate.py` sem alteração no navegador, em 360 e 1280 px,
+salvar `{"360": ..., "1280": ...}` e avaliar com `python tools/ux_gate.py --retrato <arquivo> --perfil <perfil>`.
+Exceção legítima (tabela larga, bloco de código): atributo `data-ux-ignore` no elemento, com o motivo no
+`DESIGN.md` ou em comentário junto do elemento. O medidor de alinhamento ignora texto centralizado e elemento inline.
+Sem navegador ou Node na máquina: declarar o gate como **não executado** (o script sai 2), nunca como aprovado.
 
 ## Créditos e licenças
 
