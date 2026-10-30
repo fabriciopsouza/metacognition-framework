@@ -93,7 +93,8 @@ Sem Playwright: invocar no navegador a função da constante `EXTRATOR` de `tool
 `(EXTRATOR)()`, em 360 e 1280 px,
 salvar `{"360": ..., "1280": ...}` e avaliar com `python tools/ux_gate.py --retrato <arquivo> --perfil <perfil>`.
 Exceção legítima (tabela larga, bloco de código): atributo `data-ux-ignore` no elemento, com o motivo no
-`DESIGN.md` ou em comentário junto do elemento. O medidor de alinhamento ignora elemento inline e caixa centralizada no pai (flex, `margin: auto`).
+`DESIGN.md` ou em comentário junto do elemento. O medidor de alinhamento ignora elemento inline e caixa centralizada na área de conteúdo do pai (flex,
+`margin: auto`); bloco de largura total dentro de pai com padding continua medido.
 Sem navegador ou Node na máquina: declarar o gate como **não executado** (o script sai 2), nunca como aprovado.
 
 ## Créditos e licenças

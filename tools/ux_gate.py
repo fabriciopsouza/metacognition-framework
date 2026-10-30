@@ -38,13 +38,16 @@ EXTRATOR = r"""
     if (t === 'p') return 'paragrafo';
     return 'outro';
   };
-  // Caixa centralizada no pai (flex, margin auto): margens esquerda e direita iguais; nao forma coluna de borda esquerda
+  const px = v => parseFloat(v) || 0;
+  // Caixa centralizada (flex, margin auto): mais estreita que a area de CONTEUDO do pai (sem padding e borda) e com
+  // sobras iguais dos dois lados; bloco de largura total num pai com padding simetrico nao e centralizado.
   const centrado = (el, b) => {
     if (!el.parentElement) return false;
-    const p = el.parentElement.getBoundingClientRect();
-    return b.width < p.width - 1 && Math.abs((b.left - p.left) - (p.right - b.right)) < 1;
+    const p = el.parentElement.getBoundingClientRect(), cs = getComputedStyle(el.parentElement);
+    const esq = p.left + px(cs.borderLeftWidth) + px(cs.paddingLeft);
+    const dir = p.right - px(cs.borderRightWidth) - px(cs.paddingRight);
+    return b.width < dir - esq - 1 && Math.abs((b.left - esq) - (dir - b.right)) < 1;
   };
-  const px = v => parseFloat(v) || 0;
   const linhas = el => {  // altura do conteudo / line-height; sem line-height em px, tops distintos do texto
     const cs = getComputedStyle(el), lh = parseFloat(cs.lineHeight);
     const h = el.getBoundingClientRect().height - px(cs.paddingTop) - px(cs.paddingBottom)

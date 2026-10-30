@@ -6,7 +6,9 @@
       acao sem controle e irmaos quase alinhados;
   (c) bordas iguais ou bem distintas (recuo intencional) e irmaos lado a lado nao sao desalinhamento;
   (d) o perfil minimalista aperta a legenda para 8 palavras; perfil desconhecido e retrato malformado sao erro;
-  (e) a linha de comando sai 0, 1 e 2 conforme o caso.
+  (e) a linha de comando sai 0, 1 e 2 conforme o caso, inclusive com falha do Playwright;
+  (f) a funcao `centrado` do EXTRATOR, executada no Node, separa caixa centralizada de bloco de largura total em pai
+      com padding (sem Node: SKIP declarado na saida).
 
 Uso: python tools/test_ux_gate.py   (exit 0 PASS; 1 FAIL)
 """
@@ -15,6 +17,8 @@ import copy
 import io
 import json
 import os
+import shutil
+import subprocess
 import sys
 import tempfile
 import types
@@ -182,6 +186,43 @@ def test_linha_de_comando():
                 sys.modules[k] = v
     checar(f"(e) falha do Playwright sai 2: {codigo}", codigo == 2
            and saida.getvalue().startswith("ERRO: Playwright falhou"))
+
+
+CENTRADO_JS = r"""
+const src = require('fs').readFileSync(process.argv[2], 'utf8');
+const corpo = src.match(/const centrado = (\(el, b\) => \{[\s\S]*?\n  \});/)[1];
+const px = v => parseFloat(v) || 0;
+let estilo = {};
+global.getComputedStyle = () => estilo;
+const centrado = eval(corpo);
+const pai = (l, r) => ({parentElement: {getBoundingClientRect: () => ({left: l, right: r})}});
+const p16 = {paddingLeft: '16px', paddingRight: '16px'};
+const casos = [
+  ['largura total em pai com padding', p16, pai(0, 400), {left: 16, right: 384, width: 368}, false],
+  ['caixa centralizada', p16, pai(0, 400), {left: 50, right: 350, width: 300}, true],
+  ['caixa estreita a esquerda', p16, pai(0, 400), {left: 16, right: 316, width: 300}, false],
+  ['centralizada com borda', {borderLeftWidth: '2px', borderRightWidth: '2px'}, pai(0, 404),
+   {left: 52, right: 352, width: 300}, true],
+];
+for (const [nome, est, el, b, esperado] of casos) {
+  estilo = est;
+  if (centrado(el, b) !== esperado) console.log('FALHOU ' + nome);
+}
+"""
+
+
+def test_centrado_js():
+    node = shutil.which("node")
+    if not node:
+        print("SKIP (f) centrado no Node: node ausente")
+        return
+    with tempfile.TemporaryDirectory() as pasta:
+        script = os.path.join(pasta, "centrado.js")
+        with open(script, "w", encoding="utf-8") as f:
+            f.write(CENTRADO_JS)
+        r = subprocess.run([node, script, os.path.join(ROOT, "tools", "ux_gate.py")], capture_output=True, text=True,
+                           timeout=60)
+    checar(f"(f) centrado no Node: rc {r.returncode} {r.stdout}{r.stderr}", r.returncode == 0 and not r.stdout)
 
 
 if __name__ == "__main__":

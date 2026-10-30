@@ -38,12 +38,14 @@ do revisor; a skill fica curta e a regra mensurável sai da prosa.
 2. INFERIDO: o pacote npm `impeccable@4.8.0` corresponde à tag `cli-v4.8.0`; conferir antes do primeiro uso.
 3. O extrator Playwright de `tools/ux_gate.py` não roda nos canários (sem navegador na máquina de construção); o
    canário cobre a avaliação sobre o retrato, o caminho `--url` com o extrator substituído e a falha do Playwright
-   (módulo falso): sai 2, "não executado". O JavaScript do extrator (campos `coluna` e `linhas`) não tem teste
-   automático; rodou num site real por outra sessão (30/10/2026, versão anterior: 211 elementos por largura, sem
-   achado), via `--retrato`.
+   (módulo falso): sai 2, "não executado". A função `centrado` do JavaScript é executada no Node pelo canário (SKIP
+   declarado sem Node); a contagem de `linhas` e o extrator inteiro não têm teste automático; a versão anterior rodou
+   num site real por outra sessão (30/10/2026: 211 elementos por largura, sem achado), via `--retrato`.
 4. Textos de terceiros entram traduzidos e resumidos, com crédito e licença na própria skill (Apache-2.0 da Anthropic,
    MIT da Vercel).
-5. O medidor de alinhamento compara só caixas de bloco que não estão centralizadas no pai (redesenho da QA r2: a r1 e
-   a r2 acharam falso positivo em layout centralizado); perfis `arrojado` e `outro` usam os limites do corporativo no
+5. O medidor de alinhamento compara só caixas de bloco que não estão centralizadas na área de conteúdo do pai (sem
+   padding e borda); bloco de largura total continua medido. Redesenho em duas etapas: a r1 e a r2 acharam falso
+   positivo em layout centralizado; a r3, falso negativo em pai com padding simétrico (3 reprovações seguidas na mesma
+   família; seguida a recomendada da QA sem parar, pela regra D10 do dono); perfis `arrojado` e `outro` usam os limites do corporativo no
    script, e a diferença deles fica em `data-ux-ignore` e na revisão.
 6. AccessLint: o CLI antigo está arquivado; axe-core é o caminho padrão (QA Sonnet r1, 30/10/2026).
