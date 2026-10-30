@@ -80,11 +80,6 @@
       "fix": "2 casos no teste (f)"
     }
   ],
-  "provas": [
-    "python tools/run_canaries.py: 101 PASS, 1 SKIP, 0 FAIL",
-    "python tools/audit_enforcement.py --provar: ux-gate PROVADO",
-    "mutantes do ux_gate.py contra o canario: 40 de 41 mortos (vivo: guarda __main__, equivalente)"
-  ],
   "verificacoes_executadas": [
     "python tools/test_ux_gate.py",
     "python tools/test_core_no_vendor.py",
@@ -93,14 +88,19 @@
     "python tools/test_adr_changelog_sync.py",
     "sabotagem em copia: centrado contra a borda do pai reprova o teste (f)"
   ],
-  "data": "2026-10-30T16:22:45Z",
-  "sha_revisado": "9fe81fe537ca727520e16a8c665320e2f8b44e0f",
+  "canarios": [
+    "python tools/run_canaries.py: 101 PASS, 1 SKIP, 0 FAIL",
+    "python tools/audit_enforcement.py --provar: ux-gate PROVADO",
+    "mutantes do ux_gate.py contra o canario: 40 de 41 mortos (vivo: guarda __main__, equivalente)"
+  ],
+  "data": "2026-10-30T16:25:23Z",
+  "sha_revisado": "f955edcf28a13e08cd761b7fad65512e0eac74f5",
   "blobs_revisados": {
     ".agent/skills/ux-design/SKILL.md": "111321bd6c6aa870a09c742306c18b7d2bf47681",
     ".agent/skills/qa-critic/SKILL.md": "c50bf32245dc8d7028a126d7b4134c108eda432e",
     "tools/ux_gate.py": "79c8784e3fe9d87811b208e8edf82eb96be4f7ed",
-    "tools/test_ux_gate.py": "8fe3fa81e7e2b2a2d22c9cbaf2a47467f94e1bf1",
-    "docs/adr/133-ux-design-perfis-revisao-gate.md": "8618955d7d856345094f3715f1921473a7bc6ac2",
+    "tools/test_ux_gate.py": "74631d24ea69ddddbb7136321662f8211b1eb3a9",
+    "docs/adr/133-ux-design-perfis-revisao-gate.md": "761dd8968dac135dba5bad08155d9a9a5ef0d6a9",
     "capabilities.json": "1730cea08c2a2a479421a006dffd4334cc23b881",
     "CAPABILITIES.md": "f08555953ed23b9b413ba7b5171209d1f8d0ab3f",
     "CHANGELOG.md": "aabb50d5ccd5781339060424065f8f193916e117",

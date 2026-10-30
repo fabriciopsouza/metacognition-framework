@@ -1,6 +1,6 @@
 # QA-evidence — adr-133-ux-design
 
-- **Data:** 2026-10-30T16:22:45Z
+- **Data:** 2026-10-30T16:25:23Z
 - **Veredito (passou):** True
 - **Recomendacao:** aprovar_com_ressalvas
 
