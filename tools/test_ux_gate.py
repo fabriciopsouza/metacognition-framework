@@ -119,7 +119,9 @@ def test_perfis_e_malformado():
     borda["360"]["elementos"][0]["texto"] = "Um dois tres quatro"
     borda["360"]["elementos"][3]["texto"] = " ".join(["p"] * 8)
     borda["360"]["elementos"].append(el(5, "cabecalho", "Valor total", 120))
-    for perfil in ("corporativo", "corporativo-2", "minimalista", "moderno", "arrojado", "outro"):
+    dono = ("corporativo", "corporativo-2", "minimalista", "moderno", "arrojado", "outro")
+    checar(f"(d) perfis iguais a lista do dono: {ux_gate.PERFIS}", tuple(ux_gate.PERFIS) == dono)
+    for perfil in dono:
         try:
             tipos = sorted(a.split(": ")[1].split(" com ")[0] for a in achados(r, perfil))
             checar(f"(d) {perfil} aplica os 4 limites: {tipos}", tipos == ["cabecalho", "controle", "legenda", "titulo"])
