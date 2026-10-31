@@ -115,14 +115,16 @@ Ordem do dono, 31/10/2026: "1 vamos acertar" (Llama local) e "2 vamos incluir" (
 `tools/model-policy.json`; a via `ollama` não muda.
 
 1. **`local-qwen3`:** `qwen3.8:27b`, família qwen, `num_ctx` 16384 para caber nos 20 GB de vídeo desta máquina.
-2. **`local-llama`:** `llama3.1:8b`, família llama (terceira família, Meta). É o maior Llama que cabe aqui: o `llama4`
-   (16x17b, ~67 GB) não cabe (https://ollama.com/search?q=llama, acesso 31/10/2026).
+2. **`local-llama`:** `llama3.1:8b`, família llama (família adicional, Meta): Llama de texto instalado e testado aqui;
+   `llama3.3` (70b) e `llama4` (16x17b) não cabem em 20 GB de vídeo (https://ollama.com/search?q=llama, acesso
+   31/10/2026).
 3. Os dois não saem da máquina e aceitam `empresa`; o item 6 da decisão deixa de valer no "único aceito em `empresa`".
    Continuam consultivos (pré-revisão, revisão paralela, item simples), como o `local-qwen`.
 4. **Gemini próprio:** já coberto por `gemini-pro` e `gemini-flash` (modelos do Google pela via `agy`); `sonnet-agy` é
    o Claude dentro do `agy`. Nenhuma via nova.
 
-Teste real de 31/10/2026, contagem dos trabalhadores no próprio `tools/model-policy.json` (resposta certa: 7):
+Teste de integração real de 31/10/2026, contagem dos trabalhadores no próprio `tools/model-policy.json` (oráculo
+determinístico: `len(trabalhadores_externos["trabalhadores"])` = 7):
 `local-qwen3` acertou em 238 s (trilha `20261031-125411-e5b665`); `local-llama` errou, 14, em 14,6 s
 (`20261031-125427-b85119`), por isso só item simples conferido por script; `gemini-pro` acertou em 14 s
 (`20261031-125441-bcdf8e`).
