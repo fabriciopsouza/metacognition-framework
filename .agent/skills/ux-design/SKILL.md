@@ -144,9 +144,10 @@ salvar `{"360": ..., "1280": ...}` e avaliar com `python tools/ux_gate.py --retr
 Exceção legítima (tabela larga, bloco de código): atributo `data-ux-ignore` no elemento, com o motivo no
 `DESIGN.md` ou em comentário junto do elemento. O medidor de alinhamento ignora elemento inline e caixa centralizada na área de conteúdo do pai (flex,
 `margin: auto`); bloco de largura total dentro de pai com padding continua medido.
-Tamanho igual: compara irmãos com a mesma tag e a mesma primeira classe, item a item da grade (pai `grid` ou `flex`
-com quebra; largura sempre, altura só lado a lado) e gráfico (`svg`, `canvas`) com largura e altura; primos entram no
-mesmo grupo quando os pais se repetem (gráfico de cada cartão). Tolerância de 2 px INFERIDA, a calibrar pelo dono.
+Tamanho igual: compara irmãos com a mesma tag e a mesma primeira classe. Item de `grid`: largura entre os da mesma
+posição de trilhas, altura entre os lado a lado. Item de `flex`: só altura entre os lado a lado (chip e link têm a
+largura do conteúdo). Gráfico (`svg`, `canvas` com classe e largura ≥ 60 px; abaixo é ícone): largura e altura. Primos
+entram no mesmo grupo quando os pais se repetem (gráfico de cada cartão). Tolerância de 2 px INFERIDA, a calibrar.
 Sem navegador ou Node na máquina: declarar o gate como **não executado** (o script sai 2), nunca como aprovado.
 
 ## Créditos e licenças

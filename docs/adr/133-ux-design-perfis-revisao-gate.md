@@ -75,12 +75,16 @@ diferentes"; "ambas são muito boas e são opções válidas" (duas variantes do
    percentual antes do valor, comparação na linha da referência, gráfico embaixo com tipo pelo significado, nota curta
    e ação sem "→"; duas variantes da visão geral, a variante 1 como exceção declarada ao traço 5 (caixa alta).
 2. Gate: `tools/ux_gate.py` acusa irmãos do mesmo tipo (mesma tag e primeira classe) com tamanho diferente acima de
-   2 px. Item de grade (pai `grid`, ou `flex` com quebra): largura em todo o grupo, altura só entre os lado a lado.
-   Gráfico (`svg`, `canvas`): largura e altura. Filhos de pais do mesmo grupo entram no mesmo grupo (o gráfico de cada
-   cartão é comparado com os outros).
+   2 px. Item de `grid`: largura entre os da mesma posição de trilhas (`grid-column`), altura entre os lado a lado.
+   Item de `flex`, com ou sem quebra: só altura entre os lado a lado. Gráfico (`svg`, `canvas` com classe e largura
+   ≥ 60 px no grupo): largura e altura. Filhos de pais do mesmo grupo entram no mesmo grupo (o gráfico de cada cartão é
+   comparado com os outros). Redesenho da QA Sonnet r1: a 1ª versão comparava a largura em `flex` com quebra (chip e
+   link de navegação acusavam) e media ícone `svg` como gráfico.
 3. Limites: tolerância de 2 px INFERIDA, a calibrar pelo dono; a primeira classe é tratada como o tipo (classe
    utilitária primeiro, como no Tailwind, agrupa errado); grade com colunas de tamanhos intencionais (`2fr 1fr`) e
-   mesma classe acusa: exceção com `data-ux-ignore`; `img` não é medida (foto varia de proporção). O extrator não rodou
-   num navegador nesta máquina (Playwright ausente); as funções `grade` e `classe` rodam no Node pelo canário.
+   mesma classe acusa: exceção com `data-ux-ignore`; `img` não é medida (foto varia de proporção); cartões em `flex`
+   com larguras diferentes não são acusados na largura, só na altura (débito declarado, preço de não acusar chip).
+   **Não verificado:** o extrator não rodou num navegador nesta máquina (Playwright ausente); as funções `arranjo`,
+   `trilhas` e `classe` rodam no Node pelo canário.
 4. Efeito: painéis já aprovados com cartões ou gráficos de tamanhos diferentes passam a ter achado na próxima rodada.
 5. Retrato salvo antes desta emenda (sem `tag`, `classe` e `em_grade`) é erro (sai 2): extrair de novo.
