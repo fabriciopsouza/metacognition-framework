@@ -157,7 +157,7 @@
     "_note": "chaves sem prefixo _ sao riscos -> tier; risco sobrepoe papel + exige gate humano (HITL)"
   },
   "heterogeneity_ladder": [
-    "1. familia DIFERENTE: Codex como revisor formal alternado (revisao_alternada) ou hub cross-IA quando configurado (Gemini revisa bloco Claude e vice-versa — ADR-069)",
+    "1. familia DIFERENTE: Codex como revisor formal alternado (revisao_alternada) ou hub cross-IA quando configurado (ADR-069; Gemini so pre-revisao, revisao paralela ou item simples)",
     "2. modelo diferente, MESMA familia: autor max/balanced -> critico no degrau distinto mais capaz disponivel (autor fable/opus -> sonnet; autor sonnet/haiku -> fable, fallback opus)",
     "3. mesmo modelo, contexto fresh — PERMITIDO mas DECLARADO no veredito ('heterogeneidade indisponivel'), nunca silencioso (ADR-018: declarar, nao fingir)"
   ],
@@ -172,6 +172,7 @@
     "passo_1": {
       "degrau": "um abaixo do default",
       "resolve_hoje": "sonnet",
+      "alterna_com": "codex (revisao_alternada: rodada impar Codex, par Sonnet)",
       "papel": "primeiro QA adversarial final",
       "por_que": "distinto do autor e barato o suficiente para ler o conjunto inteiro e derrubar o obvio"
     },
@@ -190,6 +191,7 @@
     "juncoes": {
       "degrau": "um abaixo do default",
       "resolve_hoje": "sonnet",
+      "alterna_com": "codex (revisao_alternada: rodada impar Codex, par Sonnet)",
       "por_que": "QA de juncao acontece muitas vezes por bloco; o degrau acima nao e gasto aqui",
       "quando": "nas juncoes internas do trabalho (J0 a J6), que acontecem muitas vezes por bloco. O degrau acima NAO e gasto aqui — se fosse, o custo mataria a pratica e alguem desligaria o gate, que e o modo classico de um controle deixar de existir."
     },
@@ -220,8 +222,8 @@
       "primeira_revisao": "o degrau abaixo do default (qa_final_duplo.passo_1 e juncoes) alterna com o trabalhador de revisor_formal: rodada impar Codex, rodada par Sonnet. Risco baixo e o momento 1 (revisao da especificacao) comecam pelo Codex; o momento 3 (revisao do conjunto) comeca pela familia oposta a da ultima rodada do momento 1. Codex indisponivel (sem cota, erro da via) -> Sonnet, declarado no veredito.",
       "consultivo": "Gemini (agy) e os demais trabalhadores sem revisor_formal: so pre-revisao, revisao paralela ou item simples; nunca o veredito.",
       "segunda_revisao": "inalterada: degrau acima do default, so com autorizacao ativa (qa_final_duplo.passo_2).",
-      "atestacao": "veredito do Codex grava atestacao.registro = id da chamada na trilha (registro.jsonl de tools/trabalhador_externo.py) no lugar de atestacao.agentId, e atestacao.modelo = 'codex/<modelo>' (distinto do autor). tools/squad_gate.py aceita um ou outro.",
-      "limites": "Codex roda so leitura (sandbox read-only, pasta vazia, material por --arquivo) e so em repositorio cuja classe ele aceita; classe empresa continua so no trabalhador local."
+      "atestacao": "veredito do Codex grava atestacao.registro = id da chamada na trilha (registro.jsonl de tools/trabalhador_externo.py) no lugar de atestacao.agentId, e atestacao.modelo = 'codex/<modelo>' (distinto do autor). tools/squad_gate.py aceita um ou outro, sem consultar a trilha: mesma confianca que ja da ao agentId sem prova de transcricao (limite declarado no ADR-131).",
+      "limites": "Codex roda so leitura (sandbox read-only, pasta vazia, material por --arquivo; em 31/10/2026 a leitura de arquivo fora da pasta foi bloqueada pela politica do sandbox) e so em repositorio cuja classe ele aceita; classe empresa continua so no trabalhador local."
     },
     "classes_de_dado": {
       "_leia": "Ordem do MENOS para o MAIS restrito. Cada repositorio declara a sua em `.agent/classe-de-dado.json` ({\"classe\": \"<nome>\", \"origem\": \"<quem decidiu e onde>\"}), escrito pela sessao do PROPRIO repositorio (write-isolation). Sem declaracao, ou com valor desconhecido, vale a classe mais restrita: o executor nunca presume que o dado pode sair.",
@@ -234,12 +236,12 @@
     "trabalhadores": {
       "codex": {
         "via": "codex",
-        "modelo": "padrao-do-codex-cli",
+        "modelo": "gpt-6.1-sol",
         "familia": "openai",
         "sai_da_maquina": true,
         "dados_aceitos": ["publico", "sintetico"],
         "revisor_formal": true,
-        "uso": "revisor formal alternado com o Sonnet (revisao_alternada); 'padrao-do-codex-cli' = sem -m, vale o modelo da conta no codex-cli (o nome real fica na saida da chamada)"
+        "uso": "revisor formal alternado com o Sonnet (revisao_alternada); modelo fixado com -m (primeiro da lista do codex-cli 0.164 em 31/10/2026, o mesmo testado em 25/10); trocar = editar aqui"
       },
       "gemini-pro": {
         "via": "agy",

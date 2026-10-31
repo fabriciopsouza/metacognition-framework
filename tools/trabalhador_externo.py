@@ -361,16 +361,15 @@ def via_codex(trab, mensagem, esquema_path, timeout):
     with tempfile.TemporaryDirectory(prefix="trab-codex-") as vazia:
         saida_arq = os.path.join(vazia, "ultima.txt")
         cmd = [_codex_bin(), "exec", "--ignore-user-config", "--ignore-rules", "--ephemeral",
-               "--skip-git-repo-check", "-s", "read-only", "-C", vazia, "-o", saida_arq]
-        if not str(trab["modelo"]).startswith("padrao"):
-            cmd += ["-m", trab["modelo"]]
+               "--skip-git-repo-check", "--json", "-s", "read-only", "-C", vazia, "-o", saida_arq,
+               "-m", trab["modelo"]]
         if esquema_path:
             cmd += ["--output-schema", os.path.abspath(esquema_path)]
         cmd.append("-")
         p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                              text=True, encoding="utf-8", cwd=vazia)
         try:
-            _, erro = p.communicate(mensagem, timeout=timeout)
+            eventos, erro = p.communicate(mensagem, timeout=timeout)
         except subprocess.TimeoutExpired:
             _matar_arvore(p)
             p.communicate(timeout=30)
@@ -385,9 +384,17 @@ def via_codex(trab, mensagem, esquema_path, timeout):
             estruturado = json.loads(texto)
         except ValueError:
             pass  # rodar() marca INVALIDO: resposta sem JSON estruturado
+    uso = {}
+    for ln in (eventos or "").splitlines():  # tokens vem no evento turn.completed do --json
+        try:
+            ev = json.loads(ln)
+        except ValueError:
+            continue
+        if isinstance(ev, dict) and ev.get("type") == "turn.completed":
+            uso = ev.get("usage") or {}
     ok = p.returncode == 0 and bool(texto)  # resposta vazia nunca e' SUCCESS
     return {"status_via": "SUCCESS" if ok else "ERRO", "texto": texto, "estruturado": estruturado,
-            "negado": [], "tokens_entrada": None, "tokens_saida": None,
+            "negado": [], "tokens_entrada": uso.get("input_tokens"), "tokens_saida": uso.get("output_tokens"),
             "erro_via": None if ok else f"rc {p.returncode}, resposta {'vazia' if not texto else 'ok'}: "
                                          f"{(erro or '')[-400:]}"}
 

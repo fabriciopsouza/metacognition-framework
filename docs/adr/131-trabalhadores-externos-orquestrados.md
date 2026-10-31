@@ -78,7 +78,8 @@ pedido" (26/10/2026).
 
 1. **Trabalhador `codex`** em `tools/model-policy.json` (família openai, sai da máquina, aceita `publico` e `sintetico`,
    `revisor_formal: true`). Via nova `codex` no executor: `codex exec` com `--ignore-user-config`, `--ignore-rules`,
-   `--ephemeral`, sandbox `read-only`, na pasta vazia, material pela entrada; resposta vazia é ERRO.
+   `--ephemeral`, `--json` (tokens do evento `turn.completed`), sandbox `read-only`, modelo fixado com `-m`
+   (`gpt-6.1-sol`), na pasta vazia, material pela entrada; resposta vazia ou saída diferente de 0 é ERRO.
 2. **Exceção ao item 4 da decisão:** a saída do trabalhador com `revisor_formal` é revisão formal que decide, com aviso
    próprio; os demais (Gemini incluído) continuam consultivos: pré-revisão, revisão paralela ou item simples.
 3. **Alternância** (`revisao_alternada` na política): a 1ª revisão (junções e passo 1 do QA final) alterna por rodada,
@@ -92,11 +93,17 @@ pedido" (26/10/2026).
 6. **Classe deste repositório:** `.agent/classe-de-dado.json` = `sintetico` (código próprio, sem dado de empresa pela
    regra de isolamento da seção 9 da regra global).
 
-Limites: o veredito do Codex não tem a prova de transcrição de `tools/verify_qa_attestation.py` (a trilha local e o
-`sha256` da mensagem fazem esse papel, sem verificação automática cruzada); o modelo usado é o padrão da conta no
-codex-cli (`padrao-do-codex-cli`), sem nome fixo na política; a via não informa tokens. Prova: canários do executor
+Limites (QA r1 do Codex, achados aceitos como nota):
+- `atestacao.registro` não é cruzado com a trilha: mesma confiança que o gate já dá ao `agentId` sem a prova de
+  transcrição de `tools/verify_qa_attestation.py`. Cruzar registro, trabalhador, status e material é o próximo passo.
+- O isolamento de leitura é o do sandbox do Codex: em 31/10/2026, pedido para ler um arquivo fora da pasta, o Codex
+  tentou `Get-Content` e a política bloqueou ("NAO-CONSEGUI"). Não há canário automático dessa prova (exige o binário).
+- Herdados do executor, fora desta emenda: o resumo e a íntegra da resposta na trilha podem repetir o material enviado
+  (limite já declarado acima); o esquema (`--esquema`) não passa pelas regras de `--arquivo`. Prova: canários do executor
 (linha de comando, pasta vazia, resposta vazia, classe empresa recusada) e do gate (registro aceito, vazio recusado);
-chamada real em 31/10/2026, 4,1 s, resposta correta (trilha `20261031-094120-6c5738`).
+chamada real em 31/10/2026, 4,1 s, resposta correta (trilha `20261031-094120-6c5738`); QA r1 pelo próprio Codex
+(trilha `20261031-094946-816923`, REPROVADO, 7 achados: modelo fixado, tokens lidos, canário reforçado e política
+coerente; os demais viraram os limites acima).
 
 ## Estado do QA
 | Rodada | Revisor | Veredito | Achados | Destino |

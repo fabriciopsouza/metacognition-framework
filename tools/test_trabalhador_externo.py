@@ -184,34 +184,42 @@ def run():
     class PopenFalso:
         cmds = []
 
+        rc = 0
+
         def __init__(self, cmd, **kw):
             PopenFalso.cmds.append((cmd, kw.get("cwd")))
-            self.cmd, self.returncode = cmd, 0
+            self.cmd, self.returncode = cmd, PopenFalso.rc
 
         def communicate(self, entrada=None, timeout=None):
+            PopenFalso.entrada = entrada
             arq = self.cmd[self.cmd.index("-o") + 1]
             if PopenFalso.resposta is not None:
                 with open(arq, "w", encoding="utf-8") as fh:
                     fh.write(PopenFalso.resposta)
-            return "", ""
+            return ('{"type":"thread.started"}\nlixo\n'
+                    '{"type":"turn.completed","usage":{"input_tokens":30,"output_tokens":4}}\n'), ""
     popen_orig, bin_orig = tx.subprocess.Popen, os.environ.get("CODEX_BIN")
     tx.subprocess.Popen, os.environ["CODEX_BIN"] = PopenFalso, "codex-falso"
     try:
         PopenFalso.resposta = "achados: nenhum"
-        r = tx.via_codex({"modelo": "padrao-do-codex-cli"}, "msg", None, 10)
+        r = tx.via_codex({"modelo": "gpt-x"}, "msg-unica", None, 10)
         cmd, cwd = PopenFalso.cmds[-1]
-        if r["status_via"] != "SUCCESS" or r["texto"] != "achados: nenhum":
-            fails.append(f"via_codex com resposta tem de ser SUCCESS ({r})")
-        for exigido in ("read-only", "--ignore-user-config", "--ignore-rules", "--ephemeral"):
+        if r["status_via"] != "SUCCESS" or r["texto"] != "achados: nenhum" or PopenFalso.entrada != "msg-unica":
+            fails.append(f"via_codex: mensagem pela entrada e resposta lida do -o ({r})")
+        if (r["tokens_entrada"], r["tokens_saida"]) != (30, 4):
+            fails.append("via_codex tem de ler os tokens do evento turn.completed")
+        for exigido in ("read-only", "--ignore-user-config", "--ignore-rules", "--ephemeral", "--json"):
             if exigido not in cmd:
                 fails.append(f"via_codex sem {exigido}")
-        if "-m" in cmd or cmd[cmd.index("-C") + 1] != cwd or os.path.realpath(cwd) == os.path.realpath(r5):
-            fails.append("via_codex tem de rodar na pasta vazia e sem -m para o modelo padrao")
-        tx.via_codex({"modelo": "gpt-x"}, "msg", None, 10)
-        if PopenFalso.cmds[-1][0][PopenFalso.cmds[-1][0].index("-m") + 1] != "gpt-x":
-            fails.append("via_codex tem de passar -m quando o modelo e' nomeado")
-        PopenFalso.resposta = None
-        if tx.via_codex({"modelo": "padrao-do-codex-cli"}, "msg", None, 10)["status_via"] == "SUCCESS":
+        if cmd[cmd.index("-m") + 1] != "gpt-x" or cmd[-1] != "-":
+            fails.append("via_codex tem de fixar o modelo com -m e ler o pedido da entrada")
+        if cmd[cmd.index("-C") + 1] != cwd or os.path.exists(cwd):  # pasta propria, apagada ao fim
+            fails.append("via_codex tem de rodar na pasta vazia e descartavel")
+        PopenFalso.rc = 1
+        if tx.via_codex({"modelo": "gpt-x"}, "msg", None, 10)["status_via"] == "SUCCESS":
+            fails.append("via_codex com rc diferente de 0 nao pode ser SUCCESS")
+        PopenFalso.rc, PopenFalso.resposta = 0, None
+        if tx.via_codex({"modelo": "gpt-x"}, "msg", None, 10)["status_via"] == "SUCCESS":
             fails.append("via_codex com resposta vazia nao pode ser SUCCESS")
     finally:
         tx.subprocess.Popen = popen_orig
