@@ -78,11 +78,11 @@ painel com vários indicadores; o cartão isolado segue a seção anterior (sepa
 2. **Tamanho igual:** elementos do mesmo tipo têm o mesmo tamanho em todos os cartões; gráficos com a mesma largura e
    altura. Dono: "não gosto quando elementos ficam de tamanhos diferentes". Medido pelo gate (medida 3).
 3. **Meta abaixo do número;** percentual antes do valor, com seta: "▼ −11,4% (−R$ 167 mil)".
-4. **Comparação na linha da referência,** 12 px: "antes 30,1 · ▲ 69%".
+4. **Comparação na mesma linha,** 12 px: "antes 30,1 · ▲ 69%" (na linha da referência: INFERIDO, leitura do autor).
 5. **Gráfico embaixo,** tipo pelo significado: linha para tendência e para ritmo acumulado contra a meta até hoje;
    colunas para mudança entre períodos, sempre com base zero; cascata para composição (início, entradas, saídas,
    final); distribuição só com medida individual. Meta tracejada; só o último ponto na cor da polaridade.
-6. **Nota curta e clara;** linha que não muda a decisão sai. Ação curta à direita ("Ver lista"), sem "→".
+6. **Nota curta e clara;** linha que não muda a decisão sai. Ação curta à direita ("Ver lista"), sem "→" (traço 5).
 7. **Visão geral, duas variantes válidas** (dono: "ambas são muito boas e são opções válidas"):
    - variante 1: rótulo em caixa alta com o período, número, meta, variação e minigráfico de linha embaixo, com
      pontos. Exceção declarada ao traço 5 de "cara de IA" (caixa alta), por escolha do dono;
