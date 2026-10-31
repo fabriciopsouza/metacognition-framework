@@ -1,8 +1,8 @@
 ---
 name: ux-design
 description: "Ativar ao construir, alterar ou revisar uma tela, página, painel ou componente visual: escolher o perfil de estilo, planejar tokens antes do código, revisar contra os traços de 'cara de IA' e a lente de interface, e rodar o gate de UX antes de aprovar. NÃO ativar para especificar UX do zero (isso é a especificação DESIGN.md e EXPERIENCE.md do processo de produto) nem para gráfico isolado (skill de visualização de dados)."
-version: 1.0.0
-source: "decisão do dono, 30/10/2026 (opção A da pesquisa E:\\_GIT PROJECTS\\pesquisas\\2026-10-30_skills-design-ux, v3): absorver revisão e gate de UX no framework; perfis corporativo, minimalista, moderno, arrojado e outro"
+version: 1.1.0
+source: "decisão do dono, 30/10/2026 (opção A da pesquisa E:\\_GIT PROJECTS\\pesquisas\\2026-10-30_skills-design-ux, v3): absorver revisão e gate de UX no framework; calibração do dono no mesmo dia (v4, calibracao-dono.md): perfis com corporativo 2, limites de texto, cor fala e forma fala"
 last_review: 2026-10-30
 role_order: null
 consumes:
@@ -25,19 +25,46 @@ shared_refs:
 
 ## Definições
 
-- **Perfil:** direção de estilo do projeto, declarada no `DESIGN.md`; muda só os limites da tabela abaixo.
+- **Perfil:** direção de estilo do projeto, declarada no `DESIGN.md`; muda o estilo, não os limites de texto.
+- **Polaridade:** se subir é bom ou ruim para a métrica; declarada por métrica, nunca deduzida.
 - **"Cara de IA":** escolha padrão que aparece em qualquer assunto, em vez de escolha feita para o pedido.
 - **Gate:** medida por ferramenta que reprova a entrega; prosa desta skill orienta, o gate decide.
 
-## Perfis (INFERIDO: propostos pela pesquisa, a calibrar com o dono)
+## Norte: cor fala, forma fala (dono, 30/10/2026)
 
-| Perfil | Direção | Limite que muda |
-|---|---|---|
-| corporativo (padrão) | grade rígida, 1 família tipográfica, 1 cor de destaque, densidade média | — |
-| minimalista | muito espaço, poucos elementos, sem decoração | legenda ≤ 8 palavras |
-| moderno | tipografia de destaque, hierarquia forte, um único momento de movimento | — |
-| arrojado | um elemento ousado, o resto disciplinado | como corporativo no script; o elemento ousado leva `data-ux-ignore` |
-| outro | direção escrita pelo dono no `DESIGN.md` | como corporativo no script; regra própria do dono revisada à mão |
+Princípios de *Storytelling with Data* (Knaflic, 2015) como norte; variação pequena é aceita com motivo declarado.
+
+1. **Cor fala:** cinza é a base; cor só onde há significado (polaridade, destaque). Vermelho só para negativo ou meta
+   não alcançada. Sem polaridade declarada, a variação fica em cinza. Cor nunca é o único sinal (seta ▲/▼ junto).
+2. **Forma fala:** linha para tendência, barra para comparação, tracejado para meta ou previsão, seta para direção.
+3. Contexto antes do visual (quem lê, o que decide); visual adequado (sem pizza 3D nem eixo duplo).
+4. Sem poluição: tira grade, borda, legenda separada e casa decimal que não muda a decisão; rótulo direto no dado.
+5. Um destaque por vez (cor, tamanho ou posição); o título diz a conclusão, não o assunto.
+6. Sem espaço vazio nem distribuição ruim: o conteúdo ocupa a área do componente.
+
+Paleta de polaridade: verde `#1f7a4d` bom e vermelho `#b3261e` ruim; acessível: azul `#1170aa` e laranja `#c85200`
+(paleta "Color Blind" do Tableau). Texto colorido tem contraste ≥ 4,5:1 com o fundo (tom suave ou claro conforme o fundo).
+
+## Perfis (calibrados pelo dono, 30/10/2026)
+
+Todos usam os limites de texto e a polaridade acima.
+
+| Perfil | Direção |
+|---|---|
+| corporativo (padrão) | grade rígida, 1 família sem serifa, densidade média (margem 16 px, 10 px entre itens) |
+| corporativo 2 (`corporativo-2`) | igual ao corporativo; a ousadia num lugar só: a variação em faixa compacta na cor da polaridade, texto branco 11 px |
+| minimalista | muito espaço, poucos elementos, sem decoração; complemento em tom suave da polaridade; sem gráfico |
+| moderno | tipografia de destaque, hierarquia forte, um único momento de movimento (que respeita movimento reduzido) |
+| arrojado | um elemento ousado, o resto disciplinado; o elemento ousado leva a cor da polaridade |
+| outro | direção escrita pelo dono no `DESIGN.md`; regra própria revisada à mão |
+
+## Cartão de indicador
+
+Título 14 px semibold · número 38 px bold, algarismos tabulares · complemento 12 px na cor da polaridade, com seta,
+comparando com a base que casa com o período mostrado · ação ("Ver pedidos") à direita na linha do complemento, 11 px,
+texto simples ou botão discreto · minigráfico opcional (sem, linha, barras ou cascata; cascata só no ano até a data) à
+direita do número, até 180 px, último ponto na cor da polaridade, com link e com a ação visível em texto (dica não
+aparece no toque).
 
 ## Fluxo
 
@@ -71,8 +98,8 @@ grade, borda ou base · sem barra de rolagem inútil · layout aguenta texto cur
 
 ## Leis de texto de interface
 
-1. Botão, opção, aba e cabeçalho: até 3 palavras, sem parêntese explicativo. Título até 6 palavras ou um fato curto;
-   legenda até 12 (título e legenda: INFERIDO, a calibrar com o dono).
+1. Botão, opção, aba e cabeçalho: até 2 palavras, sem parêntese explicativo. Título até 4 palavras; legenda e nota
+   até 8; linha até 80 caracteres (calibração do dono, 30/10/2026).
 2. Datas e anos calculados do período, nunca escritos fixos.
 3. Sem jargão interno na tela; o detalhe vai para a dica ou some.
 4. Botão diz o que acontece ("Salvar alterações", não "Enviar"); a ação mantém o nome no fluxo ("Publicar" → "Publicado").
@@ -104,4 +131,8 @@ Sem navegador ou Node na máquina: declarar o gate como **não executado** (o sc
   Texto traduzido e resumido; não é o original.
 - Lente de revisão: seleção traduzida das Web Interface Guidelines de vercel-labs (MIT;
   https://github.com/vercel-labs/web-interface-guidelines, acesso 30/10/2026).
-- Leis de texto: pesquisa do dono `E:\_GIT PROJECTS\pesquisas\2026-10-17_metodo-texto-de-interface`.
+- Leis de texto: pesquisa do dono `E:\_GIT PROJECTS\pesquisas\2026-10-17_metodo-texto-de-interface`; limites
+  calibrados pelo dono em `E:\_GIT PROJECTS\pesquisas\2026-10-30_skills-design-ux\calibracao-dono.md`.
+- Norte "cor fala, forma fala": dono; princípios das 6 lições de Cole Nussbaumer Knaflic, *Storytelling with Data*,
+  Wiley, 2015 (resumo conferido em fontes de terceiros, acesso 30/10/2026; fontes no arquivo de calibração).
+- Paleta acessível: "Color Blind" do Tableau, conferida nos dados do ggthemes (acesso 30/10/2026).

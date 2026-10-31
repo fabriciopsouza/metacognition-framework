@@ -16,6 +16,10 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   1280 px, palavras por tipo e ação sem controle; `capabilities.json` com `ux-gate` (fail-closed, mutação declarada).
 - Prova: canário PASS; mutantes do gate contra o canário 31 de 32 mortos (o vivo é a guarda `__main__`, equivalente).
   Limites: perfis e limites de título e legenda INFERIDO; extrator Playwright fora dos canários (sem navegador).
+- Emenda (calibração do dono, 30/10/2026): skill `ux-design` 1.1.0 com o perfil `corporativo-2`, o norte "cor fala,
+  forma fala" (*Storytelling with Data*), polaridade por métrica, cartão de indicador e paleta acessível conferida; gate
+  com botão, opção, aba e cabeçalho até 2 palavras, título até 4 e legenda até 8 em todos os perfis. Telas que passavam
+  com botão de 3 palavras passam a ter achado. Fontes em `pesquisas\2026-10-30_skills-design-ux\calibracao-dono.md`. [CONFIRMADO]
 
 ### Padrão de checklist de execução (29/10/2026)
 

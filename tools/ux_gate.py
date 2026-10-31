@@ -21,8 +21,9 @@ MAX_CARACTERES_LINHA = 80
 DESVIO_ALINHAMENTO_PX = 2
 # Acima disso a diferenca e intencional (recuo, outra coluna), nao quase-alinhamento. INFERIDO; calibrar no DESIGN.md.
 QUASE_ALINHADO_PX = 16
-LIMITE_PALAVRAS = {"controle": 3, "cabecalho": 3, "titulo": 6, "legenda": 12}  # titulo e legenda: INFERIDO
-PERFIS = {"corporativo": {}, "minimalista": {"legenda": 8}, "moderno": {}, "arrojado": {}, "outro": {}}
+LIMITE_PALAVRAS = {"controle": 2, "cabecalho": 2, "titulo": 4, "legenda": 8}  # calibrado pelo dono, 30/10/2026
+# Perfis mudam o estilo, nao os limites (calibracao do dono); o dicionario guarda os nomes validos e a excecao futura.
+PERFIS = {"corporativo": {}, "corporativo-2": {}, "minimalista": {}, "moderno": {}, "arrojado": {}, "outro": {}}
 
 # Executado no navegador: um registro por elemento medido. `tipo` decide a regra de palavras.
 EXTRATOR = r"""
