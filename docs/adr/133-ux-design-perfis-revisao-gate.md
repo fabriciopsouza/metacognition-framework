@@ -33,8 +33,8 @@ do revisor; a skill fica curta e a regra mensurável sai da prosa.
 
 ## Limites declarados
 
-1. INFERIDO, a calibrar com o dono: os perfis, o limite de título (6 palavras) e de legenda (12; 8 no minimalista) e o
-   teto de 16 px que separa quase-alinhamento de recuo intencional.
+1. Calibrado pelo dono em 30/10/2026 (emenda abaixo): perfis, limites de texto e o teto de 16 px que separa
+   quase-alinhamento de recuo intencional (mantido).
 2. INFERIDO: o pacote npm `impeccable@4.8.0` corresponde à tag `cli-v4.8.0`; conferir antes do primeiro uso.
 3. O extrator Playwright de `tools/ux_gate.py` não roda nos canários (sem navegador na máquina de construção); o
    canário cobre a avaliação sobre o retrato, o caminho `--url` com o extrator substituído e a falha do Playwright
@@ -47,6 +47,20 @@ do revisor; a skill fica curta e a regra mensurável sai da prosa.
    padding e borda); bloco de largura total continua medido. Redesenho em duas etapas: a r1 e a r2 acharam falso
    positivo em layout centralizado; a r3, falso negativo em pai com padding simétrico (3 reprovações seguidas na mesma
    família; seguida a recomendada da QA sem parar, pela regra D10 do dono). Limite conhecido: pai com barra de
-   rolagem vertical (`overflow: auto`) desloca o centro em ~15 px e a caixa centralizada nele pode ser medida; perfis `arrojado` e `outro` usam os limites do corporativo no
-   script, e a diferença deles fica em `data-ux-ignore` e na revisão.
+   rolagem vertical (`overflow: auto`) desloca o centro em ~15 px e a caixa centralizada nele pode ser medida; todos os
+   perfis usam os mesmos limites no script, e a diferença de estilo fica na revisão.
 6. AccessLint: o CLI antigo está arquivado; axe-core é o caminho padrão (QA Sonnet r1, 30/10/2026).
+
+## Emenda — calibração do dono (30/10/2026)
+
+Decisão do dono, numa página interativa de calibração (texto colado: "manter os 5 perfis e incluir o corporativo 2;
+título até 4; legenda até 8; botão até 2; linha até 80; desalinhamento: manter 2 a 16 px"; norte "COR FALA; FORMA FALA",
+com *Storytelling with Data*). Fontes em `E:\_GIT PROJECTS\pesquisas\2026-10-30_skills-design-ux\calibracao-dono.md`.
+
+1. Gate: botão, opção, aba e cabeçalho até 2 palavras (era 3, regra do dono de 17/10/2026); título até 4 (era 6);
+   legenda até 8 (era 12); os limites valem em todos os perfis; perfil novo `corporativo-2`.
+2. Skill `ux-design` 1.1.0: norte cor fala e forma fala, polaridade declarada por métrica (sem ela, variação em cinza),
+   cartão de indicador e paleta acessível conferida ("Color Blind" do Tableau: #1170aa e #c85200).
+3. Efeito: telas já aprovadas com botão ou cabeçalho de 3 palavras, título de 5 ou 6 e legenda de 9 a 12 passam a ter
+   achado na próxima rodada do gate; corrigir ou declarar exceção (`data-ux-ignore` com motivo).
+4. A "cor fala" não é medida pelo script (depende da polaridade, que é dado da métrica): fica na revisão.

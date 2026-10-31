@@ -5,7 +5,8 @@
   (b) cada medida, quebrada isoladamente, gera o achado dela: rolagem, palavras por tipo, caracteres por linha,
       acao sem controle e irmaos quase alinhados;
   (c) bordas iguais ou bem distintas (recuo intencional) e irmaos lado a lado nao sao desalinhamento;
-  (d) o perfil minimalista aperta a legenda para 8 palavras; perfil desconhecido e retrato malformado sao erro;
+  (d) limites calibrados pelo dono valem em todos os perfis (legenda 8, cabecalho 2); perfil desconhecido e retrato
+      malformado sao erro;
   (e) a linha de comando sai 0, 1 e 2 conforme o caso, inclusive com falha do Playwright;
   (f) a funcao `centrado` do EXTRATOR, executada no Node, separa caixa centralizada de bloco de largura total em pai
       com padding (sem Node: SKIP declarado na saida).
@@ -62,15 +63,15 @@ def test_limpo_passa():
 def test_cada_medida_acusa():
     casos = {
         "rolagem horizontal": lambda t: t.update(rolagem=True),
-        "controle com 4 palavras": lambda t: t["elementos"][2].update(texto="Salvar todas as alteracoes"),
-        "titulo com 7 palavras": lambda t: t["elementos"][0].update(texto="Um dois tres quatro cinco seis sete"),
-        "legenda com 13 palavras": lambda t: t["elementos"][3].update(texto=" ".join(["p"] * 13)),
+        "controle com 3 palavras": lambda t: t["elementos"][2].update(texto="Salvar todas alteracoes"),
+        "titulo com 5 palavras": lambda t: t["elementos"][0].update(texto="Um dois tres quatro cinco"),
+        "legenda com 9 palavras": lambda t: t["elementos"][3].update(texto=" ".join(["p"] * 9)),
         "caracteres por linha": lambda t: t["elementos"][1].update(texto="x" * 162, linhas=2),
         "acao sem controle": lambda t: t["elementos"][1].update(clicavel_sem_controle=True),
         "irmaos desalinhados": lambda t: t["elementos"][2].update(esquerda=21),
     }
-    trecho = {"rolagem horizontal": "rolagem", "controle com 4 palavras": "controle com 4",
-              "titulo com 7 palavras": "titulo com 7", "legenda com 13 palavras": "legenda com 13",
+    trecho = {"rolagem horizontal": "rolagem", "controle com 3 palavras": "controle com 3",
+              "titulo com 5 palavras": "titulo com 5", "legenda com 9 palavras": "legenda com 9",
               "caracteres por linha": "81 caracteres", "acao sem controle": "acao sem controle",
               "irmaos desalinhados": "desalinhados em 5.0px"}
     for nome, quebra in casos.items():
@@ -83,8 +84,10 @@ def test_cada_medida_acusa():
     r["1280"]["elementos"][1].update(texto="x" * 160, linhas=2)
     checar("(b) exatamente 80 por linha passa", achados(r) == [])
     r = limpo()
-    r["1280"]["elementos"][2]["texto"] = "Salvar todas alteracoes"
-    checar("(b) exatamente 3 palavras no controle passa", achados(r) == [])
+    r["1280"]["elementos"][0]["texto"] = "Um dois tres quatro"
+    r["1280"]["elementos"][3]["texto"] = " ".join(["p"] * 8)
+    r["1280"]["elementos"].append(el(5, "cabecalho", "Valor total", 120))
+    checar("(b) exatamente 2, 4 e 8 palavras (controle e cabecalho, titulo, legenda) passam", achados(r) == [])
 
 
 def test_alinhamento_sem_falso_positivo():
@@ -105,10 +108,26 @@ def test_alinhamento_sem_falso_positivo():
 
 
 def test_perfis_e_malformado():
+    # Cada perfil da lista do dono existe e aplica os 4 limites: um acima do limite em cada tipo = 4 achados.
     r = limpo()
-    r["360"]["elementos"][3]["texto"] = " ".join(["p"] * 9)
-    checar("(d) corporativo aceita 9", achados(r) == [])
-    checar("(d) minimalista recusa 9", len(achados(r, "minimalista")) == 1)
+    acima = r["360"]["elementos"]
+    acima[0]["texto"] = "Um dois tres quatro cinco"
+    acima[2]["texto"] = "Salvar todas alteracoes"
+    acima[3]["texto"] = " ".join(["p"] * 9)
+    acima.append(el(5, "cabecalho", "Valor total liquido", 120))
+    borda = limpo()  # exatamente no limite em cada tipo: nenhum achado
+    borda["360"]["elementos"][0]["texto"] = "Um dois tres quatro"
+    borda["360"]["elementos"][3]["texto"] = " ".join(["p"] * 8)
+    borda["360"]["elementos"].append(el(5, "cabecalho", "Valor total", 120))
+    dono = ("corporativo", "corporativo-2", "minimalista", "moderno", "arrojado", "outro")
+    checar(f"(d) perfis iguais a lista do dono: {ux_gate.PERFIS}", tuple(ux_gate.PERFIS) == dono)
+    for perfil in dono:
+        try:
+            tipos = sorted(a.split(": ")[1].split(" com ")[0] for a in achados(r, perfil))
+            checar(f"(d) {perfil} aplica os 4 limites: {tipos}", tipos == ["cabecalho", "controle", "legenda", "titulo"])
+            checar(f"(d) {perfil} aceita o limite exato", achados(borda, perfil) == [])
+        except ValueError as erro:
+            checar(f"(d) {perfil} aceito: {erro}", False)
     for nome, retrato, perfil in (("perfil desconhecido", limpo(), "neon"),
                                   ("sem 1280", {"360": limpo()["360"]}, "corporativo"),
                                   ("rolagem nao booleana", {**limpo(), "360": {"rolagem": 1, "elementos": []}},
