@@ -69,7 +69,7 @@ com *Storytelling with Data*). Fontes em `E:\_GIT PROJECTS\pesquisas\2026-10-30_
 
 Decisão do dono na página de calibração dos painéis (v2, aprovada): "não gosto quando elementos ficam de tamanhos
 diferentes"; "ambas são muito boas e são opções válidas" (duas variantes do painel de visão geral). Fonte:
-`E:\_GIT PROJECTS\pesquisas6-10-30_skills-design-ux\calibracao-dono.md`, seção "Calibração de painéis".
+`E:\_GIT PROJECTS\pesquisas\2026-10-30_skills-design-ux\calibracao-dono.md`, seção "Calibração de painéis".
 
 1. Skill `ux-design` 1.2.0, seção "Painel de indicadores": slots fixos do cartão, tamanho igual, meta abaixo do número,
    percentual antes do valor, comparação na linha da referência, gráfico embaixo com tipo pelo significado, nota curta
