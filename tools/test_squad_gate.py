@@ -77,6 +77,10 @@ def test_registro_do_revisor_externo_PASSA_e_vazio_NAO():
     ev["atestacao"]["registro"] = "  "
     faltam, _ = sg.evaluate(["tools/squad_gate.py"], MANIFEST, artifacts=[ev])
     assert "qa_critic" in faltam
+    # registro nao dispensa modelo diferente do autor
+    ev["atestacao"].update(registro="20261031-101500-a1b2c3", modelo="claude-opus")
+    faltam, _ = sg.evaluate(["tools/squad_gate.py"], MANIFEST, artifacts=[ev])
+    assert "qa_critic" in faltam
 
 
 def test_doc_comum_nao_exige_qa():

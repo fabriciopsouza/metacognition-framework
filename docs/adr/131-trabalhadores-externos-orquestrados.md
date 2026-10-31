@@ -99,7 +99,11 @@ Limites (QA r1 do Codex, achados aceitos como nota):
 - O isolamento de leitura é o do sandbox do Codex: em 31/10/2026, pedido para ler um arquivo fora da pasta, o Codex
   tentou `Get-Content` e a política bloqueou ("NAO-CONSEGUI"). Não há canário automático dessa prova (exige o binário).
 - Herdados do executor, fora desta emenda: o resumo e a íntegra da resposta na trilha podem repetir o material enviado
-  (limite já declarado acima); o esquema (`--esquema`) não passa pelas regras de `--arquivo`. Prova: canários do executor
+  (limite já declarado acima); o esquema (`--esquema`) não passa pelas regras de `--arquivo`.
+- `registro` vale com qualquer `modelo` diferente do autor; o gate não exige o prefixo `codex/` (QA r2, nota).
+- A classe `sintetico` deste repositório vale para todo trabalhador que a aceite, não só para o Codex (QA r2, nota).
+
+Prova: canários do executor
 (linha de comando, pasta vazia, resposta vazia, classe empresa recusada) e do gate (registro aceito, vazio recusado);
 chamada real em 31/10/2026, 4,1 s, resposta correta (trilha `20261031-094120-6c5738`); QA r1 pelo próprio Codex
 (trilha `20261031-094946-816923`, REPROVADO, 7 achados: modelo fixado, tokens lidos, canário reforçado e política

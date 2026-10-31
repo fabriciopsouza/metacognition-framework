@@ -171,6 +171,11 @@ def run():
     for tid, t in te["trabalhadores"].items():
         if t.get("revisor_formal") and t.get("familia") == "claude":
             fails.append(f"trabalhador {tid}: revisor_formal exige familia diferente de claude")
+    if te["trabalhadores"].get("codex", {}).get("revisor_formal") is not True or "revisao_alternada" not in te:
+        fails.append("politica: codex tem de ser revisor_formal e revisao_alternada tem de existir")
+    qfd = tx.json.load(open(tx.POLICY_PATH, encoding="utf-8"))["qa_final_duplo"]
+    if not all("codex" in str(qfd.get(k, {}).get("alterna_com", "")) for k in ("passo_1", "juncoes")):
+        fails.append("politica: passo_1 e juncoes tem de declarar alterna_com codex")
     f = ViaFalsa()
     rc, out = tx.rodar("codex", r5, "revise", ["a.txt"], te=te, vias=vias(f))
     if rc != tx.RC_OK or out.get("aviso") != tx.AVISO_FORMAL:
