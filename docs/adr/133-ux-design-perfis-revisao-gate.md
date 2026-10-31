@@ -64,3 +64,23 @@ com *Storytelling with Data*). Fontes em `E:\_GIT PROJECTS\pesquisas\2026-10-30_
 3. Efeito: telas já aprovadas com botão ou cabeçalho de 3 palavras, título de 5 ou 6 e legenda de 9 a 12 passam a ter
    achado na próxima rodada do gate; corrigir ou declarar exceção (`data-ux-ignore` com motivo).
 4. A "cor fala" não é medida pelo script (depende da polaridade, que é dado da métrica): fica na revisão.
+
+## Emenda — painel de indicadores e tamanho igual (30/10/2026)
+
+Decisão do dono na página de calibração dos painéis (v2, aprovada): "não gosto quando elementos ficam de tamanhos
+diferentes"; "ambas são muito boas e são opções válidas" (duas variantes do painel de visão geral). Fonte:
+`E:\_GIT PROJECTS\pesquisas6-10-30_skills-design-ux\calibracao-dono.md`, seção "Calibração de painéis".
+
+1. Skill `ux-design` 1.2.0, seção "Painel de indicadores": slots fixos do cartão, tamanho igual, meta abaixo do número,
+   percentual antes do valor, comparação na linha da referência, gráfico embaixo com tipo pelo significado, nota curta
+   e ação sem "→"; duas variantes da visão geral, a variante 1 como exceção declarada ao traço 5 (caixa alta).
+2. Gate: `tools/ux_gate.py` acusa irmãos do mesmo tipo (mesma tag e primeira classe) com tamanho diferente acima de
+   2 px. Item de grade (pai `grid`, ou `flex` com quebra): largura em todo o grupo, altura só entre os lado a lado.
+   Gráfico (`svg`, `canvas`): largura e altura. Filhos de pais do mesmo grupo entram no mesmo grupo (o gráfico de cada
+   cartão é comparado com os outros).
+3. Limites: tolerância de 2 px INFERIDA, a calibrar pelo dono; a primeira classe é tratada como o tipo (classe
+   utilitária primeiro, como no Tailwind, agrupa errado); grade com colunas de tamanhos intencionais (`2fr 1fr`) e
+   mesma classe acusa: exceção com `data-ux-ignore`; `img` não é medida (foto varia de proporção). O extrator não rodou
+   num navegador nesta máquina (Playwright ausente); as funções `grade` e `classe` rodam no Node pelo canário.
+4. Efeito: painéis já aprovados com cartões ou gráficos de tamanhos diferentes passam a ter achado na próxima rodada.
+5. Retrato salvo antes desta emenda (sem `tag`, `classe` e `em_grade`) é erro (sai 2): extrair de novo.

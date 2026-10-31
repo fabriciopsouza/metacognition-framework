@@ -21,6 +21,10 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   forma fala" (*Storytelling with Data*), polaridade por métrica, cartão de indicador e paleta acessível conferida; gate
   com botão, opção, aba e cabeçalho até 2 palavras, título até 4 e legenda até 8 em todos os perfis. Telas que passavam
   com botão de 3 palavras passam a ter achado. Fontes em `pesquisas\2026-10-30_skills-design-ux\calibracao-dono.md`. [CONFIRMADO]
+- Emenda (painel de indicadores, 30/10/2026): skill `ux-design` 1.2.0 com a seção "Painel de indicadores" (slots fixos,
+  tamanho igual, meta abaixo do número, gráfico embaixo pelo significado, duas variantes válidas da visão geral) e gate
+  com irmãos do mesmo tipo de tamanho diferente (> 2 px, INFERIDO, a calibrar). Prova: canário PASS; 15 de 15 mutantes
+  da medida mortos. Painéis já aprovados podem passar a ter achado. [CONFIRMADO]
 
 ### Padrão de checklist de execução (29/10/2026)
 

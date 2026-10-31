@@ -2,7 +2,8 @@
 """Gate de UX por medida (skill ux-design, camada 3): as medidas que as ferramentas prontas nao cobrem.
 
 Mede, numa pagina renderizada em 360 px e 1280 px: caracteres por linha de paragrafo, desalinhamento de irmaos na
-mesma coluna, rolagem horizontal, palavras por elemento e acao sem controle (`div` clicavel). Contraste, alvo e
+mesma coluna, rolagem horizontal, palavras por elemento, acao sem controle (`div` clicavel) e irmaos do mesmo tipo com
+tamanhos diferentes. Contraste, alvo e
 rotulos ficam com axe-core ou AccessLint; tracos de "cara de IA", com `impeccable detect` (roteiro na skill).
 
 Uso:
@@ -21,6 +22,9 @@ MAX_CARACTERES_LINHA = 80
 DESVIO_ALINHAMENTO_PX = 2
 # Acima disso a diferenca e intencional (recuo, outra coluna), nao quase-alinhamento. Mantido pelo dono, 30/10/2026.
 QUASE_ALINHADO_PX = 16
+# Irmaos do mesmo tipo (dono, 30/10/2026: "nao gosto quando elementos ficam de tamanhos diferentes"). INFERIDO, a calibrar.
+TOLERANCIA_TAMANHO_PX = 2
+GRAFICOS = ("svg", "canvas")
 LIMITE_PALAVRAS = {"controle": 2, "cabecalho": 2, "titulo": 4, "legenda": 8}  # calibrado pelo dono, 30/10/2026
 # Perfis mudam o estilo, nao os limites (calibracao do dono): so a lista de nomes validos, sem limite por perfil.
 PERFIS = ("corporativo", "corporativo-2", "minimalista", "moderno", "arrojado", "outro")
@@ -57,6 +61,13 @@ EXTRATOR = r"""
     const rg = document.createRange(); rg.selectNodeContents(el);
     return new Set([...rg.getClientRects()].map(r => Math.round(r.top))).size || 1;
   };
+  // Item de grade: o pai organiza os filhos em celulas (grid, ou flex com quebra de linha).
+  const grade = el => {
+    if (!el.parentElement) return false;
+    const cs = getComputedStyle(el.parentElement);
+    return cs.display.endsWith('grid') || (cs.display.endsWith('flex') && cs.flexWrap !== 'nowrap');
+  };
+  const classe = el => (el.getAttribute('class') || '').trim().split(/\s+/)[0];  // a primeira classe e o tipo
   const interativo = 'a,button,input,select,textarea,summary,[role],[tabindex]';
   const out = [], todos = [...document.querySelectorAll('body *')], indice = new Map(todos.map((e, i) => [e, i]));
   todos.forEach((el, i) => {
@@ -69,7 +80,8 @@ EXTRATOR = r"""
     out.push({id: i, pai: indice.has(el.parentElement) ? indice.get(el.parentElement) : -1,
       tipo: t, texto: (el.innerText || el.value || '').trim(), linhas: t === 'paragrafo' ? linhas(el) : 1,
       esquerda: b.left, topo: b.top, largura: b.width, altura: b.height, clicavel_sem_controle: clicavel,
-      coluna: !getComputedStyle(el).display.startsWith('inline') && !centrado(el, b)});
+      coluna: !getComputedStyle(el).display.startsWith('inline') && !centrado(el, b),
+      tag: el.tagName.toLowerCase(), classe: classe(el), em_grade: grade(el)});
   });
   return {rolagem: document.documentElement.scrollWidth > document.documentElement.clientWidth, elementos: out};
 }
@@ -98,6 +110,8 @@ def avaliar(retrato, perfil="corporativo"):
         for el in elementos:
             if type(el) is not dict or type(el.get("texto")) is not str or type(el.get("tipo")) is not str:
                 raise ValueError(f"elemento malformado em {largura}px: {el!r}"[:120])
+            if type(el.get("tag")) is not str or type(el.get("classe")) is not str or type(el.get("em_grade")) is not bool:
+                raise ValueError(f"elemento sem tag, classe ou em_grade em {largura}px (extrair de novo): {el!r}"[:120])
             texto, tipo = el["texto"], el["tipo"]
             palavras = len(texto.split())
             if tipo in lim and palavras > lim[tipo]:
@@ -112,6 +126,7 @@ def avaliar(retrato, perfil="corporativo"):
             if el["clicavel_sem_controle"]:
                 achados.append(f"{largura}px: acao sem controle (clicavel sem botao ou link): {texto[:40]!r}")
         achados += desalinhados(elementos, largura)
+        achados += tamanhos_diferentes(elementos, largura)
     return achados
 
 
@@ -130,6 +145,42 @@ def desalinhados(elementos, largura):
             if empilhados and DESVIO_ALINHAMENTO_PX < desvio < QUASE_ALINHADO_PX:
                 achados.append(f"{largura}px: irmaos desalinhados em {desvio:.1f}px "
                                f"(max {DESVIO_ALINHAMENTO_PX}): {a['texto'][:25]!r} / {b['texto'][:25]!r}")
+    return achados
+
+
+def grupos_de_tipo(elementos):
+    """Agrupa por (grupo do pai, tag, classe): filhos de pais do mesmo grupo (cartoes de uma grade) caem no mesmo grupo,
+    entao o grafico de cada cartao e comparado com os outros. Pai unico no grupo dele = grupo do proprio pai."""
+    chave, grupos = {}, {}
+    for el in elementos:  # ordem do documento: o pai vem antes do filho
+        chave[el["id"]] = (chave.get(el["pai"], ("pai", el["pai"])), el["tag"], el["classe"])
+        grupos.setdefault(chave[el["id"]], []).append(el)
+    return list(grupos.values())
+
+
+def tamanhos_diferentes(elementos, largura):
+    """Item de grade: largura igual em todo o grupo e altura igual entre os lado a lado. Grafico: largura e altura."""
+    achados = []
+    for grupo in grupos_de_tipo(elementos):
+        tag, classe = grupo[0]["tag"], grupo[0]["classe"]
+        if tag in GRAFICOS:
+            medidos, lado_a_lado = grupo, False
+        else:
+            medidos, lado_a_lado = [e for e in grupo if e["em_grade"]], True
+        if len(medidos) < 2:
+            continue
+        diferencas = {"largura": max(e["largura"] for e in medidos) - min(e["largura"] for e in medidos)}
+        if lado_a_lado:  # empilhados podem ter alturas diferentes (texto de tamanho diferente); na mesma linha, nao
+            pares = [abs(a["altura"] - b["altura"]) for i, a in enumerate(medidos) for b in medidos[i + 1:]
+                     if a["topo"] < b["topo"] + b["altura"] - 1 and b["topo"] < a["topo"] + a["altura"] - 1]
+            diferencas["altura"] = max(pares, default=0)
+        else:
+            diferencas["altura"] = max(e["altura"] for e in medidos) - min(e["altura"] for e in medidos)
+        for medida, diferenca in diferencas.items():
+            if diferenca > TOLERANCIA_TAMANHO_PX:
+                nome = f"{tag}.{classe}" if classe else tag
+                achados.append(f"{largura}px: {len(medidos)} {nome} com {medida} diferente em {diferenca:.1f}px "
+                               f"(max {TOLERANCIA_TAMANHO_PX}): {medidos[0]['texto'][:25]!r}")
     return achados
 
 

@@ -9,7 +9,11 @@
       malformado sao erro;
   (e) a linha de comando sai 0, 1 e 2 conforme o caso, inclusive com falha do Playwright;
   (f) a funcao `centrado` do EXTRATOR, executada no Node, separa caixa centralizada de bloco de largura total em pai
-      com padding (sem Node: SKIP declarado na saida).
+      com padding (sem Node: SKIP declarado na saida);
+  (g) tamanho igual entre irmaos do mesmo tipo: item de grade (largura sempre, altura so lado a lado) e grafico de cada
+      cartao (largura e altura), nas bordas de 2 px (passa) e 3 px (acusa); fora de grade, outra classe e primo sem
+      pai repetido nao sao comparados; elemento sem tag, classe ou em_grade e erro;
+  (h) as funcoes `grade` e `classe` do EXTRATOR, executadas no Node (sem Node: SKIP declarado).
 
 Uso: python tools/test_ux_gate.py   (exit 0 PASS; 1 FAIL)
 """
@@ -32,9 +36,11 @@ import ux_gate  # noqa: E402
 FALHAS = []
 
 
-def el(i, tipo, texto, topo, esquerda=16, linhas=1, pai=0, altura=20, clicavel=False):
+def el(i, tipo, texto, topo, esquerda=16, linhas=1, pai=0, altura=20, clicavel=False, tag="div", classe="",
+       em_grade=False, largura=300):
     return {"id": i, "pai": pai, "tipo": tipo, "texto": texto, "linhas": linhas, "esquerda": esquerda,
-            "topo": topo, "largura": 300, "altura": altura, "clicavel_sem_controle": clicavel, "coluna": True}
+            "topo": topo, "largura": largura, "altura": altura, "clicavel_sem_controle": clicavel, "coluna": True,
+            "tag": tag, "classe": classe, "em_grade": em_grade}
 
 
 def limpo():
@@ -205,6 +211,94 @@ def test_linha_de_comando():
                 sys.modules[k] = v
     checar(f"(e) falha do Playwright sai 2: {codigo}", codigo == 2
            and saida.getvalue().startswith("ERRO: Playwright falhou"))
+
+
+def painel(larguras=(300, 300, 300), alturas=(200, 200, 200), topos=(0, 0, 0), graficos=((280, 120),) * 3):
+    """Grade (id 10) com cartoes lado a lado; cada cartao tem uma area (div.area) com o grafico (svg.spark)."""
+    elementos = [el(10, "outro", "", 0, pai=0, largura=960, altura=400, classe="grade")]
+    for n, (lg, al, tp, (gl, ga)) in enumerate(zip(larguras, alturas, topos, graficos)):
+        c, a, g = 100 + n * 10, 101 + n * 10, 102 + n * 10
+        elementos += [el(c, "outro", f"Cartao {n}", tp, pai=10, largura=lg, altura=al, classe="cartao", em_grade=True,
+                         esquerda=16 + n * 320),
+                      el(a, "outro", "", tp + 60, pai=c, largura=gl, altura=ga, classe="area"),
+                      el(g, "outro", "", tp + 60, pai=a, largura=gl, altura=ga, tag="svg", classe="spark")]
+    tela = {"rolagem": False, "elementos": elementos}
+    return {"360": copy.deepcopy(tela), "1280": tela}
+
+
+def test_tamanho_igual():
+    checar(f"(g) painel limpo: {achados(painel())}", achados(painel()) == [])
+    for nome, kw, trecho in (
+            ("cartao 3px mais largo", {"larguras": (300, 303, 300)}, "div.cartao com largura diferente em 3.0px"),
+            ("cartao lado a lado 3px mais alto", {"alturas": (200, 203, 200)}, "div.cartao com altura diferente em 3.0px"),
+            ("grafico 3px mais largo", {"graficos": ((280, 120), (283, 120), (280, 120))},
+             "svg.spark com largura diferente em 3.0px"),
+            ("grafico em outra linha 3px mais alto", {"topos": (0, 0, 220), "graficos": ((280, 120),) * 2 + ((280, 123),)},
+             "svg.spark com altura diferente em 3.0px")):
+        a = [x for x in achados(painel(**kw)) if x.startswith("1280px")]
+        alvo = [x for x in a if trecho in x]
+        checar(f"(g) {nome}: {a}", len(alvo) == 1)
+    for nome, kw in (("2px de largura passa", {"larguras": (300, 302, 300)}),
+                     ("2px de altura passa", {"alturas": (200, 202, 200)}),
+                     ("grafico com 2px passa", {"graficos": ((280, 120), (282, 122), (280, 120))}),
+                     ("cartao empilhado mais alto passa", {"topos": (0, 0, 220), "alturas": (200, 200, 260)})):
+        checar(f"(g) {nome}: {achados(painel(**kw))}", achados(painel(**kw)) == [])
+    r = painel(larguras=(300, 340, 300))
+    for e in r["360"]["elementos"] + r["1280"]["elementos"]:
+        e["em_grade"] = False  # lista comum (pai sem grade): itens de tamanho do conteudo nao sao comparados
+    checar(f"(g) fora de grade: {achados(r)}", [x for x in achados(r) if "cartao" in x] == [])
+    r = painel(graficos=((280, 120), (300, 140), (280, 120)))
+    r["1280"]["elementos"][5]["classe"] = "barra"  # o grafico do 2o cartao e de outro tipo
+    checar(f"(g) outra classe: {achados(r)}", [x for x in achados(r) if x.startswith("1280px")] == [])
+    r = painel(graficos=((280, 120), (300, 140), (280, 120)))
+    r["1280"]["elementos"][5]["tag"] = "canvas"  # mesma classe, outra tag: outro tipo
+    checar(f"(g) outra tag: {achados(r)}", [x for x in achados(r) if x.startswith("1280px")] == [])
+    r = painel(larguras=(300, 303), alturas=(200, 200), topos=(0, 0))  # dois cartoes bastam para comparar
+    checar(f"(g) dois cartoes: {achados(r)}", len([x for x in achados(r) if x.startswith("1280px")]) == 1)
+    tela = {"rolagem": False, "elementos": [  # dois graficos em pais unicos e diferentes: nao sao primos
+        el(1, "outro", "", 0, classe="topo"), el(2, "outro", "", 0, pai=1, tag="svg", classe="spark", largura=100),
+        el(3, "outro", "", 300, classe="rodape"), el(4, "outro", "", 300, pai=3, tag="svg", classe="spark", largura=200)]}
+    checar("(g) primo sem pai repetido", achados({"360": tela, "1280": copy.deepcopy(tela)}) == [])
+    for campo in ("tag", "classe", "em_grade"):
+        r = painel()
+        del r["360"]["elementos"][0][campo]
+        try:
+            achados(r)
+            checar(f"(g) sem {campo} devia ser erro", False)
+        except ValueError:
+            pass
+
+
+GRADE_JS = r"""
+const src = require('fs').readFileSync(process.argv[2], 'utf8');
+const grade = eval(src.match(/const grade = (el => \{[\s\S]*?\n  \});/)[1]);
+const classe = eval(src.match(/const classe = (el => .*?);  \/\//)[1]);
+let estilo = {};
+global.getComputedStyle = () => estilo;
+const filho = {parentElement: {}};
+const casos = [['grid', {display: 'grid'}, true], ['inline-grid', {display: 'inline-grid'}, true],
+  ['flex com quebra', {display: 'flex', flexWrap: 'wrap'}, true], ['flex sem quebra', {display: 'flex', flexWrap: 'nowrap'}, false],
+  ['bloco', {display: 'block', flexWrap: 'nowrap'}, false]];
+for (const [nome, est, esperado] of casos) { estilo = est; if (grade(filho) !== esperado) console.log('FALHOU grade ' + nome); }
+if (grade({parentElement: null}) !== false) console.log('FALHOU grade sem pai');
+const comClasse = c => ({getAttribute: () => c});
+for (const [c, esperado] of [['  spark bom ', 'spark'], ['spark ruim', 'spark'], ['', ''], [null, '']])
+  if (classe(comClasse(c)) !== esperado) console.log('FALHOU classe ' + JSON.stringify(c));
+"""
+
+
+def test_grade_classe_js():
+    node = shutil.which("node")
+    if not node:
+        print("SKIP (h) grade e classe no Node: node ausente")
+        return
+    with tempfile.TemporaryDirectory() as pasta:
+        script = os.path.join(pasta, "grade.js")
+        with open(script, "w", encoding="utf-8") as f:
+            f.write(GRADE_JS)
+        r = subprocess.run([node, script, os.path.join(ROOT, "tools", "ux_gate.py")], capture_output=True, text=True,
+                           timeout=60)
+    checar(f"(h) grade e classe no Node: rc {r.returncode} {r.stdout}{r.stderr}", r.returncode == 0 and not r.stdout)
 
 
 CENTRADO_JS = r"""

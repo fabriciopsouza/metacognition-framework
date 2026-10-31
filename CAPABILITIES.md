@@ -122,7 +122,7 @@
 - ✅ `sycophancy-canary` — Canario adversarial anti-sicofancia (nao concordar para agradar)
 - ✅ `trabalhador-externo` — Trabalhador externo orquestrado: outra familia ou modelo local por programa, com portao de dado fail-closed por classe do repositorio, saida validada e trilha de auditoria com monitor
 - ✅ `trabalhos-registro` — Registro persistente de trabalhos: handoff sobrevive a sessao e e oferecido ate ser tratado
-- ✅ `ux-gate` — UX de interface: skill ux-design (perfis, revisao) e gate por medida (caracteres por linha, alinhamento, rolagem, palavras por elemento, acao sem controle)
+- ✅ `ux-gate` — UX de interface: skill ux-design (perfis, revisao) e gate por medida (caracteres por linha, alinhamento, rolagem, palavras por elemento, acao sem controle, irmaos do mesmo tipo com tamanho diferente)
 - 🟡 `validation-reporting` — Metodo de validacao ponto a ponto com reporte legivel por humano que decide
 - ✅ `veredito-fail-closed` — Veredito aprovativo com achado bloqueante nao resolvido e' rejeitado pelo gate
 - ✅ `verificador-do-plano` — Verificador do plano no arquivo unico: secao obrigatoria, decisao pendente sem quem age, tarefa feita sem prova, % que nao bate, mapa de impacto sem situacao, aceite antes da aprovacao

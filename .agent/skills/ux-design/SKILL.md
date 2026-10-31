@@ -1,8 +1,8 @@
 ---
 name: ux-design
 description: "Ativar ao construir, alterar ou revisar uma tela, página, painel ou componente visual: escolher o perfil de estilo, planejar tokens antes do código, revisar contra os traços de 'cara de IA' e a lente de interface, e rodar o gate de UX antes de aprovar. NÃO ativar para especificar UX do zero (isso é a especificação DESIGN.md e EXPERIENCE.md do processo de produto) nem para gráfico isolado (skill de visualização de dados)."
-version: 1.1.0
-source: "decisão do dono, 30/10/2026 (opção A da pesquisa E:\\_GIT PROJECTS\\pesquisas\\2026-10-30_skills-design-ux, v3): absorver revisão e gate de UX no framework; calibração do dono no mesmo dia (v4, calibracao-dono.md): perfis com corporativo 2, limites de texto, cor fala e forma fala"
+version: 1.2.0
+source: "decisão do dono, 30/10/2026 (opção A da pesquisa E:\\_GIT PROJECTS\\pesquisas\\2026-10-30_skills-design-ux, v3): absorver revisão e gate de UX no framework; calibração do dono no mesmo dia (v4, calibracao-dono.md): perfis com corporativo 2, limites de texto, cor fala e forma fala; painel de indicadores calibrado no mesmo dia (seção \"Calibração de painéis\")"
 last_review: 2026-10-30
 role_order: null
 consumes:
@@ -68,6 +68,26 @@ texto simples ou botão discreto · minigráfico opcional (sem, linha, barras ou
 direita do número, até 180 px, último ponto na cor da polaridade, com link e com a ação visível em texto (dica não
 aparece no toque).
 
+## Painel de indicadores
+
+Calibração do dono em 30/10/2026 (`calibracao-dono.md`, seção "Calibração de painéis"; página v2 aprovada). Vale para
+painel com vários indicadores; o cartão isolado segue a seção anterior (separação INFERIDA, leitura do autor).
+
+1. **Slots fixos** no cartão: título · referência (unidade ou meta) · número · comparação · nota · ação. Slot vazio
+   guarda o espaço.
+2. **Tamanho igual:** elementos do mesmo tipo têm o mesmo tamanho em todos os cartões; gráficos com a mesma largura e
+   altura. Dono: "não gosto quando elementos ficam de tamanhos diferentes". Medido pelo gate (medida 3).
+3. **Meta abaixo do número;** percentual antes do valor, com seta: "▼ −11,4% (−R$ 167 mil)".
+4. **Comparação na linha da referência,** 12 px: "antes 30,1 · ▲ 69%".
+5. **Gráfico embaixo,** tipo pelo significado: linha para tendência e para ritmo acumulado contra a meta até hoje;
+   colunas para mudança entre períodos, sempre com base zero; cascata para composição (início, entradas, saídas,
+   final); distribuição só com medida individual. Meta tracejada; só o último ponto na cor da polaridade.
+6. **Nota curta e clara;** linha que não muda a decisão sai. Ação curta à direita ("Ver lista"), sem "→".
+7. **Visão geral, duas variantes válidas** (dono: "ambas são muito boas e são opções válidas"):
+   - variante 1: rótulo em caixa alta com o período, número, meta, variação e minigráfico de linha embaixo, com
+     pontos. Exceção declarada ao traço 5 de "cara de IA" (caixa alta), por escolha do dono;
+   - variante 2: regras 1 a 6.
+
 ## Fluxo
 
 1. **Perfil:** ler o `DESIGN.md`, se existir; sem ele, perguntar o perfil ou usar `corporativo` e declarar.
@@ -114,7 +134,7 @@ grade, borda ou base · sem barra de rolagem inútil · layout aguenta texto cur
 |---|---|---|---|
 | 1 | Traços de "cara de IA" | `IMPECCABLE_NO_TELEMETRY=1 npx impeccable@4.8.0 detect <URL> --json` (só `detect`; sem hooks; versão fixa, INFERIDO que o pacote npm siga a tag `cli-v4.8.0`) | exit 2 |
 | 2 | Contraste, alvo, rótulos | `npx @axe-core/cli <URL>` (precisa de Chrome); AccessLint só como alternativa conferida antes (sem licença declarada: só usar, não copiar) | violação séria ou crítica |
-| 3 | Caracteres por linha (≤ 80), desalinhamento de bloco alinhado à esquerda (2 a 16 px), rolagem em 360 e 1280 px, palavras por tipo, ação sem controle | `python tools/ux_gate.py --url <URL> --perfil <perfil>` | exit 1 |
+| 3 | Caracteres por linha (≤ 80), desalinhamento de bloco alinhado à esquerda (2 a 16 px), rolagem em 360 e 1280 px, palavras por tipo, ação sem controle, irmãos do mesmo tipo com tamanho diferente (> 2 px) | `python tools/ux_gate.py --url <URL> --perfil <perfil>` | exit 1 |
 | 4 | Captura nas duas larguras | Playwright, anexada à revisão visual | — |
 
 Pré-teste (o navegador abre de fato): `python -c "from playwright.sync_api import sync_playwright as s; p=s().start(); p.chromium.launch().close(); p.stop()"`.
@@ -124,6 +144,9 @@ salvar `{"360": ..., "1280": ...}` e avaliar com `python tools/ux_gate.py --retr
 Exceção legítima (tabela larga, bloco de código): atributo `data-ux-ignore` no elemento, com o motivo no
 `DESIGN.md` ou em comentário junto do elemento. O medidor de alinhamento ignora elemento inline e caixa centralizada na área de conteúdo do pai (flex,
 `margin: auto`); bloco de largura total dentro de pai com padding continua medido.
+Tamanho igual: compara irmãos com a mesma tag e a mesma primeira classe, item a item da grade (pai `grid` ou `flex`
+com quebra; largura sempre, altura só lado a lado) e gráfico (`svg`, `canvas`) com largura e altura; primos entram no
+mesmo grupo quando os pais se repetem (gráfico de cada cartão). Tolerância de 2 px INFERIDA, a calibrar pelo dono.
 Sem navegador ou Node na máquina: declarar o gate como **não executado** (o script sai 2), nunca como aprovado.
 
 ## Créditos e licenças
