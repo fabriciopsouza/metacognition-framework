@@ -33,6 +33,7 @@ shared_refs:
 ## Norte: cor fala, forma fala (dono, 30/10/2026)
 
 Princípios de *Storytelling with Data* (Knaflic, 2015) como norte; variação pequena é aceita com motivo declarado.
+Os itens abaixo desdobram as lições do livro em regras de tela (desdobramento: INFERIDO, leitura do autor).
 
 1. **Cor fala:** cinza é a base; cor só onde há significado (polaridade, destaque). Vermelho só para negativo ou meta
    não alcançada. Sem polaridade declarada, a variação fica em cinza. Cor nunca é o único sinal (seta ▲/▼ junto).

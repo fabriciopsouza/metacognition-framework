@@ -22,8 +22,8 @@ DESVIO_ALINHAMENTO_PX = 2
 # Acima disso a diferenca e intencional (recuo, outra coluna), nao quase-alinhamento. Mantido pelo dono, 30/10/2026.
 QUASE_ALINHADO_PX = 16
 LIMITE_PALAVRAS = {"controle": 2, "cabecalho": 2, "titulo": 4, "legenda": 8}  # calibrado pelo dono, 30/10/2026
-# Perfis mudam o estilo, nao os limites (calibracao do dono); o dicionario guarda os nomes validos e a excecao futura.
-PERFIS = {"corporativo": {}, "corporativo-2": {}, "minimalista": {}, "moderno": {}, "arrojado": {}, "outro": {}}
+# Perfis mudam o estilo, nao os limites (calibracao do dono): so a lista de nomes validos, sem limite por perfil.
+PERFIS = ("corporativo", "corporativo-2", "minimalista", "moderno", "arrojado", "outro")
 
 # Executado no navegador: um registro por elemento medido. `tipo` decide a regra de palavras.
 EXTRATOR = r"""
@@ -79,7 +79,7 @@ EXTRATOR = r"""
 def limites(perfil):
     if perfil not in PERFIS:
         raise ValueError(f"perfil desconhecido: {perfil} (validos: {', '.join(PERFIS)})")
-    return {**LIMITE_PALAVRAS, **PERFIS[perfil]}
+    return LIMITE_PALAVRAS
 
 
 def avaliar(retrato, perfil="corporativo"):

@@ -115,10 +115,15 @@ def test_perfis_e_malformado():
     acima[2]["texto"] = "Salvar todas alteracoes"
     acima[3]["texto"] = " ".join(["p"] * 9)
     acima.append(el(5, "cabecalho", "Valor total liquido", 120))
+    borda = limpo()  # exatamente no limite em cada tipo: nenhum achado
+    borda["360"]["elementos"][0]["texto"] = "Um dois tres quatro"
+    borda["360"]["elementos"][3]["texto"] = " ".join(["p"] * 8)
+    borda["360"]["elementos"].append(el(5, "cabecalho", "Valor total", 120))
     for perfil in ("corporativo", "corporativo-2", "minimalista", "moderno", "arrojado", "outro"):
         try:
             tipos = sorted(a.split(": ")[1].split(" com ")[0] for a in achados(r, perfil))
             checar(f"(d) {perfil} aplica os 4 limites: {tipos}", tipos == ["cabecalho", "controle", "legenda", "titulo"])
+            checar(f"(d) {perfil} aceita o limite exato", achados(borda, perfil) == [])
         except ValueError as erro:
             checar(f"(d) {perfil} aceito: {erro}", False)
     for nome, retrato, perfil in (("perfil desconhecido", limpo(), "neon"),
