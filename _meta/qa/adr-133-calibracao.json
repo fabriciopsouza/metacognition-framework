@@ -1,0 +1,77 @@
+{
+  "bloco": "adr-133-calibracao",
+  "rodada": 3,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "autor_modelo": "claude-opus-5-5",
+  "critico_modelo": "claude-sonnet-5-5",
+  "heterogeneo": true,
+  "atestacao": {
+    "agentId": "ad90380f55fdc6aae",
+    "modelo": "claude-sonnet-5-5",
+    "autor": "claude-opus-5-5"
+  },
+  "escopo_paths": [
+    ".agent/skills/ux-design/SKILL.md",
+    "tools/ux_gate.py",
+    "tools/test_ux_gate.py",
+    "docs/adr/133-ux-design-perfis-revisao-gate.md",
+    "CHANGELOG.md"
+  ],
+  "problemas": [
+    {
+      "severidade": "MEDIA",
+      "local": "tools/test_ux_gate.py",
+      "descricao": "r1: borda de cabecalho com 2 palavras sem teste de passa",
+      "estado": "corrigido",
+      "fix": "cabecalho de 2 palavras no teste de borda"
+    },
+    {
+      "severidade": "MEDIA",
+      "local": "tools/test_ux_gate.py",
+      "descricao": "r1: override de titulo e controle por perfil escapava",
+      "estado": "corrigido",
+      "fix": "4 limites conferidos por perfil"
+    },
+    {
+      "severidade": "MEDIA",
+      "local": "tools/ux_gate.py PERFIS",
+      "descricao": "r2: override que baixa o limite por perfil escapava (mesma familia da r1)",
+      "estado": "corrigido",
+      "fix": "redesenho: PERFIS vira tupla de nomes; limite por perfil impossivel por construcao"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "SKILL.md e calibracao-dono.md",
+      "descricao": "r1 a r3: tamanhos do cartao e descricoes de perfil sem fonte; desdobramentos do norte sem INFERIDO",
+      "estado": "corrigido",
+      "fix": "especificacao do dono copiada para a fonte; desdobramento marcado INFERIDO"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "tools/test_ux_gate.py",
+      "descricao": "r3: perfil novo em PERFIS nao deixava o teste vermelho",
+      "estado": "corrigido",
+      "fix": "PERFIS preso a lista do dono"
+    }
+  ],
+  "verificacoes_executadas": [
+    "python tools/test_ux_gate.py",
+    "python tools/test_adr_changelog_sync.py",
+    "python tools/test_marketing_claims.py",
+    "sabotagem em copia: cada limite (2/2/4/8) para cima e para baixo, limite por perfil, perfil removido e perfil novo: todos vermelhos"
+  ],
+  "canarios": [
+    "python tools/run_canaries.py: 101 PASS, 1 SKIP, 0 FAIL",
+    "python tools/audit_enforcement.py --provar --id ux-gate: PROVADO"
+  ],
+  "data": "2026-10-31T01:43:04Z",
+  "sha_revisado": "e334a6351ddd23979c35b6f67b9d57b00251a4bb",
+  "blobs_revisados": {
+    ".agent/skills/ux-design/SKILL.md": "efc3f20d4ce9598e84b98f6943cac4860b807867",
+    "tools/ux_gate.py": "1f3e51a5bb4d2c428834f03e397563559afd8507",
+    "tools/test_ux_gate.py": "9f6c97a73a57f212e71f2ec58a33554026db7753",
+    "docs/adr/133-ux-design-perfis-revisao-gate.md": "86e1924e1206e00e72cc125c52fc2280c38b07c9",
+    "CHANGELOG.md": "d435c43f0c8fb286aabb3360faa6f14d60be5d9a"
+  }
+}
