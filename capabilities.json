@@ -2482,7 +2482,7 @@
  },
  {
   "id": "ux-gate",
-  "title": "UX de interface: skill ux-design (perfis, revisao) e gate por medida (caracteres por linha, alinhamento, rolagem, palavras por elemento, acao sem controle)",
+  "title": "UX de interface: skill ux-design (perfis, revisao) e gate por medida (caracteres por linha, alinhamento, rolagem, palavras por elemento, acao sem controle, irmaos do mesmo tipo com tamanho diferente)",
   "status": "PROVIDES",
   "ai_owner": "claude",
   "mechanism": "tools/ux_gate.py",

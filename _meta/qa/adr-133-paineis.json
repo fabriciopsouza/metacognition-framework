@@ -1,0 +1,98 @@
+{
+  "bloco": "adr-133-paineis",
+  "rodada": 4,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "autor_modelo": "claude-opus-5-5",
+  "critico_modelo": "claude-sonnet-5-5",
+  "heterogeneo": true,
+  "atestacao": {
+    "agentId": "ab6a85af6d3f93555",
+    "modelo": "claude-sonnet-5-5",
+    "autor": "claude-opus-5-5"
+  },
+  "escopo_paths": [
+    ".agent/skills/ux-design/SKILL.md",
+    "tools/ux_gate.py",
+    "tools/test_ux_gate.py",
+    "docs/adr/133-ux-design-perfis-revisao-gate.md",
+    "CHANGELOG.md",
+    "capabilities.json",
+    "CAPABILITIES.md"
+  ],
+  "problemas": [
+    {
+      "severidade": "ALTA",
+      "local": "tools/ux_gate.py tamanhos_diferentes",
+      "descricao": "r1: largura comparada em flex com quebra (chip e link de navegacao acusavam)",
+      "estado": "corrigido",
+      "fix": "largura so em item de grid, por posicao de trilhas; flex so altura entre lado a lado"
+    },
+    {
+      "severidade": "MEDIA",
+      "local": "tools/ux_gate.py grupos_de_tipo",
+      "descricao": "r1: icone svg sem classe medido como grafico",
+      "estado": "corrigido",
+      "fix": "grafico = svg/canvas com classe e largura >= 60 px no grupo"
+    },
+    {
+      "severidade": "MEDIA",
+      "local": "tools/ux_gate.py e ADR-133",
+      "descricao": "r1: cartoes em flex sem quebra fora da medida",
+      "estado": "corrigido",
+      "fix": "flex (com ou sem quebra) mede altura; largura em flex fica como debito declarado no ADR"
+    },
+    {
+      "severidade": "MEDIA",
+      "local": "tools/ux_gate.py tamanhos_diferentes",
+      "descricao": "r2: texto de cartoes diferentes comparado como irmao (uniao entre primos valia para toda tag; mesma familia da r1, falso positivo por escopo)",
+      "estado": "corrigido",
+      "fix": "redesenho: uniao entre primos so para grafico; demais so irmaos do mesmo pai"
+    },
+    {
+      "severidade": "MEDIA",
+      "local": "docs/adr/133-ux-design-perfis-revisao-gate.md linha 72",
+      "descricao": "r3: byte de controle no caminho da fonte da emenda",
+      "estado": "corrigido",
+      "fix": "caminho corrigido; varredura sem caractere de controle nas linhas adicionadas"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": ".agent/skills/ux-design/SKILL.md regra 4",
+      "descricao": "r3: 'na linha da referencia' e leitura do autor; 'sem seta' vem do traco 5",
+      "estado": "corrigido",
+      "fix": "marcado INFERIDO e citado o traco 5"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "tools/ux_gate.py",
+      "descricao": "r4: grid 2fr 1fr com mesma classe acusa (auto/auto); extrator nao exercido em navegador (Playwright ausente)",
+      "estado": "aceito",
+      "fix": "declarados no ADR-133; data-ux-ignore; rodar com Playwright quando houver ambiente"
+    }
+  ],
+  "verificacoes_executadas": [
+    "python tools/test_ux_gate.py: PASS",
+    "python tools/audit_enforcement.py --provar --id ux-gate: PROVADO",
+    "sabotagem em copia (scratchpad mutar.py): 23 de 23 mutantes da medida nova mortos",
+    "python tools/test_capabilities.py: PASS (pela QA r4)",
+    "varredura de caractere de controle nas linhas adicionadas da branch: nenhum",
+    "fidelidade das regras 1 a 7 a calibracao-dono.md, secao Calibracao de paineis (QA r3 e r4)"
+  ],
+  "canarios": [
+    "python tools/run_canaries.py: 101 PASS, 1 SKIP, 0 FAIL (commit 0d5b86e; rodada no HEAD final registrada no PR)",
+    "python tools/audit_enforcement.py --provar --id ux-gate: PROVADO"
+  ],
+  "observacao": "Limite de rodadas (ADR-118): 3 reprovacoes seguidas (r1 a r3); seguido pela ordem do dono na sessao, literal: 'siga pelo caminHO recomendado' (30/10/2026). Canarios no HEAD 21f03cc: 101 PASS, 1 SKIP, 0 FAIL fora deste artefato.",
+  "data": "2026-10-31T02:40:17Z",
+  "sha_revisado": "21f03cc6bf48bf2089f90c6f4979ae72a12bc9fa",
+  "blobs_revisados": {
+    ".agent/skills/ux-design/SKILL.md": "b8e3339365b1164a88a3bff1bf46b327138fc3e3",
+    "tools/ux_gate.py": "1be3ba4ca10cd1f51c072252cd768a6c43677f4d",
+    "tools/test_ux_gate.py": "44ff4b7e8d9a6570341bc97b9af490025c7a782c",
+    "docs/adr/133-ux-design-perfis-revisao-gate.md": "fb84dba0e105709954521f5b8436ac3aa598a46f",
+    "CHANGELOG.md": "ed3db985118b351567de31b942b1c71dec30323a",
+    "capabilities.json": "dd89a8945dac15429b8c023c38a4ba04d64a452e",
+    "CAPABILITIES.md": "e6f1ca1077fa0703047ca7a2d9f49499fd81c41d"
+  }
+}

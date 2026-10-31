@@ -2,7 +2,8 @@
 """Gate de UX por medida (skill ux-design, camada 3): as medidas que as ferramentas prontas nao cobrem.
 
 Mede, numa pagina renderizada em 360 px e 1280 px: caracteres por linha de paragrafo, desalinhamento de irmaos na
-mesma coluna, rolagem horizontal, palavras por elemento e acao sem controle (`div` clicavel). Contraste, alvo e
+mesma coluna, rolagem horizontal, palavras por elemento, acao sem controle (`div` clicavel) e irmaos do mesmo tipo com
+tamanhos diferentes. Contraste, alvo e
 rotulos ficam com axe-core ou AccessLint; tracos de "cara de IA", com `impeccable detect` (roteiro na skill).
 
 Uso:
@@ -21,6 +22,11 @@ MAX_CARACTERES_LINHA = 80
 DESVIO_ALINHAMENTO_PX = 2
 # Acima disso a diferenca e intencional (recuo, outra coluna), nao quase-alinhamento. Mantido pelo dono, 30/10/2026.
 QUASE_ALINHADO_PX = 16
+# Irmaos do mesmo tipo (dono, 30/10/2026: "nao gosto quando elementos ficam de tamanhos diferentes"). INFERIDO, a calibrar.
+TOLERANCIA_TAMANHO_PX = 2
+GRAFICOS = ("svg", "canvas")
+# Grafico com classe e com largura >= isto no grupo; abaixo e icone, que pode ter tamanho proprio (QA r1).
+GRAFICO_MIN_PX = 60
 LIMITE_PALAVRAS = {"controle": 2, "cabecalho": 2, "titulo": 4, "legenda": 8}  # calibrado pelo dono, 30/10/2026
 # Perfis mudam o estilo, nao os limites (calibracao do dono): so a lista de nomes validos, sem limite por perfil.
 PERFIS = ("corporativo", "corporativo-2", "minimalista", "moderno", "arrojado", "outro")
@@ -57,6 +63,14 @@ EXTRATOR = r"""
     const rg = document.createRange(); rg.selectNodeContents(el);
     return new Set([...rg.getClientRects()].map(r => Math.round(r.top))).size || 1;
   };
+  // Arranjo do pai: 'grade' (grid: celulas de trilhas) ou 'flex' (largura vem do conteudo); senao vazio.
+  const arranjo = el => {
+    if (!el.parentElement) return '';
+    const d = getComputedStyle(el.parentElement).display;
+    return d.endsWith('grid') ? 'grade' : d.endsWith('flex') ? 'flex' : '';
+  };
+  const trilhas = el => { const cs = getComputedStyle(el); return cs.gridColumnStart + '/' + cs.gridColumnEnd; };
+  const classe = el => (el.getAttribute('class') || '').trim().split(/\s+/)[0];  // a primeira classe e o tipo
   const interativo = 'a,button,input,select,textarea,summary,[role],[tabindex]';
   const out = [], todos = [...document.querySelectorAll('body *')], indice = new Map(todos.map((e, i) => [e, i]));
   todos.forEach((el, i) => {
@@ -69,7 +83,9 @@ EXTRATOR = r"""
     out.push({id: i, pai: indice.has(el.parentElement) ? indice.get(el.parentElement) : -1,
       tipo: t, texto: (el.innerText || el.value || '').trim(), linhas: t === 'paragrafo' ? linhas(el) : 1,
       esquerda: b.left, topo: b.top, largura: b.width, altura: b.height, clicavel_sem_controle: clicavel,
-      coluna: !getComputedStyle(el).display.startsWith('inline') && !centrado(el, b)});
+      coluna: !getComputedStyle(el).display.startsWith('inline') && !centrado(el, b),
+      tag: el.tagName.toLowerCase(), classe: classe(el), arranjo: arranjo(el),
+      trilhas: trilhas(el)});
   });
   return {rolagem: document.documentElement.scrollWidth > document.documentElement.clientWidth, elementos: out};
 }
@@ -98,6 +114,8 @@ def avaliar(retrato, perfil="corporativo"):
         for el in elementos:
             if type(el) is not dict or type(el.get("texto")) is not str or type(el.get("tipo")) is not str:
                 raise ValueError(f"elemento malformado em {largura}px: {el!r}"[:120])
+            if any(type(el.get(c)) is not str for c in ("tag", "classe", "arranjo", "trilhas")):
+                raise ValueError(f"elemento sem tag, classe, arranjo ou trilhas em {largura}px (extrair de novo): {el!r}"[:120])
             texto, tipo = el["texto"], el["tipo"]
             palavras = len(texto.split())
             if tipo in lim and palavras > lim[tipo]:
@@ -112,6 +130,7 @@ def avaliar(retrato, perfil="corporativo"):
             if el["clicavel_sem_controle"]:
                 achados.append(f"{largura}px: acao sem controle (clicavel sem botao ou link): {texto[:40]!r}")
         achados += desalinhados(elementos, largura)
+        achados += tamanhos_diferentes(elementos, largura)
     return achados
 
 
@@ -130,6 +149,53 @@ def desalinhados(elementos, largura):
             if empilhados and DESVIO_ALINHAMENTO_PX < desvio < QUASE_ALINHADO_PX:
                 achados.append(f"{largura}px: irmaos desalinhados em {desvio:.1f}px "
                                f"(max {DESVIO_ALINHAMENTO_PX}): {a['texto'][:25]!r} / {b['texto'][:25]!r}")
+    return achados
+
+
+def grupos_de_tipo(elementos):
+    """Agrupa por (grupo do pai, tag, classe): filhos de pais do mesmo grupo (cartoes de uma grade) caem no mesmo grupo,
+    entao o grafico de cada cartao e comparado com os outros. Pai unico no grupo dele = grupo do proprio pai."""
+    chave, grupos = {}, {}
+    for el in elementos:  # ordem do documento: o pai vem antes do filho
+        chave[el["id"]] = (chave.get(el["pai"], ("pai", el["pai"])), el["tag"], el["classe"])
+        grupos.setdefault(chave[el["id"]], []).append(el)
+    return list(grupos.values())
+
+
+def lado_a_lado(a, b):
+    return a["topo"] < b["topo"] + b["altura"] - 1 and b["topo"] < a["topo"] + a["altura"] - 1
+
+
+def tamanhos_diferentes(elementos, largura):
+    """Grafico (svg, canvas com classe, largura >= GRAFICO_MIN_PX), entre primos: largura e altura. Irmaos do mesmo pai:
+    item de grid, largura entre os da mesma posicao de trilhas ('auto/auto' quando auto-posicionado) e altura entre os
+    lado a lado; item de flex, so altura entre os lado a lado (a largura vem do conteudo: chip, link)."""
+    achados = []
+    for grupo in grupos_de_tipo(elementos):
+        tag, classe = grupo[0]["tag"], grupo[0]["classe"]
+        diferencas = {}
+        if tag in GRAFICOS:
+            if not classe or len(grupo) < 2 or max(e["largura"] for e in grupo) < GRAFICO_MIN_PX:
+                continue
+            for medida in ("largura", "altura"):
+                diferencas[medida] = max(e[medida] for e in grupo) - min(e[medida] for e in grupo)
+        else:
+            # So irmaos do mesmo pai: a uniao entre primos vale so para grafico (QA r2: texto de cartoes diferentes).
+            por_pai, por_trilha = {}, {}
+            for e in grupo:
+                if e["arranjo"]:
+                    por_pai.setdefault(e["pai"], []).append(e)
+                if e["arranjo"] == "grade":
+                    por_trilha.setdefault((e["pai"], e["trilhas"]), []).append(e)
+            diferencas["largura"] = max((max(e["largura"] for e in g) - min(e["largura"] for e in g)
+                                         for g in por_trilha.values()), default=0)
+            diferencas["altura"] = max((abs(a["altura"] - b["altura"]) for g in por_pai.values()
+                                        for i, a in enumerate(g) for b in g[i + 1:] if lado_a_lado(a, b)), default=0)
+        for medida, diferenca in diferencas.items():
+            if diferenca > TOLERANCIA_TAMANHO_PX:
+                nome = f"{tag}.{classe}" if classe else tag
+                achados.append(f"{largura}px: {len(grupo)} {nome} com {medida} diferente em {diferenca:.1f}px "
+                               f"(max {TOLERANCIA_TAMANHO_PX}): {grupo[0]['texto'][:25]!r}")
     return achados
 
 
