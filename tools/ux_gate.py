@@ -19,7 +19,7 @@ import sys
 LARGURAS = (360, 1280)
 MAX_CARACTERES_LINHA = 80
 DESVIO_ALINHAMENTO_PX = 2
-# Acima disso a diferenca e intencional (recuo, outra coluna), nao quase-alinhamento. INFERIDO; calibrar no DESIGN.md.
+# Acima disso a diferenca e intencional (recuo, outra coluna), nao quase-alinhamento. Mantido pelo dono, 30/10/2026.
 QUASE_ALINHADO_PX = 16
 LIMITE_PALAVRAS = {"controle": 2, "cabecalho": 2, "titulo": 4, "legenda": 8}  # calibrado pelo dono, 30/10/2026
 # Perfis mudam o estilo, nao os limites (calibracao do dono); o dicionario guarda os nomes validos e a excecao futura.

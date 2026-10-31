@@ -86,7 +86,8 @@ def test_cada_medida_acusa():
     r = limpo()
     r["1280"]["elementos"][0]["texto"] = "Um dois tres quatro"
     r["1280"]["elementos"][3]["texto"] = " ".join(["p"] * 8)
-    checar("(b) exatamente 2, 4 e 8 palavras (controle, titulo, legenda) passam", achados(r) == [])
+    r["1280"]["elementos"].append(el(5, "cabecalho", "Valor total", 120))
+    checar("(b) exatamente 2, 4 e 8 palavras (controle e cabecalho, titulo, legenda) passam", achados(r) == [])
 
 
 def test_alinhamento_sem_falso_positivo():
@@ -107,13 +108,19 @@ def test_alinhamento_sem_falso_positivo():
 
 
 def test_perfis_e_malformado():
+    # Cada perfil da lista do dono existe e aplica os 4 limites: um acima do limite em cada tipo = 4 achados.
     r = limpo()
-    r["360"]["elementos"][3]["texto"] = " ".join(["p"] * 9)
-    for perfil in ("corporativo", "corporativo-2", "minimalista", "moderno", "arrojado", "outro"):  # lista do dono
-        checar(f"(d) {perfil} recusa legenda com 9", len(achados(r, perfil)) == 1)
-    r = limpo()
-    r["360"]["elementos"].append(el(5, "cabecalho", "Valor total liquido", 120))
-    checar("(d) cabecalho com 3 palavras", [a for a in achados(r) if "cabecalho com 3" in a] != [])
+    acima = r["360"]["elementos"]
+    acima[0]["texto"] = "Um dois tres quatro cinco"
+    acima[2]["texto"] = "Salvar todas alteracoes"
+    acima[3]["texto"] = " ".join(["p"] * 9)
+    acima.append(el(5, "cabecalho", "Valor total liquido", 120))
+    for perfil in ("corporativo", "corporativo-2", "minimalista", "moderno", "arrojado", "outro"):
+        try:
+            tipos = sorted(a.split(": ")[1].split(" com ")[0] for a in achados(r, perfil))
+            checar(f"(d) {perfil} aplica os 4 limites: {tipos}", tipos == ["cabecalho", "controle", "legenda", "titulo"])
+        except ValueError as erro:
+            checar(f"(d) {perfil} aceito: {erro}", False)
     for nome, retrato, perfil in (("perfil desconhecido", limpo(), "neon"),
                                   ("sem 1280", {"360": limpo()["360"]}, "corporativo"),
                                   ("rolagem nao booleana", {**limpo(), "360": {"rolagem": 1, "elementos": []}},

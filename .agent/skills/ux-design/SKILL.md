@@ -54,12 +54,13 @@ Todos usam os limites de texto e a polaridade acima.
 | corporativo (padrão) | grade rígida, 1 família sem serifa, densidade média (margem 16 px, 10 px entre itens) |
 | corporativo 2 (`corporativo-2`) | igual ao corporativo; a ousadia num lugar só: a variação em faixa compacta na cor da polaridade, texto branco 11 px |
 | minimalista | muito espaço, poucos elementos, sem decoração; complemento em tom suave da polaridade; sem gráfico |
-| moderno | tipografia de destaque, hierarquia forte, um único momento de movimento (que respeita movimento reduzido) |
+| moderno | tipografia de destaque, hierarquia forte, um único momento de movimento |
 | arrojado | um elemento ousado, o resto disciplinado; o elemento ousado leva a cor da polaridade |
 | outro | direção escrita pelo dono no `DESIGN.md`; regra própria revisada à mão |
 
 ## Cartão de indicador
 
+Especificação do dono e versão 7 da página de calibração, aprovada em 30/10/2026 (registro no arquivo de calibração).
 Título 14 px semibold · número 38 px bold, algarismos tabulares · complemento 12 px na cor da polaridade, com seta,
 comparando com a base que casa com o período mostrado · ação ("Ver pedidos") à direita na linha do complemento, 11 px,
 texto simples ou botão discreto · minigráfico opcional (sem, linha, barras ou cascata; cascata só no ano até a data) à
