@@ -24,7 +24,7 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 - Emenda (painel de indicadores, 30/10/2026): skill `ux-design` 1.2.0 com a seção "Painel de indicadores" (slots fixos,
   tamanho igual, meta abaixo do número, gráfico embaixo pelo significado, duas variantes válidas da visão geral) e gate
   com irmãos do mesmo tipo de tamanho diferente (> 2 px, INFERIDO, a calibrar): largura no `grid`, altura entre os lado
-  a lado, gráfico com classe a partir de 60 px. Prova: canário PASS; 21 de 21 mutantes da medida mortos; extrator não
+  a lado, gráfico com classe a partir de 60 px também entre cartões. Prova: canário PASS; 23 de 23 mutantes da medida mortos; extrator não
   exercido em navegador (Playwright ausente). Painéis já aprovados podem passar a ter achado. [CONFIRMADO]
 
 ### Padrão de checklist de execução (29/10/2026)

@@ -75,14 +75,17 @@ diferentes"; "ambas são muito boas e são opções válidas" (duas variantes do
    percentual antes do valor, comparação na linha da referência, gráfico embaixo com tipo pelo significado, nota curta
    e ação sem "→"; duas variantes da visão geral, a variante 1 como exceção declarada ao traço 5 (caixa alta).
 2. Gate: `tools/ux_gate.py` acusa irmãos do mesmo tipo (mesma tag e primeira classe) com tamanho diferente acima de
-   2 px. Item de `grid`: largura entre os da mesma posição de trilhas (`grid-column`), altura entre os lado a lado.
-   Item de `flex`, com ou sem quebra: só altura entre os lado a lado. Gráfico (`svg`, `canvas` com classe e largura
-   ≥ 60 px no grupo): largura e altura. Filhos de pais do mesmo grupo entram no mesmo grupo (o gráfico de cada cartão é
-   comparado com os outros). Redesenho da QA Sonnet r1: a 1ª versão comparava a largura em `flex` com quebra (chip e
-   link de navegação acusavam) e media ícone `svg` como gráfico.
+   2 px, só entre irmãos do mesmo pai. Item de `grid`: largura entre os da mesma posição de trilhas (`grid-column`;
+   `auto/auto` para todo item auto-posicionado), altura entre os lado a lado. Item de `flex`, com ou sem quebra: só
+   altura entre os lado a lado. Gráfico (`svg`, `canvas` com classe e largura ≥ 60 px no grupo): largura e altura, também
+   entre primos quando os pais se repetem (o gráfico de cada cartão é comparado com os outros). Redesenho pela QA Sonnet:
+   a r1 achou largura comparada em `flex` com quebra (chip e link acusavam) e ícone `svg` medido como gráfico; a r2,
+   texto de cartões diferentes comparado como irmão (a união entre primos valia para toda tag). Duas rodadas na mesma
+   família (falso positivo por escopo): o escopo foi reduzido ao que a regra do dono pede.
 3. Limites: tolerância de 2 px INFERIDA, a calibrar pelo dono; a primeira classe é tratada como o tipo (classe
    utilitária primeiro, como no Tailwind, agrupa errado); grade com colunas de tamanhos intencionais (`2fr 1fr`) e
-   mesma classe acusa: exceção com `data-ux-ignore`; `img` não é medida (foto varia de proporção); cartões em `flex`
+   mesma classe acusa (todos são `auto/auto`): exceção com `data-ux-ignore`; elemento de largura ou altura 0
+   (`display: contents`) não entra no retrato; `img` não é medida (foto varia de proporção); cartões em `flex`
    com larguras diferentes não são acusados na largura, só na altura (débito declarado, preço de não acusar chip).
    **Não verificado:** o extrator não rodou num navegador nesta máquina (Playwright ausente); as funções `arranjo`,
    `trilhas` e `classe` rodam no Node pelo canário.

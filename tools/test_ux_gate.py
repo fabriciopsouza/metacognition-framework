@@ -13,7 +13,7 @@
   (g) tamanho igual entre irmaos do mesmo tipo: item de grid (largura na mesma posicao de trilhas, altura so lado a
       lado), item de flex (so altura) e grafico de cada cartao (largura e altura), nas bordas de 2 px (passa) e 3 px
       (acusa); chip de flex com largura do conteudo, item que ocupa outras trilhas, icone, grafico sem classe, fora de
-      arranjo, outra classe e primo sem pai repetido nao sao comparados; elemento sem os campos novos e erro;
+      arranjo, outra classe, primo sem pai repetido e texto de cartoes diferentes nao sao comparados; elemento sem os campos novos e erro;
   (h) as funcoes `arranjo`, `trilhas` e `classe` do EXTRATOR, executadas no Node (sem Node: SKIP declarado).
 
 Uso: python tools/test_ux_gate.py   (exit 0 PASS; 1 FAIL)
@@ -265,6 +265,27 @@ def test_tamanho_igual():
     checar(f"(g) outra posicao de trilhas: {achados(r)}", [x for x in achados(r) if x.startswith("1280px")] == [])
     for nome, mudar in (("icone abaixo de 60px", {"graficos": ((16, 16), (24, 24), (20, 20))}),):
         checar(f"(g) {nome}: {achados(painel(**mudar))}", achados(painel(**mudar)) == [])
+    r = painel()
+    for tela in r.values():  # cada cartao e flex em coluna com um p.txt de altura propria: primos, nao irmaos
+        tela["elementos"] += [el(103 + n * 10, "paragrafo", "Nota", 30, pai=100 + n * 10, classe="txt", arranjo="flex",
+                                 altura=20 * (n + 1)) for n in range(3)]
+    checar(f"(g) texto de cartoes diferentes nao e comparado: {achados(r)}", achados(r) == [])
+    r = painel(larguras=(300, 303, 300))
+    for e in r["1280"]["elementos"]:
+        if e["arranjo"]:
+            e["pai"] = 10 + e["id"]  # cartoes em pais diferentes: nao sao irmaos
+    checar(f"(g) item de grade de outro pai: {achados(r)}", [x for x in achados(r) if x.startswith("1280px")] == [])
+    r = painel(alturas=(200, 260, 200))
+    for tela in r.values():
+        for e in tela["elementos"]:
+            e["arranjo"] = ""  # lado a lado sem grid nem flex (float, inline-block): altura nao comparada
+    checar(f"(g) lado a lado fora de arranjo: {achados(r)}", achados(r) == [])
+    r = painel()
+    for tela in r.values():  # segunda grade irma da primeira: os cartoes dela sao primos, nao irmaos
+        tela["elementos"] += [el(20, "outro", "", 420, pai=0, largura=960, altura=200, classe="grade"),
+                              el(200, "outro", "Cartao 9", 420, pai=20, largura=340, altura=260, classe="cartao",
+                                 arranjo="grade")]
+    checar(f"(g) cartao de outra grade: {achados(r)}", achados(r) == [])
     r = painel(graficos=((59, 40), (40, 40), (50, 40)))
     checar(f"(g) grafico de 59px e icone: {achados(r)}", achados(r) == [])
     r = painel(graficos=((60, 40), (57, 40), (60, 40)))

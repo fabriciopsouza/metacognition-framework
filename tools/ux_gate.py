@@ -167,9 +167,9 @@ def lado_a_lado(a, b):
 
 
 def tamanhos_diferentes(elementos, largura):
-    """Grafico (svg, canvas com classe, largura >= GRAFICO_MIN_PX): largura e altura. Item de grid: largura entre os da
-    mesma posicao de trilhas e altura entre os lado a lado. Item de flex: so altura entre os lado a lado (a largura vem
-    do conteudo: chip, link de navegacao)."""
+    """Grafico (svg, canvas com classe, largura >= GRAFICO_MIN_PX), entre primos: largura e altura. Irmaos do mesmo pai:
+    item de grid, largura entre os da mesma posicao de trilhas ('auto/auto' quando auto-posicionado) e altura entre os
+    lado a lado; item de flex, so altura entre os lado a lado (a largura vem do conteudo: chip, link)."""
     achados = []
     for grupo in grupos_de_tipo(elementos):
         tag, classe = grupo[0]["tag"], grupo[0]["classe"]
@@ -180,15 +180,17 @@ def tamanhos_diferentes(elementos, largura):
             for medida in ("largura", "altura"):
                 diferencas[medida] = max(e[medida] for e in grupo) - min(e[medida] for e in grupo)
         else:
-            itens = [e for e in grupo if e["arranjo"]]
-            por_trilha = {}
-            for e in itens:
+            # So irmaos do mesmo pai: a uniao entre primos vale so para grafico (QA r2: texto de cartoes diferentes).
+            por_pai, por_trilha = {}, {}
+            for e in grupo:
+                if e["arranjo"]:
+                    por_pai.setdefault(e["pai"], []).append(e)
                 if e["arranjo"] == "grade":
-                    por_trilha.setdefault(e["trilhas"], []).append(e)
+                    por_trilha.setdefault((e["pai"], e["trilhas"]), []).append(e)
             diferencas["largura"] = max((max(e["largura"] for e in g) - min(e["largura"] for e in g)
                                          for g in por_trilha.values()), default=0)
-            diferencas["altura"] = max((abs(a["altura"] - b["altura"]) for i, a in enumerate(itens)
-                                        for b in itens[i + 1:] if lado_a_lado(a, b)), default=0)
+            diferencas["altura"] = max((abs(a["altura"] - b["altura"]) for g in por_pai.values()
+                                        for i, a in enumerate(g) for b in g[i + 1:] if lado_a_lado(a, b)), default=0)
         for medida, diferenca in diferencas.items():
             if diferenca > TOLERANCIA_TAMANHO_PX:
                 nome = f"{tag}.{classe}" if classe else tag
