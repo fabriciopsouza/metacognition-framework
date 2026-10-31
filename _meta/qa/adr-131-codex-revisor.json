@@ -32,22 +32,8 @@
       "severidade": "ALTA",
       "local": "tools/trabalhador_externo.py via_codex",
       "descricao": "r1 Codex: isolamento de leitura nao provado",
-      "estado": "aceito",
-      "fix": "prova manual 31/10/2026: leitura externa bloqueada pela politica do sandbox; limite declarado no ADR-131"
-    },
-    {
-      "severidade": "ALTA",
-      "local": "tools/trabalhador_externo.py registrar",
-      "descricao": "r1 Codex: resumo e integra da resposta podem repetir o material",
-      "estado": "aceito",
-      "fix": "herdado do executor, limite ja declarado no ADR-131; fora desta emenda"
-    },
-    {
-      "severidade": "MEDIA",
-      "local": "tools/squad_gate.py _atestacao_valida",
-      "descricao": "r1 Codex: registro nao cruzado com a trilha",
-      "estado": "aceito",
-      "fix": "mesma confianca do agentId sem prova de transcricao; limite declarado"
+      "estado": "resolvido",
+      "fix": "prova executada 31/10/2026: o Codex tentou Get-Content em arquivo fora da pasta e a politica do sandbox bloqueou (NAO-CONSEGUI); sem canario automatico (exige o binario), declarado no ADR-131"
     },
     {
       "severidade": "MEDIA",
@@ -55,13 +41,6 @@
       "descricao": "r1 Codex: modelo real nao registrado",
       "estado": "corrigido",
       "fix": "modelo fixado com -m (gpt-6.1-sol); tokens do --json"
-    },
-    {
-      "severidade": "MEDIA",
-      "local": "tools/trabalhador_externo.py esquema",
-      "descricao": "r1 Codex: esquema fora das regras de --arquivo",
-      "estado": "aceito",
-      "fix": "herdado do executor; limite declarado"
     },
     {
       "severidade": "MEDIA",
@@ -114,5 +93,10 @@
     "chamada real Codex OK (trilha 20261031-095156-393687, gpt-6.1-sol)",
     "leitura de arquivo externo pelo Codex bloqueada (prova manual)"
   ],
-  "observacao": "Rodada 1 pelo Codex (revisor formal, trilha 20261031-094946-816923): REPROVADO, 7 achados tratados acima. Rodada 2 pelo Sonnet (alternancia impar Codex, par Sonnet)."
+  "observacao": "Rodada 1 pelo Codex (revisor formal, trilha 20261031-094946-816923): REPROVADO, 7 achados tratados acima. Rodada 2 pelo Sonnet (alternancia impar Codex, par Sonnet).",
+  "ressalvas_aceitas": [
+    "ALTA fora do criterio de aceite, nota (regra global secao 1): tools/trabalhador_externo.py registrar: r1 Codex: resumo e integra da resposta podem repetir o material -> herdado do executor, limite ja declarado no ADR-131; fora desta emenda",
+    "MEDIA fora do criterio de aceite, nota (regra global secao 1): tools/squad_gate.py _atestacao_valida: r1 Codex: registro nao cruzado com a trilha -> mesma confianca do agentId sem prova de transcricao; limite declarado",
+    "MEDIA fora do criterio de aceite, nota (regra global secao 1): tools/trabalhador_externo.py esquema: r1 Codex: esquema fora das regras de --arquivo -> herdado do executor; limite declarado"
+  ]
 }
