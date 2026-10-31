@@ -1,0 +1,49 @@
+{
+  "bloco": "adr-131-workers-locais",
+  "rodada": 1,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "autor_modelo": "claude-opus-5-5",
+  "critico_modelo": "codex/gpt-6.1-sol",
+  "heterogeneo": true,
+  "atestacao": {
+    "registro": "20261031-125610-6ff105",
+    "modelo": "codex/gpt-6.1-sol",
+    "autor": "claude-opus-5-5"
+  },
+  "escopo_paths": [
+    "CHANGELOG.md",
+    "docs/adr/131-trabalhadores-externos-orquestrados.md",
+    "tools/model-policy.json"
+  ],
+  "problemas": [
+    {
+      "severidade": "BAIXA",
+      "local": "tools/model-policy.json local-llama; ADR-131 emenda local item 2; CHANGELOG",
+      "descricao": "r1 Codex: 'terceira familia' nao corresponde ao cadastro (cinco familias)",
+      "estado": "corrigido",
+      "fix": "'familia adicional (Meta)' nos tres arquivos"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "tools/model-policy.json local-llama; ADR-131 emenda local item 2",
+      "descricao": "r1 Codex: 'maior Llama que cabe' nao decorre da evidencia (llama3.2-vision 11b tambem caberia)",
+      "estado": "corrigido",
+      "fix": "'Llama de texto instalado e testado nesta maquina'; so llama3.3 70b e llama4 declarados como nao cabendo"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "ADR-131 emenda local, teste real",
+      "descricao": "r1 Codex: contagem tem oraculo deterministico",
+      "estado": "corrigido",
+      "fix": "teste rotulado de integracao, com o oraculo len(trabalhadores) = 7 conferido por script"
+    }
+  ],
+  "verificacoes_executadas": [
+    "python tools/test_trabalhador_externo.py: PASS",
+    "json.load(tools/model-policy.json): OK; len(trabalhadores) = 7",
+    "chamadas reais 31/10/2026: local-qwen3 OK 238 s (20261031-125411-e5b665), local-llama OK com resposta errada (20261031-125427-b85119), gemini-pro OK (20261031-125441-bcdf8e)",
+    "modelo nao baixado: via_ollama lanca HTTP 404, convertido em ERRO pelo executor"
+  ],
+  "observacao": "Rodada 1 pelo Codex (revisor formal, alternancia impar Codex). Tres baixas corrigidas; baixa nao abre rodada nova."
+}

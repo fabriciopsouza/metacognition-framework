@@ -274,7 +274,25 @@
         "sai_da_maquina": false,
         "dados_aceitos": ["publico", "sintetico", "empresa"],
         "num_ctx": 32768,
-        "uso": "unico trabalhador aceito para repositorio de classe empresa; geracao de rascunho de teste e candidato a sabotagem, conferidos por execucao"
+        "uso": "local (aceito em repositorio de classe empresa); geracao de rascunho de teste e candidato a sabotagem, conferidos por execucao"
+      },
+      "local-qwen3": {
+        "via": "ollama",
+        "modelo": "qwen3.8:27b",
+        "familia": "qwen",
+        "sai_da_maquina": false,
+        "dados_aceitos": ["publico", "sintetico", "empresa"],
+        "num_ctx": 16384,
+        "uso": "local maior (17 GB; num_ctx 16384 para caber nos 20 GB de video desta maquina); pre-revisao e revisao paralela de dado de empresa, consultivo; lento (238 s numa contagem simples, correta, em 31/10/2026): usar com --timeout alto"
+      },
+      "local-llama": {
+        "via": "ollama",
+        "modelo": "llama3.1:8b",
+        "familia": "llama",
+        "sai_da_maquina": false,
+        "dados_aceitos": ["publico", "sintetico", "empresa"],
+        "num_ctx": 32768,
+        "uso": "local de familia adicional (Meta); Llama de texto instalado e testado nesta maquina em 31/10/2026 (llama3.3 70b e llama4 16x17b nao cabem em 20 GB de video; fonte https://ollama.com/search?q=llama acessada 31/10/2026); so item simples conferido por script, consultivo: errou contagem simples no teste de 31/10/2026 (14 em vez de 7, 14,6 s)"
       }
     }
   }

@@ -5,6 +5,14 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-131, emenda — trabalhadores locais Qwen 3.8 e Llama (31/10/2026)
+
+- Motivo: ordem do dono (31/10/2026): "vamos acertar" (Llama local) e "vamos incluir" (`qwen3.8:27b`). [CONFIRMADO]
+- `tools/model-policy.json`: `local-qwen3` (`qwen3.8:27b`, `num_ctx` 16384) e `local-llama` (`llama3.1:8b`, família
+  adicional); não saem da máquina, aceitam `empresa`, consultivos. Gemini próprio já coberto por `gemini-pro` e
+  `gemini-flash`.
+- Prova: canário da política PASS; chamada real a cada trabalhador novo e ao `gemini-pro`. [CONFIRMADO]
+
 ### ADR-131, emenda — Codex revisor formal alternado com o Sonnet (31/10/2026)
 
 - Motivo: decisão do dono (30/10/2026, reiterada em 31/10/2026): "ELE PODE SER REVISOR formal, como sonnet, alternando
