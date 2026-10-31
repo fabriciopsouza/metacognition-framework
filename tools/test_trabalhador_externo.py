@@ -59,7 +59,7 @@ def run():
     os.environ.pop("TRABALHADOR_PAINEL", None)  # o teste grava e apaga o painel: nunca o painel real do dono
 
     def vias(f):
-        return {"agy": f, "ollama": f}
+        return {"agy": f, "ollama": f, "codex": f}
 
     # (1) sem declaracao -> classe mais restrita -> trabalhador que sai da maquina RECUSADO, sem chamada
     r1 = _repo(os.path.join(tmp, "r1"))
@@ -166,6 +166,72 @@ def run():
             fails.append(f"trabalhador {tid} sai da maquina e aceita '{ordem[-1]}' — proibido")
         if not t.get("modelo") or not t.get("familia"):
             fails.append(f"trabalhador {tid} sem modelo ou familia")
+
+    # (codex) revisor formal: so ele leva o aviso formal; familia diferente do autor Claude
+    for tid, t in te["trabalhadores"].items():
+        if t.get("revisor_formal") and t.get("familia") == "claude":
+            fails.append(f"trabalhador {tid}: revisor_formal exige familia diferente de claude")
+    if te["trabalhadores"].get("codex", {}).get("revisor_formal") is not True or "revisao_alternada" not in te:
+        fails.append("politica: codex tem de ser revisor_formal e revisao_alternada tem de existir")
+    qfd = tx.json.load(open(tx.POLICY_PATH, encoding="utf-8"))["qa_final_duplo"]
+    if not all("codex" in str(qfd.get(k, {}).get("alterna_com", "")) for k in ("passo_1", "juncoes")):
+        fails.append("politica: passo_1 e juncoes tem de declarar alterna_com codex")
+    f = ViaFalsa()
+    rc, out = tx.rodar("codex", r5, "revise", ["a.txt"], te=te, vias=vias(f))
+    if rc != tx.RC_OK or out.get("aviso") != tx.AVISO_FORMAL:
+        fails.append(f"codex em repo sintetico tem de rodar com o aviso formal (rc={rc})")
+    f = ViaFalsa()
+    rc, _ = tx.rodar("codex", r4, "revise", ["a.txt"], te=te, vias=vias(f))
+    if rc != tx.RC_RECUSADO or f.chamadas:
+        fails.append("codex em repo empresa tem de ser RECUSADO antes de chamar")
+
+    # (codex) linha de comando: so leitura, pasta vazia, sem config do usuario; resposta vazia e' ERRO
+    class PopenFalso:
+        cmds = []
+
+        rc = 0
+
+        def __init__(self, cmd, **kw):
+            PopenFalso.cmds.append((cmd, kw.get("cwd")))
+            self.cmd, self.returncode = cmd, PopenFalso.rc
+
+        def communicate(self, entrada=None, timeout=None):
+            PopenFalso.entrada = entrada
+            arq = self.cmd[self.cmd.index("-o") + 1]
+            if PopenFalso.resposta is not None:
+                with open(arq, "w", encoding="utf-8") as fh:
+                    fh.write(PopenFalso.resposta)
+            return ('{"type":"thread.started"}\nlixo\n'
+                    '{"type":"turn.completed","usage":{"input_tokens":30,"output_tokens":4}}\n'), ""
+    popen_orig, bin_orig = tx.subprocess.Popen, os.environ.get("CODEX_BIN")
+    tx.subprocess.Popen, os.environ["CODEX_BIN"] = PopenFalso, "codex-falso"
+    try:
+        PopenFalso.resposta = "achados: nenhum"
+        r = tx.via_codex({"modelo": "gpt-x"}, "msg-unica", None, 10)
+        cmd, cwd = PopenFalso.cmds[-1]
+        if r["status_via"] != "SUCCESS" or r["texto"] != "achados: nenhum" or PopenFalso.entrada != "msg-unica":
+            fails.append(f"via_codex: mensagem pela entrada e resposta lida do -o ({r})")
+        if (r["tokens_entrada"], r["tokens_saida"]) != (30, 4):
+            fails.append("via_codex tem de ler os tokens do evento turn.completed")
+        for exigido in ("read-only", "--ignore-user-config", "--ignore-rules", "--ephemeral", "--json"):
+            if exigido not in cmd:
+                fails.append(f"via_codex sem {exigido}")
+        if cmd[cmd.index("-m") + 1] != "gpt-x" or cmd[-1] != "-":
+            fails.append("via_codex tem de fixar o modelo com -m e ler o pedido da entrada")
+        if cmd[cmd.index("-C") + 1] != cwd or os.path.exists(cwd):  # pasta propria, apagada ao fim
+            fails.append("via_codex tem de rodar na pasta vazia e descartavel")
+        PopenFalso.rc = 1
+        if tx.via_codex({"modelo": "gpt-x"}, "msg", None, 10)["status_via"] == "SUCCESS":
+            fails.append("via_codex com rc diferente de 0 nao pode ser SUCCESS")
+        PopenFalso.rc, PopenFalso.resposta = 0, None
+        if tx.via_codex({"modelo": "gpt-x"}, "msg", None, 10)["status_via"] == "SUCCESS":
+            fails.append("via_codex com resposta vazia nao pode ser SUCCESS")
+    finally:
+        tx.subprocess.Popen = popen_orig
+        if bin_orig is None:
+            os.environ.pop("CODEX_BIN", None)
+        else:
+            os.environ["CODEX_BIN"] = bin_orig
 
     # (12) validador: bool nao e' numero; inteiro com fracao reprova
     if not tx.validar(True, {"type": "integer"}) or not tx.validar(1.5, {"type": "integer"}):

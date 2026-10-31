@@ -1,0 +1,102 @@
+{
+  "bloco": "adr-131-codex-revisor",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "autor_modelo": "claude-opus-5-5",
+  "critico_modelo": "claude-sonnet-5-5",
+  "heterogeneo": true,
+  "atestacao": {
+    "agentId": "a5eaf6422e7edf7cb",
+    "modelo": "claude-sonnet-5-5",
+    "autor": "claude-opus-5-5"
+  },
+  "escopo_paths": [
+    ".agent/classe-de-dado.json",
+    ".agent/skills/qa-critic/SKILL.md",
+    ".agent/skills/ux-design/SKILL.md",
+    ".claude/global/CLAUDE-global.md",
+    "CHANGELOG.md",
+    "docs/adr/131-trabalhadores-externos-orquestrados.md",
+    "docs/adr/133-ux-design-perfis-revisao-gate.md",
+    "tools/model-policy.json",
+    "tools/squad_gate.py",
+    "tools/test_squad_gate.py",
+    "tools/test_trabalhador_externo.py",
+    "tools/trabalhador_externo.py",
+    "capabilities.json",
+    "CAPABILITIES.md"
+  ],
+  "problemas": [
+    {
+      "severidade": "ALTA",
+      "local": "tools/trabalhador_externo.py via_codex",
+      "descricao": "r1 Codex: isolamento de leitura nao provado",
+      "estado": "resolvido",
+      "fix": "prova executada 31/10/2026: o Codex tentou Get-Content em arquivo fora da pasta e a politica do sandbox bloqueou (NAO-CONSEGUI); sem canario automatico (exige o binario), declarado no ADR-131"
+    },
+    {
+      "severidade": "MEDIA",
+      "local": "tools/model-policy.json codex",
+      "descricao": "r1 Codex: modelo real nao registrado",
+      "estado": "corrigido",
+      "fix": "modelo fixado com -m (gpt-6.1-sol); tokens do --json"
+    },
+    {
+      "severidade": "MEDIA",
+      "local": "tools/test_trabalhador_externo.py",
+      "descricao": "r1 Codex: canario so prova argumentos",
+      "estado": "corrigido",
+      "fix": "entrada, rc diferente de 0, tokens, pasta descartavel"
+    },
+    {
+      "severidade": "MEDIA",
+      "local": "tools/model-policy.json",
+      "descricao": "r1 Codex: passo_1/juncoes/escada conflitantes",
+      "estado": "corrigido",
+      "fix": "alterna_com nos dois; escada cita Codex e Gemini so pre-revisao"
+    },
+    {
+      "severidade": "MEDIA",
+      "local": "tools/test_trabalhador_externo.py e test_squad_gate.py",
+      "descricao": "r2: canario nao fixa revisao_alternada, alterna_com, revisor_formal nem registro com modelo igual ao autor",
+      "estado": "corrigido",
+      "fix": "tres asserts na politica e caso negativo no gate"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "tools/squad_gate.py",
+      "descricao": "r2: registro vale com qualquer modelo",
+      "estado": "aceito",
+      "fix": "nota no ADR-131"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "docs/adr/131",
+      "descricao": "r2: paragrafo Prova colado ao ultimo limite",
+      "estado": "corrigido",
+      "fix": "paragrafo separado"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": ".agent/classe-de-dado.json",
+      "descricao": "r2: classe vale para todo trabalhador",
+      "estado": "aceito",
+      "fix": "nota no ADR-131"
+    }
+  ],
+  "verificacoes_executadas": [
+    "python tools/test_trabalhador_externo.py: PASS",
+    "python tools/test_squad_gate.py: 99 PASS",
+    "python tools/test_handoff.py: PASS",
+    "test_capabilities e test_consistency_closing: PASS (QA r2)",
+    "chamada real Codex OK (trilha 20261031-095156-393687, gpt-6.1-sol)",
+    "leitura de arquivo externo pelo Codex bloqueada (prova manual)"
+  ],
+  "observacao": "Rodada 1 pelo Codex (revisor formal, trilha 20261031-094946-816923): REPROVADO, 7 achados tratados acima. Rodada 2 pelo Sonnet (alternancia impar Codex, par Sonnet).",
+  "ressalvas_aceitas": [
+    "ALTA fora do criterio de aceite, nota (regra global secao 1): tools/trabalhador_externo.py registrar: r1 Codex: resumo e integra da resposta podem repetir o material -> herdado do executor, limite ja declarado no ADR-131; fora desta emenda",
+    "MEDIA fora do criterio de aceite, nota (regra global secao 1): tools/squad_gate.py _atestacao_valida: r1 Codex: registro nao cruzado com a trilha -> mesma confianca do agentId sem prova de transcricao; limite declarado",
+    "MEDIA fora do criterio de aceite, nota (regra global secao 1): tools/trabalhador_externo.py esquema: r1 Codex: esquema fora das regras de --arquivo -> herdado do executor; limite declarado"
+  ]
+}

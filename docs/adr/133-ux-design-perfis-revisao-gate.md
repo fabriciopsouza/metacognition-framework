@@ -82,7 +82,8 @@ diferentes"; "ambas são muito boas e são opções válidas" (duas variantes do
    a r1 achou largura comparada em `flex` com quebra (chip e link acusavam) e ícone `svg` medido como gráfico; a r2,
    texto de cartões diferentes comparado como irmão (a união entre primos valia para toda tag). Duas rodadas na mesma
    família (falso positivo por escopo): o escopo foi reduzido ao que a regra do dono pede.
-3. Limites: tolerância de 2 px INFERIDA, a calibrar pelo dono; a primeira classe é tratada como o tipo (classe
+3. Limites: tolerância de 2 px confirmada pelo dono em 31/10/2026 ("siga o recomendado": manter até um painel real
+   dar falso alarme); a primeira classe é tratada como o tipo (classe
    utilitária primeiro, como no Tailwind, agrupa errado); grade com colunas de tamanhos intencionais (`2fr 1fr`) e
    mesma classe acusa (todos são `auto/auto`): exceção com `data-ux-ignore`; elemento de largura ou altura 0
    (`display: contents`) não entra no retrato; `img` não é medida (foto varia de proporção); cartões em `flex`

@@ -5,6 +5,18 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-131, emenda — Codex revisor formal alternado com o Sonnet (31/10/2026)
+
+- Motivo: decisão do dono (30/10/2026, reiterada em 31/10/2026): "ELE PODE SER REVISOR formal, como sonnet, alternando
+  com este e economizando tokens claude"; Gemini só pré-revisão. [CONFIRMADO]
+- `tools/model-policy.json`: trabalhador `codex` (`revisor_formal`) e regra `revisao_alternada` (ímpar Codex, par
+  Sonnet); degrau 1 da escada de heterogeneidade cita o Codex.
+- `tools/trabalhador_externo.py`: via `codex` (só leitura, pasta vazia, sem config do usuário; resposta vazia é ERRO) e
+  aviso de revisor formal. `tools/squad_gate.py`: `atestacao.registro` vale como `agentId`.
+- Regra global, seção 1 (`.claude/global/CLAUDE-global.md`): 1ª revisão admite o Codex alternado. Skill `qa-critic`:
+  parágrafo da alternância. `.agent/classe-de-dado.json`: `sintetico`.
+- Prova: canários do executor, do gate e da política PASS; chamada real ao Codex OK (4,1 s). [CONFIRMADO]
+
 ### ADR-133 — UX de interface: perfis, revisão e gate por medida (30/10/2026)
 
 - Motivo: decisão do dono (30/10/2026, "A" e "a") sobre a pesquisa `2026-10-30_skills-design-ux` (v3): telas de
@@ -24,7 +36,7 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 - Emenda (painel de indicadores, 30/10/2026): skill `ux-design` 1.2.0 com a seção "Painel de indicadores" (slots fixos,
   tamanho igual, meta abaixo do número, gráfico embaixo pelo significado, duas variantes válidas da visão geral) e gate
   com irmãos do mesmo tipo de tamanho diferente (> 2 px, INFERIDO, a calibrar): largura no `grid`, altura entre os lado
-  a lado, gráfico com classe a partir de 60 px também entre cartões. Prova: canário PASS; 23 de 23 mutantes da medida mortos; extrator não
+  a lado, gráfico com classe a partir de 60 px também entre cartões. Tolerância de 2 px confirmada pelo dono em 31/10/2026. Prova: canário PASS; 23 de 23 mutantes da medida mortos; extrator não
   exercido em navegador (Playwright ausente). Painéis já aprovados podem passar a ter achado. [CONFIRMADO]
 
 ### Padrão de checklist de execução (29/10/2026)

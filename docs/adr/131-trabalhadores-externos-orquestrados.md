@@ -68,6 +68,47 @@ Sabotagens provadas pelo autor em cópia (cada uma deixa o canário vermelho): p
 
 Teste real de 25/10 (repositório sintético de teste): `gemini-flash` achou 4 defeitos em 15 s; `local-qwen` achou 1 em 10 s; o portão recusou o repositório sem declaração.
 
+## Emenda — Codex revisor formal alternado (31/10/2026)
+
+Decisão do dono, 30/10/2026, literal: "codex agora pode ser usado livremente, é que estava sem tokens, recarregou. ELE
+PODE SER REVISOR formal, como sonnet, alternando com este e economizando tokens claude"; "gemini so pre revisao em geral
+/ paralela ou revisao de itens simples". Pedido levado por bi-saas-85 (quadro de coordenação, 30/10/2026); reiterado
+pelo dono em 31/10/2026 ("siga o recomendado"; "ja dei a ordem!!!"). Substitui "qa final SEMPRE CLAUDE" e "Codex só a
+pedido" (26/10/2026).
+
+1. **Trabalhador `codex`** em `tools/model-policy.json` (família openai, sai da máquina, aceita `publico` e `sintetico`,
+   `revisor_formal: true`). Via nova `codex` no executor: `codex exec` com `--ignore-user-config`, `--ignore-rules`,
+   `--ephemeral`, `--json` (tokens do evento `turn.completed`), sandbox `read-only`, modelo fixado com `-m`
+   (`gpt-6.1-sol`), na pasta vazia, material pela entrada; resposta vazia ou saída diferente de 0 é ERRO.
+2. **Exceção ao item 4 da decisão:** a saída do trabalhador com `revisor_formal` é revisão formal que decide, com aviso
+   próprio; os demais (Gemini incluído) continuam consultivos: pré-revisão, revisão paralela ou item simples.
+3. **Alternância** (`revisao_alternada` na política): a 1ª revisão (junções e passo 1 do QA final) alterna por rodada,
+   ímpar Codex, par Sonnet. Risco baixo e o momento 1 começam pelo Codex; o momento 3 começa pela família oposta à da
+   última rodada do momento 1 (regra já aplicada no bi-saas, AGENTS.md, PR 196). Codex indisponível: Sonnet, declarado.
+   A 2ª revisão não muda (degrau acima, só com autorização ativa).
+4. **Atestação:** o veredito do Codex grava `atestacao.registro` (id da chamada na trilha) no lugar de `agentId`;
+   `tools/squad_gate.py` aceita um ou outro, com a mesma exigência de modelo diferente do autor.
+5. **Regra global, seção 1** (molde `.claude/global/CLAUDE-global.md` e arquivo instalado): a 1ª revisão admite o
+   Codex alternado; Gemini só pré-revisão.
+6. **Classe deste repositório:** `.agent/classe-de-dado.json` = `sintetico` (código próprio, sem dado de empresa pela
+   regra de isolamento da seção 9 da regra global).
+
+Limites (QA r1 do Codex, achados aceitos como nota):
+- `atestacao.registro` não é cruzado com a trilha: mesma confiança que o gate já dá ao `agentId` sem a prova de
+  transcrição de `tools/verify_qa_attestation.py`. Cruzar registro, trabalhador, status e material é o próximo passo.
+- O isolamento de leitura é o do sandbox do Codex: em 31/10/2026, pedido para ler um arquivo fora da pasta, o Codex
+  tentou `Get-Content` e a política bloqueou ("NAO-CONSEGUI"). Não há canário automático dessa prova (exige o binário).
+- Herdados do executor, fora desta emenda: o resumo e a íntegra da resposta na trilha podem repetir o material enviado
+  (limite já declarado acima); o esquema (`--esquema`) não passa pelas regras de `--arquivo`.
+- `registro` vale com qualquer `modelo` diferente do autor; o gate não exige o prefixo `codex/` (QA r2, nota).
+- A classe `sintetico` deste repositório vale para todo trabalhador que a aceite, não só para o Codex (QA r2, nota).
+
+Prova: canários do executor
+(linha de comando, pasta vazia, resposta vazia, classe empresa recusada) e do gate (registro aceito, vazio recusado);
+chamada real em 31/10/2026, 4,1 s, resposta correta (trilha `20261031-094120-6c5738`); QA r1 pelo próprio Codex
+(trilha `20261031-094946-816923`, REPROVADO, 7 achados: modelo fixado, tokens lidos, canário reforçado e política
+coerente; os demais viraram os limites acima).
+
 ## Estado do QA
 | Rodada | Revisor | Veredito | Achados | Destino |
 |---|---|---|---|---|

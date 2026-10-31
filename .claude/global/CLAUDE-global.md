@@ -27,8 +27,10 @@
     faixa. Declarar F0 ou F1 para fugir da revisão é revisar abaixo da faixa.
 - **Escada de modelos, relativa ao modelo padrão (ordem `haiku < sonnet < opus < fable`):** o
   **autor** roda sempre no modelo padrão (hoje Opus), nunca abaixo dele sem indisponibilidade
-  declarada; a **1ª revisão** roda **um degrau abaixo do padrão** (hoje Sonnet), é obrigatória,
-  automática e nunca usa o modelo do autor; a **2ª revisão**, um degrau acima (hoje Fable), só com
+  declarada; a **1ª revisão** roda **um degrau abaixo do padrão** (hoje Sonnet) **ou no Codex,
+  alternando por rodada** (ímpar Codex, par Sonnet; decisão do dono de 30/10/2026; regra em
+  `revisao_alternada` da fonte da escada); é obrigatória, automática e nunca usa o modelo do autor;
+  Gemini só faz pré-revisão, revisão paralela ou item simples; a **2ª revisão**, um degrau acima (hoje Fable), só com
   autorização do dono. **Haiku nunca é autor**: só executa tarefa mecânica e repetitiva conferida
   por script. Fonte da escada:
   [{{FRAMEWORK_ROOT}}\tools\model-policy.json](file:///{{FRAMEWORK_ROOT_URL}}/tools/model-policy.json).

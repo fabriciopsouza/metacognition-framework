@@ -1,7 +1,7 @@
 ---
 name: qa-critic
 description: "Ativar SEMPRE após o developer, antes de qualquer aprovação. Validação adversarial — hipótese default é que existe bug. Idealmente modelo diferente do developer. Flexível."
-version: 1.5.0
+version: 1.6.0
 source: "SQUAD v1.1.0 (qa-critic) — enxuto"
 last_review: 2026-10-30
 role_order: 4
@@ -45,6 +45,13 @@ Dentro do MESMO turno (não instanciar defensor/sintetizador — Conclave de 3 p
 rodar o qa-critic em **família de modelo diferente** do developer quando o ambiente permite
 (`Agent(... model: <distinto>)` no Claude Code; ver `_meta/subagent-isolation.md`). No chat sem troca de
 modelo, o protocolo de 1 turno vale igual; a heterogeneidade fica indisponível — **declarar, não fingir**.
+
+**Revisor formal alternado (emenda do ADR-131, 31/10/2026).** A 1ª revisão alterna por rodada: ímpar no Codex
+(`python tools/trabalhador_externo.py rodar --trabalhador codex ...`, só leitura), par no Sonnet (`Agent`). Risco baixo e
+o momento 1 começam pelo Codex; o momento 3 pela família oposta à da última rodada do momento 1. O veredito do Codex
+grava `atestacao.registro` (id da trilha) no lugar de `agentId`. Gemini só pré-revisão, revisão paralela ou item
+simples. Codex indisponível ou repositório de classe `empresa`: Sonnet, declarado. Regra em `tools/model-policy.json`
+(`revisao_alternada`).
 
 **Faixa do bloco (ADR-132; regra global seção 1).** O orquestrador declara a faixa antes de executar;
 na dúvida, a mais alta.

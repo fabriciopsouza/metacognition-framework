@@ -68,6 +68,21 @@ def test_sem_agentId_NAO_passa():
     assert "qa_critic" in faltam
 
 
+def test_registro_do_revisor_externo_PASSA_e_vazio_NAO():
+    # Codex revisor formal (emenda do ADR-131): o id da trilha vale como o agentId
+    ev = _ev(modelo="codex/gpt", autor="claude-opus")
+    ev["atestacao"]["registro"] = "20261031-101500-a1b2c3"
+    faltam, _ = sg.evaluate(["tools/squad_gate.py"], MANIFEST, artifacts=[ev])
+    assert "qa_critic" not in faltam
+    ev["atestacao"]["registro"] = "  "
+    faltam, _ = sg.evaluate(["tools/squad_gate.py"], MANIFEST, artifacts=[ev])
+    assert "qa_critic" in faltam
+    # registro nao dispensa modelo diferente do autor
+    ev["atestacao"].update(registro="20261031-101500-a1b2c3", modelo="claude-opus")
+    faltam, _ = sg.evaluate(["tools/squad_gate.py"], MANIFEST, artifacts=[ev])
+    assert "qa_critic" in faltam
+
+
 def test_doc_comum_nao_exige_qa():
     assert sg.classify(["docs/guia/leia.md"], MANIFEST) == set()
 
