@@ -2,7 +2,7 @@
 """trabalhador_externo.py — executor de trabalhador FORA do Claude Code (ADR-131).
 
 Chama, por programa, um modelo que o subagente do Claude Code nao alcanca: CLI sem tela
-(`agy`, modo plano + sandbox) ou modelo local (Ollama). Os trabalhadores e as classes de dado
+(`agy`, modo plano + sandbox; `codex`, sandbox so leitura) ou modelo local (Ollama). Os trabalhadores e as classes de dado
 sao DADO em `tools/model-policy.json` -> `trabalhadores_externos`; este arquivo nao nomeia
 nenhum modelo.
 
@@ -16,7 +16,8 @@ Garantias (cada uma com canario em tools/test_trabalhador_externo.py):
   3. Saida validada: com --esquema, resposta fora do esquema e' INVALIDA (rc 4), nunca aceita.
   4. Rastro sem conteudo: cada chamada vira uma linha em ~/.claude/estado/trabalhadores/registro.jsonl
      com tokens, duracao, status e o sha256 da mensagem — nunca o texto.
-  5. Consultivo: toda saida diz que nao substitui o qa-critic (ADR-108).
+  5. Consultivo: toda saida diz que nao substitui o qa-critic (ADR-108), exceto a do trabalhador
+     com `revisor_formal` (Codex, emenda de 31/10/2026), que diz que vale na rodada alternada.
 
 Uso:
   python tools/trabalhador_externo.py listar
@@ -43,6 +44,8 @@ POLICY_PATH = os.path.join(ROOT, "tools", "model-policy.json")
 DECLARACAO = os.path.join(".agent", "classe-de-dado.json")
 AVISO = ("Saida CONSULTIVA de trabalhador externo (ADR-131): nao substitui o qa-critic nem o veredito "
          "de juncao (ADR-108); confira por execucao antes de usar.")
+AVISO_FORMAL = ("Saida de REVISOR FORMAL (emenda do ADR-131, 31/10/2026): vale como qa-critic na rodada "
+                "alternada (model-policy.json revisao_alternada); o veredito grava atestacao.registro = id.")
 LIMITE_BYTES = 2_000_000  # teto do material enviado numa chamada
 
 RC_OK, RC_ERRO, RC_RECUSADO, RC_INVALIDO = 0, 2, 3, 4
@@ -340,7 +343,56 @@ def via_ollama(trab, mensagem, esquema_path, timeout):
             "erro_via": None}
 
 
-VIAS = {"agy": via_agy, "ollama": via_ollama}
+def _codex_bin():
+    exe = os.environ.get("CODEX_BIN") or shutil.which("codex")
+    if exe:
+        return exe
+    ext = os.path.join(os.path.expanduser("~"), ".vscode", "extensions")
+    if os.path.isdir(ext):  # binario da extensao openai.chatgpt do VS Code; a versao mais nova
+        for nome in sorted((n for n in os.listdir(ext) if n.startswith("openai.chatgpt-")), reverse=True):
+            cand = os.path.join(ext, nome, "bin", "windows-x86_64", "codex.exe")
+            if os.path.isfile(cand):
+                return cand
+    raise RuntimeError("codex nao encontrado (instale o codex-cli ou defina CODEX_BIN)")
+
+
+def via_codex(trab, mensagem, esquema_path, timeout):
+    """Pasta vazia + sandbox so leitura + sem config e regras do usuario; conteudo pela entrada."""
+    with tempfile.TemporaryDirectory(prefix="trab-codex-") as vazia:
+        saida_arq = os.path.join(vazia, "ultima.txt")
+        cmd = [_codex_bin(), "exec", "--ignore-user-config", "--ignore-rules", "--ephemeral",
+               "--skip-git-repo-check", "-s", "read-only", "-C", vazia, "-o", saida_arq]
+        if not str(trab["modelo"]).startswith("padrao"):
+            cmd += ["-m", trab["modelo"]]
+        if esquema_path:
+            cmd += ["--output-schema", os.path.abspath(esquema_path)]
+        cmd.append("-")
+        p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                             text=True, encoding="utf-8", cwd=vazia)
+        try:
+            _, erro = p.communicate(mensagem, timeout=timeout)
+        except subprocess.TimeoutExpired:
+            _matar_arvore(p)
+            p.communicate(timeout=30)
+            raise RuntimeError(f"codex passou de {timeout} s e foi encerrado")
+        texto = ""
+        if os.path.isfile(saida_arq):
+            with open(saida_arq, encoding="utf-8") as f:
+                texto = f.read().strip()
+    estruturado = None
+    if esquema_path and texto:
+        try:
+            estruturado = json.loads(texto)
+        except ValueError:
+            pass  # rodar() marca INVALIDO: resposta sem JSON estruturado
+    ok = p.returncode == 0 and bool(texto)  # resposta vazia nunca e' SUCCESS
+    return {"status_via": "SUCCESS" if ok else "ERRO", "texto": texto, "estruturado": estruturado,
+            "negado": [], "tokens_entrada": None, "tokens_saida": None,
+            "erro_via": None if ok else f"rc {p.returncode}, resposta {'vazia' if not texto else 'ok'}: "
+                                         f"{(erro or '')[-400:]}"}
+
+
+VIAS = {"agy": via_agy, "ollama": via_ollama, "codex": via_codex}
 
 
 def _registro_path():
@@ -394,7 +446,9 @@ def rodar(trab_id, repo, pedido, arquivos=None, esquema_path=None, timeout=300, 
     classe, origem = classe_do_repo(repo, te)
     rotulo = {"trabalho": trabalho or "-", "etapa": etapa or "-", "spec": spec}
     base = {"trabalhador": trab_id, "repo": os.path.basename(os.path.abspath(repo)),
-            "classe": classe, "classe_origem": origem, "aviso": AVISO, **rotulo}
+            "classe": classe, "classe_origem": origem, **rotulo,
+            "aviso": AVISO_FORMAL if ((te.get("trabalhadores") or {}).get(trab_id) or {}).get("revisor_formal")
+            else AVISO}
     esquema = None
     try:  # TUDO que pode recusar acontece aqui, antes de qualquer byte sair
         trab = checar_portao(trab_id, te, classe)

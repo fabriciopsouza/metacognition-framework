@@ -147,7 +147,7 @@ Exceção legítima (tabela larga, bloco de código): atributo `data-ux-ignore` 
 Tamanho igual: compara irmãos (mesmo pai) com a mesma tag e a mesma primeira classe. Item de `grid`: largura entre os da mesma
 posição de trilhas, altura entre os lado a lado. Item de `flex`: só altura entre os lado a lado (chip e link têm a
 largura do conteúdo). Gráfico (`svg`, `canvas` com classe e largura ≥ 60 px; abaixo é ícone): largura e altura, também
-entre primos quando os pais se repetem (gráfico de cada cartão). Tolerância de 2 px INFERIDA, a calibrar.
+entre primos quando os pais se repetem (gráfico de cada cartão). Tolerância de 2 px (dono, 31/10/2026).
 Sem navegador ou Node na máquina: declarar o gate como **não executado** (o script sai 2), nunca como aprovado.
 
 ## Créditos e licenças

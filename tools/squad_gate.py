@@ -548,7 +548,9 @@ def _atestacao_valida(v) -> bool:
         return False        # atestacao malformada bloqueia; antes derrubava o processo inteiro
                             # com AttributeError, e um unico .json ruim em _meta/qa/ travava o
                             # gate para todo commit — fail-closed por crash nao e' fail-closed
-    agent = str(at.get("agentId", "")).strip()
+    # `registro` = id da chamada do revisor formal externo (Codex) na trilha de
+    # tools/trabalhador_externo.py; vale como o agentId do subagente (emenda do ADR-131, 31/10/2026).
+    agent = str(at.get("agentId", "") or at.get("registro", "")).strip()
     modelo = str(at.get("modelo", "")).strip()
     autor = str(at.get("autor", "") or at.get("modelo_autor", "")).strip()
     # `autor` OBRIGATORIO — achado CRITICO da 13a rodada, e o bypass mais barato dos treze.
