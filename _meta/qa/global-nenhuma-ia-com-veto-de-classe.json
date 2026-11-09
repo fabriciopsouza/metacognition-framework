@@ -1,0 +1,43 @@
+{
+  "bloco": "global-nenhuma-ia-com-veto-de-classe",
+  "rodada": 1,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "autor_modelo": "claude-opus-5-5",
+  "critico_modelo": "claude-sonnet-5-5",
+  "heterogeneo": true,
+  "sha_revisado": "b21cce0af5c71816189500c2d849b3bf1e93d9a4",
+  "atestacao": {
+    "agentId": "a04aaf9bae1ceb824",
+    "modelo": "claude-sonnet-5-5",
+    "autor": "claude-opus-5-5"
+  },
+  "escopo_paths": [
+    ".claude/global/CLAUDE-global.md",
+    "_meta/qa/global-nenhuma-ia-com-veto-de-classe.json",
+    "_meta/qa/global-nenhuma-ia-com-veto-de-classe.md"
+  ],
+  "problemas": [
+    {
+      "severidade": "ALTA",
+      "local": ".claude/settings.json",
+      "descricao": "residuo de bootstrap.py rodado por engano no worktree",
+      "estado": "resolvido"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": ".claude/global/CLAUDE-global.md:37-39",
+      "descricao": "deixar claro que o isolamento entre empresas continua",
+      "estado": "resolvido"
+    }
+  ],
+  "verificacoes_executadas": [
+    "python tools/test_rules_parity.py: PASS",
+    "python tools/test_resposta_executiva.py: PASS"
+  ],
+  "observacao": "Ordem do dono 09/11/2026: TODAS as IAS trabalham em TODOS os casos, neste ou em qualquer outro pc. Ressalva baixa aplicada depois da leitura do revisor, sem rodada nova.",
+  "data": "2026-11-09T13:27:10Z",
+  "blobs_revisados": {
+    ".claude/global/CLAUDE-global.md": "50faf4fc0f93c7ef53171a1839bbda67d5e1b852"
+  }
+}

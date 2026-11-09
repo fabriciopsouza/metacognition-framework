@@ -34,6 +34,10 @@
   autorização do dono. **Haiku nunca é autor**: só executa tarefa mecânica e repetitiva conferida
   por script. Fonte da escada:
   [{{FRAMEWORK_ROOT}}\tools\model-policy.json](file:///{{FRAMEWORK_ROOT_URL}}/tools/model-policy.json).
+- **Nenhuma IA tem veto por classe de dado** (dono, 09/11/2026, literal: "TODAS as IAS trabalham em TODOS os casos, neste ou em qualquer outro pc"). Codex, Gemini, Kiro, DeepSeek, modelos locais e
+  qualquer IA registrada recebem `empresa`; o papel de cada uma vem da matriz de responsabilidade, nunca da classe.
+  Regra de projeto, memória ou passagem que vete IA por classe ou por empresa está revogada. O isolamento entre
+  empresas da seção 9 continua valendo: não é veto a IA.
 - **Revisar abaixo da faixa é que exige ordem explícita do dono**, dada na conversa atual.
 - **Autocrítica não substitui a revisão.** Revisar o próprio trabalho "inline" e chamar isso de QA
   adversarial é proibido.
