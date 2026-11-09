@@ -5,6 +5,16 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-131, emenda — sem veto por classe `empresa` (06/11/2026)
+
+- Motivo: ordem do dono (06/11/2026): "nao tem veto em empresa. REMOVA isso de tudo aqui". [CONFIRMADO]
+- `tools/model-policy.json`: `codex`, `gemini-pro`, `gemini-flash` e `sonnet-agy` declaram `empresa`. O executor não
+  muda: o portão é só `dados_aceitos`, e quem não declara a classe segue recusado (rc 3).
+- Efeito em todo projeto deste PC: repositório `empresa`, ou sem declaração, deixa de ser bloqueado pelo executor; risco
+  de leitura cruzada aceito pelo dono.
+- Skill `qa-critic`: Sonnet cobre o Codex só se ele estiver indisponível ou sem a classe em `dados_aceitos`.
+- Prova: canário do executor com positivo e negativo; sabotagens em cópia. [CONFIRMADO]
+
 ### ADR-131, emenda — trabalhadores locais Qwen 3.8 e Llama (31/10/2026)
 
 - Motivo: ordem do dono (31/10/2026): "vamos acertar" (Llama local) e "vamos incluir" (`qwen3.8:27b`). [CONFIRMADO]

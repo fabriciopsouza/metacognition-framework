@@ -61,27 +61,34 @@ def run():
     def vias(f):
         return {"agy": f, "ollama": f, "codex": f}
 
-    # (1) sem declaracao -> classe mais restrita -> trabalhador que sai da maquina RECUSADO, sem chamada
+    # Portao por dados_aceitos (dono, 06/11/2026: sem veto por classe empresa). Copia da politica em que nenhum
+    # trabalhador externo aceita empresa: prova o portao sem depender do que a politica real libera.
+    te_restrita = json.loads(json.dumps(te))
+    for t in te_restrita["trabalhadores"].values():
+        if t.get("sai_da_maquina") is not False:
+            t["dados_aceitos"] = [c for c in t["dados_aceitos"] if c != "empresa"]
+
+    # (1) sem declaracao -> classe mais restrita -> trabalhador que nao a aceita RECUSADO, sem chamada
     r1 = _repo(os.path.join(tmp, "r1"))
     f = ViaFalsa()
-    rc, out = tx.rodar("gemini-pro", r1, "revise", ["a.txt"], te=te, vias=vias(f))
+    rc, out = tx.rodar("gemini-pro", r1, "revise", ["a.txt"], te=te_restrita, vias=vias(f))
     if rc != tx.RC_RECUSADO or f.chamadas:
-        fails.append("sem declaracao, trabalhador que sai da maquina tem de ser RECUSADO antes de chamar "
+        fails.append("sem declaracao, trabalhador que nao aceita a classe tem de ser RECUSADO antes de chamar "
                      f"(rc={rc}, chamadas={len(f.chamadas)})")
 
     # (2) classe desconhecida -> tratada como a mais restrita
     r2 = _repo(os.path.join(tmp, "r2"), classe="liberado-geral")
     f = ViaFalsa()
-    rc, out = tx.rodar("gemini-flash", r2, "revise", te=te, vias=vias(f))
+    rc, out = tx.rodar("gemini-flash", r2, "revise", te=te_restrita, vias=vias(f))
     if rc != tx.RC_RECUSADO or f.chamadas or out.get("classe") != te["sem_declaracao"]:
         fails.append(f"classe desconhecida tem de valer '{te['sem_declaracao']}' e recusar (rc={rc}, out={out})")
 
     # (3) declaracao corrompida -> mesma coisa
     r3 = _repo(os.path.join(tmp, "r3"), bruto="{nao e json")
     f = ViaFalsa()
-    rc, _ = tx.rodar("sonnet-agy", r3, "revise", te=te, vias=vias(f))
+    rc, _ = tx.rodar("sonnet-agy", r3, "revise", te=te_restrita, vias=vias(f))
     if rc != tx.RC_RECUSADO or f.chamadas:
-        fails.append("declaracao corrompida tem de recusar trabalhador que sai da maquina")
+        fails.append("declaracao corrompida tem de recusar trabalhador que nao aceita a classe")
 
     # (4) classe empresa -> local aceito, chamado uma vez
     r4 = _repo(os.path.join(tmp, "r4"), classe="empresa")
@@ -162,8 +169,6 @@ def run():
             fails.append(f"trabalhador {tid}: via '{t.get('via')}' sem executor")
         if not set(t.get("dados_aceitos") or []) <= set(ordem):
             fails.append(f"trabalhador {tid}: dados_aceitos fora das classes declaradas")
-        if t.get("sai_da_maquina") is not False and ordem[-1] in (t.get("dados_aceitos") or []):
-            fails.append(f"trabalhador {tid} sai da maquina e aceita '{ordem[-1]}' — proibido")
         if not t.get("modelo") or not t.get("familia"):
             fails.append(f"trabalhador {tid} sem modelo ou familia")
 
@@ -180,10 +185,19 @@ def run():
     rc, out = tx.rodar("codex", r5, "revise", ["a.txt"], te=te, vias=vias(f))
     if rc != tx.RC_OK or out.get("aviso") != tx.AVISO_FORMAL:
         fails.append(f"codex em repo sintetico tem de rodar com o aviso formal (rc={rc})")
+    # Dono, 06/11/2026: "nao tem veto em empresa". Positivo: os quatro aceitam e sao chamados, o Codex com o aviso formal.
+    for tid in ("codex", "gemini-pro", "gemini-flash", "sonnet-agy"):
+        f = ViaFalsa()
+        rc, out = tx.rodar(tid, r4, "revise", ["a.txt"], te=te, vias=vias(f))
+        if rc != tx.RC_OK or len(f.chamadas) != 1:
+            fails.append(f"{tid} em repo empresa tem de rodar (rc={rc}, chamadas={len(f.chamadas)})")
+        if (tid == "codex") != (out.get("aviso") == tx.AVISO_FORMAL):
+            fails.append(f"{tid} em repo empresa: aviso formal errado ({out.get('aviso')})")
+    # Negativo: trabalhador sem empresa em dados_aceitos segue recusado, rc 3, sem chamada.
     f = ViaFalsa()
-    rc, _ = tx.rodar("codex", r4, "revise", ["a.txt"], te=te, vias=vias(f))
-    if rc != tx.RC_RECUSADO or f.chamadas:
-        fails.append("codex em repo empresa tem de ser RECUSADO antes de chamar")
+    rc, _ = tx.rodar("codex", r4, "revise", ["a.txt"], te=te_restrita, vias=vias(f))
+    if rc != tx.RC_RECUSADO or rc != 3 or f.chamadas:
+        fails.append("codex sem empresa em dados_aceitos tem de ser RECUSADO (rc 3) antes de chamar")
 
     # (codex) linha de comando: so leitura, pasta vazia, sem config do usuario; resposta vazia e' ERRO
     class PopenFalso:

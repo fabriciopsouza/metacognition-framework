@@ -50,7 +50,7 @@ modelo, o protocolo de 1 turno vale igual; a heterogeneidade fica indisponível 
 (`python tools/trabalhador_externo.py rodar --trabalhador codex ...`, só leitura), par no Sonnet (`Agent`). Risco baixo e
 o momento 1 começam pelo Codex; o momento 3 pela família oposta à da última rodada do momento 1. O veredito do Codex
 grava `atestacao.registro` (id da trilha) no lugar de `agentId`. Gemini só pré-revisão, revisão paralela ou item
-simples. Codex indisponível ou repositório de classe `empresa`: Sonnet, declarado. Regra em `tools/model-policy.json`
+simples. Codex indisponível ou classe do repositório fora de `dados_aceitos` dele: Sonnet, declarado. Regra em `tools/model-policy.json`
 (`revisao_alternada`).
 
 **Faixa do bloco (ADR-132; regra global seção 1).** O orquestrador declara a faixa antes de executar;
