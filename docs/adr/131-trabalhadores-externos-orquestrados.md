@@ -24,7 +24,7 @@
 
 ## Decisão
 1. **Executor único** `tools/trabalhador_externo.py`. Trabalhadores e classes de dado são dado em `model-policy.json` → `trabalhadores_externos`; o executor não nomeia modelo.
-2. **Portão de dado fail-closed.** Cada repositório declara a própria classe em `.agent/classe-de-dado.json`, escrito pela sessão dele (write-isolation). Classes, do menos ao mais restrito: `publico`, `sintetico`, `empresa`. Sem declaração, ou com valor desconhecido ou arquivo corrompido, vale `empresa`. Trabalhador que sai da máquina nunca aceita `empresa` (invariante testada no dado).
+2. **Portão de dado fail-closed.** Cada repositório declara a própria classe em `.agent/classe-de-dado.json`, escrito pela sessão dele (write-isolation). Classes, do menos ao mais restrito: `publico`, `sintetico`, `empresa`. Sem declaração, ou com valor desconhecido ou arquivo corrompido, vale `empresa`. Trabalhador que sai da máquina nunca aceita `empresa` (invariante testada no dado). **[Trecho sobre `empresa` revogado pela emenda de 06/11/2026.]**
 3. **Só sai o que foi pedido.** O trabalhador roda numa pasta vazia e descartável. O conteúdo vai na mensagem, montado só com os arquivos passados por `--arquivo`, e cada um tem de estar dentro do repositório. O arquivo de pedido é resolvido uma vez, contra a pasta corrente, e só é aberto se estiver no repositório ou na pasta própria de pedidos (`%TEMP%\trab-pedidos`, ou `TRABALHADOR_PEDIDOS`), com teto de 20 KB, porque material vai por `--arquivo`; abre-se exatamente o caminho conferido. Trabalhador declarado local só fala com 127.0.0.1, ::1 ou localhost, e sem proxy do sistema.
 4. **Saída validada e consultiva.** O esquema é conferido antes da chamada: palavra-chave fora do subconjunto suportado recusa o pedido, em vez de ser ignorada. Com esquema, resposta fora dele é `INVALIDO` (rc 4). Toda saída leva o aviso de que não substitui o qa-critic nem o veredito de junção.
 5. **Trilha e monitor** (`tools/monitor_trabalhadores.py`):
@@ -32,7 +32,7 @@
    - a íntegra da resposta fica em `saidas/<id>.json`, local;
    - as etapas feitas dentro do Claude Code (autor, QA, merge) entram na mesma trilha pelo subcomando `evento`;
    - uma página HTML autônoma (`monitor.html`), regerada a cada chamada, sem servidor, sem rede e sem token: indicadores, consumo por trabalhador, linha do tempo por trabalho com resumo e link para a íntegra, filtro e recarga a cada 20 s. Texto de modelo é sempre escapado. Falha do monitor nunca derruba a chamada.
-6. **Trabalhadores iniciais:** `gemini-pro` e `gemini-flash` (outra família, saem da máquina), `sonnet-agy` (mesma família do autor, cota de outro provedor, não conta como heterogeneidade) e `local-qwen` (não sai da máquina, único aceito em `empresa`).
+6. **Trabalhadores iniciais:** `gemini-pro` e `gemini-flash` (outra família, saem da máquina), `sonnet-agy` (mesma família do autor, cota de outro provedor, não conta como heterogeneidade) e `local-qwen` (não sai da máquina, único aceito em `empresa`). **[Trecho sobre `empresa` revogado pela emenda de 06/11/2026.]**
 7. **IDs de modelo** atualizados para a geração atual (fable 5.1, opus 5.5, sonnet 5.5, haiku 5.5), com o motivo registrado no próprio arquivo.
 
 ## Decisões do dono que este ADR registra e não aplica
@@ -131,6 +131,24 @@ determinístico: `len(trabalhadores_externos["trabalhadores"])` = 7):
 
 Limite: o cadastro vale para esta máquina; em outra, modelo não baixado devolve 404 do Ollama, que o executor converte
 em ERRO declarado (caso de exceção da via no canário).
+
+## Emenda — sem veto por classe `empresa` (06/11/2026)
+
+Ordem do dono, literal: 06/11/2026, "nao tem veto em empresa. REMOVA isso de tudo aqui"; 25/10/2026, "item 3 JA LIBEREI";
+05/11/2026, "Codex e Gemini rodam em todas as tarefas, nao so neste repositorio, nunca limitei isso". Feita da sessão do
+orquestrador-multi-ia, por ordem do dono de 06/11/2026 ("1 recomendado"), apesar da regra de cada repositório escrever
+apenas em si mesmo.
+
+1. **Revoga** a frase "Trabalhador que sai da máquina nunca aceita `empresa`" do item 2 da decisão, o "único aceito em
+   `empresa`" do item 6 e a invariante correspondente do canário. A classe continua existindo, com "sem declaração vale
+   `empresa`"; o portão é só `dados_aceitos`, igual em toda classe, e o executor segue recusando (rc 3) quem não declara a
+   classe. O código do executor não muda: ele nunca teve veto fixo.
+2. **Política:** `codex`, `gemini-pro`, `gemini-flash` e `sonnet-agy` passam a declarar `empresa`.
+3. **Risco aceito pelo dono:** dado de empresa sai para OpenAI, Google e Anthropic pelas vias; leitura cruzada entre
+   repositórios, porque Codex e `agy` rodam com o usuário do dono, sem o ambiente isolado.
+4. **Efeito em todo projeto deste PC:** a política é única. Repositório de classe `empresa`, ou sem declaração, deixa de
+   ser bloqueado pelo executor. Regra própria de um projeto mais rígida (por exemplo, `demo/*` do bi-saas) continua
+   valendo só como regra escrita lá, sem trava no executor.
 
 ## Estado do QA
 | Rodada | Revisor | Veredito | Achados | Destino |

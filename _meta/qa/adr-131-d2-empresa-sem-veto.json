@@ -1,0 +1,106 @@
+{
+  "bloco": "adr-131-d2-empresa-sem-veto",
+  "rodada": 1,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "autor_modelo": "claude-opus-5-5",
+  "critico_modelo": "claude-sonnet-5-5",
+  "heterogeneo": true,
+  "atestacao": {
+    "agentId": "a20672f948f7659b3",
+    "modelo": "claude-sonnet-5-5",
+    "autor": "claude-opus-5-5"
+  },
+  "escopo_paths": [
+    ".agent/skills/qa-critic/SKILL.md",
+    "CHANGELOG.md",
+    "capabilities.json",
+    "docs/adr/131-trabalhadores-externos-orquestrados.md",
+    "tools/model-policy.json",
+    "tools/test_trabalhador_externo.py",
+    "_meta/qa/adr-131-d2-empresa-sem-veto.json",
+    "_meta/qa/adr-131-d2-empresa-sem-veto.md"
+  ],
+  "problemas": [
+    {
+      "severidade": "BAIXA",
+      "local": "docs/adr/131-trabalhadores-externos-orquestrados.md linhas 27 e 35",
+      "descricao": "veto escrito sem marca de revogado",
+      "estado": "resolvido"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "__pycache__/ na raiz do worktree",
+      "descricao": "nao rastreado; fora do commit por caminho explicito",
+      "estado": "resolvido"
+    },
+    {
+      "severidade": "BAIXA",
+      "local": "docs/adr/131 emenda",
+      "descricao": "fala de 25/10/2026 sem fonte conferida pelo revisor; citada em docs/DEBITOS.md do orquestrador-multi-ia",
+      "estado": "ressalva"
+    }
+  ],
+  "verificacoes_executadas": [
+    "python tools/test_trabalhador_externo.py: PASS",
+    "python tools/test_audit_enforcement.py: 37/37",
+    "python tools/test_capabilities.py: PASS",
+    "tools/test_squad_gate.py: 85 PASS e 14 FAIL em copia sem .git, identico a base cd40e45",
+    "sabotagens S1 a S5 em copia: todas reprovam"
+  ],
+  "observacao": "Ordem do dono (06/11/2026): nao tem veto em empresa; fazer daqui. Marca de revogado aplicada depois da leitura do revisor, ressalva baixa sem rodada nova. run_canaries completo nao concluiu em 500 s; roda antes do merge.",
+  "sha_revisado": "cd40e45d21f2cc0fc5eb635513fc75c2e011bdaa",
+  "data": "2026-11-09T11:39:37Z",
+  "blobs_revisados": {
+    ".agent/skills/qa-critic/SKILL.md": "e2dd2446979a1f43fe63455a48bbfa30138e484b",
+    "CHANGELOG.md": "231efc9ec378a8e01269f4a9567949d2d134e02a",
+    "capabilities.json": "6a751fe4e0013db49f4ef9edcd2ad9bcfd5ef4d5",
+    "docs/adr/131-trabalhadores-externos-orquestrados.md": "6fe3e17a4182fdb15792f37e204d129bf9df663e",
+    "tools/model-policy.json": "7df7ed2d230e64397ed67638f006cbcac3eaec4d",
+    "tools/test_trabalhador_externo.py": "e6ee0b6a7655e6a8dff9f77c4ff1809fa8c2e9fa"
+  },
+  "substitui": [
+    {
+      "rodada": 1,
+      "data": "2026-11-06T21:11:13Z",
+      "recomendacao": "aprovar_com_ressalvas",
+      "sha_revisado": "cd40e45d21f2cc0fc5eb635513fc75c2e011bdaa",
+      "agentId": "a20672f948f7659b3",
+      "escopo_paths": [
+        ".agent/skills/qa-critic/SKILL.md",
+        "CHANGELOG.md",
+        "capabilities.json",
+        "docs/adr/131-trabalhadores-externos-orquestrados.md",
+        "tools/model-policy.json",
+        "tools/test_trabalhador_externo.py"
+      ],
+      "achados_fp": [
+        "BAIXA|__pycache__/ na raiz do worktree",
+        "BAIXA|docs/adr/131 emenda",
+        "BAIXA|docs/adr/131-trabalhadores-externos-orquestrados.md linhas 2"
+      ],
+      "reinicio": false
+    },
+    {
+      "rodada": 1,
+      "data": "2026-11-06T21:11:35Z",
+      "recomendacao": "aprovar_com_ressalvas",
+      "sha_revisado": "cd40e45d21f2cc0fc5eb635513fc75c2e011bdaa",
+      "agentId": "a20672f948f7659b3",
+      "escopo_paths": [
+        ".agent/skills/qa-critic/SKILL.md",
+        "CHANGELOG.md",
+        "capabilities.json",
+        "docs/adr/131-trabalhadores-externos-orquestrados.md",
+        "tools/model-policy.json",
+        "tools/test_trabalhador_externo.py"
+      ],
+      "achados_fp": [
+        "BAIXA|__pycache__/ na raiz do worktree",
+        "BAIXA|docs/adr/131 emenda",
+        "BAIXA|docs/adr/131-trabalhadores-externos-orquestrados.md linhas 2"
+      ],
+      "reinicio": false
+    }
+  ]
+}

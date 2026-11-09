@@ -2471,13 +2471,13 @@
    "trilha",
    "monitor"
   ],
-  "note": "Dono 24-25/10/2026: Claude orquestra e outras IAs trabalham; tarefas baratas em modelo barato; monitor da trilha. Preenche o degrau 1 da heterogeneity_ladder sem o hub manual. Trabalhadores e classes sao DADO em model-policy.json trabalhadores_externos. Sem declaracao .agent/classe-de-dado.json o repo vale 'empresa' e so o modelo local roda. Saida consultiva: nao substitui qa-critic (ADR-108), exceto o trabalhador codex (revisor_formal, alternado com o Sonnet; emenda de 31/10/2026, atestacao.registro). Monitor: tools/monitor_trabalhadores.py, HTML autonomo sem token.",
+  "note": "Dono 24-25/10/2026: Claude orquestra e outras IAs trabalham; tarefas baratas em modelo barato; monitor da trilha. Preenche o degrau 1 da heterogeneity_ladder sem o hub manual. Trabalhadores e classes sao DADO em model-policy.json trabalhadores_externos. Sem declaracao .agent/classe-de-dado.json o repo vale 'empresa' e recebe quem declara 'empresa' em dados_aceitos (sem veto por classe, dono 06/11/2026). Saida consultiva: nao substitui qa-critic (ADR-108), exceto o trabalhador codex (revisor_formal, alternado com o Sonnet; emenda de 31/10/2026, atestacao.registro). Monitor: tools/monitor_trabalhadores.py, HTML autonomo sem token.",
   "mutacao": {
    "arquivo": "tools/trabalhador_externo.py",
    "de": "    if classe not in (t.get(\"dados_aceitos\") or []):",
    "para": "    if False:",
    "canario": "tools/test_trabalhador_externo.py",
-   "espera": "sem declaracao, trabalhador que sai da maquina tem de ser RECUSADO antes de chamar"
+   "espera": "sem declaracao, trabalhador que nao aceita a classe tem de ser RECUSADO antes de chamar"
   }
  },
  {
