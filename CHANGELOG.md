@@ -5,6 +5,15 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### model-policy — Fable 5.1 → 5.2 (14/11/2026)
+
+- `tools/model-policy.json` → `model_ids.fable`: `claude-fable-5-1` → `claude-fable-5-2`. Família inalterada; nenhuma regra de
+  tier ou escada muda. Pedido do dono (14/11/2026): "use o orquestrador multi ia (atualize-o antes)".
+- Fonte: lista de modelos da seção Environment do prompt de sistema do Claude Code, lida em 14/11/2026 na sessão
+  vibra-kb-rag ("Fable 5.2: 'claude-fable-5-2'"). [CONFIRMADO]
+- Testes: `test_handoff` PASS, `test_trabalhador_externo` PASS, `test_squad_gate` 99/99. QA r1 qa-critic Sonnet 5.5:
+  aprovado com ressalvas (fonte em arquivo e esta entrada), corrigidas aqui.
+
 ### ADR-131, emenda — sem veto por classe `empresa` (06/11/2026)
 
 - Motivo: ordem do dono (06/11/2026): "nao tem veto em empresa. REMOVA isso de tudo aqui". [CONFIRMADO]
