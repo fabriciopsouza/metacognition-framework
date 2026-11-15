@@ -115,12 +115,12 @@ def resolver_pedido(repo, caminho):
     entao conferido: abre-se exatamente o caminho conferido, nunca outro."""
     alvo = os.path.realpath(os.path.abspath(caminho))
     pasta = pasta_pedidos()
-    # [CI 15/11/2026] confere so o ULTIMO componente: link em diretorio ancestral e' do sistema
-    # (macOS /var -> /private/var; Windows TEMP com nome curto RUNNER~1) e recusava todo pedido.
+    # [CI 15/11/2026] confere o TIPO do ultimo componente, nao realpath x abspath: link em diretorio
+    # ancestral e' do sistema (macOS /var -> /private/var; TEMP do runner Windows com nome curto
+    # RUNNER~1) e recusava todo pedido; nome curto 8.3 no proprio componente nao e' link (QA Codex).
+    # Qualquer reparse point no Windows (juncao inclusive) e' recusado: fail-closed.
     # Limite declarado: ancestral redirecionado por quem controla o perfil do usuario nao e' barrado.
-    pasta_abs = os.path.abspath(pasta)
-    esperado = os.path.join(os.path.realpath(os.path.dirname(pasta_abs)), os.path.basename(pasta_abs))
-    if os.path.isdir(pasta) and os.path.normcase(os.path.realpath(pasta_abs)) != os.path.normcase(esperado):
+    if os.path.isdir(pasta) and (os.path.islink(pasta) or getattr(os.lstat(pasta), "st_reparse_tag", 0)):
         raise Recusado("RECUSADO: a pasta de pedidos e' link para outro lugar")  # [QA r3 A6]
     if os.path.isfile(alvo) and os.stat(alvo).st_nlink > 1:
         raise Recusado(f"RECUSADO: pedido '{caminho}' tem mais de um nome (hardlink)")  # [QA r3 A6]

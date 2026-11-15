@@ -644,8 +644,14 @@ def run():
     alvo_pasta = os.path.join(tmp, "pasta-alvo")
     os.makedirs(alvo_pasta, exist_ok=True)
     link_pasta = os.path.join(tmp, "pasta-link")
-    if _link_dir(real_anc, link_anc) and _link_dir(alvo_pasta, link_pasta):
-        try:
+    # [QA Codex] no CI o link TEM de ser criado: pular em silencio deixaria os mutantes vivos
+    def _sem_link(caso):
+        if os.environ.get("CI"):
+            fails.append(f"A7: link de pasta nao foi criado no CI; caso '{caso}' nao rodou")
+        else:
+            print(f"aviso: link de pasta nao pode ser criado aqui; caso A7 '{caso}' nao rodou")
+    try:
+        if _link_dir(real_anc, link_anc):
             os.environ["TRABALHADOR_PEDIDOS"] = os.path.join(link_anc, "pedidos")
             ped = os.path.join(link_anc, "pedidos", "p.md")
             open(ped, "w", encoding="utf-8").write("revise")
@@ -653,6 +659,9 @@ def run():
                 tx.resolver_pedido(r5, ped)
             except tx.Recusado as e:
                 fails.append(f"A7: pasta de pedidos sob ancestral-link tem de valer ({e})")
+        else:
+            _sem_link("ancestral")
+        if _link_dir(alvo_pasta, link_pasta):
             os.environ["TRABALHADOR_PEDIDOS"] = link_pasta
             ped2 = os.path.join(link_pasta, "p.md")
             open(ped2, "w", encoding="utf-8").write("revise")
@@ -661,10 +670,10 @@ def run():
                 fails.append("A7: pasta de pedidos que E' link tem de ser recusada")
             except tx.Recusado:
                 pass
-        finally:
-            os.environ["TRABALHADOR_PEDIDOS"] = pedidos_orig
-    else:
-        print("aviso: link de pasta nao pode ser criado aqui; caso A7 nao rodou")
+        else:
+            _sem_link("pasta-link")
+    finally:
+        os.environ["TRABALHADOR_PEDIDOS"] = pedidos_orig
 
     # (monitor) EM-CURSO substituido por registro posterior da mesma etapa nao conta como em curso
     tot, _, _ = mon.agregar([{"trabalho": "t", "etapa": "QA", "status": "EM-CURSO"},

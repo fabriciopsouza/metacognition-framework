@@ -33,7 +33,9 @@ from pathlib import Path
 
 # Sem .pyc em cache [CI 15/11/2026]: mutacao de mesmo tamanho gravada no mesmo segundo reusava o
 # bytecode do original e o mutante "sobrevivia" (medido em tools/test_mutacao_squad_gate.py).
-_ENV_SEM_PYC = dict(os.environ, PYTHONDONTWRITEBYTECODE="1")
+# PYTHONPYCACHEPREFIX vazio e unico: sem escrita nao impede LER .pyc preexistente (tools/run_canaries.py).
+_ENV_SEM_PYC = dict(os.environ, PYTHONDONTWRITEBYTECODE="1",
+                    PYTHONPYCACHEPREFIX=tempfile.mkdtemp(prefix="mut-ctl-pyc-"))
 
 try:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
