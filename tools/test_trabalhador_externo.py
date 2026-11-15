@@ -270,6 +270,12 @@ def run():
         PopenAgy.saida = '{"event":"result","result":{"status":"SUCCESS","response":"","structured_output":{"a":1}}}\n'
         if tx.via_agy({"modelo": "g"}, "msg", None, 10)["status_via"] != "SUCCESS":
             fails.append("via_agy com JSON estruturado e texto vazio tem de continuar SUCCESS")
+        PopenAgy.saida = '{"event":"result","result":{"status":"SUCCESS","response":"  \\n "}}\n'
+        if tx.via_agy({"modelo": "g"}, "msg", None, 10)["status_via"] == "SUCCESS":
+            fails.append("via_agy com texto so de espacos nao pode ser SUCCESS")
+        PopenAgy.saida = '{"event":"result","result":{"status":"SUCCESS","response":"","structured_output":{}}}\n'
+        if tx.via_agy({"modelo": "g"}, "msg", None, 10)["status_via"] != "SUCCESS":
+            fails.append("via_agy com JSON estruturado vazio ({}) tem de continuar SUCCESS")
     finally:
         tx.subprocess.Popen = popen_orig
         if agy_orig is None:

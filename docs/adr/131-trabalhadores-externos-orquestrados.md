@@ -80,6 +80,8 @@ pedido" (26/10/2026).
    `revisor_formal: true`). Via nova `codex` no executor: `codex exec` com `--ignore-user-config`, `--ignore-rules`,
    `--ephemeral`, `--json` (tokens do evento `turn.completed`), sandbox `read-only`, modelo fixado com `-m`
    (`gpt-6.1-sol`), na pasta vazia, material pela entrada; resposta vazia ou saída diferente de 0 é ERRO.
+   Emenda 15/11/2026: a via `agy` segue a mesma regra; `SUCCESS` sem texto e sem JSON estruturado vira ERRO
+   ("resposta vazia; acoes negadas: ..."), caso visto com gemini-pro em modo plano que tenta `read_file`.
 2. **Exceção ao item 4 da decisão:** a saída do trabalhador com `revisor_formal` é revisão formal que decide, com aviso
    próprio; os demais (Gemini incluído) continuam consultivos: pré-revisão, revisão paralela ou item simples.
 3. **Alternância** (`revisao_alternada` na política): a 1ª revisão (junções e passo 1 do QA final) alterna por rodada,
