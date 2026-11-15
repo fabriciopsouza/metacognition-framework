@@ -5,6 +5,14 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### trabalhador_externo — via agy: resposta vazia é ERRO (15/11/2026)
+
+- `tools/trabalhador_externo.py` → `via_agy`: `SUCCESS` com texto vazio (ou só espaços) e sem `structured_output` passa a
+  `VAZIO`, gravado como ERRO pelo `rodar()`, citando as ações negadas. Antes saía OK com resposta vazia (gemini-pro em modo
+  plano tentou `read_file`, ação negada; 2 de 3 chamadas em 15/11/2026, sessão vibra-kb-rag). [CONFIRMADO]
+- Mesma regra que a via `codex` já tinha; ADR-131 ganha emenda. Teste novo em `tools/test_trabalhador_externo.py`
+  (vazio com ação negada, só espaços, texto, JSON `{}`). QA r1 qa-critic Sonnet: aprovado com ressalvas, aplicadas.
+
 ### model-policy — Fable 5.1 → 5.2 (14/11/2026)
 
 - `tools/model-policy.json` → `model_ids.fable`: `claude-fable-5-1` → `claude-fable-5-2`. Família inalterada; nenhuma regra de

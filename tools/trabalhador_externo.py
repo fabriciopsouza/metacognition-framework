@@ -290,14 +290,25 @@ def via_agy(trab, mensagem, esquema_path, timeout):
     if resultado is None:
         raise RuntimeError(f"agy sem evento result (rc {r.returncode}): {(r.stderr or '')[:400]}")
     uso = resultado.get("usage") or {}
+    texto = resultado.get("response") or ""
+    if not isinstance(texto, str):  # contrato fora do esperado: preserva o conteudo em texto, nunca quebra no strip
+        texto = json.dumps(texto, ensure_ascii=False)
+    estruturado = resultado.get("structured_output")
+    negado = resultado.get("denied_actions") or []
+    status, erro_via = resultado.get("status"), resultado.get("error")
+    # resposta vazia nunca e' SUCCESS (mesma regra da via_codex): no modo plano o modelo as vezes
+    # tenta ler arquivo, a acao e' negada e o turno fecha sem texto (visto com gemini-pro em 15/11/2026)
+    if status == "SUCCESS" and not texto.strip() and estruturado is None:
+        nomes = ", ".join(str(n.get("action", n)) if isinstance(n, dict) else str(n) for n in negado) or "nenhuma"
+        status, erro_via = "VAZIO", f"resposta vazia; acoes negadas: {nomes}"
     return {
-        "status_via": resultado.get("status"),
-        "texto": resultado.get("response") or "",
-        "estruturado": resultado.get("structured_output"),
-        "negado": resultado.get("denied_actions") or [],
+        "status_via": status,
+        "texto": texto,
+        "estruturado": estruturado,
+        "negado": negado,
         "tokens_entrada": uso.get("input_tokens"),
         "tokens_saida": uso.get("output_tokens"),
-        "erro_via": resultado.get("error"),
+        "erro_via": erro_via,
     }
 
 

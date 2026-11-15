@@ -247,6 +247,49 @@ def run():
         else:
             os.environ["CODEX_BIN"] = bin_orig
 
+    # (agy) resposta vazia com acao negada nunca e' SUCCESS; resposta com texto continua SUCCESS
+    class PopenAgy:
+        saida = ""
+
+        def __init__(self, cmd, **kw):
+            self.cmd, self.returncode = cmd, 0
+
+        def communicate(self, entrada=None, timeout=None):
+            return PopenAgy.saida, ""
+    popen_orig, agy_orig = tx.subprocess.Popen, os.environ.get("AGY_BIN")
+    tx.subprocess.Popen, os.environ["AGY_BIN"] = PopenAgy, "agy-falso"
+    try:
+        PopenAgy.saida = ('{"event":"result","result":{"status":"SUCCESS","response":"",'
+                          '"denied_actions":[{"action":"read_file"}]}}\n')
+        r = tx.via_agy({"modelo": "g"}, "msg", None, 10)
+        if r["status_via"] != "VAZIO" or "read_file" not in (r["erro_via"] or ""):
+            fails.append(f"via_agy com resposta vazia nao pode ser SUCCESS e tem de citar a acao negada ({r})")
+        PopenAgy.saida = '{"event":"result","result":{"status":"SUCCESS","response":"51\\n"}}\n'
+        if tx.via_agy({"modelo": "g"}, "msg", None, 10)["status_via"] != "SUCCESS":
+            fails.append("via_agy com texto tem de continuar SUCCESS")
+        PopenAgy.saida = '{"event":"result","result":{"status":"SUCCESS","response":"","structured_output":{"a":1}}}\n'
+        if tx.via_agy({"modelo": "g"}, "msg", None, 10)["status_via"] != "SUCCESS":
+            fails.append("via_agy com JSON estruturado e texto vazio tem de continuar SUCCESS")
+        PopenAgy.saida = '{"event":"result","result":{"status":"SUCCESS","response":"  \\n "}}\n'
+        if tx.via_agy({"modelo": "g"}, "msg", None, 10)["status_via"] != "VAZIO":
+            fails.append("via_agy com texto so de espacos tem de ser VAZIO")
+        PopenAgy.saida = '{"event":"result","result":{"status":"SUCCESS","response":""}}\n'
+        r = tx.via_agy({"modelo": "g"}, "msg", None, 10)
+        if r["status_via"] != "VAZIO" or "nenhuma" not in (r["erro_via"] or ""):
+            fails.append(f"via_agy vazio sem acao negada tem de ser VAZIO citando 'nenhuma' ({r})")
+        PopenAgy.saida = '{"event":"result","result":{"status":"SUCCESS","response":123}}\n'
+        if tx.via_agy({"modelo": "g"}, "msg", None, 10)["texto"] != "123":
+            fails.append("via_agy com response nao textual nao pode quebrar e tem de preservar o conteudo")
+        PopenAgy.saida = '{"event":"result","result":{"status":"SUCCESS","response":"","structured_output":{}}}\n'
+        if tx.via_agy({"modelo": "g"}, "msg", None, 10)["status_via"] != "SUCCESS":
+            fails.append("via_agy com JSON estruturado vazio ({}) tem de continuar SUCCESS")
+    finally:
+        tx.subprocess.Popen = popen_orig
+        if agy_orig is None:
+            os.environ.pop("AGY_BIN", None)
+        else:
+            os.environ["AGY_BIN"] = agy_orig
+
     # (12) validador: bool nao e' numero; inteiro com fracao reprova
     if not tx.validar(True, {"type": "integer"}) or not tx.validar(1.5, {"type": "integer"}):
         fails.append("validador aceitou bool ou fracao como inteiro")
