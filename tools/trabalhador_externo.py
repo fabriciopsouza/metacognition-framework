@@ -114,7 +114,7 @@ def resolver_pedido(repo, caminho):
     [QA r1 Q1 + r2 N1] relativo e' resolvido contra a pasta corrente (o que `open` faria) e so
     entao conferido: abre-se exatamente o caminho conferido, nunca outro."""
     alvo = os.path.realpath(os.path.abspath(caminho))
-    pasta = pasta_pedidos()
+    pasta = os.path.abspath(pasta_pedidos())  # [QA Codex r2] barra final ou '/.' escondiam o link do islink/lstat
     # [CI 15/11/2026] confere o TIPO do ultimo componente, nao realpath x abspath: link em diretorio
     # ancestral e' do sistema (macOS /var -> /private/var; TEMP do runner Windows com nome curto
     # RUNNER~1) e recusava todo pedido; nome curto 8.3 no proprio componente nao e' link (QA Codex).

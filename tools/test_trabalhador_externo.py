@@ -662,14 +662,16 @@ def run():
         else:
             _sem_link("ancestral")
         if _link_dir(alvo_pasta, link_pasta):
-            os.environ["TRABALHADOR_PEDIDOS"] = link_pasta
             ped2 = os.path.join(link_pasta, "p.md")
             open(ped2, "w", encoding="utf-8").write("revise")
-            try:
-                tx.resolver_pedido(r5, ped2)
-                fails.append("A7: pasta de pedidos que E' link tem de ser recusada")
-            except tx.Recusado:
-                pass
+            # [QA Codex r2] barra final e '/.' nao podem esconder o link
+            for forma in (link_pasta, link_pasta + os.sep, os.path.join(link_pasta, ".")):
+                os.environ["TRABALHADOR_PEDIDOS"] = forma
+                try:
+                    tx.resolver_pedido(r5, ped2)
+                    fails.append(f"A7: pasta de pedidos que E' link tem de ser recusada ({forma!r})")
+                except tx.Recusado:
+                    pass
         else:
             _sem_link("pasta-link")
     finally:
