@@ -262,7 +262,7 @@ def run():
         PopenAgy.saida = ('{"event":"result","result":{"status":"SUCCESS","response":"",'
                           '"denied_actions":[{"action":"read_file"}]}}\n')
         r = tx.via_agy({"modelo": "g"}, "msg", None, 10)
-        if r["status_via"] == "SUCCESS" or "read_file" not in (r["erro_via"] or ""):
+        if r["status_via"] != "VAZIO" or "read_file" not in (r["erro_via"] or ""):
             fails.append(f"via_agy com resposta vazia nao pode ser SUCCESS e tem de citar a acao negada ({r})")
         PopenAgy.saida = '{"event":"result","result":{"status":"SUCCESS","response":"51\\n"}}\n'
         if tx.via_agy({"modelo": "g"}, "msg", None, 10)["status_via"] != "SUCCESS":
@@ -271,8 +271,15 @@ def run():
         if tx.via_agy({"modelo": "g"}, "msg", None, 10)["status_via"] != "SUCCESS":
             fails.append("via_agy com JSON estruturado e texto vazio tem de continuar SUCCESS")
         PopenAgy.saida = '{"event":"result","result":{"status":"SUCCESS","response":"  \\n "}}\n'
-        if tx.via_agy({"modelo": "g"}, "msg", None, 10)["status_via"] == "SUCCESS":
-            fails.append("via_agy com texto so de espacos nao pode ser SUCCESS")
+        if tx.via_agy({"modelo": "g"}, "msg", None, 10)["status_via"] != "VAZIO":
+            fails.append("via_agy com texto so de espacos tem de ser VAZIO")
+        PopenAgy.saida = '{"event":"result","result":{"status":"SUCCESS","response":""}}\n'
+        r = tx.via_agy({"modelo": "g"}, "msg", None, 10)
+        if r["status_via"] != "VAZIO" or "nenhuma" not in (r["erro_via"] or ""):
+            fails.append(f"via_agy vazio sem acao negada tem de ser VAZIO citando 'nenhuma' ({r})")
+        PopenAgy.saida = '{"event":"result","result":{"status":"SUCCESS","response":123}}\n'
+        if tx.via_agy({"modelo": "g"}, "msg", None, 10)["texto"] != "123":
+            fails.append("via_agy com response nao textual nao pode quebrar e tem de preservar o conteudo")
         PopenAgy.saida = '{"event":"result","result":{"status":"SUCCESS","response":"","structured_output":{}}}\n'
         if tx.via_agy({"modelo": "g"}, "msg", None, 10)["status_via"] != "SUCCESS":
             fails.append("via_agy com JSON estruturado vazio ({}) tem de continuar SUCCESS")
