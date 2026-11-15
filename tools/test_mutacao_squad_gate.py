@@ -284,7 +284,13 @@ def main():
         # para o commit da copia. O import resolve para a COPIA porque o script esta em tmp/tools/.
         # roda SO os testes do bloco: o canario inteiro roda uma vez por mutacao, e a prova
         # so precisa saber se as defesas DESTE ADR mordem. Corta a suite em ~4x (regua §0-b).
-        env = dict(os.environ, PYTHONIOENCODING="utf-8",
+        # PYTHONDONTWRITEBYTECODE [CI 15/11/2026]: `all`->`any` nao muda o tamanho do arquivo; gravado
+        # no mesmo segundo do baseline (ubuntu e' rapido), o .pyc em cache (mtime em segundos +
+        # tamanho) parecia valido e o canario rodava o codigo ORIGINAL — mutante "sobrevivia".
+        # PYTHONPYCACHEPREFIX vazio (QA Sonnet; padrao de tools/run_canaries.py): sem escrita nao
+        # impede LER .pyc preexistente; com o prefixo novo, o cache so e procurado ali, vazio.
+        env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONDONTWRITEBYTECODE="1",
+                   PYTHONPYCACHEPREFIX=os.path.join(tmp, "_pyc_vazio"),
                    SQUAD_GATE_TESTES=",".join(TESTES_DO_BLOCO))
 
         base = subprocess.run([sys.executable, canario], cwd=tmp, capture_output=True, env=env)

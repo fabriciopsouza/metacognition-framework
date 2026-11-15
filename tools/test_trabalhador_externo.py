@@ -668,6 +668,58 @@ def run():
     except OSError:
         print("aviso: hardlink nao suportado aqui; caso A6 nao rodou")
 
+    # (A7) [CI 15/11/2026] link so' no ANCESTRAL da pasta de pedidos (macOS /var, TEMP RUNNER~1)
+    # roda; a PROPRIA pasta sendo link continua recusada. O CI vermelho em macOS/Windows era isto.
+    def _link_dir(origem, link):
+        if os.name == "nt":
+            import subprocess
+            return subprocess.run(["cmd", "/c", "mklink", "/J", link, origem],
+                                  capture_output=True).returncode == 0
+        try:
+            os.symlink(origem, link)
+            return True
+        except OSError:
+            return False
+    pedidos_orig = os.environ["TRABALHADOR_PEDIDOS"]
+    real_anc = os.path.join(tmp, "anc-real")
+    os.makedirs(os.path.join(real_anc, "pedidos"), exist_ok=True)
+    link_anc = os.path.join(tmp, "anc-link")
+    alvo_pasta = os.path.join(tmp, "pasta-alvo")
+    os.makedirs(alvo_pasta, exist_ok=True)
+    link_pasta = os.path.join(tmp, "pasta-link")
+    # [QA Codex] no CI o link TEM de ser criado: pular em silencio deixaria os mutantes vivos
+    def _sem_link(caso):
+        if os.environ.get("CI"):
+            fails.append(f"A7: link de pasta nao foi criado no CI; caso '{caso}' nao rodou")
+        else:
+            print(f"aviso: link de pasta nao pode ser criado aqui; caso A7 '{caso}' nao rodou")
+    try:
+        if _link_dir(real_anc, link_anc):
+            os.environ["TRABALHADOR_PEDIDOS"] = os.path.join(link_anc, "pedidos")
+            ped = os.path.join(link_anc, "pedidos", "p.md")
+            open(ped, "w", encoding="utf-8").write("revise")
+            try:
+                tx.resolver_pedido(r5, ped)
+            except tx.Recusado as e:
+                fails.append(f"A7: pasta de pedidos sob ancestral-link tem de valer ({e})")
+        else:
+            _sem_link("ancestral")
+        if _link_dir(alvo_pasta, link_pasta):
+            ped2 = os.path.join(link_pasta, "p.md")
+            open(ped2, "w", encoding="utf-8").write("revise")
+            # [QA Codex r2] barra final e '/.' nao podem esconder o link
+            for forma in (link_pasta, link_pasta + os.sep, os.path.join(link_pasta, ".")):
+                os.environ["TRABALHADOR_PEDIDOS"] = forma
+                try:
+                    tx.resolver_pedido(r5, ped2)
+                    fails.append(f"A7: pasta de pedidos que E' link tem de ser recusada ({forma!r})")
+                except tx.Recusado:
+                    pass
+        else:
+            _sem_link("pasta-link")
+    finally:
+        os.environ["TRABALHADOR_PEDIDOS"] = pedidos_orig
+
     # (monitor) EM-CURSO substituido por registro posterior da mesma etapa nao conta como em curso
     tot, _, _ = mon.agregar([{"trabalho": "t", "etapa": "QA", "status": "EM-CURSO"},
                              {"trabalho": "t", "etapa": "QA", "status": "OK"},

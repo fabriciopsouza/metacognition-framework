@@ -24,11 +24,18 @@ Rodar: python tools/test_mutacao_controle.py
 """
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
+
+# Sem .pyc em cache [CI 15/11/2026]: mutacao de mesmo tamanho gravada no mesmo segundo reusava o
+# bytecode do original e o mutante "sobrevivia" (medido em tools/test_mutacao_squad_gate.py).
+# PYTHONPYCACHEPREFIX vazio e unico: sem escrita nao impede LER .pyc preexistente (tools/run_canaries.py).
+_ENV_SEM_PYC = dict(os.environ, PYTHONDONTWRITEBYTECODE="1",
+                    PYTHONPYCACHEPREFIX=tempfile.mkdtemp(prefix="mut-ctl-pyc-"))
 
 try:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -214,7 +221,7 @@ def main() -> int:
         # o canario tem de estar VERDE na copia antes de qualquer mutacao — senao um vermelho
         # depois nao provaria nada sobre a mutacao.
         for canario in sorted({c for _r, _a, c, _d, _p in MUTACOES}):
-            r = subprocess.run([sys.executable, str(copia / canario)],
+            r = subprocess.run([sys.executable, str(copia / canario)], env=_ENV_SEM_PYC,
                                capture_output=True, text=True, encoding="utf-8", errors="replace")
             checar(f"a copia intacta passa em {canario}", r.returncode == 0,
                    f"-> saiu {r.returncode}; sem isto, vermelho nao prova mutacao")
@@ -233,7 +240,7 @@ def main() -> int:
                 continue
             try:
                 alvo.write_text(original.replace(de, para, 1), encoding="utf-8")
-                r = subprocess.run([sys.executable, str(copia / canario)],
+                r = subprocess.run([sys.executable, str(copia / canario)], env=_ENV_SEM_PYC,
                                    capture_output=True, text=True, encoding="utf-8",
                                    errors="replace")
                 primeira = next((l.strip() for l in (r.stdout or "").splitlines()
