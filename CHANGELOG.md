@@ -5,6 +5,21 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-047 emenda 1 — `bootstrap.py` não toca no `settings.json` versionado (20/11/2026)
+
+- Motivo: o bootstrap desligava os hooks de todas as sessões ao copiar o perfil sem hooks por cima do
+  `.claude/settings.json` versionado (reincidência 09/10 e 20/11/2026). Decisão do dono: opção (c). [CONFIRMADO]
+- `bootstrap.py`: perfil non-admin = `"disableAllHooks": true` em `.claude/settings.local.json` (não versionado, chaves
+  preservadas, escrita atômica, recusa link, JSON inválido e valor não booleano); grava só onde o PowerShell não executa
+  `.ps1` como os hooks; `ps_available()` passa a testar `-ExecutionPolicy Bypass -File`; `--check` mostra hooks do projeto
+  e o override local.
+- `tools/test_nonadmin.py`: teste funcional dos casos C1 a C5 em pasta temporária.
+- `guia/MODO-NON-ADMIN.md`, `guia/SETUP.md`, `.claude/settings.nonadmin.json` (`_doc`), ADR-047 (emenda 1).
+- Sonda `sondar_powershell()`: só `powershell.exe`; timeout ou erro = indeterminado, que não grava override.
+- `behaviors/manifest.json` e comentário de `tools/test_squad_gate.py`: justificativa do `settings.nonadmin.json` atualizada.
+- Revisão F2: especificação Codex r1 REPROVADO (13 achados); conjunto Codex r1 REPROVADO (4) e Sonnet r2 APROVADO COM
+  RESSALVAS (2 MÉDIA, 6 BAIXA); tratamento em `docs/specs/bootstrap-preserva-settings/spec.md`. Canário 23/23; 12/12 sabotagens.
+
 ### ADR-134 — Análise acompanhada humano-IA (19/11/2026)
 
 - Motivo: pedido do dono e plano aprovado em 19/11/2026 (repositório central de pesquisas, pasta

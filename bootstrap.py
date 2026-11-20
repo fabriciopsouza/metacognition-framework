@@ -3,20 +3,23 @@
 
 Para máquinas corporativas onde a política (GPO) bloqueia scripts PowerShell — `bootstrap.ps1`
 não roda. Este equivalente em **Python puro** (Python não é barrado pela política de PS) instala o
-framework no perfil do usuário, ativa o **perfil non-admin** (settings sem hooks) e NÃO exige admin.
+framework no perfil do usuário, ativa o **perfil non-admin** (hooks desligados) só onde o PowerShell
+não executa os hooks, e NÃO exige admin.
 
 O que faz (idempotente, 2x sem destruir):
   1. Espelha as skills/regras/workflows do framework para `~/.claude/` (auto-descoberta do Claude Code).
-  2. Ativa o perfil **non-admin**: copia `.claude/settings.nonadmin.json` → `.claude/settings.json`
-     do PROJETO (sem hooks → inicia sob restrição). Backup do anterior em `settings.json.bak`.
-  3. Detecta se PowerShell roda; se SIM, avisa que o modo admin (com hooks) está disponível.
+  2. Detecta se o PowerShell EXECUTA arquivo .ps1 como os hooks executam. Se SIM, mantém o perfil
+     com hooks e não altera nenhum arquivo de configuração.
+  3. Se NÃO, ativa o perfil **non-admin**: grava `"disableAllHooks": true` em
+     `.claude/settings.local.json` (não versionado; demais chaves preservadas). O
+     `.claude/settings.json` versionado nunca é tocado (ADR-047, emenda 20/11/2026).
 NÃO faz: git config / gh (evita exigir rede/credencial); rode-os à parte se quiser.
 
 Uso:
-    python bootstrap.py                 # instala + ativa non-admin
+    python bootstrap.py                 # instala + ativa non-admin se o PowerShell não roda os hooks
     python bootstrap.py --check         # VERIFICA se a instalação funciona (runbook, guia/SETUP.md)
                                         # exit 1 se houver pendência BLOQUEIA; 0 se só AVISA
-    python bootstrap.py --no-mirror     # não espelha p/ ~/.claude (só ativa settings non-admin)
+    python bootstrap.py --no-mirror     # não espelha p/ ~/.claude (só decide o perfil non-admin)
     python bootstrap.py --regras-globais  # SÓ grava as regras do dono em ~/.claude/CLAUDE.md
                                           # (ADR-116); é o que sync-global.ps1 e bootstrap.sh chamam
 """
@@ -31,19 +34,43 @@ HOME_CLAUDE = os.path.join(os.path.expanduser("~"), ".claude")
 MIRROR = [".agent/skills", ".agent/rules", ".agent/workflows", "_shared", ".claude/commands"]
 
 
+def sondar_powershell():
+    """O PowerShell EXECUTA um arquivo .ps1 do jeito que os hooks executam
+    (`powershell.exe -NoProfile -ExecutionPolicy Bypass -File`)? Devolve 'sim' | 'barrado' |
+    'ausente' | 'indeterminado'. `-Command "exit 0"` nao serve: a politica de execucao (GPO) barra
+    arquivo de script, nao comando inline, e o teste antigo dizia SIM na maquina restrita. So' o
+    `powershell.exe` conta (e' o que os hooks chamam; `pwsh` sozinho seria falso SIM). Timeout ou
+    erro da sonda = 'indeterminado': o chamador NAO grava override com base nisso (falso NAO
+    desligaria os hooks do clone inteiro; 1a partida sob antivirus pode passar de 15 s)."""
+    if not shutil.which("powershell.exe"):
+        return "ausente"
+    import tempfile
+    ps1 = None
+    try:
+        fd, ps1 = tempfile.mkstemp(suffix=".ps1")
+        with os.fdopen(fd, "w", encoding="ascii") as fh:
+            fh.write("exit 0\n")
+        for limite in (15, 60):
+            try:
+                r = subprocess.run(["powershell.exe", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass",
+                                    "-File", ps1], capture_output=True, timeout=limite)
+            except subprocess.TimeoutExpired:
+                continue
+            return "sim" if r.returncode == 0 else "barrado"
+        return "indeterminado"
+    except Exception:
+        return "indeterminado"
+    finally:
+        if ps1:
+            try:
+                os.remove(ps1)
+            except OSError:
+                pass
+
+
 def ps_available():
-    """True se PowerShell consegue EXECUTAR um script trivial (não só existir)."""
-    for exe in ("pwsh", "powershell", "powershell.exe"):
-        if not shutil.which(exe):
-            continue
-        try:
-            r = subprocess.run([exe, "-NoProfile", "-NonInteractive", "-Command", "exit 0"],
-                               capture_output=True, timeout=15)
-            if r.returncode == 0:
-                return True
-        except Exception:
-            continue
-    return False
+    """True so' quando a sonda diz 'sim'."""
+    return sondar_powershell() == "sim"
 
 
 def mirror_skills():
@@ -140,15 +167,74 @@ def main_regras_globais():
     return {"instalado": 0, "em-dia": 0, "recusado": 2, "falha-escrita": 3}.get(situacao, 1)
 
 
-def activate_nonadmin():
-    na = os.path.join(ROOT, ".claude", "settings.nonadmin.json")
-    target = os.path.join(ROOT, ".claude", "settings.json")
-    if not os.path.isfile(na):
-        return False, "settings.nonadmin.json ausente"
-    if os.path.isfile(target):
-        shutil.copyfile(target, target + ".bak")
-    shutil.copyfile(na, target)
-    return True, "perfil non-admin ativo (settings.json sem hooks; backup em settings.json.bak)"
+def ler_override_local(raiz=ROOT):
+    """Le `.claude/settings.local.json` (nao versionado). Devolve (estado, dados, bytes_lidos, erro):
+    estado = 'ausente' | 'ativo' | 'inativo' | 'invalido'. So o booleano True conta como ativo."""
+    alvo = os.path.join(raiz, ".claude", "settings.local.json")
+    if os.path.islink(alvo):
+        return "invalido", None, None, "settings.local.json e' link; recuso seguir (poderia apontar para o settings.json versionado)"
+    if not os.path.lexists(alvo):
+        return "ausente", {}, None, ""
+    if not os.path.isfile(alvo):
+        return "invalido", None, None, "settings.local.json existe mas nao e' arquivo comum"
+    try:
+        with open(alvo, "rb") as fh:
+            bruto = fh.read()
+        dados = json.loads(bruto.decode("utf-8-sig"))
+    except (OSError, UnicodeDecodeError, ValueError) as e:
+        return "invalido", None, None, f"settings.local.json ilegivel ou JSON invalido ({e}); comentario e virgula final nao sao aceitos"
+    if not isinstance(dados, dict):
+        return "invalido", None, None, "settings.local.json nao e' um objeto JSON"
+    valor = dados.get("disableAllHooks", False)
+    if valor is True:
+        return "ativo", dados, bruto, ""
+    if valor is False:
+        return "inativo", dados, bruto, ""
+    return "invalido", None, None, f"disableAllHooks com valor nao booleano ({valor!r})"
+
+
+def activate_nonadmin(raiz=ROOT):
+    """Perfil non-admin (ADR-047, emenda 20/11/2026): grava `"disableAllHooks": true` em
+    `.claude/settings.local.json`, que o git ignora. NUNCA toca no `.claude/settings.json`
+    versionado: copiar o perfil por cima dele desligava os hooks de todas as sessoes e sujava a
+    arvore compartilhada (reincidiu 09/10 e 20/11/2026). Copiar o perfil sem hooks para o local nao
+    funcionaria: hooks de arquivos diferentes se somam. Prova em
+    docs/specs/bootstrap-preserva-settings/spec.md, secao 2a."""
+    pasta = os.path.join(raiz, ".claude")
+    alvo = os.path.join(pasta, "settings.local.json")
+    estado, dados, bruto, erro = ler_override_local(raiz)
+    if estado == "invalido":
+        return False, f"{erro} - nada foi alterado; corrija o arquivo e rode de novo"
+    if estado == "ativo":
+        return True, "perfil non-admin ja ativo (disableAllHooks em .claude/settings.local.json); nada alterado"
+    dados = dict(dados)
+    dados["disableAllHooks"] = True
+    texto = json.dumps(dados, ensure_ascii=False, indent=2) + "\n"
+    import tempfile
+    tmp = None
+    try:
+        os.makedirs(pasta, exist_ok=True)
+        fd, tmp = tempfile.mkstemp(prefix=".settings.local.", suffix=".tmp", dir=pasta)
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(texto)
+        # Outra sessao pode ter mexido no arquivo entre a leitura e agora: confere antes de trocar.
+        agora = None
+        if os.path.lexists(alvo):
+            with open(alvo, "rb") as fh:
+                agora = fh.read()
+        if agora != bruto:
+            return False, "settings.local.json mudou durante a gravacao (outra sessao?) - nada foi alterado; rode de novo"
+        os.replace(tmp, alvo)
+        tmp = None
+    except (OSError, UnicodeError) as e:
+        return False, f"falha ao gravar {alvo}: {getattr(e, 'strerror', None) or e} - nada foi alterado"
+    finally:
+        if tmp and os.path.exists(tmp):
+            try:
+                os.remove(tmp)
+            except OSError:
+                pass
+    return True, "perfil non-admin ativo (disableAllHooks em .claude/settings.local.json; settings.json versionado intocado)"
 
 
 def ensure_cofre():
@@ -204,6 +290,31 @@ def prompt_report_optin():
 VERSAO_PYTHON_MINIMA = (3, 8)
 
 
+def diagnostico_perfil(raiz):
+    """Parte do --check sobre o perfil. Diz so' o que inspecionou (settings.json do projeto e
+    settings.local.json); hooks de usuario ou plugin ficam fora. Devolve [(nivel, item, como)]."""
+    pend = []
+    cur = os.path.join(raiz, ".claude", "settings.json")
+    if not os.path.isfile(cur):
+        pend.append(("AVISA   ", "nao ha .claude/settings.json no projeto",
+                     "clone incompleto ou arquivo apagado: confira `git status .claude` e recupere do git"))
+    else:
+        try:
+            cfg = json.load(open(cur, encoding="utf-8-sig"))
+            print(f"[bootstrap.py] hooks no .claude/settings.json do projeto: {'sim' if cfg.get('hooks') else 'nao'}")
+        except Exception as e:
+            pend.append(("BLOQUEIA", f".claude/settings.json invalido: {e}",
+                         "confira o diff (`git diff .claude/settings.json`), salve sua versao e recupere a do git"))
+    estado, _d, _b, erro = ler_override_local(raiz)
+    if estado == "invalido":
+        pend.append(("BLOQUEIA", f".claude/settings.local.json: {erro}",
+                     "corrija o arquivo (JSON objeto; disableAllHooks so' true ou false)"))
+    else:
+        print(f"[bootstrap.py] override local disableAllHooks (.claude/settings.local.json): "
+              f"{'ATIVO - hooks deste projeto desligados' if estado == 'ativo' else 'inativo'}")
+    return pend
+
+
 def verificar(raiz):
     """Diz o que impede esta instalacao de funcionar. Lista de (nivel, item, como resolver).
 
@@ -249,18 +360,7 @@ def verificar(raiz):
         if not os.path.isfile(os.path.join(raiz, rel)):
             bloqueia(f"{rel} ausente — {porque}", "clone incompleto; refaca o clone")
 
-    cur = os.path.join(raiz, ".claude", "settings.json")
-    if not os.path.isfile(cur):
-        avisa("nao ha .claude/settings.json no projeto",
-              "rode `python bootstrap.py` para ativar o perfil non-admin")
-    else:
-        try:
-            cfg = json.load(open(cur, encoding="utf-8-sig"))
-            modo = "admin (com hooks)" if cfg.get("hooks") else "non-admin (sem hooks)"
-            print(f"[bootstrap.py] perfil ativo: {modo}")
-        except Exception as e:
-            bloqueia(f".claude/settings.json invalido: {e}",
-                     "restaure de settings.json.bak ou rode `python bootstrap.py`")
+    pend.extend(diagnostico_perfil(raiz))
 
     # ADR-116: sem o bloco em ~/.claude/CLAUDE.md, fora deste repo o agente nao recebe a ordem de
     # revisao adversarial nem a de caminho absoluto — e nada avisaria.
@@ -313,8 +413,13 @@ def main(argv):
     check_only = "--check" in argv
     no_mirror = "--no-mirror" in argv
 
-    ps = ps_available()
-    print(f"[bootstrap.py] PowerShell executa scripts? {'SIM' if ps else 'NAO (politica restrita) -> modo non-admin recomendado'}")
+    sonda = sondar_powershell()
+    ps = sonda == "sim"
+    print("[bootstrap.py] powershell.exe executa .ps1 como os hooks? " + {
+        "sim": "SIM",
+        "barrado": "NAO (barrado pela politica ou pelo antivirus) -> modo non-admin",
+        "ausente": "NAO (powershell.exe ausente neste host) -> modo non-admin",
+        "indeterminado": "INDETERMINADO (sonda sem resposta em 15 s + 60 s ou erro)"}[sonda])
     if check_only:
         pendencias = verificar(ROOT)
         print("-" * 60)
@@ -336,12 +441,30 @@ def main(argv):
     if ensure_cofre():  # ADR-052/065: clone full sem cofre -> cria o cofre proprio (vira OWNER)
         print(f"[bootstrap.py] cofre proprio criado: {os.path.join(ROOT, 'docs', '_private')} (tier OWNER; cada clone o seu).")
     prompt_report_optin()  # ADR-064: opt-in 1x (TTY-guarded, fail-soft)
+    if ps:
+        # Trava (ADR-047, emenda 20/11/2026): onde o PowerShell executa os hooks, nao ha' motivo para
+        # desliga-los, e o settings.local.json vale para TODAS as sessoes deste clone.
+        print("[bootstrap.py] PowerShell executa os hooks aqui: nenhum arquivo de configuracao alterado.")
+        estado, _d, _b, erro = ler_override_local()
+        if estado == "ativo":
+            print("[bootstrap.py] ATENCAO: o override local disableAllHooks continua ATIVO - os hooks deste clone seguem DESLIGADOS.")
+            print("               Para religar: apague a chave disableAllHooks de .claude/settings.local.json.")
+        elif estado == "invalido":
+            print(f"[bootstrap.py] ATENCAO: .claude/settings.local.json: {erro}")
+        else:
+            print("               Hooks do projeto ativos. Para forcar o perfil sem hooks, ponha \"disableAllHooks\": true")
+            print("               em .claude/settings.local.json (guia/MODO-NON-ADMIN.md).")
+        return 0
+    if sonda == "indeterminado":
+        print("[bootstrap.py] Nada alterado: sem saber se os hooks rodam, nao desligo os hooks do clone inteiro.")
+        print("               Rode de novo, ou ponha \"disableAllHooks\": true em .claude/settings.local.json a mao.")
+        return 1
     ok, msg = activate_nonadmin()
     print(f"[bootstrap.py] {'OK' if ok else 'FALHA'}: {msg}")
-    print("[bootstrap.py] Modo NON-ADMIN: os hooks automaticos NAO rodam. O agente APLICA e ANUNCIA")
-    print("               cada gate inline (route/mission/action-safety/overwrite) — ver CLAUDE.md §Modo non-admin.")
-    if ps:
-        print("[bootstrap.py] (PowerShell disponivel aqui: para o modo admin com hooks, use bootstrap.ps1 ou restaure settings.json.bak.)")
+    if ok:
+        print("[bootstrap.py] Modo NON-ADMIN: os hooks automaticos NAO rodam, a partir da proxima sessao, em TODAS as sessoes")
+        print("               deste clone. O agente APLICA e ANUNCIA cada gate inline (route/mission/action-safety/overwrite).")
+        print("               Para remover o override local: apague a chave disableAllHooks de .claude/settings.local.json.")
     return 0 if ok else 1
 
 

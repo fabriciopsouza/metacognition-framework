@@ -441,7 +441,7 @@ def test_matriz_cobre_os_INTERRUPTORES_do_proprio_mecanismo():
         ".claude/settings.json",             # configura os hooks: desarma o gate sem tocar nele
         "tools/model-policy.json",           # define o que e' "um degrau abaixo do autor"
         ".agent/workflows/start-session.md",  # orquestra a sequencia do squad (sync, WIP, boot)
-        ".claude/settings.nonadmin.json",     # o bootstrap copia isto POR CIMA do settings.json
+        ".claude/settings.nonadmin.json",     # e' o settings.json do pacote publico non-admin
         ".gitignore",                        # decide o que o git VE, logo o que o gate avalia
         "tools/hooks/effect-gate.ps1",        # bloqueia acao destrutiva; fallback ativo em NON-ADMIN
         ".claude/hooks/check-repo-sync.ps1",  # o gate de sincronia, so' existe em .ps1
