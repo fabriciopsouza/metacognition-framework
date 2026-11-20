@@ -42,7 +42,7 @@ def main():
     check(os.path.isfile(os.path.join(a, "publico", "prompt-web-publico.md")), "tier público gerado")
     check(os.path.isfile(os.path.join(a, "premium", "prompt-web-premium.md")), "orquestrador premium gerado")
     n_skills = sum(1 for _, _, fs in os.walk(os.path.join(a, "premium", "skills")) for f in fs if f == "SKILL.md")
-    check(n_skills == len(w.PIPELINE) + len(w.LATERAL) + len(w.SHARED), f"skills geradas = {n_skills} (esperado 15)")
+    check(n_skills == len(w.PIPELINE) + len(w.LATERAL) + len(w.SHARED), f"skills geradas = {n_skills} (esperado {len(w.PIPELINE) + len(w.LATERAL) + len(w.SHARED)})")
 
     # 2. carimbo de versão == main
     check(ver_a == w.main_version() and ver_a != "0.0.0", f"carimbo de versão == main ({ver_a})")

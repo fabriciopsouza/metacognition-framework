@@ -30,7 +30,7 @@ PUBLIC_SRC = os.path.join(SRC_ROOT, "PROMPT-CHAT-WEB-v4.5.md")
 
 # Pipeline canônico (ADR-056): ordem fixa; explorer é lateral (read-only, sem sucessor).
 PIPELINE = ["pmo", "discovery", "architect", "developer", "qa-critic", "docops"]
-LATERAL = ["explorer"]
+LATERAL = ["explorer", "analise-dados"]  # analise-dados: condutora lateral de tarefa com dado (ADR-134)
 # Transversais _shared (atômicos, referenciados — não encadeiam). doc-intake/execution-modes
 # NÃO entram (substituídos por declaração no chat — ADR-056).
 SHARED = ["anti-hallucination", "confidence-classification", "traceability", "output-format",
@@ -137,6 +137,9 @@ def gen_role_skill(name, version, rules):
         L.append(f"- Rewind declarado: se o critério falhar, volte ao papel anterior (**{PIPELINE[PIPELINE.index(name)-1]}**).")
     if not nxt and name in PIPELINE:
         L.append("- Fim do pipeline: encerrar bloco (checkpoint de release declarado).")
+    if name == "analise-dados":
+        L.append("- analise-dados é condutora lateral de tarefa com dado: grava diário e decisões D-nn (não é read-only) "
+                 "e chama o discovery (sub-modo produto-de-dados) na fase 1+2.")
     L.append("- explorer é chamável lateralmente para leitura (read-only), sem sucessor fixo.")
     return "\n".join(L) + "\n"
 
@@ -244,7 +247,8 @@ def build(out_dir):
           "> **Para o framework COMPLETO que clona-e-roda (hooks, tools, gates, bootstrap), use o repo "
           "`metacognition-framework-premium`** (não este).\n"
           "> GERADO do repo main (`tools/web_export.py`) — **não editar à mão**. Privado (acesso pago) — não publicar.\n\n"
-          "Tier premium do pacote web: **orquestrador enxuto + 15 skills** (7 papéis + 8 transversais), com "
+          f"Tier premium do pacote web: **orquestrador enxuto + {len(PIPELINE) + len(LATERAL) + len(SHARED)} skills** "
+          f"({len(PIPELINE) + len(LATERAL)} papéis + {len(SHARED)} transversais), com "
           "auto-trigger por intenção e encadeamento de papéis.\n\n"
           "## Como usar — Claude.ai Projects (recomendado)\n"
           "1. Crie um **Projeto** no Claude.ai.\n"

@@ -140,6 +140,7 @@
   segue. A resposta final traz **completo** o que o complemento pediu: o dono só vê a última resposta.
 - **Mensagem fora de contexto (18/10/2026).** Trecho ou aprovação que pertence a outra sessão é desconsiderado:
   uma linha em Pendências diz de onde parece vir e onde mandar; o trabalho segue sem mudar.
+- **Análise acompanhada (ADR-134, 19/11/2026).** Tarefa que toque dado, indicador, métrica ou modelo: carregar a skill `analise-dados`; modo acompanhado até a primeira ordem de autônomo, que vale dali em diante na sessão.
 
 ## 7. Mapa de impacto em toda mudança
 

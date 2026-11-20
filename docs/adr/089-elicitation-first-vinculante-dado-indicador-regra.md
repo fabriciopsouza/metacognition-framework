@@ -47,6 +47,13 @@ mínima — mesmo em autosuficiente:
 - (−) Custo de 1 rodada de elicitação up-front antes de codar (deliberado — barato vs retrabalho).
 - **Régua §0:** não é adição pura — **enforcement que edita gates existentes** + destrava "acertar de primeira" (cláusula c: destrava eval editando existente). O canário é o único arquivo novo (test, não capacidade).
 
+## Emenda 1 — ficha com 8 campos e disparo na fase 1+2 da análise (19/11/2026, ADR-134)
+
+- Motivo: plano da análise acompanhada aprovado pelo dono em 19/11/2026 (repositório central de pesquisas, `2026-11-19_analise-acompanhada-humano-ia/relatorio.md`, seções 6 e 7.1). A pesquisa mostrou que o agente não deve escolher alvo nem métrica em silêncio e que premissas precisam ser editáveis pelo humano. População, janela e exclusões já estavam nos campos 2 e 4.
+- Campos novos: **7. Alvo e métrica de sucesso**; **8. Premissas editáveis** (lista numerada que o dono corrige item a item).
+- Disparo ampliado: além do gatilho de risco alto antes de escrever código, a ficha abre a fase 1+2 de toda análise conduzida pela skill `analise-dados`, em qualquer risco; com fonte inequívoca, autopreencher e declarar.
+- Prova: `tools/test_elicitation_gate.py` passa a exigir os rótulos dos campos 7 e 8 e a menção à skill. Seção "Decisão" acima mantida como registro do texto original de 6 campos.
+
 ## Pendências (resolvidas / abertas)
 - ~~Canário determinístico do gate~~ → **feito** (`test_elicitation_gate.py`).
 - **Aberto (decisão por caso):** o gate exige confirmação humana da ficha (HITL) quando há **divergência de fonte**; **auto-preenche file-first** quando há **1 fonte autoritativa inequívoca**. Default registrado no passo 4.1.

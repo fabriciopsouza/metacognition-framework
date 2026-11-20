@@ -2,7 +2,7 @@
 """Canário do elicitation-gate VINCULANTE (ADR-089) — prova FERRAMENTAL (não prosa) de que a
 "ficha de insumo" obrigatória está presente e completa no discovery, com natureza BINDING:
  (a) a seção do gate existe no `discovery/SKILL.md` (referência a ADR-089 + "elicitation-gate");
- (b) os 6 campos obrigatórios da ficha estão TODOS presentes (fontes, método/fórmula+exclusões,
+ (b) os 8 campos obrigatórios da ficha estão TODOS presentes (fontes, método/fórmula+exclusões,
      limites/natureza, granularidade/janela/unidade, exemplo verificado, memória de cálculo);
  (c) a natureza VINCULANTE está declarada (não-skippável / "mesmo em autosuficiente").
 Sem isto, "elicitar antes de implementar sobre indicador regulado" seria prosa que o autosuficiente
@@ -22,10 +22,10 @@ try:
 except Exception:
     pass
 
-# (b) os 6 campos da ficha — ANCORADOS no RÓTULO EM NEGRITO do campo (qa-critic ADR-089: padrões
+# (b) os 8 campos da ficha — ANCORADOS no RÓTULO EM NEGRITO do campo (qa-critic ADR-089: padrões
 # genéricos como "font"/"unidade"/"referência" casavam em OUTRAS seções -> teatro. O rótulo `**X**`
 # é específico do passo 4.1). +2 sub-checks (EXCLUSÕES no campo 2; decimal no campo 4).
-SEIS_CAMPOS = [
+CAMPOS_FICHA = [
     (r"\*\*Fontes\*\*", "1-Fontes (rótulo)"),
     (r"\*\*M[ée]todo/f[óo]rmula", "2-Método/fórmula (rótulo)"),
     (r"inclus[õo]es e EXCLUS|EXCLUS[ÕO]ES", "2-EXCLUSÕES explícitas"),
@@ -34,7 +34,13 @@ SEIS_CAMPOS = [
     (r"decimal", "4-unidade %/decimal"),
     (r"\*\*Exemplo verificado\*\*", "5-Exemplo verificado (rótulo)"),
     (r"\*\*Mem[óo]ria de c[áa]lculo\*\*", "6-Memória de cálculo (rótulo)"),
+    # Emenda 1 do ADR-089 (ADR-134, 19/11/2026): ficha de 6 para 8 campos.
+    (r"\*\*Alvo e m[ée]trica de sucesso\*\*", "7-Alvo e métrica de sucesso (rótulo)"),
+    (r"\*\*Premissas edit[áa]veis\*\*", "8-Premissas editáveis (rótulo)"),
 ]
+# Disparo ampliado ancorado no PROPRIO paragrafo (achado da revisao Sonnet r1: 'analise-dados' solto casava na
+# tabela de sub-modos e o canario ficava verde sem o paragrafo).
+DISPARO = r"\*\*Disparo ampliado \(ADR-089, emenda 1[^\n]*fase 1\+2[^\n]*`analise-dados`"
 # (c) natureza vinculante
 BINDING = [r"VINCULANTE|n[ãa]o-?skipp[áa]vel|não-skippável", r"mesmo em autosufici|autosufici"]
 
@@ -50,17 +56,20 @@ def main():
     if not (("ADR-089" in txt) and re.search(r"ficha de insumo", txt, re.I) and re.search(r"\b4\.1\b", txt)):
         fails.append("seção do elicitation-gate (passo 4.1 / 'ficha de insumo' / ADR-089) ausente no discovery/SKILL.md")
 
-    # (b) 6 campos
-    for rx, label in SEIS_CAMPOS:
+    # (b) 8 campos
+    for rx, label in CAMPOS_FICHA:
         if not re.search(rx, txt, re.I):
             fails.append(f"campo da ficha ausente: {label}")
+
+    if not re.search(DISPARO, txt):
+        fails.append("disparo ampliado ausente: parágrafo 'Disparo ampliado (ADR-089, emenda 1...)' com fase 1+2 e `analise-dados`")
 
     # (c) natureza vinculante
     for rx in BINDING:
         if not re.search(rx, txt, re.I):
             fails.append(f"natureza vinculante não declarada (padrão ausente: {rx})")
 
-    print(f"elicitation-gate: ficha de insumo (6 campos) + natureza vinculante no discovery — "
+    print(f"elicitation-gate: ficha de insumo (8 campos) + natureza vinculante no discovery — "
           f"{'OK' if not fails else 'FAIL'}")
     for f in fails:
         print("  -", f)
