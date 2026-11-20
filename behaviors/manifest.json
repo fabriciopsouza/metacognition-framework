@@ -164,7 +164,7 @@
    "exige": [
     "qa_critic"
    ],
-   "porque": "e' o TEMPLATE que `bootstrap.py activate_nonadmin()` copia POR CIMA de `.claude/settings.json` — o arquivo que a matriz ja protege. Editar o template e commita-lo sozinho passava sem revisao, e o efeito so' aparecia quando o bootstrap rodasse em OUTRA maquina. Proteger o destino e deixar a origem aberta nao protege nada. [achado MEDIA da 18a rodada do ADR-115]"
+   "porque": "e' o `.claude/settings.json` do pacote publico non-admin (export-clean). Ate' 20/11/2026 `bootstrap.py activate_nonadmin()` tambem o copiava POR CIMA de `.claude/settings.json` (ADR-047 emenda 1 trocou por `disableAllHooks` no settings.local.json); a protecao segue valendo pelo pacote. Editar o template e commita-lo sozinho passava sem revisao, e o efeito so' aparecia quando o bootstrap rodasse em OUTRA maquina. Proteger o destino e deixar a origem aberta nao protege nada. [achado MEDIA da 18a rodada do ADR-115]"
   },
   {
    "match": {

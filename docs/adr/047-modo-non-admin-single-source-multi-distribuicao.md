@@ -47,3 +47,19 @@ gate; risco residual de o agente pular → vai a `LIMITS.md`. Hooks `.ps1` conti
   (troca settings.json pelo sem-hooks), `publish-clean` empurra **admin + non-admin** do mesmo source.
 - Repo público non-admin: `metacognition-framework-public-nonadmin` (settings.json sem hooks; clone-and-go).
 - DONE quando: público non-admin clonável inicia sob restrição + pipeline regenera ambos a cada release.
+
+## Emenda 1 — o bootstrap não toca no `settings.json` versionado (20/11/2026)
+
+- **Motivo:** `bootstrap.py` copiava `settings.nonadmin.json` por cima do `.claude/settings.json` do projeto,
+  que é versionado e compartilhado. Desligava os hooks de todas as sessões e sujava a árvore; reincidiu em
+  09/10 e 20/11/2026. Decisão do dono em 20/11/2026: opção (c), perfil no `settings.local.json`.
+- **Decisão:**
+  1. Numa instalação existente, o perfil non-admin é `"disableAllHooks": true` em `.claude/settings.local.json`
+     (no `.gitignore`), com as demais chaves preservadas. Copiar o perfil sem hooks para o local não funcionaria:
+     hooks de arquivos diferentes se somam. Prova executada em `docs/specs/bootstrap-preserva-settings/spec.md`.
+  2. **Trava:** o bootstrap só grava o override quando o PowerShell não executa um `.ps1` do jeito que os hooks
+     executam (`-ExecutionPolicy Bypass -File`). O arquivo local vale para todas as sessões do clone; onde os hooks
+     rodam, desligá-los não tem motivo. A detecção antiga (`-Command "exit 0"`) dizia "sim" na máquina restrita.
+  3. O pacote público non-admin segue igual: `settings.nonadmin.json` é o `settings.json` dele.
+- **Suplanta:** o item 2 do "O que faz" da versão anterior (cópia por cima com `.bak`). O resto do ADR segue.
+- **Prova:** `tools/test_nonadmin.py` (casos C1 a C5 da especificação, em pasta temporária) e sabotagens.

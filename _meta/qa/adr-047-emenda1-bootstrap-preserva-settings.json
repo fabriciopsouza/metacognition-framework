@@ -1,0 +1,150 @@
+{
+  "bloco": "adr-047-emenda1-bootstrap-preserva-settings",
+  "papel": "qa_critic",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "resumo": "Correcao do bootstrap.py (decisao do dono 20/11/2026, opcao c): perfil non-admin vira disableAllHooks em .claude/settings.local.json (nao versionado), so quando powershell.exe nao executa .ps1 como os hooks; settings.json versionado nunca tocado. Faixa F2 (permissao_credencial, multi_sessao_sistema_pessoa). Especificacao: Codex gpt-6.1-sol (20261120-141529-dab648) REPROVOU com 13 achados, todos tratados (trava b somada a c pela ALTA de sessoes compartilhadas). Conjunto: rodada 1 Codex (20261120-170948-a789b1) REPROVOU com 4 achados (ALTA pwsh falso SIM), corrigidos; rodada 2 Sonnet 5.5 aprovou com ressalvas (0 ALTA, 2 MEDIA, 6 BAIXA), MEDIAs e 4 BAIXAs corrigidas pelo autor e conferidas por canario e sabotagem; 2 BAIXAs viraram limite declarado.",
+  "verificacoes_executadas": [
+    "prova de mecanismo com claude -p 2.1.326: hook roda sem local, nao roda com disableAllHooks true, volta a rodar ao remover (spec secao 2a)",
+    "tools/test_nonadmin.py 23 de 23 (C1-C5, A1, A2, A4, A5, --check, trava em main com sonda sim/barrado/indeterminado e aviso de override ativo)",
+    "12 sabotagens em copia do bootstrap.py, todas reprovadas pelo caso certo (S1-S12)",
+    "bateria completa run_canaries.py no estado final"
+  ],
+  "problemas": [
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "bootstrap.py ps_available",
+      "descricao": "Codex r1: pwsh funcionando com powershell.exe barrado dava falso SIM. So powershell.exe conta; teste A1 e sabotagem S7."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "bootstrap.py activate_nonadmin",
+      "descricao": "Codex r1: UnicodeEncodeError escapava. except (OSError, UnicodeError); teste A4; S8."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/test_nonadmin.py",
+      "descricao": "Codex r1: sem teste de deteccao, --check, falha de troca, link. diagnostico_perfil extraida e testada; A1, A4, A5."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "bootstrap.py main",
+      "descricao": "Codex r1: 'hooks mantidos' com override ativo. Aviso 'continua ATIVO'; teste; S9."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/test_nonadmin.py",
+      "descricao": "Sonnet r2: __pycache__ na raiz. sys.dont_write_bytecode no import."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "bootstrap.py sondar_powershell",
+      "descricao": "Sonnet r2: timeout virava falso NAO e gravava override. Sonda tri-estado; timeout repete com 60 s; indeterminado nao grava e sai 1; S11, S12."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "bootstrap.py",
+      "descricao": "Sonnet r2: mkstemp fora do try; mensagem 'politica restrita' enganosa."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "behaviors/manifest.json, tools/test_squad_gate.py, guia/MODO-NON-ADMIN.md",
+      "descricao": "Sonnet r2: justificativa envelhecida do settings.nonadmin.json; nota POSIX no guia."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "aceito-limite",
+      "local": "bootstrap.py activate_nonadmin",
+      "descricao": "Sonnet r2: regravacao reformata o settings.local.json; temporario orfao se o processo morrer. Limite declarado no guia e na spec 4c."
+    }
+  ],
+  "escopo_paths": [
+    "bootstrap.py",
+    "tools/test_nonadmin.py",
+    "tools/test_squad_gate.py",
+    "behaviors/manifest.json",
+    ".claude/settings.nonadmin.json",
+    "guia/MODO-NON-ADMIN.md",
+    "guia/SETUP.md",
+    "docs/adr/047-modo-non-admin-single-source-multi-distribuicao.md",
+    "docs/specs/bootstrap-preserva-settings/spec.md",
+    "CHANGELOG.md",
+    "_meta/qa/adr-047-emenda1-bootstrap-preserva-settings.json",
+    "_meta/qa/adr-047-emenda1-bootstrap-preserva-settings.md"
+  ],
+  "atestacao": {
+    "agentId": "a1b7e0a3e196f12ea",
+    "prova_transcript": "sha256:a4e5b1f0df0789b5534e0b6064b6eeb17110f2708145d998aa9471df4dfa3bda",
+    "modelo": "claude-sonnet-5-5",
+    "modelo_autor": "claude-opus-5-5",
+    "isolamento": "subagente qa-critic isolado, read-only por instrucao explicita; worktree propria a partir de origin/main",
+    "provas": [
+      {
+        "registro": "20261120-141529-dab648",
+        "modelo": "codex/gpt-6.1-sol",
+        "rodada": "especificacao"
+      },
+      {
+        "registro": "20261120-170948-a789b1",
+        "modelo": "codex/gpt-6.1-sol",
+        "rodada": 1
+      }
+    ]
+  },
+  "data": "2026-11-20",
+  "sha_revisado": "34562f02bee5c30be2f4e81f89ad7846136a1a25",
+  "blobs_revisados": {
+    "bootstrap.py": "960454586f4d7bc90cfb200ce990a77901fe92db",
+    "tools/test_nonadmin.py": "4f8de3924c23cea4a47138d67739d4aa40e95916",
+    "tools/test_squad_gate.py": "614cd7daee9ee461ae93114c9295606653160e19",
+    "behaviors/manifest.json": "fb8760dc705bf044bc60775ddf4fb2649f8d0e65",
+    ".claude/settings.nonadmin.json": "3d9cbd6fa7c97b1139903bdd62bbfb9ed806719f",
+    "guia/MODO-NON-ADMIN.md": "34ca281b478e76decf8458b47103332524b2dd6d",
+    "guia/SETUP.md": "0f7da324309bc1d93628e37772b1c75d4a60d2ca",
+    "docs/adr/047-modo-non-admin-single-source-multi-distribuicao.md": "27df2ffeeb698dbfa7b44c93c92518d5951d1f7a",
+    "docs/specs/bootstrap-preserva-settings/spec.md": "28e4b1d74505835b96ba994255ea08cd0695eacd",
+    "CHANGELOG.md": "9d09d61d096951b7e184c377f09b827b72aafee5"
+  },
+  "substitui": [
+    {
+      "rodada": 2,
+      "data": "2026-11-20",
+      "recomendacao": "aprovar_com_ressalvas",
+      "sha_revisado": "34562f02bee5c30be2f4e81f89ad7846136a1a25",
+      "agentId": "a1b7e0a3e196f12ea",
+      "escopo_paths": [
+        "bootstrap.py",
+        "tools/test_nonadmin.py",
+        "tools/test_squad_gate.py",
+        "behaviors/manifest.json",
+        ".claude/settings.nonadmin.json",
+        "guia/MODO-NON-ADMIN.md",
+        "guia/SETUP.md",
+        "docs/adr/047-modo-non-admin-single-source-multi-distribuicao.md",
+        "docs/specs/bootstrap-preserva-settings/spec.md",
+        "CHANGELOG.md"
+      ],
+      "achados_fp": [
+        "ALTA|bootstrap.py ps_available",
+        "BAIXA|behaviors/manifest.json, tools/test_squad_gate.py, guia/modo",
+        "BAIXA|bootstrap.py",
+        "BAIXA|bootstrap.py activate_nonadmin",
+        "MEDIA|bootstrap.py activate_nonadmin",
+        "MEDIA|bootstrap.py main",
+        "MEDIA|bootstrap.py sondar_powershell",
+        "MEDIA|tools/test_nonadmin.py"
+      ],
+      "reinicio": false
+    }
+  ]
+}
