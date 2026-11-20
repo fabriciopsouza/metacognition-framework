@@ -20,6 +20,7 @@ except Exception:
 
 P14_SECTIONS = [
     "[modelo sugerido]",
+    "[modo] analise de dados",  # ADR-134: campo "modo" obrigatorio em todo pacote
     "[P14] Artefato consumivel",
     "[P14] Localizacao",
     "[P14] Acesso",
@@ -432,6 +433,22 @@ def main():
         # safety P14 (achado ALTO): unpushed='?' NUNCA pode render 'nada pendente'
         if "nada pendente" in a or "DESCONHECIDO" not in a:
             fails.append("unpushed='?' renderizou 'nada pendente' (falso) em vez de 'DESCONHECIDO' — P14 Acesso inseguro")
+        # ADR-134: sessao nova comeca SEMPRE acompanhada; autonomo da origem vira so historico
+        VIGENTE = "**Modo vigente na proxima sessao:** acompanhado"
+        if VIGENTE not in a:
+            fails.append("modo: pacote padrao sem 'Modo vigente na proxima sessao: acompanhado'")
+        c = handoff.build("developer", "low", "opus", ts="2026-06-11T00:00:00Z",
+                          modo="autonomo", modo_origem="'siga sozinha', 14:05")
+        if VIGENTE not in c:
+            fails.append("modo: autonomo da origem foi transportado como vigente para a sessao nova (viola 7.4)")
+        if "'siga sozinha', 14:05" not in c or "NAO autoriza" not in c:
+            fails.append("modo: ordem de autonomo da origem nao ficou registrada como historico sem autorizacao")
+        for ruim in ({"modo": "livre"}, {"modo": "autonomo"}, {"modo": "autonomo", "modo_origem": "   "}):
+            try:
+                handoff.build("developer", "low", "opus", **ruim)
+                fails.append(f"modo: build aceitou {ruim} (devia ValueError)")
+            except ValueError:
+                pass
     finally:
         (handoff.repo_state, handoff.pr_info, handoff.em_aberto,
          handoff.proposed_adrs, handoff.latest_checkpoint_field) = (
@@ -494,6 +511,12 @@ def main():
         os.makedirs(limpo)
         if handoff.main(["handoff.py", "--provenance", limpo, "--write", "algum/caminho"]) != 2:
             fails.append("procedencia: --write com caminho foi aceito e descartado em silencio")
+
+    # ADR-134: autonomo sem origem e recusado na CLI (exit 2), antes de gerar pacote
+    if handoff.main(["handoff.py", "--modo", "autonomo"]) != 2:
+        fails.append("modo: '--modo autonomo' sem '--modo-origem' foi aceito (devia exit 2)")
+    if handoff.main(["handoff.py", "--modo", "autonomo", "--modo-origem", "   "]) != 2:
+        fails.append("modo: '--modo-origem' so com espacos foi aceito (devia exit 2)")
 
     # (j) guarda robusta a path exotico — commonpath levanta ValueError em drive diferente/UNC,
     #     que e JUSTAMENTE o caso de uso primario (drive corporativo sincronizado / share de rede).

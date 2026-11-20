@@ -18,6 +18,7 @@ do checkpoint — esqueleto pronto, nao prosa do zero.
 Uso:
   python tools/handoff.py [--next-role <papel>] [--risk low|high|regulated|irreversible]
                           [--author opus|sonnet|haiku|fable] [--write [path]]
+                          [--modo acompanhado|autonomo] [--modo-origem "<literal, hora>"]  (ADR-134)
   (sem args: infere o papel do 'Proximo passo' do checkpoint; imprime o pacote pronto-para-colar)
 """
 import argparse
@@ -265,7 +266,17 @@ def audit_paths(texto):
     return avisos
 
 
-def build(next_role, risk, author, ts="<timestamp>"):
+MODOS = ("acompanhado", "autonomo")
+
+
+def build(next_role, risk, author, ts="<timestamp>", modo="acompanhado", modo_origem=""):
+    # ADR-134: modo de analise vai em TODO pacote. `modo` e o da SESSAO DE ORIGEM; a proxima sessao
+    # comeca SEMPRE acompanhada (regra 7.4: ordem de autonomo vale so na sessao em que foi dada).
+    # Autonomo sem origem (literal + hora da ordem) e recusado aqui; o main() converte em exit 2.
+    if modo not in MODOS:
+        raise ValueError(f"modo invalido: {modo!r} (use {'|'.join(MODOS)})")
+    if modo == "autonomo" and not (modo_origem or "").strip():
+        raise ValueError("modo autonomo exige modo_origem (literal da ordem e hora)")
     st = repo_state()
     proximo = latest_checkpoint_field("Próximo passo") or latest_checkpoint_field("Proximo passo")
     role = next_role or infer_role(proximo)
@@ -283,6 +294,15 @@ def build(next_role, risk, author, ts="<timestamp>"):
     L.append("")
     L.append("## [modelo sugerido] (regra papel+risco — ADR-076)")
     L.append(f"- **Proxima sessao: `{model_id}`** ({fam}). Motivo: {why}.")
+    L.append("")
+    L.append("## [modo] analise de dados (ADR-134)")
+    L.append("- **Modo vigente na proxima sessao:** acompanhado (sessao nova comeca acompanhada; ADR-134)")
+    if modo == "autonomo":
+        L.append(f"- **Sessao de origem:** autonomo, ordem {modo_origem.strip()} — so historico: NAO autoriza "
+                 "autonomo na nova sessao; o dono repete a ordem se quiser.")
+    else:
+        L.append(f"- **Sessao de origem:** acompanhado ({(modo_origem or '').strip() or 'padrao, sem ordem de autonomo'})")
+    L.append("- Tarefa com dado: carregar a skill `analise-dados` e gravar a linha de modo no diario da analise.")
     L.append("")
     L.append("## [P14] Artefato consumivel — com versao")
     L.append(f"- Repo na versao **v{st['version']}** (topo do CHANGELOG). Branch `{st['branch']}` @ `{st['commit']}`.")
@@ -509,6 +529,10 @@ def main(argv):
     ap.add_argument("--provenance", metavar="DIR", default=None,
                     help="emite CARIMBO DE PROCEDENCIA para um diretorio de trabalho EXTERNO ao repo "
                          "(ADR-095); com --write (SEM valor) grava/atualiza <DIR>/PROCEDENCIA.md")
+    ap.add_argument("--modo", default="acompanhado", choices=list(MODOS),
+                    help="modo da SESSAO DE ORIGEM (ADR-134; padrao acompanhado). A proxima sessao comeca sempre acompanhada")
+    ap.add_argument("--modo-origem", default="",
+                    help="literal e hora da ordem do dono; obrigatorio com --modo autonomo")
     a = ap.parse_args(argv[1:])
 
     # timestamp DETERMINISTICO do estado do repo: data do commit HEAD (nao Date.now).
@@ -525,7 +549,11 @@ def main(argv):
                   " grava SEMPRE em <DIR>/PROCEDENCIA.md. Use '--write' sem valor.", file=sys.stderr)
             return 2
         return emit_provenance(a.provenance, ts, write=a.write is not None)
-    pkg = build(a.next_role, a.risk, a.author, ts=ts)
+    try:
+        pkg = build(a.next_role, a.risk, a.author, ts=ts, modo=a.modo, modo_origem=a.modo_origem.strip())
+    except ValueError as e:
+        print(f"[handoff] ERRO: {e} (ADR-134).", file=sys.stderr)
+        return 2
     try:
         if a.write is not None:
             d = os.path.join(ROOT, a.write)

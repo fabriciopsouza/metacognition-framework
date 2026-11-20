@@ -1,7 +1,7 @@
 <!-- GERADO por tools/build_capabilities.py a partir de capabilities.json — NAO editar a mao -->
 # CAPABILITIES — indice de capacidades (nivel 1: id + title)
 
-> **117 capacidades** — 105 ✅ PROVIDES · 12 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
+> **118 capacidades** — 106 ✅ PROVIDES · 12 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
 > **Como usar (file-first, boot):** leia esta lista p/ achar o `id`; o registro completo (mecanismo · canario · ADR · doc) vem por **`python tools/build_capabilities.py --show <id>`** ou `grep -A8 '"<id>"' capabilities.json`. Nao reexplore o repo antes disto.
 > **Manutencao:** feature nova -> +1 registro em `capabilities.json` + `python tools/build_capabilities.py`. Canario barra canario orfao (cobertura).
 
@@ -24,6 +24,7 @@
 - ✅ `adr-changelog-sync` — Canario doc-sync: toda ADR Aceito deve estar no CHANGELOG (mecaniza falha recorrente)
 - 🟡 `advanced-elicitation` — Elicitacao avancada: catalogo de 77 metodos (convergente #1-69 + divergente CIS #70-76 + tuning-loop #77) com canario de integridade fail-closed; execucao pela skill
 - ✅ `agnostic-core-linter` — Linter fail-closed: nucleo nao carrega norma de dominio (agnosticismo)
+- ✅ `analise-acompanhada` — Analise acompanhada humano-IA: skill analise-dados (modo acompanhado padrao, ordem de autonomo vale na sessao, painel por fase, 7 classes de decisao, invariante por operacao, diario e D-nn), sub-modo produto-de-dados do discovery, regra global de disparo e campo modo no handoff
 - ✅ `author-tier-gate` — Gate de tier-autor da sessao: detecta modelo ativo (transcript) + alerta LOUD se autor < baseline (ADR-082)
 - ✅ `autonomy-retry-policy` — Dial retry/escalate por MODO (ADR-087): HITL escala na 1a falha; autosuficiente auto-retenta subindo a escada de modelo ate budget, escala por ultimo
 - ✅ `biblioteca-de-conhecimento` — Biblioteca de conhecimento reutilizavel por empresa: metodo de construir e consultar, modelo, verificador de forma e validade, busca unica pelo knowledge_catalog; empresa da pasta no boot (contexto), regra superada por fonte alterada (vencidos) e registro cobrado no fechamento (encerramento)
@@ -53,7 +54,7 @@
 - ✅ `documentos-do-kit-regulado` — Documentos do kit regulado gerados com o modelo do perfil (ex.: ERU, relatorio de validacao, prontidao no perfil farma): lacuna reprova sem gravar; codigo do documento nunca inventado
 - 🟡 `edge-case-hunter` — Percurso mecanico exaustivo de paths nao tratados — output JSON verificavel
 - ✅ `effect-gate` — Action-safety por EFEITO: classifica acao destrutiva e pede confirmacao (T3)
-- ✅ `elicitation-gate` — Elicitation-first VINCULANTE antes de implementar sobre indicador/metrica/regra de dominio de risco alto: ficha de insumo (6 campos) nao-skippavel mesmo em autosuficiente (enforcement, nao skill nova)
+- ✅ `elicitation-gate` — Elicitation-first VINCULANTE antes de implementar sobre indicador/metrica/regra de dominio de risco alto: ficha de insumo (8 campos; emenda 1 do ADR-089 pelo ADR-134: alvo e metrica de sucesso, premissas editaveis; disparo tambem na fase 1+2 da analise) nao-skippavel mesmo em autosuficiente (enforcement, nao skill nova)
 - ✅ `enforcement-mutation-audit` — Prova de mutacao obrigatoria: capacidade fail-closed declara a sabotagem que deixa seu canario VERMELHO
 - ✅ `entrypoint-tty-gate` — Entrypoint nao depende de TTY (roda em CI/headless)
 - 🟡 `escada-anti-excesso` — Escada anti-excesso de codigo: 7 degraus antes de escrever (developer) e checagem no diff (qa-critic) — PROSA, sem canario proprio

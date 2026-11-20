@@ -1,9 +1,9 @@
 ---
 name: discovery
 description: "Ativar ANTES de planejar/implementar quando o pedido é novo, vago, ou a spec pode estar rasa/limitada ao que o usuário já conhece. Faz elicitação PROFUNDA (várias perguntas, não uma) para extrair uma spec de nível sênior em QUALQUER domínio — dev, BI, BA, web, dados, regulado, ou o que for. Em v1.6.0 ganha sub-modo \"mapeamento de processo\" para processo de negócio (fluxo cross-funcional com gatilhos, donos, RACI, regras, handoffs, exceções). Entrega requirements.md sênior que alimenta o architect. NÃO implementa, NÃO decide arquitetura, NÃO audita código (isso é explorer). Flexível e agnóstico de domínio."
-version: 1.10.0
+version: 1.11.0
 source: "pedido do usuário — evitar specs rasas limitadas ao conhecimento próprio; fundamentos A0 (decomposição) + A2 (spec-driven); v1.6.0 adiciona BPM-sênior via sub-modo nomeado + progressive disclosure (ADR-003); v1.7.0 adiciona sub-modo pesquisa-cascata para G1 (ADR-007); v1.8.0 adiciona reforço transversal método sênior 8 passos (ADR-009) domain-agnóstico para qualquer caso com fonte canônica/normativa citada; v1.11.0 adiciona passo 9 (Coherence Pass / RRC) ao método sênior + agnosticismo estrito + discovery declara escopo (ADR-010) com método universal ganhando passo 6 obrigatório (lote temático); v1.21.0 adiciona passo 6(f) product_type → mission.md (ADR-022); v1.38.0 reparo do método sênior — companion metodo-senior.md passa a AUTO-DISPARAR por sinal de stake INFERIDO + verificação de âncora MECANIZADA (context-brief.md + check_context_brief.py, ADR-051)"
-last_review: 2026-06-02
+last_review: 2026-11-19
 role_order: 1
 consumes:
   - "pedido bruto do PMO"
@@ -106,6 +106,9 @@ inventar não é. A diferença é onde a dúvida aparece: na conversa, na hora, 
    4. **Granularidade / janela / UNIDADE** — linha × acumulado; 12m × YTD; **% × decimal**.
    5. **Exemplo verificado** — ≥1 caso com resultado esperado (oráculo).
    6. **Memória de cálculo** nas respostas — parcelas (numerador/denominador), fórmula, unidade, fonte.
+   7. **Alvo e métrica de sucesso** — o que se quer saber ou prever e como se mede o acerto; o agente não escolhe alvo nem métrica em silêncio.
+   8. **Premissas editáveis** — lista numerada que o dono corrige item a item (população, janela, exclusões, tratamento de faltante).
+   **Disparo ampliado (ADR-089, emenda 1 — ADR-134):** a ficha também abre a fase 1+2 de toda análise conduzida pela skill `analise-dados`, em qualquer risco; com fonte inequívoca, autopreencher e declarar.
    **Autosuficiente = elicitar completo + executar; NÃO = pular a elicitação.** "Perto, mas errado" em indicador regulado **é falha**. Sem fonte autoritativa única → confirmar com o dono (HITL); com 1 fonte inequívoca → auto-preencher file-first e declarar. O artefato (ex.: `docs/indicadores/<NOME>.md`) vive **fora do núcleo** (ADR-070).
 5. **Anti-alucinação:** nunca inventar requisito, número ou nome. O que o usuário
    não souber responder vira `[DESCONHECIDO]` explícito no requirements, com
@@ -204,6 +207,7 @@ Decisão arquitetural: `docs/adr/003-progressive-disclosure-companion-files.md`.
 | **Revisar projeto existente** | `revisar-projeto-existente.md` (vizinho) | Entrada é sistema que já existe; relatório do explorer disponível |
 | **Mapeamento de processo** (v1.6.0) | `mapeamento-de-processo.md` (vizinho) | Trabalho é processo de negócio com gatilhos/RACI/handoffs/exceções. Filtro de entrada rejeita: UI journey, runbook técnico, algoritmo de código, workflow de tool |
 | **Pesquisa em cascata** (v1.7.0 — G1, ADR-007) | `pesquisa-cascata.md` (vizinho) | Há pergunta de fundo sem fonte canônica no contexto, e a resposta destrava decisão. Pipeline: decompor → buscar via explorer → refletir → ramificar (≤2 rodadas) → sintetizar → ataque anti-raso → fechar. Output: `research-brief.md` |
+| **Produto de dados** (ADR-134) | `produto-de-dados.md` (vizinho) | Trabalho entrega número, indicador, previsão, recomendação ou modelo para decisão, com regra, população ou métrica ainda não congeladas. Banco de perguntas por tema + procedimento de seis passos; intercala com o perfil do dado (skill `analise-dados`) |
 
 Cada companion contém: filtro de entrada explícito, fluxo do sub-modo, output esperado.
 
@@ -234,7 +238,7 @@ a conferência no sistema para a **Parte J** (`VER-nn`), de onde saem as planilh
 ordem das colunas. Resumo ao orquestrador:
 ```yaml
 papel: discovery
-modo: universal | revisar-projeto-existente | mapeamento-de-processo
+modo: universal | revisar-projeto-existente | mapeamento-de-processo | produto-de-dados
 natureza_do_trabalho: <o que o usuário nomeou>
 dimensoes_cobertas: [lista]
 requisitos: [cada um CONFIRMADO|INFERIDO|DESCONHECIDO]

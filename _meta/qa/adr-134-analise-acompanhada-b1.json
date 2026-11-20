@@ -1,0 +1,157 @@
+{
+  "bloco": "adr-134-analise-acompanhada-b1",
+  "papel": "qa_critic",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "resumo": "B1 do plano 'analise acompanhada' (dono 19/11/2026): ADR-134, skill analise-dados, sub-modo produto-de-dados do discovery, emenda 1 do ADR-089 (ficha com 8 campos e disparo na fase 1+2), regra de uma linha na fonte global, campo modo no handoff, canario test_analise_dados, inclusao no pacote web premium, CHANGELOG e capabilities. Faixa F2. Momento 1 (especificacao): Codex chamado (id 20261119-223512-c1f3b0) sem leitura de arquivos por politica do ambiente dele; Sonnet 5.5 assumiu como fallback declarado: aprovado com ressalvas, 6 achados aplicados. Momento 3 (conjunto): rodada 1 Codex gpt-6.1-sol (id 20261119-224702-0e7a8d) REPROVOU com 6 achados (ALTA: handoff transportava autonomo para sessao nova, contra a regra 7.4); todos corrigidos. Rodada 2 Sonnet 5.5, revisor novo: os 6 confirmados como corrigidos, 3 achados BAIXA novos, corrigidos pelo autor depois e conferidos por canario.",
+  "verificacoes_executadas": [
+    "14 canarios de aceite exit 0: test_elicitation_gate, test_handoff, test_rules_parity, test_elicitation_catalog, test_adr_changelog_sync, test_skill_contract, validate_skills, test_capabilities, test_web_export, test_premium_tier, test_discovery_eval, test_core_no_vendor, test_analise_dados, check_core_agnostic",
+    "10 sabotagens em copia da worktree, todas reprovaram pelo motivo certo: S1a/S1b/S1c (ficha sem campo 7, sem campo 8, sem paragrafo do disparo), S2a/S2b/S2c (handoff sem secao modo, autonomo sem origem aceito, autonomo transportado como vigente), S3a/S3b/S3c (regra global sem a skill, skill sem classe, discovery sem linha do sub-modo), S4 (pacote web sem a skill)",
+    "autoteste de test_analise_dados com 13 sabotagens internas",
+    "web_export gerado: 16 skills, SKILL.md de analise-dados presente",
+    "bateria completa run_canaries.py no estado final: 102 PASS, 1 SKIP (test_parity, igual a base), 0 FAIL de 103; base antes do B1: 101 PASS, 1 SKIP, 0 FAIL de 102"
+  ],
+  "problemas": [
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "tools/handoff.py",
+      "descricao": "Codex r1: pacote transportava autonomo como vigente para sessao nova. Agora 'Modo vigente na proxima sessao: acompanhado'; autonomo da origem so historico, sem autorizacao."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/handoff.py build()",
+      "descricao": "Codex r1: API aceitava autonomo sem origem. ValueError no build(); exit 2 na CLI; testes de API e CLI."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": ".agent/skills/analise-dados/SKILL.md",
+      "descricao": "Codex r1: description excluia validacao contra referencia, contra o gatilho global. Skill conduz e usa validation-reporting como metodo."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/test_analise_dados.py",
+      "descricao": "Codex r1: canario da regra global aceitava padrao invertido e falta de gatilho. 4 padroes + lookbehind; sabotagens novas."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/web_export.py",
+      "descricao": "Codex r1: pacote web fora do B1 (desvio do plano). Skill em LATERAL; contagem do README calculada; canario confere."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "docs/adr/134-analise-acompanhada.md",
+      "descricao": "Codex r1: T1 a T10 -> T1 a T9 + T10 pela frase literal."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "tools/web_export.py",
+      "descricao": "Sonnet r2: skill gerada so tinha a linha do explorer; linha propria para analise-dados (nao read-only)."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "tools/test_analise_dados.py",
+      "descricao": "Sonnet r2: verificacao LATERAL sem sabotagem no autoteste; acrescentada."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "tools/test_elicitation_gate.py; tools/test_web_export.py",
+      "descricao": "Sonnet r2: residuos SEIS_CAMPOS e 'esperado 15'; renomeado e mensagem calculada."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "capabilities.json analise-acompanhada.mutacao",
+      "descricao": "bateria completa (test_audit_enforcement): mutacao apontava a regra global, nao o mecanismo declarado (a skill). Mutacao movida para a tabela de classes da skill; 37/37."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "guia/web/index.html secao #provas",
+      "descricao": "bateria completa (test_marketing_claims): numeros da vitrine defasados com a capacidade nova. 77 de 118 provadas, 103 canarios, conta fecha em 118."
+    },
+    {
+      "severidade": "INFORMATIVO",
+      "estado": "pendente_declarado",
+      "local": "E10 do b1-spec",
+      "descricao": "bootstrap e teste de ativacao 3/3 e 0/3 sao operacao pos-merge (fora do diff), nao prova por script."
+    }
+  ],
+  "escopo_paths": [
+    ".agent/skills/analise-dados/SKILL.md",
+    ".agent/skills/discovery/SKILL.md",
+    ".agent/skills/discovery/produto-de-dados.md",
+    ".claude/global/CLAUDE-global.md",
+    "CAPABILITIES.md",
+    "CHANGELOG.md",
+    "capabilities.json",
+    "docs/adr/089-elicitation-first-vinculante-dado-indicador-regra.md",
+    "docs/adr/134-analise-acompanhada.md",
+    "docs/specs/analise-acompanhada/b1-spec.md",
+    "guia/web/index.html",
+    "tools/handoff.py",
+    "tools/test_analise_dados.py",
+    "tools/test_elicitation_gate.py",
+    "tools/test_handoff.py",
+    "tools/test_web_export.py",
+    "tools/web_export.py",
+    "_meta/qa/adr-134-analise-acompanhada-b1.json",
+    "_meta/qa/adr-134-analise-acompanhada-b1.md"
+  ],
+  "atestacao": {
+    "agentId": "a3aeddaed3cc20265",
+    "prova_transcript": "sha256:650349752407f6797dff5bd6000489e15298049423a7651155b9b4b24ea0976d",
+    "modelo": "claude-sonnet-5-5",
+    "modelo_autor": "claude-opus-5-5",
+    "isolamento": "subagente qa-critic isolado, read-only por instrucao explicita; arquivos copiados para o scratchpad antes de cada rodada",
+    "provas": [
+      {
+        "agentId": "af0fba4c640858656",
+        "prova_transcript": "sha256:62e9437cf6b3f58cffb3ad43cda2769f063fe1777eb0034501f3018451f1204f",
+        "rodada": "especificacao",
+        "modelo": "claude-sonnet-5-5"
+      },
+      {
+        "registro": "20261119-223512-c1f3b0",
+        "modelo": "codex/gpt-6.1-sol",
+        "rodada": "especificacao (sem leitura; nao tecnica)"
+      },
+      {
+        "registro": "20261119-224702-0e7a8d",
+        "modelo": "codex/gpt-6.1-sol",
+        "rodada": 1
+      }
+    ]
+  },
+  "data": "2026-11-20T02:23:54Z",
+  "sha_revisado": "2e658c466ebb1b42aef3d3f4c28e65201219ec1c",
+  "blobs_revisados": {
+    ".agent/skills/analise-dados/SKILL.md": "d6f5c764a9bbc362011a779858b83441c1db2fde",
+    ".agent/skills/discovery/SKILL.md": "2e982048a24a31560346ef38a7e2852142e04ef7",
+    ".agent/skills/discovery/produto-de-dados.md": "ed6e54fdbf41cf6ab7b1116c53d949786d43a448",
+    ".claude/global/CLAUDE-global.md": "ce74bfcebcba99ed1ca387282fba693491d987f2",
+    "CAPABILITIES.md": "85c59c0d7fa72e10029a6c1cc4bf3dabffe94b3a",
+    "CHANGELOG.md": "fb8fb6e66f7089583b6e756ebe2efdf146cec86c",
+    "capabilities.json": "42da23c5075e4a0a30fa4a1ccb902a0a1889437e",
+    "docs/adr/089-elicitation-first-vinculante-dado-indicador-regra.md": "a49c7dd1cf96197639082cae4474c57e8c18c9d7",
+    "docs/adr/134-analise-acompanhada.md": "bef63c2e09a013a00c7302d2d2495ebfda05ac21",
+    "docs/specs/analise-acompanhada/b1-spec.md": "3152711295d1b1305fb229fbb700b52944e1c5ad",
+    "guia/web/index.html": "71425123046c2a558253665773c3d80a994067e4",
+    "tools/handoff.py": "eaffd19c24007cdb6b144ee85892bb2dc5558949",
+    "tools/test_analise_dados.py": "35885b13ae46c745796b6a5bf416b8c7d47a3b3a",
+    "tools/test_elicitation_gate.py": "97110f986cd417a98db1cf3ab65808a9b3eed952",
+    "tools/test_handoff.py": "730bfe2060258af20b586cbe06b1dc69b6e47e3d",
+    "tools/test_web_export.py": "d23fb338ff44957200b34573f38a0390ed1f5d2d",
+    "tools/web_export.py": "d942ff288f80ad2db80d153ad2bfb125f92d2a7b"
+  }
+}

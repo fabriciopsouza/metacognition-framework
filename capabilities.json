@@ -1457,7 +1457,7 @@
   },
   {
    "id": "elicitation-gate",
-   "title": "Elicitation-first VINCULANTE antes de implementar sobre indicador/metrica/regra de dominio de risco alto: ficha de insumo (6 campos) nao-skippavel mesmo em autosuficiente (enforcement, nao skill nova)",
+   "title": "Elicitation-first VINCULANTE antes de implementar sobre indicador/metrica/regra de dominio de risco alto: ficha de insumo (8 campos; emenda 1 do ADR-089 pelo ADR-134: alvo e metrica de sucesso, premissas editaveis; disparo tambem na fase 1+2 da analise) nao-skippavel mesmo em autosuficiente (enforcement, nao skill nova)",
    "status": "PROVIDES",
    "enforcement": "fail-closed",
    "ai_owner": "claude",
@@ -2504,6 +2504,27 @@
    "para": "        if False:",
    "canario": "tools/test_ux_gate.py",
    "espera": "FAIL (b) rolagem horizontal"
+  }
+ },
+ {
+  "id": "analise-acompanhada",
+  "title": "Analise acompanhada humano-IA: skill analise-dados (modo acompanhado padrao, ordem de autonomo vale na sessao, painel por fase, 7 classes de decisao, invariante por operacao, diario e D-nn), sub-modo produto-de-dados do discovery, regra global de disparo e campo modo no handoff",
+  "status": "PROVIDES",
+  "enforcement": "fail-closed",
+  "ai_owner": "claude",
+  "mechanism": ".agent/skills/analise-dados/SKILL.md",
+  "test": "tools/test_analise_dados.py",
+  "adr": "docs/adr/134-analise-acompanhada.md",
+  "doc": ".agent/skills/discovery/produto-de-dados.md",
+  "cross_ai": false,
+  "tags": ["analise", "dados", "crisp-dm", "discovery", "handoff", "canary"],
+  "note": "Dono 19/11/2026. Prova por script cobre a fiacao (skill, classes, painel, regra global, sub-modo); a ativacao da skill pelo modelo e teste de comportamento (3/3 e 0/3), repetido no piloto B4. Campo modo do handoff provado em tools/test_handoff.py.",
+  "mutacao": {
+   "arquivo": ".agent/skills/analise-dados/SKILL.md",
+   "de": "| Número publicado |",
+   "para": "| Outro |",
+   "canario": "tools/test_analise_dados.py",
+   "espera": "classe de decisão ausente na tabela da seção 4: Número publicado"
   }
  }
  ],

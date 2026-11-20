@@ -5,6 +5,29 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-134 — Análise acompanhada humano-IA (19/11/2026)
+
+- Motivo: pedido do dono e plano aprovado em 19/11/2026 (repositório central de pesquisas, pasta
+  `2026-11-19_analise-acompanhada-humano-ia`, bloco B1 da seção 7.8). Literal: "o modo acompanhado é padrão até primeira
+  ordem para seguir autônomo dali em diante na sessão". [CONFIRMADO]
+- `.agent/skills/analise-dados/SKILL.md` (nova, 1.0.0): modos e regras de sessão, opção padrão em autônomo, ciclo por fase
+  com painel de 7 itens, 7 classes de decisão, invariante por operação, catálogo de etapas, entregas por fase, diário e D-nn.
+- `.agent/skills/discovery/produto-de-dados.md` (sub-modo novo) + linha na tabela de sub-modos; discovery 1.11.0.
+- ADR-089, emenda 1: ficha de insumo de 6 para 8 campos (alvo e métrica de sucesso; premissas editáveis) e disparo também na
+  fase 1+2 da análise; `tools/test_elicitation_gate.py` exige os rótulos novos e o parágrafo do disparo.
+- `.claude/global/CLAUDE-global.md`, seção 6: regra de uma linha (tarefa com dado carrega `analise-dados`; acompanhado até
+  ordem de autônomo).
+- `tools/handoff.py`: `--modo acompanhado|autonomo` e `--modo-origem`; seção do modo em todo pacote, com a sessão nova
+  sempre acompanhada e o autônomo da origem só como histórico; autônomo sem origem = `ValueError` / exit 2. Provado em
+  `tools/test_handoff.py`.
+- `tools/test_analise_dados.py` (novo): fiação da skill, classes, painel, regra global (gatilho, carregar, padrão,
+  duração) e sub-modo, com 12 sabotagens no autoteste. Capacidade `analise-acompanhada` registrada.
+- `tools/web_export.py`: `analise-dados` entra no tier premium como papel lateral; contagem de skills do README calculada
+  (16).
+- `guia/web/index.html` (#provas): 77 de 118 capacidades com sabotagem provada, 103 canários, conta fecha em 118.
+- QA: especificação revisada pelo Sonnet 5.5 (Codex sem leitura de arquivos naquela rodada); conjunto revisado pelo Codex
+  (`gpt-6.1-sol`, reprovado com 6 achados, todos corrigidos). Fora: B2 a B5 e o apêndice A do plano.
+
 ### trabalhador_externo — via agy: resposta vazia é ERRO (15/11/2026)
 
 - `tools/trabalhador_externo.py` → `via_agy`: `SUCCESS` com texto vazio (ou só espaços) e sem `structured_output` passa a
