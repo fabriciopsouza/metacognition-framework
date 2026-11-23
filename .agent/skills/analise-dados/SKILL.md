@@ -1,9 +1,9 @@
 ---
 name: analise-dados
 description: "Ativar em toda tarefa que toque dado, indicador, métrica ou modelo, em qualquer repositório: análise exploratória, conferência de número, regra de indicador, consulta que gera número, estatística, previsão ou modelo de ML. Conduz a análise por fases CRISP-DM no modo ACOMPANHADO (padrão de toda sessão): a cada fase mostra o painel com dado e procedimento, para nas decisões de escopo, métrica, exclusão, dado faltante, método, aceite e número publicado, e registra diário e decisões D-nn. Muda para AUTÔNOMO só por ordem do dono ('siga sozinha', 'autônoma', 'segue com CRISP-DM', 'me mostra no fim'), que vale dali em diante na sessão. NÃO ativar em tarefa sem dado (texto, configuração, código sem número). Validação de dado contra referência: esta skill conduz e usa validation-reporting como método do reporte."
-version: 1.0.0
+version: 1.1.0
 source: "pedido do dono e plano aprovado em 19/11/2026 (repositório central de pesquisas, pasta 2026-11-19_analise-acompanhada-humano-ia, seções 7.1 a 7.7, e prompt-uso-imediato.md da mesma pasta); ADR-134"
-last_review: 2026-11-19
+last_review: 2026-11-23
 role_order: null
 consumes:
   - "pedido que toque dado, indicador, métrica ou modelo"
@@ -15,7 +15,7 @@ produces:
 pass_criteria: "PASS sse: (1) o diário tem a linha de modo (modo, origem, literal) antes do primeiro painel e o primeiro painel de cada análise começa pelo modo vigente; (2) nenhuma fase avança sem painel gravado com os 7 itens do conteúdo mínimo; (3) toda decisão das 7 classes tem D-nn com literal do dono, ou marca PRELIMINAR revisada no fim quando em autônomo; (4) toda operação de filtro, junção, agregação, deduplicação ou identidade tem invariante declarada antes e conferida por script depois, com a saída anexada; (5) gatilho F2 (efeito irreversível, dado saindo da máquina, permissão ou credencial) parou a execução mesmo em autônomo."
 confidence_required: true
 enforcement:
-  ide: "self-declared: prosa conduzida pelo agente; a fiação (skill, regra global, sub-modo do discovery) é conferida por tools/test_analise_dados.py e a ficha por tools/test_elicitation_gate.py; a conferência por invariante vira ferramenta no B2 do plano"
+  ide: "self-declared: prosa conduzida pelo agente; a fiação (skill, regra global, sub-modo do discovery) é conferida por tools/test_analise_dados.py e a ficha por tools/test_elicitation_gate.py; a conferência por invariante é tools/conferir_invariante.py, provada por tools/test_conferir_invariante.py"
   chat: "self-declared: o agente segue as fases e grava o diário na conversa quando não há arquivo"
 shared_refs:
   - _shared/confidence-classification
@@ -74,7 +74,7 @@ Fase 1+2 (negócio e dados juntas) começa pela **ficha de insumo** do discovery
 
 ## 3. Invariante por operação
 
-Declarada antes de aplicar; conferida por script depois; saída anexada ao painel. Até a ferramenta do B2 existir, a conferência usa o script do projeto.
+Declarada antes de aplicar; conferida por script depois; saída anexada ao painel. Ferramenta: `python tools/conferir_invariante.py <filtro|juncao|agregacao|dedup|identidade> ...` do framework (CSV de antes e de depois, só biblioteca padrão; JSON no stdout; exit 0 passa, 1 reprova); `--help` lista os parâmetros. Comparação exata por padrão; `--tolerancia T` aceita diferença de soma até T (ruído de ponto flutuante), declarada no painel. Dado que não sai em CSV usa o script do projeto, com a mesma invariante.
 
 | Operação | Invariante |
 |---|---|
@@ -84,7 +84,7 @@ Declarada antes de aplicar; conferida por script depois; saída anexada ao paine
 | Deduplicação | chave única depois; removidas = duplicadas contadas antes |
 | Sem operação de dado (renomear, reordenar) | identidade: contagem e soma iguais |
 
-Contagem e soma iguais não provam integridade sozinhas: troca de valores entre linhas preserva as duas; conferir soma por grupo.
+Contagem e soma iguais não provam integridade sozinhas: troca de valores entre linhas preserva as duas. Conferir linha a linha pela chave (`--chave`); sem chave, o multiconjunto de linhas ou a soma por grupo. Soma por grupo não vê troca entre linhas do mesmo grupo.
 
 ## 4. Classes de decisão que param o acompanhado
 
