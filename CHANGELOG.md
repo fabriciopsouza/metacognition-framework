@@ -5,6 +5,25 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-134 — Conferência por invariante e item de análise no qa-critic (B2, 23/11/2026)
+
+- Motivo: bloco B2 do plano aprovado em 19/11/2026 (repositório central de pesquisas, pasta
+  `2026-11-19_analise-acompanhada-humano-ia`, seção 7.8). Decisões do dono em 23/11/2026: troca de valores detectada pela
+  chave, com soma por grupo como alternativa; `qa-critic` aponta a seção 8 da skill como fonte única. [CONFIRMADO]
+- `tools/conferir_invariante.py` (novo): filtro, junção, agregação, deduplicação e identidade sobre CSV, só biblioteca
+  padrão; soma decimal exata (sem o arredondamento de 28 dígitos do contexto padrão); `--tolerancia` para ruído de ponto flutuante; JSON no stdout; exit 0 passa, 1 reprova, 2 erro de uso. Limite declarado: soma por grupo não vê troca entre
+  linhas do mesmo grupo.
+- `tools/test_conferir_invariante.py` (novo): 46 casos (legítimo e defeito por invariante, troca de valores que preserva
+  contagem e soma, limite da soma por grupo) e 21 pela linha de comando (CSV malformado, valor não finito ou com expoente acima de 10 000, chave repetida
+  na identidade, coluna repetida na junção e opção indevida dão exit 2).
+- `.agent/skills/analise-dados/SKILL.md` 1.1.0: seção 3 aponta a ferramenta. `.agent/skills/qa-critic/SKILL.md` 1.7.0:
+  item "Análise de dados" no checklist mínimo.
+- `tools/test_analise_dados.py`: verificação (f) da ligação skill, ferramenta e `qa-critic`; 17 sabotagens.
+- Revisão F2: Codex r1 REPROVADO (6 achados), Sonnet r2 APROVADO COM RESSALVAS (5), Codex r3 REPROVADO (soma decimal
+  arredondava em 28 dígitos), Sonnet r4 APROVADO COM RESSALVAS (limite de expoente, 4 testes cegos); todos tratados.
+- `capabilities.json`: registro `conferencia-invariante`, com mutação; `CAPABILITIES.md` regenerado; números da seção
+  de provas de `guia/web/index.html` atualizados (119 capacidades, 78 com sabotagem provada, 104 canários).
+
 ### ADR-047 emenda 1 — `bootstrap.py` não toca no `settings.json` versionado (20/11/2026)
 
 - Motivo: o bootstrap desligava os hooks de todas as sessões ao copiar o perfil sem hooks por cima do

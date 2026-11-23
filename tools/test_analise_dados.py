@@ -7,7 +7,9 @@ Prova que a análise acompanhada não é só prosa:
  (b) o corpo da skill traz as 7 classes de decisão que param o acompanhado e os 7 itens do painel mínimo;
  (c) a regra de uma linha da fonte global `.claude/global/CLAUDE-global.md` aponta a skill e o padrão acompanhado;
  (d) a tabela de sub-modos do discovery tem a linha `produto-de-dados.md` e o companion existe;
- (e) a skill entra no pacote web premium (LATERAL de tools/web_export.py).
+ (e) a skill entra no pacote web premium (LATERAL de tools/web_export.py);
+ (f) a seção 3 da skill aponta `tools/conferir_invariante.py`, que existe, e o `qa-critic` aponta a seção 8 da skill e a
+     ferramenta (B2 do plano).
 Autoteste: cada verificação roda também sobre uma cópia sabotada e tem de reprovar (canário cego reprova aqui).
 
 Uso: python tools/test_analise_dados.py   (exit 0 PASS; 1 se falha)
@@ -21,6 +23,8 @@ SKILL = os.path.join(ROOT, ".agent", "skills", "analise-dados", "SKILL.md")
 GLOBAL = os.path.join(ROOT, ".claude", "global", "CLAUDE-global.md")
 DISC = os.path.join(ROOT, ".agent", "skills", "discovery", "SKILL.md")
 COMPANION = os.path.join(ROOT, ".agent", "skills", "discovery", "produto-de-dados.md")
+QA = os.path.join(ROOT, ".agent", "skills", "qa-critic", "SKILL.md")
+FERRAMENTA = os.path.join(ROOT, "tools", "conferir_invariante.py")
 
 try:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -99,11 +103,27 @@ def checar_discovery(txt, companion_existe):
     return fails
 
 
+def checar_conferencia(skill, qa, ferramenta_existe):
+    fails = []
+    sec3 = skill.split("## 3. Invariante por operação", 1)
+    sec3 = sec3[1].split("\n## ", 1)[0] if len(sec3) == 2 else ""
+    if "tools/conferir_invariante.py" not in sec3:
+        fails.append("seção 3 da skill sem `tools/conferir_invariante.py`")
+    if not ferramenta_existe:
+        fails.append("tools/conferir_invariante.py ausente")
+    linha = " ".join(ln for ln in qa.split("\n\n") if "Análise de dados" in ln)
+    if not linha:
+        fails.append("qa-critic sem o item 'Análise de dados'")
+    elif "seção 8" not in linha or "`analise-dados`" not in linha or "conferir_invariante.py" not in linha:
+        fails.append("item 'Análise de dados' do qa-critic sem a seção 8 da skill ou sem a ferramenta")
+    return fails
+
+
 def checar_web(lateral):
     return [] if "analise-dados" in lateral else ["pacote web: analise-dados fora de LATERAL em tools/web_export.py"]
 
 
-def autoteste(skill, glob, disc):
+def autoteste(skill, glob, disc, qa):
     """Cada sabotagem tem de reprovar; se passar, o canário é cego."""
     cegos = []
     sab = [
@@ -126,6 +146,11 @@ def autoteste(skill, glob, disc):
         ("discovery sem a linha do sub-modo",
          lambda: checar_discovery(disc.replace("`produto-de-dados.md`", "`x.md`"), True)),
         ("companion ausente", lambda: checar_discovery(disc, False)),
+        ("skill sem a ferramenta na seção 3", lambda: checar_conferencia(
+            skill.replace("tools/conferir_invariante.py", "tools/x.py"), qa, True)),
+        ("ferramenta ausente", lambda: checar_conferencia(skill, qa, False)),
+        ("qa-critic sem a seção 8", lambda: checar_conferencia(skill, qa.replace("seção 8 da skill", "skill"), True)),
+        ("qa-critic sem o item", lambda: checar_conferencia(skill, qa.replace("Análise de dados", "X"), True)),
     ]
     for nome, f in sab:
         if not f():
@@ -135,7 +160,7 @@ def autoteste(skill, glob, disc):
 
 def main():
     fails = []
-    for p in (SKILL, GLOBAL, DISC):
+    for p in (SKILL, GLOBAL, DISC, QA):
         if not os.path.isfile(p):
             print(f"RESULTADO: FAIL (arquivo ausente: {p})")
             return 1
@@ -143,16 +168,18 @@ def main():
     fails += checar_skill(skill)
     fails += checar_global(glob)
     fails += checar_discovery(disc, os.path.isfile(COMPANION))
+    qa = _ler(QA)
+    fails += checar_conferencia(skill, qa, os.path.isfile(FERRAMENTA))
     # (e) pacote web: a skill entra no tier premium como papel lateral (ADR-134, decisão 8)
     sys.path.insert(0, os.path.join(ROOT, "tools"))
     import web_export  # noqa: E402
     fails += checar_web(web_export.LATERAL)
     if checar_web([x for x in web_export.LATERAL if x != "analise-dados"]) == []:
         fails.append("autoteste: sabotagem NÃO reprovou (LATERAL sem analise-dados)")
-    cegos = autoteste(skill, glob, disc)
+    cegos = autoteste(skill, glob, disc, qa)
     fails += [f"autoteste: sabotagem NÃO reprovou ({c})" for c in cegos]
 
-    print(f"analise-dados: skill, 7 classes, 7 itens do painel, regra global, sub-modo, pacote web; autoteste 13 sabotagens — "
+    print(f"analise-dados: skill, 7 classes, 7 itens do painel, regra global, sub-modo, pacote web, conferência por invariante; autoteste 17 sabotagens — "
           f"{'OK' if not fails else 'FAIL'}")
     for f in fails:
         print("  -", f)

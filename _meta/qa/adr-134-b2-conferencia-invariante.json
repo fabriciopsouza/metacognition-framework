@@ -1,0 +1,157 @@
+{
+  "bloco": "adr-134-b2-conferencia-invariante",
+  "papel": "qa_critic",
+  "rodada": 4,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "resumo": "B2 do plano da analise acompanhada (pesquisas 2026-11-19, secao 7.8), decisoes do dono 23/11/2026: troca de valores pela chave com soma por grupo como alternativa; qa-critic aponta a secao 8 da skill. Faixa F2 (regra do framework, multi-sessao). Rodada 1 Codex (20261123-095926-f55a0d) REPROVOU com 6 achados (3 ALTA); rodada 2 Sonnet aprovou com ressalvas (4 MEDIA, 3 BAIXA); rodada 3 Codex (20261123-101002-d00440) REPROVOU (ALTA soma Decimal arredondava em 28 digitos; MEDIA Overflow); rodada 4 Sonnet aprovou com ressalvas (1 MEDIA limite de expoente, 2 BAIXA testes cegos e mensagem). Todos tratados pelo autor e conferidos por canario e sabotagem. Desvio declarado: a revisao critica da especificacao antes do codigo nao rodou separada; a rodada 1 cobriu especificacao e codigo.",
+  "verificacoes_executadas": [
+    "tools/test_conferir_invariante.py 46 casos + 21 CLI, PASS",
+    "16 sabotagens em copia do conferir_invariante.py (soma por grupo, chave, multiconjunto, valores da juncao, colunas, grupo unico, mesmos grupos, --saiu, mesmas colunas, nao finito, orfas, contexto exato, limite de expoente, colisao, chave repetida, subconjunto de grupos), todas reprovadas",
+    "tools/test_analise_dados.py PASS (17 sabotagens); test_capabilities, test_marketing_claims, test_skill_contract, validate_skills PASS",
+    "bateria run_canaries.py: 102 PASS, 1 SKIP, 1 FAIL (test_marketing_claims, numeros do site) corrigido e PASS"
+  ],
+  "problemas": [
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "tools/conferir_invariante.py conferir_juncao",
+      "descricao": "Codex r1: juncao so contava linhas; agora compara o multiconjunto das linhas esperadas."
+    },
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "tools/conferir_invariante.py filtro/dedup",
+      "descricao": "Codex r1: intersecao de colunas escondia coluna perdida; exige as colunas de antes."
+    },
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "tools/conferir_invariante.py ler_csv",
+      "descricao": "Codex r1: cabecalho repetido/vazio e linha com campos a mais -> exit 2."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/conferir_invariante.py main",
+      "descricao": "Codex r1: lista de colunas vazia e opcao indevida -> exit 2."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/test_conferir_invariante.py",
+      "descricao": "Codex r1: teste cego da soma por grupo na identidade -> item isolado."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/conferir_invariante.py conferir_agregacao",
+      "descricao": "Sonnet r2: grupo repetido no agregado e grupo so com vazios -> grupo unico e mesmos grupos."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/conferir_invariante.py conferir_agregacao",
+      "descricao": "Sonnet r2: falso REPROVA por ponto flutuante -> --tolerancia (padrao 0)."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/test_conferir_invariante.py",
+      "descricao": "Sonnet r2: testes cegos --saiu, mesmas colunas, chave unica esquerda, orfas -> casos novos."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "tools/conferir_invariante.py numero",
+      "descricao": "Sonnet r2: NaN/Infinity/sNaN -> exit 2."
+    },
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "tools/conferir_invariante.py soma_por_grupo",
+      "descricao": "Codex r3: contexto decimal de 28 digitos arredondava -> contexto EXATO com Inexact como erro."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/conferir_invariante.py",
+      "descricao": "Codex r3: Overflow com traceback -> excecao decimal vira exit 2."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/conferir_invariante.py numero",
+      "descricao": "Sonnet r4: expoente extremo travava -> limite |e| <= 10000, exit 2; teste com timeout de 30 s."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "tools/test_conferir_invariante.py",
+      "descricao": "Sonnet r4: colisao, chave repetida na identidade, subconjunto de grupos, --tolerancia na CLI -> casos novos."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "tools/conferir_invariante.py tol",
+      "descricao": "Sonnet r4: mensagem de --tolerancia invalida."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "aceito-limite",
+      "local": "tools/conferir_invariante.py",
+      "descricao": "Notas: soma por grupo nao ve troca no mesmo grupo (declarado; usar --chave); juncao com sufixo _x/_y exige renomear; filtro nao confere unicidade (fora do criterio)."
+    }
+  ],
+  "escopo_paths": [
+    "tools/conferir_invariante.py",
+    "tools/test_conferir_invariante.py",
+    "tools/test_analise_dados.py",
+    ".agent/skills/analise-dados/SKILL.md",
+    ".agent/skills/qa-critic/SKILL.md",
+    "capabilities.json",
+    "CAPABILITIES.md",
+    "CHANGELOG.md",
+    "guia/web/index.html",
+    "_meta/qa/adr-134-b2-conferencia-invariante.json",
+    "_meta/qa/adr-134-b2-conferencia-invariante.md"
+  ],
+  "atestacao": {
+    "agentId": "af24eba5edbb85b4e",
+    "prova_transcript": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "modelo": "claude-sonnet-5-5",
+    "modelo_autor": "claude-opus-5-5",
+    "isolamento": "subagente qa-critic isolado, read-only por instrucao explicita; worktree propria a partir de origin/main",
+    "provas": [
+      {
+        "registro": "20261123-095926-f55a0d",
+        "modelo": "codex/gpt-6.1-sol",
+        "rodada": 1
+      },
+      {
+        "registro": "20261123-101002-d00440",
+        "modelo": "codex/gpt-6.1-sol",
+        "rodada": 3
+      },
+      {
+        "agentId": "a467c10f6390547b7",
+        "modelo": "claude-sonnet-5-5",
+        "rodada": 2
+      }
+    ]
+  },
+  "data": "2026-11-23",
+  "sha_revisado": "ad6d79a59aa323e065592c600e03857a3d7db6c9",
+  "blobs_revisados": {
+    "tools/conferir_invariante.py": "ee4b68ce005144d630c7e0625e79f24f89686a23",
+    "tools/test_conferir_invariante.py": "e0e6bbcf8e40706221295ffcbb07ebcdb4e36a82",
+    "tools/test_analise_dados.py": "90218688b48a58bb6df9e8e1ac21500eaaf3d6fe",
+    ".agent/skills/analise-dados/SKILL.md": "d8fa70f37080efac194b7da3771cff9fbb12daee",
+    ".agent/skills/qa-critic/SKILL.md": "f478d8dc51ed7a6153cb2c6abd56b5d07acccb33",
+    "capabilities.json": "9efd6bd241ccd3d45d9abc77ce37a26cb82723d0",
+    "CAPABILITIES.md": "8fc5e57f6978036563f05367924a57af8b4ead7a",
+    "CHANGELOG.md": "f30bcae04406dba373d3e070f3894262f72c5f2c",
+    "guia/web/index.html": "f408f0773c715a2a69728052dc096fb4236fc764"
+  }
+}

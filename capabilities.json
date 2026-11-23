@@ -2526,6 +2526,27 @@
    "canario": "tools/test_analise_dados.py",
    "espera": "classe de decisão ausente na tabela da seção 4: Número publicado"
   }
+ },
+ {
+  "id": "conferencia-invariante",
+  "title": "Conferencia por invariante de operacao de dado (filtro, juncao, agregacao, deduplicacao, identidade) sobre CSV de antes e de depois, so biblioteca padrao; troca de valores entre linhas detectada pela chave, pelo multiconjunto de linhas ou pela soma por grupo; item 'Analise de dados' do qa-critic",
+  "status": "PROVIDES",
+  "enforcement": "fail-closed",
+  "ai_owner": "claude",
+  "mechanism": "tools/conferir_invariante.py",
+  "test": "tools/test_conferir_invariante.py",
+  "adr": "docs/adr/134-analise-acompanhada.md",
+  "doc": ".agent/skills/analise-dados/SKILL.md",
+  "cross_ai": false,
+  "tags": ["analise", "dados", "invariante", "qa", "canary"],
+  "note": "B2 do plano da analise acompanhada (23/11/2026). Limite declarado: soma por grupo nao ve troca entre linhas do mesmo grupo (use --chave). Fiacao skill -> ferramenta -> qa-critic conferida em tools/test_analise_dados.py (f).",
+  "mutacao": {
+   "arquivo": "tools/conferir_invariante.py",
+   "de": "item(\"soma por grupo preservada\", not dif,",
+   "para": "item(\"soma por grupo preservada\", True,",
+   "canario": "tools/test_conferir_invariante.py",
+   "espera": "agregação: troca entre grupos preserva o total"
+  }
  }
  ],
  "registry_waivers": [
