@@ -5,6 +5,26 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-134 — Modelo de runbook de análise e pacote documental proporcional (B3, 24/11/2026)
+
+- Motivo: bloco B3 do plano aprovado em 19/11/2026 (repositório central de pesquisas, pasta
+  `2026-11-19_analise-acompanhada-humano-ia`, seção 7.8). [CONFIRMADO]
+- `tools/runbook_analise.py` (novo): `gerar` a planilha no molde da Parte C a partir de conteúdo em JSON, sem sobrescrever e
+  sem gravar o que reprova; `conferir` o molde (R1 a R14; `--final` reprova marca por preencher). JSON no stdout; exit 0
+  passa, 1 reprova, 2 erro de uso. Reusa `_aba_tabela`, `_aba_texto` e `_abrir` de `tools/planilhas_projeto.py`, sem alterá-lo.
+- `tools/templates/runbook-analise.json` (novo): conteúdo neutro com as 5 fases CRISP no Roteiro e marcas `[PREENCHER: ...]`.
+- `.agent/skills/analise-dados/pacote-documental.md` (novo): 10 peças por nível (análise pontual, com terceiro, produto de
+  dados), com quando entra, quem produz e pronto quando.
+- `tools/test_runbook_analise.py` (novo): gera e reabre o modelo, abas e colunas literais, planilha marcada, sabotagens por
+  regra (a do plano: Roteiro sem a coluna Status), linha de comando, pacote e ponteiros.
+- Desvio declarado do plano ("só arquivos novos; CHANGELOG"), restrito a ponteiros e contagens: skill `analise-dados` 1.2.0
+  (seções 5 e 7 apontam as entregas; o gerador do runbook passa a ser do framework, o conteúdo e o gerador de EF/ET ficam no
+  projeto); `capabilities.json` (+`runbook-analise`, com mutação), `CAPABILITIES.md` e números de `guia/web/index.html`
+  (120 capacidades, 79 com sabotagem provada, 105 canários).
+- Revisão F2: especificação Codex r1 REPROVADO (8); conjunto Codex r1 REPROVADO (9), Sonnet r2 APROVADO COM RESSALVAS (9),
+  Codex r3 REPROVADO no delta (1), Sonnet r4 APROVADO COM RESSALVAS (2); todos tratados (seções 6 a 10 da especificação).
+- Especificação: `docs/specs/analise-acompanhada/b3-spec.md`. Handoff de 20/11/2026 (B2 e B3) incluído a pedido do dono.
+
 ### ADR-134 — Conferência por invariante e item de análise no qa-critic (B2, 23/11/2026)
 
 - Motivo: bloco B2 do plano aprovado em 19/11/2026 (repositório central de pesquisas, pasta

@@ -1,9 +1,9 @@
 ---
 name: analise-dados
 description: "Ativar em toda tarefa que toque dado, indicador, métrica ou modelo, em qualquer repositório: análise exploratória, conferência de número, regra de indicador, consulta que gera número, estatística, previsão ou modelo de ML. Conduz a análise por fases CRISP-DM no modo ACOMPANHADO (padrão de toda sessão): a cada fase mostra o painel com dado e procedimento, para nas decisões de escopo, métrica, exclusão, dado faltante, método, aceite e número publicado, e registra diário e decisões D-nn. Muda para AUTÔNOMO só por ordem do dono ('siga sozinha', 'autônoma', 'segue com CRISP-DM', 'me mostra no fim'), que vale dali em diante na sessão. NÃO ativar em tarefa sem dado (texto, configuração, código sem número). Validação de dado contra referência: esta skill conduz e usa validation-reporting como método do reporte."
-version: 1.1.0
+version: 1.2.0
 source: "pedido do dono e plano aprovado em 19/11/2026 (repositório central de pesquisas, pasta 2026-11-19_analise-acompanhada-humano-ia, seções 7.1 a 7.7, e prompt-uso-imediato.md da mesma pasta); ADR-134"
-last_review: 2026-11-23
+last_review: 2026-11-24
 role_order: null
 consumes:
   - "pedido que toque dado, indicador, métrica ou modelo"
@@ -112,7 +112,7 @@ Escrito aqui para valer em qualquer IA. Skills de dados do ambiente, quando houv
 | Inferência estatística | pergunta (explicar × prever); pressupostos e diagnóstico (resíduos, normalidade, independência); tamanho de efeito com intervalo; múltiplas comparações | esta skill |
 | Modelagem preditiva | linha de base ingênua; partição sem vazamento (temporal quando houver tempo); candidatos; métrica de negócio | esta skill + script do projeto |
 | Avaliação | erro contra a linha de base; cobertura de intervalo; viés; robustez às alternativas (multiverso reduzido: as 2 ou 3 escolhas mais contestáveis, com o efeito de cada uma); bateria de casos | script do projeto |
-| Implantação | ficha de dados e de modelo; canário; monitoramento; runbook xlsx (molde Parte C); EF/ET quando virar produto | molde do runbook + gerador do projeto |
+| Implantação | ficha de dados e de modelo; canário; monitoramento; runbook xlsx (molde Parte C); EF/ET quando virar produto | `tools/runbook_analise.py` do framework, com o conteúdo no projeto; EF/ET: gerador do projeto |
 
 ## 6. Entregas mínimas por fase
 
@@ -125,6 +125,8 @@ Escrito aqui para valer em qualquer IA. Skills de dados do ambiente, quando houv
 | 6 Implantação | ficha de dados e de modelo, canário, monitoramento, runbook; EF/ET quando virar produto |
 
 ## 7. Documentação proporcional
+
+Peças por nível, quando cada uma entra e quando está pronta: `pacote-documental.md`, nesta pasta; a tabela de lá detalha e prevalece sobre o resumo abaixo.
 
 - Sempre: diário e D-nn.
 - Quando há terceiro que confirma ou verifica: Parte I (DEF-nn) e Parte J (VER-nn).

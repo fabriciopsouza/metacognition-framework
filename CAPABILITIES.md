@@ -1,7 +1,7 @@
 <!-- GERADO por tools/build_capabilities.py a partir de capabilities.json — NAO editar a mao -->
 # CAPABILITIES — indice de capacidades (nivel 1: id + title)
 
-> **119 capacidades** — 107 ✅ PROVIDES · 12 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
+> **120 capacidades** — 108 ✅ PROVIDES · 12 🟡 PARTIAL · 🔗 = cross-IA. Fonte: [capabilities.json](capabilities.json). Canario anti-drift: [test_capabilities.py](tools/test_capabilities.py) (ADR-072).
 > **Como usar (file-first, boot):** leia esta lista p/ achar o `id`; o registro completo (mecanismo · canario · ADR · doc) vem por **`python tools/build_capabilities.py --show <id>`** ou `grep -A8 '"<id>"' capabilities.json`. Nao reexplore o repo antes disto.
 > **Manutencao:** feature nova -> +1 registro em `capabilities.json` + `python tools/build_capabilities.py`. Canario barra canario orfao (cobertura).
 
@@ -111,6 +111,7 @@
 - ✅ `risk-gate` — Gating deterministico por risco (prob x impacto -> gate + tier P0-P3); recast externo (ADR-086) sob P15, forma agnostica (categorias = blueprint) + faixa de QA F0/F1/F2 por gatilhos declarados (ADR-132: gatilho de F2 nunca vira F0/F1)
 - 🟡 `route-gate` — Lembrete de rota deterministico 1x/sessao (UserPromptSubmit), fail-open
 - ✅ `rules-parity-guard` — Anti-drift das 4 regras inviolaveis entre arquivos de autoridade (sem violar SSoT §6.5)
+- ✅ `runbook-analise` — Runbook de execucao de analise em xlsx no molde da Parte C: gerador com conteudo em JSON (modelo com as 5 fases CRISP), conferencia do molde R1 a R14 e pacote documental proporcional por nivel
 - ✅ `service-valuation` — Valoracao de servico por valor entregue, com memoria de calculo rastreavel
 - ✅ `shadow-drift-alarm` — Deriva das distribuicoes publicadas vira numero; falta de medicao nao vira aprovacao
 - ✅ `shadow-sync` — Hook que auto-casa o espelho publicado com origin no boot (reset --hard mecanico, so em shadow)

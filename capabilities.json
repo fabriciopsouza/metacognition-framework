@@ -2547,6 +2547,27 @@
    "canario": "tools/test_conferir_invariante.py",
    "espera": "agregação: troca entre grupos preserva o total"
   }
+ },
+ {
+  "id": "runbook-analise",
+  "title": "Runbook de execucao de analise em xlsx no molde da Parte C: gerador com conteudo em JSON (modelo com as 5 fases CRISP), conferencia do molde R1 a R14 e pacote documental proporcional por nivel",
+  "status": "PROVIDES",
+  "enforcement": "fail-closed",
+  "ai_owner": "claude",
+  "mechanism": "tools/runbook_analise.py",
+  "test": "tools/test_runbook_analise.py",
+  "adr": "docs/adr/134-analise-acompanhada.md",
+  "doc": ".agent/skills/analise-dados/pacote-documental.md",
+  "cross_ai": false,
+  "tags": ["analise", "dados", "runbook", "xlsx", "canary"],
+  "note": "B3 do plano da analise acompanhada (24/11/2026). Confere planilha deste gerador, antes ou depois de marcada; nome de tela, termo explicado e uma acao por linha ficam com a revisao humana (docs/specs/analise-acompanhada/b3-spec.md, 3a).",
+  "mutacao": {
+   "arquivo": "tools/runbook_analise.py",
+   "de": "    if cab != COLS:",
+   "para": "    if not cab:",
+   "canario": "tools/test_runbook_analise.py",
+   "espera": "SABOTAGEM DO PLANO: Roteiro sem a coluna Status reprova"
+  }
  }
  ],
  "registry_waivers": [
