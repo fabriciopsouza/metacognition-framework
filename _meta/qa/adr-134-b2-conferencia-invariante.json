@@ -119,7 +119,8 @@
   ],
   "atestacao": {
     "agentId": "af24eba5edbb85b4e",
-    "prova_transcript": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prova_transcript": "sha256:bc3c9861b2948228da5546ef8e6cc825f82b2908bddd55e39ea4ec7e886f56e3",
+    "prova_origem": "corrigido em 25/11/2026: o valor anterior era o hash do texto vazio; este e o sha256 do texto final do relatorio no transcript do subagente (execucao em segundo plano, que o verify_qa_attestation nao alcanca)",
     "modelo": "claude-sonnet-5-5",
     "modelo_autor": "claude-opus-5-5",
     "isolamento": "subagente qa-critic isolado, read-only por instrucao explicita; worktree propria a partir de origin/main",
