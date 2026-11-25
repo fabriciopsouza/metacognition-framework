@@ -129,6 +129,13 @@ def faca(i, texto):
     return lambda c: c["roteiro"][i].__setitem__(2, texto)
 
 
+def tira_passo(c, j):
+    """Tira o passo 6.x e renumera os seguintes."""
+    c["roteiro"].pop(j)
+    for i, s in enumerate(c["roteiro"][2:], 1):
+        s[1] = f"6.{i}"
+
+
 def inverte(c):
     for i, (p, n) in enumerate(zip(c["roteiro"][4:1:-1], ("6.1", "6.2", "6.3")), 2):
         c["roteiro"][i] = [p[0], n] + p[2:]
@@ -140,6 +147,13 @@ def marca_massa(cel, situacao):
         for lin in (4, 5, 6, 7):
             ws[f"F{lin}"] = "Feito"
         ws[cel], ws["H" + cel[1:]] = situacao, "motivo"
+    return f
+
+
+def massa_erro(cel, situacao):
+    def f(wb):
+        marca_massa(cel, situacao)(wb)
+        wb["Roteiro"]["F7"], wb["Roteiro"]["H7"] = "Erro", "mensagem exata"
     return f
 
 
@@ -157,6 +171,31 @@ def formula_texto(wb):
 
 def lista_curta(wb):
     wb["Roteiro"].data_validations.dataValidation[0].sqref = openpyxl.worksheet.cell_range.MultiCellRange("F2:F6")
+
+
+def lista_attr(attr, val):
+    return lambda wb: setattr(wb["Roteiro"].data_validations.dataValidation[0], attr, val)
+
+
+def com_1_3(c):
+    c["roteiro"].insert(2, passo(FASES5[0], "1.3", "VER O TOTAL"))
+
+
+def apaga_passo(linha):
+    """Como o Excel: apaga a linha e encolhe validação, cores, filtro e fórmulas do Painel."""
+    def f(wb):
+        ws = wb["Roteiro"]
+        regras = [r for x in ws.conditional_formatting for r in x.rules]
+        ws.delete_rows(linha)
+        ult = ws.max_row
+        ws.conditional_formatting = ConditionalFormattingList()
+        for r in regras:
+            ws.conditional_formatting.add(f"F2:F{ult}", r)
+        ws.data_validations.dataValidation[0].sqref = openpyxl.worksheet.cell_range.MultiCellRange(f"F2:F{ult}")
+        ws.auto_filter.ref = f"A1:I{ult}"
+        for c in (c for lin in wb["Painel"].iter_rows() for c in lin if c.data_type == "f"):
+            c.value = c.value.replace(f"${ult + 1}", f"${ult}")
+    return f
 
 
 def lista_outra(wb):
@@ -177,6 +216,13 @@ def cor_vazia(wb):
         for r in f.rules:
             if r.formula == ['"Feito"']:
                 r.dxf.fill = openpyxl.styles.PatternFill()
+
+
+def cor_gradiente(wb):
+    for f in wb["Roteiro"].conditional_formatting:
+        for r in f.rules:
+            if r.formula == ['"Feito"']:
+                r.dxf.fill = openpyxl.styles.GradientFill(stop=("C6EFCE", "FFFFFF"))
 
 
 def cor_curta(wb):
@@ -234,12 +280,14 @@ def modelo_e_marcada(tmp):
         check(f"modelo: conteúdo mínimo de {fase}", not falta, falta)
     cmds = [str(c.value) for c in wb["Runbook Invariantes"]["B"]]
     for op in ("filtro", "dedup"):
-        check(f"modelo: comando {op} com separador", any(f"conferir_invariante.py {op}" in x and '--sep ";"' in x for x in cmds))
-    rotulos = [c.value for c in wb["Leia antes"]["A"]]
-    falta = [p for p in PALAVRAS if f"Palavra: {p}" not in rotulos]
+        check(f"modelo: comando {op} com separador", any(f"conferir_invariante.py {op} --" in x and x.endswith(
+            'arquivo separado por ponto e vírgula: acrescente --sep ";")') for x in cmds))
+    definidos = [r[0].value for r in wb["Leia antes"].iter_rows(max_col=2) if len(str(r[1].value or "").split()) >= 3]
+    falta = [p for p in PALAVRAS if f"Palavra: {p}" not in definidos]
     check("modelo: termos definidos em Leia antes", not falta, falta)
     p52 = next(lin[2].value for lin in wb["Roteiro"].iter_rows(min_row=2) if lin[1].value == "5.2")
-    check("modelo: 5.2 diz grupos e escolhas a preencher", "[PREENCHER: grupos]" in p52 and "escolhas mais contestáveis]" in p52, p52)
+    check("modelo: 5.2 diz grupos e escolhas a preencher", "[PREENCHER: grupos]" in p52
+          and "[PREENCHER: as 2 ou 3 escolhas mais contestáveis]" in p52, p52)
     rc, saida = rodar("conferir", destino, "--final")
     check("modelo: --final reprova as marcas por preencher", rc == 1 and "R13" in saida)
     # legítimos
@@ -288,6 +336,14 @@ def sabotagens():
     sab("Nº vazio", "R3", "Nº", ro("B2", None))
     sab("Nº repetido", "R3", "repetido", ro("B3", "1.1"))
     sab("Nº fora do formato", "R3", "formato", ro("B3", "b"))
+    sab("Nº com zero à esquerda", "R3", "formato", ro("B3", "1.01"))
+    sab("Nº gigante", "R3", "formato", ro("B3", "1." + "9" * 5000))
+    sab("linha do meio apagada", "R3", "lacuna antes do Nº 1.3", apaga_passo(3), com_1_3)
+    sab("primeira linha apagada", "R3", "lacuna antes do Nº 1.2", apaga_passo(2))
+    for p, q, ok in (("0", "1.1", True), ("1.1", "1.2", True), ("1.2", "1.2.1", True), ("1.2.1", "1.3", True), ("1.6", "3.1", True),
+                     ("1", "2", True), ("1.1", "1.3", False), ("1.6", "3.2", False), ("1.1", "1.1.2", False), ("1.1", "1.2.2", False),
+                     ("1.2.1", "1.4", False)):
+        check(f"R3 {p} → {q}", rb._segue(*([int(x) for x in y.split(".")] for y in (p, q))) is ok)
     sab("linhas ordenadas dentro da fase", "R3", "ordenação", lambda wb: (ro("B2", "1.2")(wb), ro("B3", "1.1")(wb)))
     wb = base()
     wb["Roteiro"]["A2"] = FASES5[0] + " "
@@ -325,6 +381,9 @@ def sabotagens():
     sab("validação que não é lista", "R7", "não cobre", lista_tipo)
     sab("lista curta", "R7", "[7]", lista_curta)
     sab("lista sem Substituído", "R7", "não cobre", lista_outra)
+    sab("lista com espaço nas opções", "R7", "não cobre", lista_attr("formula1", '"Pendente, Feito, Erro, Pulado, Substituído"'))
+    sab("lista que não barra", "R7", "não cobre", lista_attr("showErrorMessage", False))
+    sab("lista que só avisa", "R7", "não cobre", lista_attr("errorStyle", "warning"))
     sab("Status fora da lista", "R7", "fora da lista", ro("F2", "Ok"))
     sab("Status com espaço a mais", "R7", "fora da lista", ro("F2", "Feito "))
     sab("Status vazio", "R7", "fora da lista", ro("F2", None))
@@ -332,6 +391,7 @@ def sabotagens():
     sab("Pulado sem motivo", "R7", "motivo", ro("F2", "Pulado"))
     sab("sem cor de um Status", "R8", "Pulado", sem_cor)
     sab("regra sem cor", "R8", "Feito", cor_vazia)
+    sab("cor em gradiente", "R8", "Feito", cor_gradiente)
     sab("cor não cobre as linhas", "R8", "Feito", cor_curta)
     sab("sem filtro", "R8", "filtro", lambda wb: setattr(wb["Roteiro"].auto_filter, "ref", None))
     sab("filtro curto", "R8", "filtro", lambda wb: setattr(wb["Roteiro"].auto_filter, "ref", "A1:I4"))
@@ -343,6 +403,7 @@ def sabotagens():
     sab("Total sem descontar Substituído", "R9", "Total", celula("Painel", "D6", "=COUNTIFS(Roteiro!$A$2:$A$7,$A6)"))
     sab("espaço dentro do texto da fórmula", "R9", "Erros em aberto", celula("Painel", "B3", '=COUNTIF(Roteiro!$F$2:$F$7,"Er ro")'))
     sab("fórmula como texto", "R9", "Erros em aberto", formula_texto)
+    sab("fase do Painel com espaço a mais", "R9", "fases", celula("Painel", "A6", FASES5[0] + " "))
     sab("Painel sem uma fase", "R9", "fases", celula("Painel", "A7", None))
     sab("cabeçalho do Painel", "R9", "cabeçalho", celula("Painel", "D5", "Qtde"))
     sab("só 2 passos", "R10", "3 passos", apaga_leia("O que você vai fazer 2"))
@@ -355,6 +416,10 @@ def sabotagens():
     sab("valor sem formato de texto", "R11", "texto", formatar("A4", "General"))
     sab("valor numérico", "R11", "texto", celula("Copiar e colar", "A4", 1))
     sab("dois valores na linha", "R11", "mais de um", muda_c=lambda c: c["listas"]["Itens"].__setitem__(0, "a\nb"))
+    for x in ("\r", "\x85", "\u2028"):
+        sab(f"dois valores na linha ({ascii(x)})", "R11", "mais de um", lambda wb, y=x: celula("Copiar e colar", "A4", f"a{y}b")(wb))
+    sab("nome de lista repetido", "R11", "repetido", celula("Copiar e colar", "C3", "Outra"),
+        lambda c: c["listas"].update({"Outra": ["1"], "Mais": ["2"]}))
     sab("fórmula na lista", "R11", "texto", celula("Copiar e colar", "A4", "=1+1"))
     for aba in CABS:
         sab(f"cabeçalho de {aba}", "R12", aba, celula(aba, "A1", "X"))
@@ -362,7 +427,7 @@ def sabotagens():
     sab("marca por preencher", "R13", "PREENCHER", muda_c=lambda c: c["links"].append(["[PREENCHER: x]", ""]), final=True)
     sab("Referência vazia", "R13", "Referência", muda_c=lambda c: c.__setitem__("referencia", []), final=True)
     for i, nome in ((2, "GUARDAR"), (3, "1 ITEM DE TESTE"), (4, "CONFERIR")):
-        sab(f"sem {nome}", "R14", nome, muda_c=lambda c, j=i: c["roteiro"].pop(j))
+        sab(f"sem {nome}", "R14", nome, muda_c=lambda c, j=i: tira_passo(c, j))
     sab("ordem invertida", "R14", "EM MASSA", muda_c=inverte)
     sab("GUARDAR duas vezes não vale o teste", "R14", "1 ITEM DE TESTE",
         muda_c=lambda c: c["roteiro"].__setitem__(3, passo(FASES5[4], "6.2", "GUARDAR DE NOVO")))
@@ -370,6 +435,7 @@ def sabotagens():
     for cel, nome in (("F4", "GUARDAR"), ("F5", "1 ITEM DE TESTE"), ("F6", "CONFERIR")):
         for s in ("Pulado", "Erro", "Pendente"):
             sab(f"em massa Feito com {nome} {s}", "R14", "(Feito)", marca_massa(cel, s))
+            sab(f"em massa Erro com {nome} {s}", "R14", "(Erro)", massa_erro(cel, s))
     sab("2º passo em massa sem a sequência", "R14", "6.5",
         muda_c=lambda c: c["roteiro"].append(passo(FASES5[4], "6.5", "APAGAR EM MASSA", meio="1) Cole a lista \"Itens\".")))
     sab("lista vazia em massa", "R14", "lista preenchida", muda_c=lambda c: c["listas"].__setitem__("Itens", []))
@@ -398,6 +464,20 @@ def linha_de_comando(tmp):
     rc, saida = rodar("gerar", "--conteudo", ok, "--out", destino)
     with open(destino, "rb") as fh:
         check("gerar recusa destino existente, bytes intactos", rc == 2 and "já existe" in saida and fh.read() == b"marcada", saida)
+    meio = os.path.join(tmp, "meio.xlsx")
+
+    class Cheio(io.FileIO):
+        def write(self, b):
+            super().write(b[:100])
+            raise OSError("disco cheio")
+    rb.open = lambda f, modo="r", **k: Cheio(f, "x") if modo == "xb" else open(f, modo, **k)
+    try:
+        rb.gerar(ok, meio)
+        check("gerar com disco cheio", False)
+    except rb.ErroUso as e:
+        check("gerar com disco cheio não deixa arquivo pela metade", "disco cheio" in str(e) and not os.path.exists(meio), e)
+    finally:
+        del rb.open
     novo = os.path.join(tmp, "y.xlsx")
     rc, saida = rodar("gerar", "--conteudo", conteudo("ruim.json", faca(0, "extrair")), "--out", novo)
     check("gerar que reprova não grava", rc == 1 and "R4" in saida and not os.path.exists(novo), saida)
@@ -416,6 +496,9 @@ def linha_de_comando(tmp):
              "vazio.json": dict(muda=lambda c: c.__setitem__("roteiro", [])),
              "longo.json": dict(muda=lambda c: c.__setitem__("como_colar", "x" * 32768)),
              "aba31.json": dict(muda=lambda c: c["runbooks"].__setitem__("Runbook " + "x" * 24, [["a", "b"]])),
+             "aba16.json": dict(muda=lambda c: c["runbooks"].__setitem__("Runbook " + "😀" * 12, [["a", "b"]])),
+             "rotulo.json": dict(muda=lambda c: c["leia_antes"]["palavras"].__setitem__("x" * 32767, "um termo longo")),
+             "longo16.json": dict(muda=lambda c: c.__setitem__("como_colar", "😀" * 20000)),
              "abarep.json": dict(muda=lambda c: c["runbooks"].__setitem__("Runbook a", [["a", "b"]])),
              "abanome.json": dict(muda=lambda c: c["runbooks"].__setitem__("Manual", [["a", "b"]])),
              "aba.json": dict(muda=lambda c: c["runbooks"].__setitem__("Runbook [x]", [["a", "b"]]))}

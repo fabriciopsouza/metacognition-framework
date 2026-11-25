@@ -59,6 +59,11 @@ class ErroUso(Exception):
 
 
 # ---------------------------------------------------------------- geração
+def _u16(x):
+    """Tamanho como o Excel conta (UTF-16)."""
+    return len(x.encode("utf-16-le", "surrogatepass")) // 2
+
+
 def ler_conteudo(caminho):
     try:
         with open(caminho, encoding="utf-8-sig") as fh:
@@ -86,12 +91,12 @@ def ler_conteudo(caminho):
         raise ErroUso("conteúdo: formato das listas diferente do modelo (linhas com o número certo de textos)")
     if not c["roteiro"]:
         raise ErroUso("conteúdo: roteiro sem passo")
-    textos += [c["titulo"], c["como_colar"]] + list(la["palavras"]) + list(c["listas"]) + list(c["runbooks"])
+    textos += [c["titulo"], c["como_colar"]] + [f"Palavra: {k}" for k in la["palavras"]] + list(c["listas"]) + list(c["runbooks"])
     for x in textos:  # o openpyxl recusaria o caractere com outra exceção e cortaria em silêncio o texto longo
-        if re.search(r"[\x00-\x08\x0b\x0c\x0e-\x1f\ud800-\udfff\ufffe\uffff]", x) or len(x) > 32767:
+        if re.search(r"[\x00-\x08\x0b\x0c\x0e-\x1f\ud800-\udfff\ufffe\uffff]", x) or _u16(x) > 32767:
             raise ErroUso(f"conteúdo: caractere que o xlsx não aceita ou mais de 32767 caracteres em {ascii(x[:40])}")
     nomes = [x.casefold() for x in c["runbooks"]]
-    ruins = [x for x in c["runbooks"] if not re.fullmatch(r"Runbook[^\[\]:*?/\\'\x00-\x1f]{0,24}", x) or nomes.count(x.casefold()) > 1]
+    ruins = [x for x in c["runbooks"] if not re.fullmatch(r"Runbook[^\[\]:*?/\\'\x00-\x1f]{0,24}", x) or _u16(x) > 31 or nomes.count(x.casefold()) > 1]
     if ruins:
         raise ErroUso("conteúdo: nome de aba de runbook inválido (começa por 'Runbook', até 31 caracteres, sem []:*?/\\' e sem "
                       "repetir): " + ", ".join(ruins))
@@ -186,12 +191,19 @@ def gerar(conteudo, destino):
     import openpyxl
     achados = conferir_wb(openpyxl.load_workbook(io.BytesIO(buf.getvalue())))
     if not achados:
+        criado = False
         try:
             with open(destino, "xb") as fh:
+                criado = True
                 fh.write(buf.getvalue())
         except FileExistsError:
             raise ErroUso(f"destino já existe: {destino}. Versão nova tem nome novo (Parte C, item 9).")
         except OSError as e:
+            if criado:  # arquivo pela metade: a próxima rodada o recusaria como existente
+                try:
+                    os.remove(destino)
+                except OSError:
+                    e = f"{e}; ficou arquivo incompleto, apague-o à mão"
             raise ErroUso(f"não gravou {destino}: {e}")
     return achados
 
@@ -256,18 +268,27 @@ def _r1_abas(wb):
     return a
 
 
+def _segue(p, q):
+    """q pode vir logo depois de p: 1.1→1.2, 1.2→1.2.1, 1.2.1→1.3, 1.6→3.1 (fase omitida pula o primeiro número)."""
+    k = next((i for i, (x, y) in enumerate(zip(p, q)) if x != y), len(p))
+    return (k in (0, len(p)) or q[k] == p[k] + 1) and all(x == 1 for x in (q[k:] if k == len(p) else q[k + 1:]))
+
+
 def _r3_passos(passos):
     a = [] if passos else ["R3 Roteiro sem passo"]
     for lin, p in passos:
         a += [f"R3 linha {lin}: {c} vazio" for c in OBRIGATORIAS if not p[c]]
     ns = [p["Nº"] for _, p in passos if p["Nº"]]
     a += [f"R3 Nº repetido: {x}" for x in sorted({x for x in ns if ns.count(x) > 1})]
-    if any(not re.fullmatch(r"\d+(\.\d+)*", x) for x in ns):
+    if any(not re.fullmatch(r"(0|[1-9][0-9]{0,3})(\.(0|[1-9][0-9]{0,3}))*", x) for x in ns):
         a.append("R3 Nº fora do formato 1.1")
     else:
         ordem = [[int(y) for y in x.split(".")] for x in ns]
         if ordem != sorted(ordem):
             a.append("R3 linhas fora da ordem do Nº: desfaça a ordenação (para ver uma situação, use o filtro)")
+        else:
+            a += [f"R3 lacuna antes do Nº {'.'.join(map(str, q))}: linha apagada (marque Substituído, não apague)"
+                  for p, q in zip([[0]] + ordem, ordem) if q != p and not _segue(p, q)]
     partes = [p["Parte"] for _, p in passos if p["Parte"]]
     fora = sorted({x for x in partes if x not in FASES})
     if fora:
@@ -311,8 +332,8 @@ def _r7_status(ws, passos):
     a = []
     cobre = set()
     for dv in ws.data_validations.dataValidation:
-        itens = [x.strip() for x in _t(dv.formula1).strip('"').split(",")]
-        if dv.type == "list" and itens == list(STATUS):
+        barra = dv.showErrorMessage and dv.errorStyle in (None, "stop")
+        if dv.type == "list" and barra and dv.formula1 == '"' + ",".join(STATUS) + '"':
             cobre |= _cobertas(dv.sqref, "F")
     falta = [lin for lin, _ in passos if lin not in cobre]
     if falta:
@@ -335,7 +356,7 @@ def _r8_visual(ws, passos):
         for r in faixa.rules:
             for s in STATUS:
                 if (r.type == "cellIs" and r.operator == "equal" and r.formula == [f'"{s}"'] and r.dxf and r.dxf.fill
-                        and str(r.dxf.fill.bgColor.rgb)[-6:] == STATUS[s]):
+                        and str(getattr(getattr(r.dxf.fill, "bgColor", None), "rgb", ""))[-6:] == STATUS[s]):
                     cores[s] |= _cobertas(faixa.sqref, "F")
     for s, linhas in cores.items():
         if any(lin not in linhas for lin, _ in passos):
@@ -361,7 +382,8 @@ def _r9_painel(ws, passos):
     if [_t(ws.cell(5, j).value) for j in range(1, 7)] != COLS_PAINEL:
         a.append("R9 Painel: cabeçalho diferente de " + " · ".join(COLS_PAINEL))
     fases = [x for x in FASES if any(p["Parte"] == x for _, p in passos)]
-    no_painel = [_t(ws.cell(i, 1).value) for i in range(6, ws.max_row + 1) if _t(ws.cell(i, 1).value)]
+    # texto exato: a fórmula conta a célula como está
+    no_painel = [str(ws.cell(i, 1).value) for i in range(6, ws.max_row + 1) if _t(ws.cell(i, 1).value)]
     if no_painel != fases:
         a.append(f"R9 Painel: fases {no_painel} diferentes das do Roteiro {fases}")
         return a
@@ -397,7 +419,9 @@ def _r11_colar(wb):
     for nome, celulas in listas_de(ws).items():
         a += [f"R11 lista {nome!r}, {c.coordinate}: valor não está como texto" for c in celulas
               if c.data_type != "s" or c.number_format != "@"]
-        a += [f"R11 lista {nome!r}, {c.coordinate}: mais de um valor na linha" for c in celulas if "\n" in _t(c.value)]
+        a += [f"R11 lista {nome!r}, {c.coordinate}: mais de um valor na linha" for c in celulas if len(_t(c.value).splitlines()) > 1]
+    nomes = [_t(c.value) for c in ws[3] if _t(c.value)] if ws.max_row >= 3 else []
+    a += [f"R11 nome de lista repetido: {x!r}" for x in sorted({x for x in nomes if nomes.count(x) > 1})]
     return a
 
 
@@ -418,8 +442,8 @@ def _r13_final(wb):
 
 
 def _r14_massa(wb, passos):
-    """Antes de cada passo em massa: GUARDAR → 1 ITEM DE TESTE → CONFERIR. Passo em massa já Feito exige os três Feitos;
-    nos demais, só não conta o Substituído."""
+    """Antes de cada passo em massa: GUARDAR → 1 ITEM DE TESTE → CONFERIR. Passo em massa já executado (Feito ou Erro)
+    exige os três Feitos; nos demais, só não conta o Substituído."""
     a = []
     listas = listas_de(wb["Copiar e colar"])
     nomes = ("GUARDAR", "1 ITEM DE TESTE", "CONFERIR")
@@ -433,14 +457,14 @@ def _r14_massa(wb, passos):
         etapa = 0
         for x in antes:
             t = _titulo(x["Faça"])
-            if p["Status"] == "Feito" and x["Status"] != "Feito":
+            if p["Status"] in ("Feito", "Erro") and x["Status"] != "Feito":
                 continue
             if (etapa == 0 and t.startswith("GUARDAR")) or (etapa == 1 and "1 ITEM DE TESTE" in t) or (
                     etapa == 2 and t.startswith("CONFERIR")):
                 etapa += 1
         if etapa < 3:
             a.append(f"R14 passo {p['Nº']}: EM MASSA sem {' → '.join(nomes[etapa:])} antes"
-                     + (" (Feito)" if p["Status"] == "Feito" else ""))
+                     + (f" ({p['Status']})" if p["Status"] in ("Feito", "Erro") else ""))
         m = re.search(r'lista "([^"]+)"', p["Faça"])
         if not m or not listas.get(m.group(1)):
             a.append(f"R14 passo {p['Nº']}: EM MASSA sem lista preenchida na aba Copiar e colar")

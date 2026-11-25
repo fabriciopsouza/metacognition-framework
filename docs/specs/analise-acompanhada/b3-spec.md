@@ -40,18 +40,18 @@
 |---|---|
 | R1 | as 9 abas fixas na ordem; ≥ 1 aba de runbook, todas entre Links e Pendências; nenhuma outra aba |
 | R2 | cabeçalho do Roteiro com as 9 colunas, na ordem; a coluna que falta é nomeada (aceite: sem Status reprova) |
-| R3 | ≥ 1 passo; Parte, Nº, Faça, Onde e Se der errado preenchidos; Nº único, no formato 1.1 e em ordem (ordenar linhas quebra o "onde parei"; filtrar não); Parte é uma fase da decisão 3, em ordem e contígua |
+| R3 | ≥ 1 passo; Parte, Nº, Faça, Onde e Se der errado preenchidos; Nº único, no formato 1.1, em ordem (ordenar linhas quebra o "onde parei"; filtrar não) e sem lacuna (linha apagada some dos erros em aberto); Parte é uma fase da decisão 3, em ordem e contígua |
 | R4 | Faça: AÇÃO EM MAIÚSCULAS até o primeiro ponto; clique a clique numerado (`1)` ou `1.`); termina em `Deu certo: <como saber>` |
 | R5 | Onde no runbook = `<aba de runbook>, passo <n>`, com a aba e o passo existentes |
 | R6 | Se der errado: `Pare` ou `Siga`; `não repita`; `copie o texto exato`; `avise <quem>` |
-| R7 | lista do Status (Pendente, Feito, Erro, Pulado, Substituído) cobre todas as linhas; todo valor de Status está na lista, sem espaço a mais; Erro sem mensagem e Pulado sem motivo reprovam |
+| R7 | lista do Status (Pendente, Feito, Erro, Pulado, Substituído) cobre todas as linhas, com o texto exato e barrando valor de fora; todo valor de Status está na lista, sem espaço a mais; Erro sem mensagem e Pulado sem motivo reprovam |
 | R8 | cor do molde para cada um dos 5 status em todas as linhas, filtro no cabeçalho, cabeçalho congelado |
 | R9 | Painel só por fórmula: onde parei, erros em aberto, e uma linha por fase do Roteiro, com as fórmulas exatas da decisão 6 |
 | R10 | Leia antes: 3 passos, regras numeradas, palavras usadas, como marcar (Erro, Pulado, Substituído, nome do print) |
-| R11 | Copiar e colar: "Como colar" no topo, um valor por linha, como texto (formato `@`, nunca fórmula) |
+| R11 | Copiar e colar: "Como colar" no topo, um valor por linha, como texto (formato `@`, nunca fórmula); nome de lista não se repete |
 | R12 | cabeçalhos de Referência (Teste · Esperado), Links, abas de runbook, Pendências, Decisões e Histórico (≥ 1 versão) |
 | R13 | com `--final`: nenhuma marca `[PREENCHER` e ≥ 1 linha na Referência |
-| R14 | alteração em massa: sequência GUARDAR → 1 ITEM DE TESTE → CONFERIR antes, e lista citada existente e não vazia (decisão 8); passo em massa Feito exige os três Feitos; Substituído nunca conta |
+| R14 | alteração em massa: sequência GUARDAR → 1 ITEM DE TESTE → CONFERIR antes, e lista citada existente e não vazia (decisão 8); passo em massa executado (Feito ou Erro) exige os três Feitos; Substituído nunca conta |
 
 ### 3a. Parte C × conferência
 
@@ -145,3 +145,36 @@ B4 e B5; mudança em `qa-critic`, `_shared/output-format`, `planilhas_projeto.py
 | 1 MEDIA canário cego ao texto do modelo (termos, `--sep`, marcas do 5.2) | três conferências novas no canário |
 | 2 BAIXA achado 9 da r2 sem teste | conferências e sabotagens da skill e do pacote |
 | notas: "aceite" e "dedup" sem definição | definidos em "Palavras usadas" |
+
+## 11. Retomada de 25/11/2026 (orquestrador, rota T-20261125-0906, risco alto): pré-revisão, r5 e edge-case-hunter
+
+Pré-revisão consultiva Codex `20261125-090744-6969a8`; r5 Codex `gpt-6.1-sol` em só leitura, REPROVADO (4 MÉDIA, 3 notas);
+edge-case-hunter Sonnet isolado, APROVADO COM RESSALVAS (2 MÉDIA, 8 BAIXA).
+
+| Achado | Tratamento |
+|---|---|
+| r5-1 MÉDIA três conferências da r4 contornáveis | definição com 3 palavras ou mais, instrução do `--sep` no fim do comando, marca completa do 5.2; sabotadas |
+| r5-2 MÉDIA lista de Status com espaço nas opções passa | texto exato da lista |
+| r5-3 MÉDIA fase do Painel com espaço a mais passa | texto exato da célula |
+| r5-4 MÉDIA "abre sem reparo" sem evidência | 25/11/2026, Excel 16.0 build 20625, `DisplayAlerts` ligado: modelo abre sem janela de aviso, título "modelo.xlsx", Painel calculado; controle com a validação corrompida de propósito não abre |
+| r5 nota, usuário do PC no handoff | não tratada: o mesmo caminho já está em 39 arquivos da `main`; handoff pedido pelo dono |
+| pré-revisão MÉDIA nome de lista repetido esconde lista (R11) | R11 reprova nome repetido |
+| pré-revisão MÉDIA Nº com milhares de dígitos dá traceback | até 4 dígitos por parte |
+| pré-revisão ALTA fórmula fora do Painel | descartada: exige inserção deliberada; regra retirada na r1 por exceder R11, e as colunas a marcar nascem como texto |
+| ECH-1 MÉDIA passo em massa com Erro sem a sequência passa | R14 vale para Feito e Erro |
+| ECH-2 MÉDIA linha apagada some do Painel | R3 acusa a lacuna. Limite declarado: última linha da fase ou fase inteira apagada não aparece na planilha |
+| ECH-3 BAIXA gradiente dá traceback | R8 reprova a cor |
+| ECH-6 BAIXA lista que não barra | R7 exige barrar |
+| ECH-8 BAIXA arquivo pela metade em disco cheio | `gerar` remove o arquivo que criou |
+| ECH-9 BAIXA tamanho em UTF-16 | nome de aba e texto medidos como o Excel conta |
+| ECH-10 BAIXA outras quebras de linha na lista | R11 reprova |
+| ECH-4, 5, 7 BAIXA (texto do argparse, cor ou célula extra alterada à mão, `--out NUL` ou sem `.xlsx`) | não tratadas: fora do uso previsto; limite declarado |
+| ECH notas (marca `EM MASSA` literal, prefixos da R14, `[PREENCHER` literal) | revisão humana (seção 3a) |
+
+## 12. Revisão do delta r6 (Sonnet isolado, 25/11/2026, APROVADO COM RESSALVAS, 2 BAIXA) — tratamento
+
+| Achado | Tratamento |
+|---|---|
+| 1 BAIXA rótulo "Palavra: " passa do limite do texto | o rótulo inteiro é medido; caso no canário |
+| 2 BAIXA "01.1" ao lado de "1.1" | R3 recusa zero à esquerda; sabotagem no canário |
+| notas (Ctrl+C na gravação, prova do r5-4 só em texto) | limite declarado |

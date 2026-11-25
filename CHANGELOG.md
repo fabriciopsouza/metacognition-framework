@@ -23,6 +23,9 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   (120 capacidades, 79 com sabotagem provada, 105 canários).
 - Revisão F2: especificação Codex r1 REPROVADO (8); conjunto Codex r1 REPROVADO (9), Sonnet r2 APROVADO COM RESSALVAS (9),
   Codex r3 REPROVADO no delta (1), Sonnet r4 APROVADO COM RESSALVAS (2); todos tratados (seções 6 a 10 da especificação).
+- Retomada de 25/11/2026 pela rota do orquestrador (risco alto): pré-revisão Codex, r5 Codex REPROVADO (4 MÉDIA) e
+  edge-case-hunter Sonnet APROVADO COM RESSALVAS (2 MÉDIA, 8 BAIXA); tratamento e limites na seção 11 da especificação (R3 acusa
+  linha apagada, R7 e R9 comparam o texto exato, R11 recusa nome de lista repetido, R14 vale para em massa Feito e Erro). r6 Sonnet APROVADO COM RESSALVAS (2 BAIXA, tratadas).
 - Especificação: `docs/specs/analise-acompanhada/b3-spec.md`. Handoff de 20/11/2026 (B2 e B3) incluído a pedido do dono.
 
 ### ADR-134 — Conferência por invariante e item de análise no qa-critic (B2, 23/11/2026)
