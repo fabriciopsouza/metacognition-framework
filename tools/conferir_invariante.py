@@ -35,11 +35,13 @@ Uso:
   Comuns: --sep ";"  --decimal virgula  --encoding utf-8-sig
 Saída: JSON no stdout. Exit 0 PASSA; 1 REPROVA; 2 erro de uso ou de leitura (CSV com cabeçalho repetido ou vazio,
 linha com número de campos diferente do cabeçalho, opção que não se aplica à operação, lista de colunas vazia,
-medida não finita ou com |expoente| acima de 10 000).
+medida não finita ou com |expoente ajustado| acima de 10 000, inclusive em zero; com --decimal virgula, milhar malformado:
+"1.2,5", "1.23"). Com --decimal virgula, "1.234" é sempre mil duzentos e trinta e quatro.
 """
 import argparse
 import csv
 import json
+import re
 import sys
 from collections import Counter
 from decimal import (MAX_EMAX, MAX_PREC, MIN_EMIN, Context, Decimal, DecimalException, DivisionByZero, Inexact,
@@ -52,6 +54,8 @@ EXATO = Context(prec=MAX_PREC, Emax=MAX_EMAX, Emin=MIN_EMIN,
 # Limite declarado: |expoente ajustado| <= 10 000. A soma exata de 1e999999999 com 1 materializa um bilhão de dígitos
 # e trava a máquina; nenhum dado realista chega perto. Acima do limite: exit 2, nunca resultado.
 EXPOENTE_MAX = 10_000
+# --decimal virgula: ponto só como separador de milhar bem formado (1.234,5); expoente opcional.
+NUMERO_VIRGULA = re.compile(r"[+-]?(\d{1,3}(\.\d{3})+|\d+)?(,\d*)?([eE][+-]?\d+)?")
 
 
 class ErroUso(Exception):
@@ -105,6 +109,9 @@ def numero(texto, decimal):
     if t == "":
         return None
     if decimal == "virgula":
+        # Palavra (NaN, Infinity) segue para Decimal, que a recusa abaixo com a própria mensagem.
+        if re.search(r"\d", t) and not NUMERO_VIRGULA.fullmatch(t):
+            raise ErroUso(f"valor não numérico na medida: {texto!r}")
         t = t.replace(".", "").replace(",", ".")
     try:
         v = Decimal(t)
@@ -112,7 +119,8 @@ def numero(texto, decimal):
         raise ErroUso(f"valor não numérico na medida: {texto!r}")
     if not v.is_finite():
         raise ErroUso(f"valor não finito na medida: {texto!r}")
-    if v and abs(v.adjusted()) > EXPOENTE_MAX:
+    # O zero também: 0e-999999999 somado a 5e5000 materializa um bilhão de dígitos (MemoryError).
+    if abs(v.adjusted()) > EXPOENTE_MAX:
         raise ErroUso(f"valor fora do limite de expoente (|e| <= {EXPOENTE_MAX}): {texto!r}")
     return v
 

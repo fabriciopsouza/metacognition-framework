@@ -1,0 +1,105 @@
+{
+  "bloco": "adr-134-b2-correcoes",
+  "papel": "qa_critic",
+  "rodada": 2,
+  "passou": true,
+  "recomendacao": "aprovar",
+  "veredito": "aprovar",
+  "resumo": "Correcao dos 3 defeitos do B2 (rota T-20261125-B2FIX, risco alto). Pre-revisao Codex (sem acesso ao diff, inconclusiva), r1 Codex REPROVADO (1 MEDIA, 1 BAIXA), edge-case-hunter Sonnet APROVADO COM RESSALVAS (notas e BAIXA), r2 Sonnet novo APROVADO. Depois da r2 so mudou a redacao de uma linha do CHANGELOG, pela constatacao da propria r2.",
+  "verificacoes_executadas": [
+    "canario 46 casos + 42 CLI PASS",
+    "11 mutacoes: 10 reprovadas; 1 equivalente (segunda virgula ja e recusada por Decimal)"
+  ],
+  "problemas": [
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/conferir_invariante.py",
+      "descricao": "Codex r1: digitos Unicode bem formados passaram a ser recusados; re.ASCII removido."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "tools/test_conferir_invariante.py",
+      "descricao": "Codex r1: stderr descartado; cli devolve stdout+stderr e exige ausencia de Traceback."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "tools/test_conferir_invariante.py",
+      "descricao": "ECH: faltava caso de expoente com virgula; 1,5e3 incluido."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "aceito-limite",
+      "local": "tools/conferir_invariante.py",
+      "descricao": "ECH: espaco e quebra de linha ao redor do numero sao aceitos (strip); anterior a mudanca."
+    }
+  ],
+  "escopo_paths": [
+    "tools/conferir_invariante.py",
+    "tools/test_conferir_invariante.py",
+    "CHANGELOG.md",
+    "_meta/qa/adr-134-b2-conferencia-invariante.json",
+    "_meta/qa/adr-134-b2-correcoes.json",
+    "_meta/qa/adr-134-b2-correcoes.md"
+  ],
+  "atestacao": {
+    "agentId": "ada50489ee1274a55",
+    "prova_transcript": "sha256:10d6125b6313f7a89b30e4919276021a1fb70e468b65e882232bcedad817fba1",
+    "prova_origem": "sha256 do texto final do relatorio do subagente (execucao em segundo plano)",
+    "modelo": "claude-sonnet-5-5",
+    "modelo_autor": "claude-opus-5-5",
+    "isolamento": "subagente qa-critic isolado, so leitura",
+    "provas": [
+      {
+        "registro": "20261125-164202-455ff1",
+        "modelo": "codex/gpt-6.1-sol",
+        "papel": "pre-revisao"
+      },
+      {
+        "papel": "r1 formal (codex exec)",
+        "modelo": "codex",
+        "rodada": 1,
+        "saida_sha256": "8762b437cc026397ac2542b3c9edc927705b1e14c12d13a9ce00e7db35d2b8b3"
+      },
+      {
+        "agentId": "a280ebd3c1e290dcc",
+        "modelo": "claude-sonnet-5-5",
+        "papel": "edge-case-hunter",
+        "prova_transcript": "sha256:82264f0ae980ccd0b241976248c78735183863716bbcf939bc73909750a8c24b"
+      }
+    ]
+  },
+  "data": "2026-11-25",
+  "sha_revisado": "67004937a65bafdcc474f9014fe4f18917b72b17",
+  "blobs_revisados": {
+    "tools/conferir_invariante.py": "3a0251a88ea21fcbdc6efd16a6a26aafc422c94e",
+    "tools/test_conferir_invariante.py": "cc00ba5992a02c324e335204fca9d1b6a44aa50f",
+    "CHANGELOG.md": "e254da837e1529d611d1a9d0007409af4dee2b42",
+    "_meta/qa/adr-134-b2-conferencia-invariante.json": "eb29acd0835f6ef463b559a10b47986f813baeb0"
+  },
+  "substitui": [
+    {
+      "rodada": 2,
+      "data": "2026-11-25",
+      "recomendacao": "aprovar",
+      "sha_revisado": null,
+      "agentId": "ada50489ee1274a55",
+      "escopo_paths": [
+        "tools/conferir_invariante.py",
+        "tools/test_conferir_invariante.py",
+        "CHANGELOG.md",
+        "_meta/qa/adr-134-b2-conferencia-invariante.json",
+        "_meta/qa/adr-134-b2-correcoes.json",
+        "_meta/qa/adr-134-b2-correcoes.md"
+      ],
+      "achados_fp": [
+        "BAIXA|tools/conferir_invariante.py",
+        "BAIXA|tools/test_conferir_invariante.py",
+        "MEDIA|tools/conferir_invariante.py"
+      ],
+      "reinicio": false
+    }
+  ]
+}

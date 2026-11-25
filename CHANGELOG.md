@@ -5,6 +5,15 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### ADR-134 — Correção da conferência por invariante (B2, 25/11/2026)
+
+- `tools/conferir_invariante.py`, com `--decimal virgula`: milhar malformado ("1.2,5", "1.23") era lido como outro número;
+  agora é erro de uso (exit 2). Vale também para `--tolerancia`: "0.5" era lido como 5. [CONFIRMADO]
+- Zero com expoente extremo (`0e-999999999` somado a `5e5000`) dava MemoryError (exit 1) ou não terminava em 30 s; agora exit 2. [CONFIRMADO]
+- `_meta/qa/adr-134-b2-conferencia-invariante.json`: `prova_transcript` era o hash do texto vazio; trocado pelo hash do
+  relatório da rodada 4. [CONFIRMADO]
+- `tools/test_conferir_invariante.py`: casos de milhar, zero com expoente e tolerância.
+
 ### ADR-134 — Modelo de runbook de análise e pacote documental proporcional (B3, 24/11/2026)
 
 - Motivo: bloco B3 do plano aprovado em 19/11/2026 (repositório central de pesquisas, pasta
