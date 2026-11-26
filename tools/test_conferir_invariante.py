@@ -197,7 +197,7 @@ def cli(*args):
                            capture_output=True, text=True, encoding="utf-8", timeout=30)
     except subprocess.TimeoutExpired:
         return "travou (30 s)", "{}"
-    return p.returncode, p.stdout
+    return p.returncode, p.stdout + p.stderr
 
 
 falhas_cli = []
@@ -259,6 +259,29 @@ with tempfile.TemporaryDirectory() as d:
                   "--sep", ";", "--decimal", "virgula")
     if rc != 0:
         falhas_cli.append(f"decimal com vírgula: exit {rc}, esperado 0")
+    for i, texto in enumerate(("1.2,5", "1.23", "12.34,5", "1234.567,8", "1..234", ".123", "1,2,3", "1.234.56")):
+        arq = grava(f"mil{i}.csv", t(("g", "v"), ("A", texto)))
+        rc, out = cli("agregacao", "--antes", arq, "--depois", arq, "--grupo", "g", "--medida", "v", "--sep", ";",
+                      "--decimal", "virgula")
+        if rc != 2 or "não numérico" not in out or "Traceback" in out:
+            falhas_cli.append(f"milhar malformado {texto}: exit {rc}, esperado 2")
+    for i, (texto, igual) in enumerate((("1.234.567,89", "1234567,89"), ("-1.234", "-1234"), ("+12,5", "12,5"),
+                                        (",5", "0,5"), ("1e3", "1.000"), ("12,", "12"), ("1234,5", "1.234,50"), ("１.２３４,５", "1234,5"),
+                                        ("1,5e3", "1.500"))):
+        rc, out = cli("agregacao", "--antes", grava(f"ok{i}a.csv", t(("g", "v"), ("A", texto))),
+                      "--depois", grava(f"ok{i}b.csv", t(("g", "v"), ("A", igual))), "--grupo", "g", "--medida", "v",
+                      "--sep", ";", "--decimal", "virgula")
+        if rc != 0:
+            falhas_cli.append(f"decimal com vírgula {texto} = {igual}: exit {rc}, esperado 0")
+    for texto in ("0e-999999999", "0e999999999", "0e-10001"):
+        arq = grava("zero.csv", t(("g", "v"), ("A", texto), ("A", "5e5000")))
+        rc, out = cli("agregacao", "--antes", arq, "--depois", arq, "--grupo", "g", "--medida", "v", "--sep", ";")
+        if rc != 2 or "limite de expoente" not in out or "Traceback" in out:
+            falhas_cli.append(f"zero com expoente {texto}: exit {rc}, esperado 2")
+    rc, out = cli("agregacao", "--antes", a, "--depois", a, "--grupo", "grupo", "--medida", "valor", "--sep", ";",
+                  "--decimal", "virgula", "--tolerancia", "0.5")
+    if rc != 2 or "--tolerancia" not in out:
+        falhas_cli.append(f"--tolerancia 0.5 com vírgula: exit {rc}, esperado 2")
     fl = (grava("fl.csv", t(("g", "v"), ("A", "0.1"), ("A", "0.2"))),
           grava("fl2.csv", t(("g", "v"), ("A", "0.30000000000000004"))))
     for op, tol_, esperado in (("agregacao", "0.000001", 0), ("agregacao", None, 1)):
@@ -273,7 +296,7 @@ with tempfile.TemporaryDirectory() as d:
 
 erros = [f"{n}: esperado {'PASSA' if e else 'REPROVA'}, obtido {'PASSA' if o else 'REPROVA'} {v}"
          for n, e, o, v in casos if e != o] + falhas_cli
-print(f"casos: {len(casos)} + CLI 21 · falhas: {len(erros)}")
+print(f"casos: {len(casos)} + CLI 42 · falhas: {len(erros)}")
 for e in erros:
     print("FAIL", e)
 print("RESULTADO:", "PASS" if not erros else "FAIL")

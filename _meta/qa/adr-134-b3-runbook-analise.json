@@ -1,0 +1,263 @@
+{
+  "bloco": "adr-134-b3-runbook-analise",
+  "papel": "qa_critic",
+  "rodada": 6,
+  "passou": true,
+  "recomendacao": "aprovar_com_ressalvas",
+  "veredito": "aprovar_com_ressalvas",
+  "resumo": "B3 do plano da analise acompanhada (pesquisas 2026-11-19, secao 7.8): gerador e conferencia do runbook no molde da Parte C, modelo com as 5 fases, pacote documental por nivel. F2. Especificacao revisada antes (Codex 20261124-100118-24e9eb, REPROVADO, 8). Conjunto: r1 Codex REPROVADO (9), r2 Sonnet aprovado com ressalvas (9), r3 Codex REPROVADO no delta (1), r4 Sonnet aprovado com ressalvas (2, so cobertura de teste). Todos tratados e conferidos por canario e sabotagem; o tratamento da r4 (so testes, definicoes no modelo) foi conferido por script, sem nova rodada. Desvio declarado do plano: ponteiros na skill e contagens (leitura da sessao que acompanha o plano, nao aprovacao do dono). Retomada de 25/11/2026 (orquestrador, T-20261125-0906, risco alto): pre-revisao Codex, r5 Codex REPROVADO (4 MEDIA), edge-case-hunter Sonnet com ressalvas (2 MEDIA, 8 BAIXA), r6 Sonnet APROVADO COM RESSALVAS (2 BAIXA); tratamento e limites nas secoes 11 e 12 da especificacao. As 2 BAIXA da r6 foram corrigidas depois da revisao e conferidas por canario e mutacao, sem nova rodada.",
+  "verificacoes_executadas": [
+    "tools/test_runbook_analise.py PASS; sabotagem do plano (Roteiro sem a coluna Status) reprova pela linha de comando",
+    "mutacoes do autor em copia: 74 no conjunto (71 reprovadas, 3 eram codigo redundante removido), 19 no delta (todas reprovadas), 8 no texto do modelo (todas reprovadas)",
+    "Excel desta maquina: abriu, recalculou o Painel (1.1 Feito, 1.2 Pulado, 1.3 Erro: onde parei 1.3, erros 1, fase 33%, Substituido desconta o total), salvou; conferir PASSA no arquivo salvo; resposta '=1+1' ficou texto (alertas do Excel desligados: aviso de reparo nao observavel)",
+    "regressoes: test_analise_dados, test_skill_contract, validate_skills, test_capabilities, test_web_export, test_marketing_claims, test_core_no_vendor, test_core_agnostic, test_planilhas_projeto, test_adr_changelog_sync PASS",
+    "handoff identico ao do commit c1fd22d, sem dado de empresa (r2)",
+    "canario do delta PASS; 22 mutacoes do autor no delta e 19 do revisor r6: todas reprovadas",
+    "Excel 16.0 build 20625 com alertas ligados: modelo abre sem janela de aviso; controle corrompido nao abre. r6: xlsx salvo pelo Excel passa em conferir (alertas desligados)",
+    "run_canaries.py em 04f076d (antes do delta): 104 PASS, 1 SKIP, 0 FAIL"
+  ],
+  "problemas": [
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "tools/runbook_analise.py _r7_status",
+      "descricao": "Codex r1: 'Feito ' com espaco passava; lido sem normalizar."
+    },
+    {
+      "severidade": "ALTA",
+      "estado": "corrigido",
+      "local": "tools/runbook_analise.py _r9_painel",
+      "descricao": "Codex r1: formula comparada sem espacos; comparacao exata."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/runbook_analise.py _r3_passos",
+      "descricao": "Codex r1: linhas ordenadas; R3 nomeia a causa e o molde manda filtrar, nao ordenar."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/runbook_analise.py _r11_colar",
+      "descricao": "Codex r1: formula fora do Painel excedia a regra; retirada; campos a marcar nascem como texto."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/runbook_analise.py ler_conteudo",
+      "descricao": "Codex r1, Sonnet r2, Codex r3: caractere invalido em XML (textos, chaves e nomes de aba), roteiro vazio e aninhamento profundo dao exit 2."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/runbook_analise.py _r8_visual",
+      "descricao": "Codex r1: regra sem cor; confere a cor do molde."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/runbook_analise.py _r4_faca",
+      "descricao": "Codex r1: '2.' depois de 'Deu certo'."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/templates/runbook-analise.json",
+      "descricao": "Codex r1 e Sonnet r2: 8 campos da ficha, termos, --sep no dedup, marcas no 5.2."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": ".agent/skills/analise-dados/pacote-documental.md",
+      "descricao": "Codex r1: analise do existente em N3 = se. Sonnet r2: comandos com pasta e caminho completo."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "tools/runbook_analise.py _r14_massa",
+      "descricao": "Sonnet r2: em massa Feito exige os tres Feitos; Substituido nunca conta."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/test_runbook_analise.py",
+      "descricao": "Sonnet r4: canario cego ao texto do modelo e ao achado 9; conferencias e sabotagens novas."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/test_runbook_analise.py",
+      "descricao": "Codex r5: conferencias da r4 contornaveis."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/runbook_analise.py _r7_status",
+      "descricao": "Codex r5: lista de Status com espaco nas opcoes passava."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/runbook_analise.py _r9_painel",
+      "descricao": "Codex r5: fase do Painel com espaco a mais passava."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "docs/specs/analise-acompanhada/b3-spec.md",
+      "descricao": "Codex r5: abre sem reparo sem evidencia; refeito com alertas ligados e controle."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/runbook_analise.py _r14_massa",
+      "descricao": "ECH: passo em massa com Erro sem a sequencia passava."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/runbook_analise.py _r3_passos",
+      "descricao": "ECH: linha apagada sumia do Painel; acusa lacuna. Limite: ultima linha da fase ou fase inteira."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/runbook_analise.py _r11_colar",
+      "descricao": "Pre-revisao: nome de lista repetido escondia lista."
+    },
+    {
+      "severidade": "MEDIA",
+      "estado": "corrigido",
+      "local": "tools/runbook_analise.py _r3_passos",
+      "descricao": "Pre-revisao: No com milhares de digitos dava traceback."
+    },
+    {
+      "severidade": "BAIXA",
+      "estado": "corrigido",
+      "local": "tools/runbook_analise.py ler_conteudo e _r3_passos",
+      "descricao": "Sonnet r6: rotulo de palavra acima do limite; No com zero a esquerda."
+    }
+  ],
+  "escopo_paths": [
+    "tools/runbook_analise.py",
+    "tools/test_runbook_analise.py",
+    "tools/templates/runbook-analise.json",
+    ".agent/skills/analise-dados/pacote-documental.md",
+    ".agent/skills/analise-dados/SKILL.md",
+    "docs/specs/analise-acompanhada/b3-spec.md",
+    "capabilities.json",
+    "CAPABILITIES.md",
+    "CHANGELOG.md",
+    "guia/web/index.html",
+    "docs/_private/handoffs/2026-11-20-B2-B3-analise-acompanhada.md",
+    "_meta/qa/adr-134-b3-runbook-analise.json",
+    "_meta/qa/adr-134-b3-runbook-analise.md"
+  ],
+  "atestacao": {
+    "agentId": "a9ca761323d9763aa",
+    "prova_transcript": "sha256:3daf9b3a4ae805c1888a7bf4386efe134fd7348bea5ef774b8b0656d99f08d43",
+    "modelo": "claude-sonnet-5-5",
+    "modelo_autor": "claude-opus-5-5",
+    "isolamento": "subagente qa-critic isolado, read-only por instrucao explicita; worktree propria a partir de origin/main",
+    "provas": [
+      {
+        "registro": "20261124-100118-24e9eb",
+        "modelo": "codex/gpt-6.1-sol",
+        "rodada": 0
+      },
+      {
+        "registro": "20261124-103016-a96560",
+        "modelo": "codex/gpt-6.1-sol",
+        "rodada": 1
+      },
+      {
+        "agentId": "a2bfeb571dfa3885a",
+        "modelo": "claude-sonnet-5-5",
+        "rodada": 2,
+        "prova_transcript": "sha256:a48a5e5df37c9115667ac635f2575ec9b6b4b49f5e6d4ac0c9d5c332fc6486ea"
+      },
+      {
+        "registro": "20261124-110330-cd38c3",
+        "modelo": "codex/gpt-6.1-sol",
+        "rodada": 3
+      },
+      {
+        "agentId": "a33923364f6ae5b08",
+        "modelo": "claude-sonnet-5-5",
+        "rodada": 4,
+        "prova_transcript": "sha256:948935058a9bd12ac6a4042f7cabffa02702a4ba3702a3d9d6145be9c0f0905c"
+      },
+      {
+        "registro": "20261125-090744-6969a8",
+        "modelo": "codex/gpt-6.1-sol",
+        "papel": "pre-revisao"
+      },
+      {
+        "registro": "20261125-093450-3fd96c",
+        "modelo": "codex/gpt-6.1-sol",
+        "rodada": 5,
+        "saida_sha256": "853525aa5b731ce69c5e80e01fad0d08ececb93351b490bd7da98976759db1a3"
+      },
+      {
+        "agentId": "a596fa63dc1b32cec",
+        "modelo": "claude-sonnet-5-5",
+        "papel": "edge-case-hunter",
+        "prova_transcript": "sha256:3a943c808e1c4a1d6efe67e21b8fe2e558fada565fab2a910fec66956ac8238c"
+      }
+    ],
+    "prova_origem": "sha256 do texto final do relatorio do subagente (execucao em segundo plano)"
+  },
+  "data": "2026-11-25",
+  "sha_revisado": "04f076da836e6de8b046dea3ce6283bc788f9b58",
+  "blobs_revisados": {
+    "tools/runbook_analise.py": "586e4fc4c80aa07afa3727bc79ded19bddb8efe6",
+    "tools/test_runbook_analise.py": "ea6d0f7ae249e9c9c0fc5967db5c62f75f51398e",
+    "tools/templates/runbook-analise.json": "615ba1f9e363b24f6384bacc590f4aa0eb99bdc8",
+    ".agent/skills/analise-dados/pacote-documental.md": "e1fb30543c827146442602b61a3700ab2ceff7f8",
+    ".agent/skills/analise-dados/SKILL.md": "effee598fd017460e0802877cdbecaf0c15bc602",
+    "docs/specs/analise-acompanhada/b3-spec.md": "d70f79a67efaf2adec71b42633615213e0d835bd",
+    "capabilities.json": "a17c12fc149d218f33b54949cbd336199b5e0641",
+    "CAPABILITIES.md": "c89d34722e99344fbbb5cd6de850741b4fc5f00d",
+    "CHANGELOG.md": "ea7e9c35db3c02c03277945c76eba65ad12074fe",
+    "guia/web/index.html": "ff63d7d44075f323976828dcc0f7c41e3b142535",
+    "docs/_private/handoffs/2026-11-20-B2-B3-analise-acompanhada.md": "dd6684d20c4562601b1e7d1b01d88be0d8927038"
+  },
+  "substitui": [
+    {
+      "rodada": 4,
+      "data": "2026-11-24",
+      "recomendacao": "aprovar_com_ressalvas",
+      "sha_revisado": "0375ee93de2e656f2adec1d48d6367a176a3e453",
+      "agentId": "a33923364f6ae5b08",
+      "escopo_paths": [
+        "tools/runbook_analise.py",
+        "tools/test_runbook_analise.py",
+        "tools/templates/runbook-analise.json",
+        ".agent/skills/analise-dados/pacote-documental.md",
+        ".agent/skills/analise-dados/SKILL.md",
+        "docs/specs/analise-acompanhada/b3-spec.md",
+        "capabilities.json",
+        "CAPABILITIES.md",
+        "CHANGELOG.md",
+        "guia/web/index.html",
+        "docs/_private/handoffs/2026-11-20-B2-B3-analise-acompanhada.md",
+        "_meta/qa/adr-134-b3-runbook-analise.json",
+        "_meta/qa/adr-134-b3-runbook-analise.md"
+      ],
+      "achados_fp": [
+        "ALTA|tools/runbook_analise.py _r7_status",
+        "ALTA|tools/runbook_analise.py _r9_painel",
+        "BAIXA|tools/runbook_analise.py _r14_massa",
+        "MEDIA|.agent/skills/analise-dados/pacote-documental.md",
+        "MEDIA|tools/runbook_analise.py _r11_colar",
+        "MEDIA|tools/runbook_analise.py _r3_passos",
+        "MEDIA|tools/runbook_analise.py _r4_faca",
+        "MEDIA|tools/runbook_analise.py _r8_visual",
+        "MEDIA|tools/runbook_analise.py ler_conteudo",
+        "MEDIA|tools/templates/runbook-analise.json",
+        "MEDIA|tools/test_runbook_analise.py"
+      ],
+      "reinicio": false
+    }
+  ]
+}

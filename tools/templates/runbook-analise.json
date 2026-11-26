@@ -1,0 +1,383 @@
+{
+ "titulo": "[PREENCHER: nome da análise e período]",
+ "leia_antes": {
+  "passos": [
+   "Siga a aba Roteiro de cima para baixo, uma linha por vez.",
+   "Marque o Status e a Data/hora de cada linha assim que terminar.",
+   "Nas linhas de painel, pare e espere a resposta do dono antes de seguir."
+  ],
+  "regras": [
+   "Nenhum passo começa sem o \"Deu certo\" do anterior.",
+   "Antes de alterar qualquer sistema: guardar os valores de hoje, alterar 1 item de teste, conferir, e só então o resto.",
+   "Lista vazia não se executa: há telas que, sem filtro, pegam tudo.",
+   "Efeito irreversível, dado saindo da máquina, permissão ou senha: pare e pergunte ao dono, mesmo em modo autônomo.",
+   "Número guardado é citado com a data; nunca como valor atual.",
+   "Passo novo ou corrigido entra por versão nova da planilha, com nome novo."
+  ],
+  "palavras": {
+   "diário": "arquivo do projeto, só acréscimo, com a linha de modo e o painel de cada fase.",
+   "modo": "acompanhado (a análise para nas decisões) ou autônomo (só por ordem do dono).",
+   "painel da fase": "resumo de 7 itens gravado no diário no fim de cada fase.",
+   "D-nn": "decisão numerada, com a frase literal do dono, data, alternativa descartada e efeito.",
+   "ficha de insumo": "definição do indicador em 8 campos, listados no passo 2 da aba Runbook Dados.",
+   "ficha de dados e de modelo": "fonte, período, regra, limite de uso e erro medido do que foi publicado.",
+   "invariante": "propriedade que a operação tem de preservar, conferida por script.",
+   "perfilar": "contar linhas, vazios, chaves repetidas, menor e maior valor e períodos sem linha.",
+   "oficial": "número já publicado pela área dona, usado para comparar.",
+   "cobertura": "quantos itens e períodos do oficial aparecem nos dados.",
+   "monitoramento": "repetir a conferência depois de publicar, em data marcada.",
+   "aceite": "decisão do dono que aprova usar o resultado.",
+   "deduplicação": "tirar linhas repetidas pela chave (no comando: dedup).",
+   "funil": "quantas linhas entraram, ficaram e saíram, por motivo.",
+   "chave": "coluna ou colunas que identificam uma linha sem repetir.",
+   "medida": "coluna de número que a análise soma ou compara.",
+   "linha de base": "resultado do método mais simples, para comparar.",
+   "partição": "divisão dos dados entre treino e teste, por data quando houver tempo.",
+   "viés": "erro que puxa sempre para o mesmo lado.",
+   "robustez": "o quanto o resultado muda quando se troca uma escolha.",
+   "bateria de casos": "lista fixa de entradas com o resultado esperado de cada uma.",
+   "canário": "teste curto que avisa quando algo deixou de funcionar.",
+   "revisão isolada": "leitura por quem não participou e executa sozinho."
+  }
+ },
+ "roteiro": [
+  [
+   "1+2 Negócio e dados",
+   "1.1",
+   "REGISTRAR O MODO NO DIÁRIO. 1) Abra o diário da análise: [PREENCHER: caminho completo]. 2) Escreva no fim: modo: acompanhado, ordem de HH:MM, \"texto da ordem\". 3) Salve. Deu certo: a linha de modo é a última do diário.",
+   "Runbook Dados, passo 1",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "1+2 Negócio e dados",
+   "1.2",
+   "CONFERIR A FICHA DE INSUMO. 1) Abra a ficha: [PREENCHER: caminho completo]. 2) Confira que os 8 campos estão preenchidos. 3) Confira o período desta execução: [PREENCHER: período]. Deu certo: 8 campos preenchidos e período igual ao da ficha.",
+   "Runbook Dados, passo 2",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "1+2 Negócio e dados",
+   "1.3",
+   "EXTRAIR OS DADOS. 1) Abra [PREENCHER: sistema e tela]. 2) Rode [PREENCHER: consulta, com o caminho completo]. 3) Salve como bruto.csv em [PREENCHER: pasta]. Deu certo: a contagem de linhas de bruto.csv é a que a tela mostra.",
+   "Runbook Dados, passo 3",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "1+2 Negócio e dados",
+   "1.4",
+   "PERFILAR OS DADOS. 1) Conte linhas, vazios por coluna e chaves repetidas de bruto.csv. 2) Veja o menor e o maior valor da medida e os períodos incompletos. 3) Anote no diário. Deu certo: os 5 números estão no diário, com a consulta ou o comando usado.",
+   "Runbook Dados, passo 4",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "1+2 Negócio e dados",
+   "1.5",
+   "CONFERIR CONTRA O OFICIAL. 1) Abra o número oficial: [PREENCHER: onde]. 2) Compare contagem, cobertura e total com bruto.csv. 3) Anote a diferença em valor e em %. Deu certo: diferença dentro do esperado da aba Referência.",
+   "Runbook Dados, passo 5",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "1+2 Negócio e dados",
+   "1.6",
+   "REGISTRAR O PAINEL E AS DECISÕES DA FASE. 1) Grave no diário o painel com os 7 itens. 2) Mostre as decisões abertas ao dono e espere a resposta. 3) Copie a resposta literal para a aba Decisões (D-nn). Deu certo: painel no diário e nenhuma decisão aberta sem resposta.",
+   "Runbook Dados, passo 6",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "3 Preparação",
+   "3.1",
+   "DECLARAR A INVARIANTE. 1) No diário, escreva a operação (filtro, junção, agregação ou deduplicação). 2) Escreva quantas linhas devem sair, por motivo. Deu certo: a linha da invariante está no diário antes da operação.",
+   "Runbook Invariantes, passo 1",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "3 Preparação",
+   "3.2",
+   "APLICAR O FILTRO. 1) Rode [PREENCHER: script, com o caminho completo]. 2) Confira que saíram os arquivos elegivel.csv e excluidas.csv. Deu certo: linhas de bruto.csv = linhas de elegivel.csv + linhas de excluidas.csv.",
+   "Runbook Invariantes, passo 2",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "3 Preparação",
+   "3.3",
+   "CONFERIR A INVARIANTE POR SCRIPT. 1) Abra o terminal na pasta do framework. 2) Rode o comando do passo 3 da aba Runbook Invariantes. 3) Cole a saída no diário. Deu certo: a saída traz \"veredito\": \"PASSA\".",
+   "Runbook Invariantes, passo 3",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "3 Preparação",
+   "3.4",
+   "CONFERIR A CHAVE ÚNICA DEPOIS DAS EXCLUSÕES. 1) Rode o comando do passo 4 da aba Runbook Invariantes. 2) Cole a saída no diário. Deu certo: a saída traz \"veredito\": \"PASSA\".",
+   "Runbook Invariantes, passo 4",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "3 Preparação",
+   "3.5",
+   "REGISTRAR O PAINEL E AS DECISÕES DA FASE. 1) Grave no diário o painel com os 7 itens, com o funil e o efeito de cada exclusão. 2) Espere a resposta do dono. 3) Copie a resposta literal para a aba Decisões (D-nn). Deu certo: painel no diário e nenhuma decisão aberta sem resposta.",
+   "Runbook Dados, passo 6",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "4 Modelagem",
+   "4.1",
+   "CALCULAR A LINHA DE BASE. 1) Rode [PREENCHER: script da linha de base, com o caminho completo]. 2) Anote o erro da linha de base na aba Links. Deu certo: o erro está anotado, com a data.",
+   "Runbook Dados, passo 7",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "4 Modelagem",
+   "4.2",
+   "CONFERIR A PARTIÇÃO. 1) Abra [PREENCHER: arquivo da partição]. 2) Confira que a última data de treino é anterior à primeira de teste. Deu certo: nenhuma data aparece nos dois lados.",
+   "Runbook Dados, passo 8",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "4 Modelagem",
+   "4.3",
+   "RODAR O CÁLCULO OU O MODELO. 1) Rode [PREENCHER: script, com o caminho completo]. 2) Confira o arquivo de saída: [PREENCHER: nome]. Deu certo: o arquivo tem uma linha por item de elegivel.csv.",
+   "Runbook Dados, passo 9",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "4 Modelagem",
+   "4.4",
+   "REGISTRAR O PAINEL E AS DECISÕES DA FASE. 1) Grave no diário o painel com os 7 itens, com os candidatos e a métrica. 2) Espere a resposta do dono. 3) Copie a resposta literal para a aba Decisões (D-nn). Deu certo: painel no diário e nenhuma decisão aberta sem resposta.",
+   "Runbook Dados, passo 6",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "5 Avaliação",
+   "5.1",
+   "COMPARAR O ERRO COM A LINHA DE BASE. 1) Abra o arquivo de saída do passo 4.3. 2) Compare o erro com o do passo 4.1. Deu certo: erro menor que o da linha de base, ou decisão D-nn que aceita o contrário.",
+   "Runbook Dados, passo 10",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "5 Avaliação",
+   "5.2",
+   "MEDIR VIÉS E ROBUSTEZ. 1) Meça o viés por grupo: [PREENCHER: grupos]. 2) Refaça o resultado trocando uma escolha por vez: [PREENCHER: as 2 ou 3 escolhas mais contestáveis]. 3) Anote o efeito de cada uma no diário. Deu certo: cada escolha tem o efeito medido.",
+   "Runbook Dados, passo 11",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "5 Avaliação",
+   "5.3",
+   "RODAR A BATERIA DE CASOS. 1) Rode [PREENCHER: script da bateria, com o caminho completo]. 2) Compare com a aba Referência. Deu certo: todos os casos iguais ao esperado.",
+   "Runbook Dados, passo 12",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "5 Avaliação",
+   "5.4",
+   "REGISTRAR O PAINEL E A DECISÃO DE ACEITE. 1) Grave no diário o painel com os 7 itens. 2) Espere a decisão de aceite do dono. 3) Copie a resposta literal para a aba Decisões (D-nn). Deu certo: decisão de aceite com literal e data.",
+   "Runbook Dados, passo 6",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "6 Implantação",
+   "6.1",
+   "ATUALIZAR A FICHA DE DADOS E DE MODELO. 1) Abra [PREENCHER: caminho completo]. 2) Preencha fonte, período, regra, limite de uso e erro medido. Deu certo: nenhum campo vazio.",
+   "Runbook Publicação, passo 1",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "6 Implantação",
+   "6.2",
+   "PEDIR A REVISÃO ISOLADA. 1) Envie esta planilha e o diário ao revisor, que lê como quem executa sozinho. 2) Trate cada achado no diário. Deu certo: revisão registrada, sem achado alto aberto.",
+   "Runbook Publicação, passo 2",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "6 Implantação",
+   "6.3",
+   "GUARDAR OS VALORES DE HOJE. 1) Abra [PREENCHER: sistema e tela]. 2) Exporte os valores dos itens da lista \"Itens a publicar\". 3) Salve como antes.csv em [PREENCHER: pasta]. Deu certo: antes.csv tem todos os itens da lista.",
+   "Runbook Publicação, passo 3",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "6 Implantação",
+   "6.4",
+   "ALTERAR 1 ITEM DE TESTE. 1) Abra [PREENCHER: sistema e tela]. 2) Altere só o item [PREENCHER: item de teste]. 3) Salve. Deu certo: o sistema confirma 1 item alterado.",
+   "Runbook Publicação, passo 4",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "6 Implantação",
+   "6.5",
+   "CONFERIR O ITEM DE TESTE. 1) Reabra o item. 2) Compare com a aba Referência. Deu certo: valor igual ao esperado e nenhum outro item mudou em relação a antes.csv.",
+   "Runbook Publicação, passo 5",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "6 Implantação",
+   "6.6",
+   "PUBLICAR EM MASSA. 1) Confira que a lista \"Itens a publicar\" da aba Copiar e colar não está vazia; vazia, pare. 2) Copie a lista e cole em [PREENCHER: sistema, tela e campo]. 3) Salve. Deu certo: o sistema confirma a mesma quantidade de itens da lista.",
+   "Runbook Publicação, passo 6",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "6 Implantação",
+   "6.7",
+   "RODAR O CANÁRIO DEPOIS DE PUBLICAR. 1) Rode [PREENCHER: script do canário, com o caminho completo]. 2) Cole a saída no diário. 3) Anote na aba Links a data da próxima execução do monitoramento. Deu certo: canário sem reprovação e próxima data anotada.",
+   "Runbook Publicação, passo 7",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ],
+  [
+   "6 Implantação",
+   "6.8",
+   "REGISTRAR O PAINEL DA FASE E FECHAR A VERSÃO. 1) Grave no diário o painel com os 7 itens. 2) Preencha a aba Histórico. 3) Guarde a planilha no repositório do projeto. Deu certo: arquivo guardado e nenhuma pendência sem responsável.",
+   "Runbook Publicação, passo 8",
+   "Pare. Não repita o passo. Copie o texto exato da mensagem para a coluna de observação e avise [PREENCHER: responsável pela análise]."
+  ]
+ ],
+ "como_colar": "Selecione os valores abaixo do nome da lista, copie, e no campo do sistema use a colagem de lista (a conferir na tela). Um valor por linha, como texto.",
+ "listas": {
+  "Itens a publicar": [
+   "ITEM-FICTICIO-001",
+   "ITEM-FICTICIO-002",
+   "ITEM-FICTICIO-003"
+  ]
+ },
+ "referencia": [
+  [
+   "Conferência contra o oficial (passo 1.5)",
+   "[PREENCHER: diferença aceita, em %, e a data em que foi definida]"
+  ],
+  [
+   "Bateria de casos (passo 5.3)",
+   "[PREENCHER: caso e resultado esperado, um por linha]"
+  ],
+  [
+   "Item de teste (passo 6.5)",
+   "[PREENCHER: valor esperado]"
+  ]
+ ],
+ "links": [
+  [
+   "Diário da análise",
+   "[PREENCHER: caminho completo]"
+  ],
+  [
+   "Erro da linha de base (passo 4.1)",
+   ""
+  ],
+  [
+   "Data da próxima execução do monitoramento (passo 6.7)",
+   ""
+  ]
+ ],
+ "runbooks": {
+  "Runbook Dados": [
+   [
+    "Abra o diário no editor de texto; escreva só no fim do arquivo.",
+    "a linha nova é a última"
+   ],
+   [
+    "Abra a ficha de insumo (caminho no passo 1.2 do Roteiro) e confira os 8 campos: 1 fontes; 2 fórmula com inclusões e exclusões; 3 limites e natureza (obrigatório ou referência); 4 granularidade, janela e unidade; 5 exemplo verificado; 6 memória de cálculo; 7 alvo e métrica de sucesso; 8 premissas editáveis.",
+    "nenhum campo vazio"
+   ],
+   [
+    "Abra a tela, informe o período da ficha, rode a consulta e exporte em CSV com cabeçalho.",
+    "arquivo aberto com cabeçalho e última linha completos"
+   ],
+   [
+    "Conte linhas, vazios por coluna, chaves repetidas, menor e maior valor e períodos sem linha.",
+    "5 números anotados com o comando usado"
+   ],
+   [
+    "Ponha lado a lado o oficial e o extraído: contagem, cobertura e total; diferença em valor e em %.",
+    "diferença dentro da aba Referência, ou pendência aberta"
+   ],
+   [
+    "Escreva o painel: modo e origem; o que foi feito, com dado e procedimento; problemas; decisões abertas com efeito; invariantes; confiança; o que precisa do dono.",
+    "7 itens gravados no diário"
+   ],
+   [
+    "Rode o método mais simples (o último valor ou a média do período) e meça o erro.",
+    "erro anotado com a data"
+   ],
+   [
+    "Compare a última data de treino com a primeira de teste.",
+    "treino termina antes do teste"
+   ],
+   [
+    "Rode o script da análise e conte as linhas da saída.",
+    "uma linha por item elegível"
+   ],
+   [
+    "Compare os dois erros na mesma medida e no mesmo período.",
+    "diferença anotada em valor e em %"
+   ],
+   [
+    "Meça o erro médio com sinal por grupo; troque uma escolha por vez e meça de novo.",
+    "tabela de efeitos no diário"
+   ],
+   [
+    "Rode a bateria e compare caso a caso com a aba Referência.",
+    "nenhum caso diferente"
+   ]
+  ],
+  "Runbook Invariantes": [
+   [
+    "Escreva a operação e o número esperado antes de rodar.",
+    "linha no diário com hora anterior à da operação"
+   ],
+   [
+    "Rode o script de preparação; as linhas removidas vão para excluidas.csv com a coluna motivo.",
+    "bruto = elegível + excluídas"
+   ],
+   [
+    "cd [PREENCHER: pasta do framework] e depois: python tools/conferir_invariante.py filtro --antes bruto.csv --depois elegivel.csv --excluidas excluidas.csv --motivo motivo (caminho completo dos três arquivos, entre aspas; arquivo separado por ponto e vírgula: acrescente --sep \";\")",
+    "\"veredito\": \"PASSA\""
+   ],
+   [
+    "cd [PREENCHER: pasta do framework] e depois: python tools/conferir_invariante.py dedup --antes elegivel.csv --depois elegivel.csv --chave [PREENCHER: coluna da chave] (caminho completo, entre aspas; arquivo separado por ponto e vírgula: acrescente --sep \";\")",
+    "\"veredito\": \"PASSA\""
+   ]
+  ],
+  "Runbook Publicação": [
+   [
+    "Abra a ficha de dados e de modelo e preencha fonte, período, regra, limite de uso e erro medido.",
+    "nenhum campo vazio"
+   ],
+   [
+    "Envie a planilha e o diário ao revisor; ele lê como quem executa sozinho.",
+    "achados registrados e tratados"
+   ],
+   [
+    "Exporte os valores atuais dos itens da lista.",
+    "arquivo antes.csv guardado"
+   ],
+   [
+    "Altere só o item de teste.",
+    "1 item alterado"
+   ],
+   [
+    "Reabra o item de teste e compare com a Referência; compare os demais com antes.csv.",
+    "só o item de teste mudou"
+   ],
+   [
+    "Cole a lista inteira; confira a quantidade antes de salvar. Resultado errado: pare, não repita, e avise; a volta usa antes.csv.",
+    "quantidade igual à da lista"
+   ],
+   [
+    "Rode o canário e anote a próxima data do monitoramento.",
+    "canário sem reprovação"
+   ],
+   [
+    "Grave o painel, preencha o Histórico e guarde a planilha no repositório do projeto.",
+    "arquivo guardado"
+   ]
+  ]
+ },
+ "pendencias": [],
+ "decisoes": [],
+ "historico": [
+  [
+   "v1 — [PREENCHER: data]",
+   "Primeira versão, a partir do modelo do framework.",
+   "Não se aplica."
+  ]
+ ]
+}
