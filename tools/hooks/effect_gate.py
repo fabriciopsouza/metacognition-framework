@@ -68,6 +68,13 @@ try:
             ask_reason = str(rule.get("reason") or "")
 
     if ask_reason is not None:
+        # Dono, 27/11/2026: "AUTORIZO A REMOCAO destas perguntas, chats ja estao em bypass permissions". Em bypass, o ask
+        # vira aviso nao-bloqueante; o deny (acima) continua valendo em qualquer modo.
+        if str(hook.get("permission_mode") or "") == "bypassPermissions":
+            print(json.dumps({"systemMessage": f"[aviso, sem bloquear] effect-gate (ADR-039): {ask_reason}",
+                              "hookSpecificOutput": {"hookEventName": "PreToolUse",
+                                                     "additionalContext": f"effect-gate (ADR-039): {ask_reason}"}}))
+            sys.exit(0)
         emit("ask", ask_reason)
     sys.exit(0)
 

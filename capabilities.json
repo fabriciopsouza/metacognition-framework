@@ -794,6 +794,7 @@
    "status": "PARTIAL",
    "ai_owner": "claude",
    "mechanism": "tools/hooks/prepush_sync_guard.py",
+   "test": "tools/test_hooks_bypass.py",
    "adr": "docs/adr/060-edr-pode-vetar-hooks-resiliencia-de-sync.md",
    "cross_ai": false,
    "enforcement": "fail-soft",
