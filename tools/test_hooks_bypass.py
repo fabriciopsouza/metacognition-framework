@@ -97,8 +97,9 @@ def main():
             # r3 do PR #228: separadores e cd dentro de aspas não contam
             ("prepush ignora cd dentro da mensagem de commit", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": clone,
                 "tool_input": {"command": f'git commit -m "fix a; cd {limpo}" && git push'}})), "ask"),
-            ("prepush ignora git push citado na mensagem", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": clone,
-                "tool_input": {"command": 'git commit -m "docs: explica git push"'}})), None),
+            # piso da r5: `git push` citado em texto checa a pasta da sessão (falso alarme aceito; nunca menos que o guard antigo)
+            ("prepush git push citado na mensagem checa a sessao", decisao(rodar(PREPUSH, {"permission_mode": "default",
+                "cwd": clone, "tool_input": {"command": 'git commit -m "docs: explica git push"'}})), "ask"),
             # r4 do PR #228: shlex (aspas simples, escapes, subshell)
             ("prepush aspa dupla dentro de aspas simples", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": clone,
                 "tool_input": {"command": "echo '\"'; git push --force"}})), "ask"),
@@ -106,14 +107,25 @@ def main():
                 "tool_input": {"command": 'echo "x\\""; git push --force'}})), "ask"),
             ("prepush cd dentro de aspas simples nao conta", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": clone,
                 "tool_input": {"command": f"echo 'a; cd {limpo}; b'; git push --force"}})), "ask"),
-            ("prepush git push em aspas simples nao conta", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": clone,
-                "tool_input": {"command": "printf '%s\n' 'git push'"}})), None),
+            ("prepush git push em aspas simples checa a sessao", decisao(rodar(PREPUSH, {"permission_mode": "default",
+                "cwd": clone, "tool_input": {"command": "printf '%s\n' 'git push'"}})), "ask"),
             ("prepush subshell com cd e push", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": limpo,
                 "tool_input": {"command": f'(cd "{clone}" && git push)'}})), "ask"),
             ("prepush subshell restaura a pasta", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": limpo,
                 "tool_input": {"command": f'(cd "{clone}") && git push'}})), None),
             ("prepush git -C com -c antes do push", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": limpo,
                 "tool_input": {"command": f'git -C "{clone}" -c a=b push'}})), "ask"),
+            # r5 do PR #228: prefixos antes do git, bash -c, heredoc, continuação de linha
+            ("prepush VAR=1 antes do git", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": clone,
+                "tool_input": {"command": "GIT_TRACE=1 git push"}})), "ask"),
+            ("prepush time e env antes do git", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": clone,
+                "tool_input": {"command": "time env X=1 git push"}})), "ask"),
+            ("prepush bash -c", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": clone,
+                "tool_input": {"command": "bash -c 'git push'"}})), "ask"),
+            ("prepush heredoc no repo atrasado", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": clone,
+                "tool_input": {"command": "cat <<'FIM'\nmsg\nFIM\ngit push"}})), "ask"),
+            ("prepush continuacao de linha", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": limpo,
+                "tool_input": {"command": f'git -C "{clone}" \\\npush'}})), "ask"),
         ]
     for nome, obtido, esperado in casos:
         ok = obtido == esperado

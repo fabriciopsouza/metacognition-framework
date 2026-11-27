@@ -83,9 +83,11 @@ def comandos(cmd):
 
 def alvo_do_push(tokens):
     """Se o comando é `git [-C pasta] [-c k=v ...] push ...`, devolve (True, pasta ou None); senão (False, None)."""
-    if not tokens or tokens[0] != "git":
+    # o `git` pode vir depois de prefixo (`VAR=1`, `env`, `time`, `sudo`, `command`, `if`, caminho completo, `git.exe`)
+    ig = next((i for i, t in enumerate(tokens) if os.path.basename(t) in ("git", "git.exe")), None)
+    if ig is None:
         return False, None
-    pasta, k = None, 1
+    pasta, k = None, ig + 1
     while k < len(tokens) and tokens[k].startswith("-"):
         if tokens[k] in ("-C", "-c") and k + 1 < len(tokens):
             if tokens[k] == "-C":
@@ -120,7 +122,8 @@ def checar_push(pasta):
     if rc == 0 and behind not in ("", "0") and int(behind) > 0:
         ask(f"PRE-PUSH (ADR-060): local esta {behind} commit(s) ATRAS de `{upstream}` em {pasta}. "
             f"Empurrar agora arrisca push sobre base velha / divergencia. "
-            f"Recomendado: `git pull --ff-only` (ou rebase) ANTES. Confirmar o push mesmo assim?")
+            f"Recomendado: `git pull --ff-only` (ou rebase) ANTES."
+            + ("" if MODO["permissao"] == "bypassPermissions" else " Confirmar o push mesmo assim?"))
 
 
 def main():
@@ -141,14 +144,19 @@ def main():
         # Atalho declarado: heredoc (`<<`), `Set-Location`/PowerShell e aspas desbalanceadas caem no modo conservador:
         # se houver `git push` no texto, checa a pasta da sessão. Em bypass o aviso é um só (o primeiro push atrasado
         # encerra a checagem); fora do bypass, uma pergunta cobre o comando inteiro.
+        # Piso (r5 do PR #228): nunca menos que o guard antigo. Se o texto tem `git ... push` e o tokenizador não mediu
+        # nenhum push (heredoc, `bash -c '...'`, `eval`, aspas desbalanceadas, caminho Windows com barra invertida), checa a
+        # pasta da sessão, como o guard antigo fazia sempre.
+        texto_tem_push = re.search(r"\bgit(?:\.exe)?\b[^;&|\n]*?\bpush\b", cmd) is not None
+        cmd_unido = re.sub(r"\\\r?\n", " ", cmd)  # continuação de linha não separa comandos
         try:
-            lista = comandos(cmd)
+            lista = None if "<<" in cmd else comandos(cmd_unido)
         except ValueError:
             lista = None
-        if lista is None or "<<" in cmd:
+        if lista is None:
             checar_push(cwd)
             allow()
-        atual, pilha = cwd, []
+        atual, pilha, medidos = cwd, [], 0
         for tokens, _prof in lista:
             if tokens == ["("]:
                 pilha.append(atual)
@@ -161,9 +169,11 @@ def main():
                 continue
             e_push, pasta_c = alvo_do_push(tokens)
             if e_push:
+                medidos += 1
                 pasta = resolver(atual, pasta_c) if pasta_c else atual
-                if pasta:
-                    checar_push(pasta)
+                checar_push(pasta or atual)
+        if medidos == 0 and texto_tem_push:
+            checar_push(cwd)
         allow()
     except Exception:
         # Fail-open: guard nunca trava o usuario pelo proprio defeito.
