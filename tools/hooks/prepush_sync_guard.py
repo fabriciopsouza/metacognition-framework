@@ -16,6 +16,7 @@ Contrato PreToolUse: le JSON no stdin (tool_input.command, cwd). Emite hookSpeci
 permissionDecision (ask|allow). Uso: python tools/hooks/prepush_sync_guard.py
 """
 import json
+import shlex
 import os
 import re
 import subprocess
@@ -52,27 +53,47 @@ def git(cwd, *args):
         return "", 1
 
 
-def trechos(cmd):
-    """Separa o comando em `&&` e `;` FORA de aspas duplas (r3 do PR #228: `git commit -m "a; cd x"` não é um cd)."""
-    partes, atual, aspas, i = [], [], False, 0
-    while i < len(cmd):
-        ch = cmd[i]
-        if ch == '"':
-            aspas = not aspas
-        if not aspas and (cmd.startswith("&&", i) or ch == ";"):
-            partes.append("".join(atual))
-            atual = []
-            i += 2 if cmd.startswith("&&", i) else 1
+SEPARADORES = {";", "&&", "||", "|", "&"}
+
+
+def comandos(cmd):
+    """Lista de (comando em tokens, profundidade de subshell) pelo shlex da biblioteca padrão (aspas simples, duplas e
+    escapes como no Bash; r4 do PR #228). Levanta ValueError em aspas desbalanceadas."""
+    # quebra de linha separa comandos como ";" (dentro de aspas so afeta a tokenizacao, nao o que se mede)
+    lex = shlex.shlex(cmd.replace(chr(13) + chr(10), chr(10)).replace(chr(10), " ; "), posix=True, punctuation_chars=";&|()<>")
+    lex.whitespace_split = True
+    saida, atual, prof = [], [], 0
+    for tok in lex:
+        if tok in SEPARADORES or tok in ("(", ")"):
+            if atual:
+                saida.append((atual, prof))
+                atual = []
+            if tok == "(":
+                prof += 1
+                saida.append((["("], prof))
+            elif tok == ")":
+                saida.append(([")"], prof))
+                prof -= 1
             continue
-        atual.append(ch)
-        i += 1
-    partes.append("".join(atual))
-    return partes
+        atual.append(tok)
+    if atual:
+        saida.append((atual, prof))
+    return saida
 
 
-def fora_de_aspas(texto, pos):
-    """Verdadeiro se a posição não está dentro de aspas duplas (contagem par de aspas antes dela)."""
-    return texto[:pos].count('"') % 2 == 0
+def alvo_do_push(tokens):
+    """Se o comando é `git [-C pasta] [-c k=v ...] push ...`, devolve (True, pasta ou None); senão (False, None)."""
+    if not tokens or tokens[0] != "git":
+        return False, None
+    pasta, k = None, 1
+    while k < len(tokens) and tokens[k].startswith("-"):
+        if tokens[k] in ("-C", "-c") and k + 1 < len(tokens):
+            if tokens[k] == "-C":
+                pasta = tokens[k + 1]
+            k += 2
+        else:
+            k += 1
+    return (k < len(tokens) and tokens[k] == "push"), pasta
 
 
 def resolver(base, alvo):
@@ -111,27 +132,36 @@ def main():
         cwd = payload.get("cwd") or os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
 
         # So age em `git push`. Regex evita casar "git pushd" ou substrings em comentário trivial.
-        if not re.search(r"\bgit\s+(?:-C\s+(?:\"[^\"]+\"|\S+)\s+)?push\b", cmd):
+        if "git" not in cmd or "push" not in cmd:  # filtro barato; o shlex abaixo decide se ha push de fato
             allow()
 
-        # O comando pode trocar de pasta antes do push (`cd A && cd B && git push`, `git -C <pasta> push`): percorre os
-        # trechos separados por `&&` ou `;` em ordem, acumulando os `cd` (relativo ao diretório corrente) e avalia CADA push
-        # na pasta em que ele roda (falso alarme medido em 27/11/2026 com worktrees; r1 e r2 do PR #228).
-        # Atalho declarado: aspas simples, subshell `(cd ...)`, `||`, quebra de linha, `Set-Location` e `git -C x -c a=b push`
-        # nao sao reconhecidos: o trecho fica na pasta corrente acumulada. Ampliar se aparecer caso real.
-        # Em bypass o aviso e um so: o primeiro push atrasado encerra a checagem (ask/aviso saem com sys.exit). Fora do
-        # bypass, uma pergunta cobre o comando inteiro.
-        atual = cwd
-        for trecho in trechos(cmd):
-            trecho = trecho.strip()
-            m_cd = re.fullmatch(r"cd\s+(\"[^\"]+\"|[^\"]+?)", trecho)
-            if m_cd:
-                atual = resolver(atual, m_cd.group(1)) or atual
+        # O comando pode trocar de pasta antes do push (`cd A && cd B && git push`, `git -C <pasta> push`, `(cd x && git
+        # push)`): tokeniza com shlex, acumula os `cd` (relativos à pasta corrente; subshell restaura ao fechar) e avalia
+        # CADA push na pasta em que ele roda (falso alarme medido em 27/11/2026 com worktrees; r1 a r4 do PR #228).
+        # Atalho declarado: heredoc (`<<`), `Set-Location`/PowerShell e aspas desbalanceadas caem no modo conservador:
+        # se houver `git push` no texto, checa a pasta da sessão. Em bypass o aviso é um só (o primeiro push atrasado
+        # encerra a checagem); fora do bypass, uma pergunta cobre o comando inteiro.
+        try:
+            lista = comandos(cmd)
+        except ValueError:
+            lista = None
+        if lista is None or "<<" in cmd:
+            checar_push(cwd)
+            allow()
+        atual, pilha = cwd, []
+        for tokens, _prof in lista:
+            if tokens == ["("]:
+                pilha.append(atual)
                 continue
-            m_push = next((m for m in re.finditer(r"\bgit\s+(?:-C\s+(\"[^\"]+\"|\S+)\s+)?push\b", trecho)
-                           if fora_de_aspas(trecho, m.start())), None)  # `git push` citado em mensagem não conta
-            if m_push:
-                pasta = resolver(atual, m_push.group(1)) if m_push.group(1) else atual
+            if tokens == [")"]:
+                atual = pilha.pop() if pilha else atual
+                continue
+            if tokens[0] == "cd" and len(tokens) >= 2:
+                atual = resolver(atual, tokens[1]) or atual
+                continue
+            e_push, pasta_c = alvo_do_push(tokens)
+            if e_push:
+                pasta = resolver(atual, pasta_c) if pasta_c else atual
                 if pasta:
                     checar_push(pasta)
         allow()

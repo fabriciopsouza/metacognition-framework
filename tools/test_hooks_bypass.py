@@ -21,6 +21,7 @@ PREPUSH = os.path.join(ROOT, "tools", "hooks", "prepush_sync_guard.py")
 def rodar(hook, evento):
     r = subprocess.run([sys.executable, hook], input=json.dumps(evento), capture_output=True, text=True,
                        encoding="utf-8", errors="replace")
+    assert r.returncode == 0, f"hook terminou com erro {r.returncode}: {r.stderr[:200]}"  # r4: erro não vale como liberação
     saida = r.stdout.strip()
     return json.loads(saida) if saida else {}
 
@@ -98,6 +99,21 @@ def main():
                 "tool_input": {"command": f'git commit -m "fix a; cd {limpo}" && git push'}})), "ask"),
             ("prepush ignora git push citado na mensagem", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": clone,
                 "tool_input": {"command": 'git commit -m "docs: explica git push"'}})), None),
+            # r4 do PR #228: shlex (aspas simples, escapes, subshell)
+            ("prepush aspa dupla dentro de aspas simples", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": clone,
+                "tool_input": {"command": "echo '\"'; git push --force"}})), "ask"),
+            ("prepush aspa escapada", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": clone,
+                "tool_input": {"command": 'echo "x\\""; git push --force'}})), "ask"),
+            ("prepush cd dentro de aspas simples nao conta", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": clone,
+                "tool_input": {"command": f"echo 'a; cd {limpo}; b'; git push --force"}})), "ask"),
+            ("prepush git push em aspas simples nao conta", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": clone,
+                "tool_input": {"command": "printf '%s\n' 'git push'"}})), None),
+            ("prepush subshell com cd e push", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": limpo,
+                "tool_input": {"command": f'(cd "{clone}" && git push)'}})), "ask"),
+            ("prepush subshell restaura a pasta", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": limpo,
+                "tool_input": {"command": f'(cd "{clone}") && git push'}})), None),
+            ("prepush git -C com -c antes do push", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": limpo,
+                "tool_input": {"command": f'git -C "{clone}" -c a=b push'}})), "ask"),
         ]
     for nome, obtido, esperado in casos:
         ok = obtido == esperado
