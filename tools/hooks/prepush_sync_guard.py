@@ -52,6 +52,33 @@ def git(cwd, *args):
         return "", 1
 
 
+def resolver(base, alvo):
+    """Pasta de um `cd`/`git -C` relativa à pasta corrente; aceita ~ e /c/ do Git Bash. Inexistente -> None."""
+    pasta = os.path.expanduser(alvo.strip().strip('"'))
+    m_drive = re.match(r"^/([a-zA-Z])/(.*)$", pasta)
+    if m_drive:
+        pasta = f"{m_drive.group(1).upper()}:/{m_drive.group(2)}"
+    if not os.path.isabs(pasta):
+        pasta = os.path.join(base, pasta)
+    return pasta if os.path.isdir(pasta) else None
+
+
+def checar_push(pasta):
+    """Avisa ou pergunta (ask) se o repositório da pasta está atrás da própria upstream; senão volta sem efeito."""
+    inside, _ = git(pasta, "rev-parse", "--is-inside-work-tree")
+    if inside != "true":
+        return
+    upstream, rc = git(pasta, "rev-parse", "--abbrev-ref", "@{upstream}")
+    if rc != 0 or not upstream:
+        return  # branch nova / sem tracking -> nada a estar atras
+    git(pasta, "fetch", "--quiet")  # checagem honesta do estado remoto antes de empurrar
+    behind, rc = git(pasta, "rev-list", "--count", f"HEAD..{upstream}")
+    if rc == 0 and behind not in ("", "0") and int(behind) > 0:
+        ask(f"PRE-PUSH (ADR-060): local esta {behind} commit(s) ATRAS de `{upstream}` em {pasta}. "
+            f"Empurrar agora arrisca push sobre base velha / divergencia. "
+            f"Recomendado: `git pull --ff-only` (ou rebase) ANTES. Confirmar o push mesmo assim?")
+
+
 def main():
     try:
         raw = sys.stdin.read()
@@ -61,42 +88,26 @@ def main():
         cwd = payload.get("cwd") or os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
 
         # So age em `git push`. Regex evita casar "git pushd" ou substrings em comentário trivial.
-        m_push = re.search(r"\bgit\s+(?:-C\s+(\"[^\"]+\"|\S+)\s+)?push\b", cmd)
-        if not m_push:
+        if not re.search(r"\bgit\s+(?:-C\s+(?:\"[^\"]+\"|\S+)\s+)?push\b", cmd):
             allow()
 
-        # O comando pode trocar de pasta antes do push (`cd <worktree> && ... git push`, ou `git -C <pasta> push`): mede o
-        # repositorio do push, nao a pasta da sessao (falso alarme medido em 27/11/2026 com worktrees). Vale o `git -C` do
-        # proprio push ou o ULTIMO `cd` antes dele (cd encadeado; r1 do PR #228).
+        # O comando pode trocar de pasta antes do push (`cd A && cd B && git push`, `git -C <pasta> push`): percorre os
+        # trechos separados por `&&` ou `;` em ordem, acumulando os `cd` (relativo ao diretório corrente) e avalia CADA push
+        # na pasta em que ele roda (falso alarme medido em 27/11/2026 com worktrees; r1 e r2 do PR #228).
         # Atalho declarado: aspas simples, subshell `(cd ...)`, `||`, quebra de linha, `Set-Location` e `git -C x -c a=b push`
-        # nao sao reconhecidos e caem na pasta da sessao (o comportamento anterior). Ampliar se aparecer caso real.
-        # o delimitador final fica em lookahead para o cd seguinte poder casar (findall não sobrepõe casamentos)
-        anteriores = re.findall(r"(?:^|&&|;)\s*cd\s+(\"[^\"]+\"|[^&;|]+?)\s*(?=&&|;)", cmd[:m_push.start()])
-        alvo_txt = m_push.group(1) or (anteriores[-1] if anteriores else None)
-        if alvo_txt:
-            pasta = alvo_txt.strip().strip('"')
-            pasta = os.path.expanduser(pasta)
-            m_drive = re.match(r"^/([a-zA-Z])/(.*)$", pasta)
-            if m_drive:
-                pasta = f"{m_drive.group(1).upper()}:/{m_drive.group(2)}"
-            if not os.path.isabs(pasta):
-                pasta = os.path.join(cwd, pasta)
-            if os.path.isdir(pasta):
-                cwd = pasta
-        inside, _ = git(cwd, "rev-parse", "--is-inside-work-tree")
-        if inside != "true":
-            allow()
-
-        upstream, rc = git(cwd, "rev-parse", "--abbrev-ref", "@{upstream}")
-        if rc != 0 or not upstream:
-            allow()  # branch nova / sem tracking -> nada a estar atras
-
-        git(cwd, "fetch", "--quiet")  # checagem honesta do estado remoto antes de empurrar
-        behind, rc = git(cwd, "rev-list", "--count", f"HEAD..{upstream}")
-        if rc == 0 and behind not in ("", "0") and int(behind) > 0:
-            ask(f"PRE-PUSH (ADR-060): local esta {behind} commit(s) ATRAS de `{upstream}`. "
-                f"Empurrar agora arrisca push sobre base velha / divergencia. "
-                f"Recomendado: `git pull --ff-only` (ou rebase) ANTES. Confirmar o push mesmo assim?")
+        # nao sao reconhecidos: o trecho fica na pasta corrente acumulada. Ampliar se aparecer caso real.
+        atual = cwd
+        for trecho in re.split(r"&&|;", cmd):
+            trecho = trecho.strip()
+            m_cd = re.fullmatch(r"cd\s+(\"[^\"]+\"|.+?)", trecho)
+            if m_cd:
+                atual = resolver(atual, m_cd.group(1)) or atual
+                continue
+            m_push = re.search(r"\bgit\s+(?:-C\s+(\"[^\"]+\"|\S+)\s+)?push\b", trecho)
+            if m_push:
+                pasta = resolver(atual, m_push.group(1)) if m_push.group(1) else atual
+                if pasta:
+                    checar_push(pasta)
         allow()
     except Exception:
         # Fail-open: guard nunca trava o usuario pelo proprio defeito.

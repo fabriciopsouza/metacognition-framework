@@ -29,6 +29,14 @@ def decisao(out):
     return (out.get("hookSpecificOutput") or {}).get("permissionDecision")
 
 
+def aviso(out, marca):
+    """Modo aviso de fato (r2 do PR #228): sem permissionDecision E com systemMessage e additionalContext trazendo a razão."""
+    hs = out.get("hookSpecificOutput") or {}
+    ok = (hs.get("permissionDecision") is None and marca in str(out.get("systemMessage") or "")
+          and marca in str(hs.get("additionalContext") or ""))
+    return "aviso" if ok else f"sem aviso: {out}"
+
+
 def git(cwd, *a):
     subprocess.run(["git", "-C", cwd, *a], capture_output=True, check=True)
 
@@ -49,8 +57,8 @@ def main():
     ask_cmd = "find / -name x -delete"
     deny_cmd = "rm -rf /"
     casos = [
-        ("effect ask em bypass vira aviso", decisao(rodar(EFFECT, {"tool_name": "Bash", "permission_mode": "bypassPermissions",
-                                                                    "tool_input": {"command": ask_cmd}})), None),
+        ("effect ask em bypass vira aviso", aviso(rodar(EFFECT, {"tool_name": "Bash", "permission_mode": "bypassPermissions",
+                                                                  "tool_input": {"command": ask_cmd}}), "effect-gate"), "aviso"),
         ("effect ask fora do bypass continua ask", decisao(rodar(EFFECT, {"tool_name": "Bash", "permission_mode": "default",
                                                                           "tool_input": {"command": ask_cmd}})), "ask"),
         ("effect deny em bypass continua deny", decisao(rodar(EFFECT, {"tool_name": "Bash", "permission_mode": "bypassPermissions",
@@ -63,8 +71,8 @@ def main():
         casos += [
             ("prepush atrasado fora do bypass pergunta", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": clone,
                                                                                   "tool_input": {"command": "git push"}})), "ask"),
-            ("prepush atrasado em bypass vira aviso", decisao(rodar(PREPUSH, {"permission_mode": "bypassPermissions", "cwd": clone,
-                                                                               "tool_input": {"command": "git push"}})), None),
+            ("prepush atrasado em bypass vira aviso", aviso(rodar(PREPUSH, {"permission_mode": "bypassPermissions", "cwd": clone,
+                                                                             "tool_input": {"command": "git push"}}), "PRE-PUSH"), "aviso"),
             ("prepush mede o repo do cd, nao a pasta da sessao", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": limpo,
                 "tool_input": {"command": f'cd "{clone}" && git push'}})), "ask"),
             ("prepush mede o repo do git -C", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": limpo,
@@ -78,6 +86,13 @@ def main():
                 "tool_input": {"command": "cd clone && git push"}})), "ask"),
             ("prepush ignora cd depois do push", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": limpo,
                 "tool_input": {"command": f'git push; cd "{clone}" && ls'}})), None),
+            # r2 do PR #228: cd relativo acumulado, -C relativo ao cd anterior, mais de um push
+            ("prepush cd relativo encadeado", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": limpo,
+                "tool_input": {"command": f'cd "{base}" && cd clone && git push'}})), "ask"),
+            ("prepush git -C relativo ao cd anterior", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": limpo,
+                "tool_input": {"command": f'cd "{base}" && git -C clone push'}})), "ask"),
+            ("prepush avalia o segundo push", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": limpo,
+                "tool_input": {"command": f'git -C "{limpo}" push && git -C "{clone}" push'}})), "ask"),
         ]
     for nome, obtido, esperado in casos:
         ok = obtido == esperado
