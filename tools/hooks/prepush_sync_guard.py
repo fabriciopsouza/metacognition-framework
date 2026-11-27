@@ -52,6 +52,29 @@ def git(cwd, *args):
         return "", 1
 
 
+def trechos(cmd):
+    """Separa o comando em `&&` e `;` FORA de aspas duplas (r3 do PR #228: `git commit -m "a; cd x"` não é um cd)."""
+    partes, atual, aspas, i = [], [], False, 0
+    while i < len(cmd):
+        ch = cmd[i]
+        if ch == '"':
+            aspas = not aspas
+        if not aspas and (cmd.startswith("&&", i) or ch == ";"):
+            partes.append("".join(atual))
+            atual = []
+            i += 2 if cmd.startswith("&&", i) else 1
+            continue
+        atual.append(ch)
+        i += 1
+    partes.append("".join(atual))
+    return partes
+
+
+def fora_de_aspas(texto, pos):
+    """Verdadeiro se a posição não está dentro de aspas duplas (contagem par de aspas antes dela)."""
+    return texto[:pos].count('"') % 2 == 0
+
+
 def resolver(base, alvo):
     """Pasta de um `cd`/`git -C` relativa à pasta corrente; aceita ~ e /c/ do Git Bash. Inexistente -> None."""
     pasta = os.path.expanduser(alvo.strip().strip('"'))
@@ -96,14 +119,17 @@ def main():
         # na pasta em que ele roda (falso alarme medido em 27/11/2026 com worktrees; r1 e r2 do PR #228).
         # Atalho declarado: aspas simples, subshell `(cd ...)`, `||`, quebra de linha, `Set-Location` e `git -C x -c a=b push`
         # nao sao reconhecidos: o trecho fica na pasta corrente acumulada. Ampliar se aparecer caso real.
+        # Em bypass o aviso e um so: o primeiro push atrasado encerra a checagem (ask/aviso saem com sys.exit). Fora do
+        # bypass, uma pergunta cobre o comando inteiro.
         atual = cwd
-        for trecho in re.split(r"&&|;", cmd):
+        for trecho in trechos(cmd):
             trecho = trecho.strip()
-            m_cd = re.fullmatch(r"cd\s+(\"[^\"]+\"|.+?)", trecho)
+            m_cd = re.fullmatch(r"cd\s+(\"[^\"]+\"|[^\"]+?)", trecho)
             if m_cd:
                 atual = resolver(atual, m_cd.group(1)) or atual
                 continue
-            m_push = re.search(r"\bgit\s+(?:-C\s+(\"[^\"]+\"|\S+)\s+)?push\b", trecho)
+            m_push = next((m for m in re.finditer(r"\bgit\s+(?:-C\s+(\"[^\"]+\"|\S+)\s+)?push\b", trecho)
+                           if fora_de_aspas(trecho, m.start())), None)  # `git push` citado em mensagem não conta
             if m_push:
                 pasta = resolver(atual, m_push.group(1)) if m_push.group(1) else atual
                 if pasta:

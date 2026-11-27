@@ -93,6 +93,11 @@ def main():
                 "tool_input": {"command": f'cd "{base}" && git -C clone push'}})), "ask"),
             ("prepush avalia o segundo push", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": limpo,
                 "tool_input": {"command": f'git -C "{limpo}" push && git -C "{clone}" push'}})), "ask"),
+            # r3 do PR #228: separadores e cd dentro de aspas não contam
+            ("prepush ignora cd dentro da mensagem de commit", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": clone,
+                "tool_input": {"command": f'git commit -m "fix a; cd {limpo}" && git push'}})), "ask"),
+            ("prepush ignora git push citado na mensagem", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": clone,
+                "tool_input": {"command": 'git commit -m "docs: explica git push"'}})), None),
         ]
     for nome, obtido, esperado in casos:
         ok = obtido == esperado
