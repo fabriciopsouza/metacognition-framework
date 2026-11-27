@@ -61,14 +61,19 @@ def main():
         cwd = payload.get("cwd") or os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
 
         # So age em `git push`. Regex evita casar "git pushd" ou substrings em comentário trivial.
-        if not re.search(r"\bgit\s+(?:-C\s+(?:\"[^\"]+\"|\S+)\s+)?push\b", cmd):
+        m_push = re.search(r"\bgit\s+(?:-C\s+(\"[^\"]+\"|\S+)\s+)?push\b", cmd)
+        if not m_push:
             allow()
 
         # O comando pode trocar de pasta antes do push (`cd <worktree> && ... git push`, ou `git -C <pasta> push`): mede o
-        # repositorio do push, nao a pasta da sessao (falso alarme medido em 27/11/2026 com worktrees).
-        alvo = re.search(r"\bgit\s+-C\s+(\"[^\"]+\"|\S+)\s+push\b", cmd) or re.search(r"(?:^|&&|;)\s*cd\s+(\"[^\"]+\"|[^&;|]+?)\s*(?:&&|;)", cmd)
-        if alvo:
-            pasta = alvo.group(1).strip().strip('"')
+        # repositorio do push, nao a pasta da sessao (falso alarme medido em 27/11/2026 com worktrees). Vale o `git -C` do
+        # proprio push ou o ULTIMO `cd` antes dele (cd encadeado; r1 do PR #228).
+        # Atalho declarado: aspas simples, subshell `(cd ...)`, `||`, quebra de linha, `Set-Location` e `git -C x -c a=b push`
+        # nao sao reconhecidos e caem na pasta da sessao (o comportamento anterior). Ampliar se aparecer caso real.
+        anteriores = re.findall(r"(?:^|&&|;)\s*cd\s+(\"[^\"]+\"|[^&;|]+?)\s*(?:&&|;)", cmd[:m_push.start()])
+        alvo_txt = m_push.group(1) or (anteriores[-1] if anteriores else None)
+        if alvo_txt:
+            pasta = alvo_txt.strip().strip('"')
             pasta = os.path.expanduser(pasta)
             m_drive = re.match(r"^/([a-zA-Z])/(.*)$", pasta)
             if m_drive:

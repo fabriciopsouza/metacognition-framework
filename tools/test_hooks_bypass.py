@@ -69,6 +69,15 @@ def main():
                 "tool_input": {"command": f'cd "{clone}" && git push'}})), "ask"),
             ("prepush mede o repo do git -C", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": limpo,
                 "tool_input": {"command": f'git -C "{clone}" push'}})), "ask"),
+            # r1 do PR #228: vale o ULTIMO cd antes do push
+            ("prepush cd encadeado: limpo e depois atrasado", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": limpo,
+                "tool_input": {"command": f'cd "{limpo}" && cd "{clone}" && git push'}})), "ask"),
+            ("prepush cd encadeado: atrasado e depois limpo", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": limpo,
+                "tool_input": {"command": f'cd "{clone}" && cd "{limpo}" && git push'}})), None),
+            ("prepush cd relativo", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": base,
+                "tool_input": {"command": "cd clone && git push"}})), "ask"),
+            ("prepush ignora cd depois do push", decisao(rodar(PREPUSH, {"permission_mode": "default", "cwd": limpo,
+                "tool_input": {"command": f'git push; cd "{clone}" && ls'}})), None),
         ]
     for nome, obtido, esperado in casos:
         ok = obtido == esperado
