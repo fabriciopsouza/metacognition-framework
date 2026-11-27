@@ -26,7 +26,17 @@ def allow():
     sys.exit(0)  # exit 0 sem output = allow
 
 
+MODO = {"permissao": ""}  # preenchido em main() com o permission_mode do evento
+
+
 def ask(reason):
+    # Dono, 27/11/2026: "AUTORIZO A REMOCAO destas perguntas, chats ja estao em bypass permissions". Em bypass, o ask vira
+    # aviso nao-bloqueante (a sessao segue e o agente le o aviso); fora do bypass, o gate humano continua.
+    if MODO["permissao"] == "bypassPermissions":
+        print(json.dumps({"systemMessage": "[aviso, sem bloquear] " + reason,
+                          "hookSpecificOutput": {"hookEventName": "PreToolUse", "additionalContext": reason}},
+                         ensure_ascii=True))
+        sys.exit(0)
     print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse",
                                               "permissionDecision": "ask",
                                               "permissionDecisionReason": reason}}, ensure_ascii=True))
@@ -46,13 +56,27 @@ def main():
     try:
         raw = sys.stdin.read()
         payload = json.loads(raw) if raw.strip() else {}
+        MODO["permissao"] = str(payload.get("permission_mode") or "")
         cmd = str(((payload.get("tool_input") or {}).get("command")) or "")
         cwd = payload.get("cwd") or os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
 
         # So age em `git push`. Regex evita casar "git pushd" ou substrings em comentário trivial.
-        if not re.search(r"\bgit\s+push\b", cmd):
+        if not re.search(r"\bgit\s+(?:-C\s+(?:\"[^\"]+\"|\S+)\s+)?push\b", cmd):
             allow()
 
+        # O comando pode trocar de pasta antes do push (`cd <worktree> && ... git push`, ou `git -C <pasta> push`): mede o
+        # repositorio do push, nao a pasta da sessao (falso alarme medido em 27/11/2026 com worktrees).
+        alvo = re.search(r"\bgit\s+-C\s+(\"[^\"]+\"|\S+)\s+push\b", cmd) or re.search(r"(?:^|&&|;)\s*cd\s+(\"[^\"]+\"|[^&;|]+?)\s*(?:&&|;)", cmd)
+        if alvo:
+            pasta = alvo.group(1).strip().strip('"')
+            pasta = os.path.expanduser(pasta)
+            m_drive = re.match(r"^/([a-zA-Z])/(.*)$", pasta)
+            if m_drive:
+                pasta = f"{m_drive.group(1).upper()}:/{m_drive.group(2)}"
+            if not os.path.isabs(pasta):
+                pasta = os.path.join(cwd, pasta)
+            if os.path.isdir(pasta):
+                cwd = pasta
         inside, _ = git(cwd, "rev-parse", "--is-inside-work-tree")
         if inside != "true":
             allow()
