@@ -70,7 +70,8 @@ def main():
         # proprio push ou o ULTIMO `cd` antes dele (cd encadeado; r1 do PR #228).
         # Atalho declarado: aspas simples, subshell `(cd ...)`, `||`, quebra de linha, `Set-Location` e `git -C x -c a=b push`
         # nao sao reconhecidos e caem na pasta da sessao (o comportamento anterior). Ampliar se aparecer caso real.
-        anteriores = re.findall(r"(?:^|&&|;)\s*cd\s+(\"[^\"]+\"|[^&;|]+?)\s*(?:&&|;)", cmd[:m_push.start()])
+        # o delimitador final fica em lookahead para o cd seguinte poder casar (findall não sobrepõe casamentos)
+        anteriores = re.findall(r"(?:^|&&|;)\s*cd\s+(\"[^\"]+\"|[^&;|]+?)\s*(?=&&|;)", cmd[:m_push.start()])
         alvo_txt = m_push.group(1) or (anteriores[-1] if anteriores else None)
         if alvo_txt:
             pasta = alvo_txt.strip().strip('"')
