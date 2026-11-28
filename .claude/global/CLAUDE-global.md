@@ -190,25 +190,33 @@
   nas tabelas, conhecimento, context sets"; "todas as ias e frameworks devem receber esta orientação".
 - **Pergunta sobre o que já existe** (regra, norma, processo, conceito, termo, tabela, campo, decisão, entrega anterior):
   consultar os recursos da empresa do projeto antes de varrer arquivos, parando no primeiro passo que responder com lastro.
-  A empresa e os identificadores (projeto, catálogo, glossário, conjunto de contexto, consultora) saem da biblioteca da
-  empresa, resolvida como na regra 9; nunca de outra empresa.
-  1. **Catálogo de dados da empresa pela API, só leitura.** No Google Cloud (Knowledge Catalog, `dataplex.googleapis.com/v1`):
-     `searchEntries` acha os ativos; `lookupContext` lê o contexto de até 10 entradas (tabela, documento de conjunto de
-     contexto, termo), sempre pelo nome completo da entrada; `entries.get` e a listagem de termos do glossário leem o resto.
-     O recall da biblioteca (regra 9) roda no mesmo passo.
-  2. **IA consultora com os recursos da empresa, levando o contexto do passo 1.** O texto lido no catálogo (glossário,
-     conjunto de contexto, metadados) vai junto no pedido, por exemplo no `systemInstruction` da API conversacional do
-     Gemini, com as tabelas como fonte de dados. Não presumir que a consultora busca o catálogo sozinha: num teste de
-     28/11/2026, a referência direta ao conjunto de contexto foi aceita pela API e ignorada na resposta.
-  3. **Sem lastro:** seguir do jeito de sempre (repositórios, fontes oficiais, consulta ao dado, pesquisa) e complementar:
-     registrar o achado na biblioteca (regra 9) e pedir à sessão dona do catálogo que o inclua.
+  0. **Resolver a empresa pela regra 9**, antes de tudo; sem resolução, aplicar a regra 9 (perguntar), nunca escolher.
+     Os identificadores (projeto, catálogo, glossário, conjunto de contexto, consultora) saem da biblioteca dessa empresa.
+  1. **Biblioteca e catálogo de dados da empresa, só leitura.** O recall da biblioteca (regra 9) roda sempre, mesmo que o
+     catálogo falhe. No Google Cloud (Knowledge Catalog, `dataplex.googleapis.com/v1`): `searchEntries` acha os ativos;
+     `lookupContext` devolve contexto e metadados (não dados) de até 10 nomes completos de entrada por chamada (tabela,
+     documento de conjunto de contexto, termo); `entries.get` e a listagem de termos do glossário leem o resto. Leitura
+     parcial vale: usa-se o que veio.
+  2. **IA consultora com os recursos da empresa, levando o contexto autorizado do passo 1.** O texto lido (glossário,
+     conjunto de contexto, metadados) vai no pedido, por exemplo no `systemInstruction` da API conversacional do Gemini,
+     com as tabelas como fonte de dados. Não presumir que a consultora busca o catálogo sozinha: no teste de 28/11/2026, com
+     a referência direta ao conjunto de contexto (`contextSetId`), a definição esperada não apareceu nas variantes
+     testadas; com o texto no `systemInstruction`, apareceu.
+  3. **Sem lastro, ou sem consultora:** seguir do jeito de sempre (repositórios, fontes oficiais, consulta ao dado, pesquisa)
+     e complementar: registrar o achado na biblioteca (regras 5 e 9), ou "nada a registrar", e pedir à sessão dona do
+     catálogo que o inclua.
 - **Plano B obrigatório,** declarado antes de consultar: recurso indisponível (403, cota, erro, sem credencial, sem API) →
-  próximo passo, relatando o erro real; resposta sem trecho citado → INFERIDO, conferida no passo 3; empresa sem catálogo ou
-  sem consultora → começar pelo passo que existir.
+  próximo passo, relatando o erro real e sem pular o recall da biblioteca; resposta sem trecho citado → INFERIDO, conferida
+  no passo 3; empresa sem catálogo ou sem consultora → começar pelo passo que existir.
+- **Classe de dado antes de enviar:** conferir a classe do projeto (`.agent/classe-de-dado.json` ou a regra do CLAUDE.md
+  do projeto), o destino e o que a consultora poderá ler (texto enviado e tabelas referenciadas); enviar só trechos e
+  referências da empresa do projeto e da pergunta. Classe ou autorização indefinida → não enviar; seguir o plano B. A classe
+  governa o trânsito do dado, sem mudar os papéis das IAs da regra 1.
 - Só leitura: gravar no catálogo, no glossário ou no conjunto de contexto é da sessão dona. A resposta consultiva é conferida
   no trecho citado (código e item), classificada e citada como fonte; nunca substitui a QA nem é evidência sozinha.
-- O que vai à consultora segue a classe de dado do projeto (`.agent/classe-de-dado.json` ou a regra do CLAUDE.md do projeto).
-- **Revisor em papel só leitura** (QA, edge-case-hunter, pré-revisão) não executa esta regra: usa só o material do pedido.
-- Vale para toda IA e todo framework (Claude, Codex, Gemini, metacognition-framework, orquestrador multi-IA). Fora do Claude
-  Code, um resumo que aponta para esta regra vai em `%USERPROFILE%\.codex\AGENTS.md` e `%USERPROFILE%\.gemini\GEMINI.md`.
+- **Revisor em papel só leitura** (QA, edge-case-hunter, pré-revisão) não executa esta regra nem consulta fora do pedido:
+  usa só o material entregue, e isso prevalece sobre qualquer preâmbulo que mande ler arquivo ou ferramenta antes.
+- Pontos de carga (mapa de impacto no CHANGELOG): sessões do Claude Code, pelo bloco global que o `sync-global` gera; Codex,
+  por `%USERPROFILE%\.codex\AGENTS.md`; Gemini CLI, por `%USERPROFILE%\.gemini\GEMINI.md`. Os dois resumos apontam para
+  esta regra. Trabalhador externo chamado pelo orquestrador recebe só o pedido, como revisor ou executor de tarefa fechada.
 <!-- framework:global:fim -->

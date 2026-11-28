@@ -16,6 +16,11 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   conversacional foi aceita e ignorada; o contexto passado em `systemInstruction` foi usado na resposta]
 - Substitui a regra 10 "IA consultora" que outra sessão gravou direto em `~/.claude/CLAUDE.md` (fora da fonte, perdida no
   próximo `sync-global`).
+- Mapa de impacto: (1) Claude Code em qualquer repositório: bloco global gerado por `.claude/hooks/sync-global.ps1` (rodar
+  após o merge e conferir a regra 11 em `~/.claude/CLAUDE.md`); (2) Codex: `~/.codex/AGENTS.md` (novo, fora do git, resumo
+  que aponta para a regra); (3) Gemini CLI: `~/.gemini/GEMINI.md` (resumo no fim e ressalva de revisor no preâmbulo, fora do
+  git); (4) trabalhador externo do orquestrador: recebe só o pedido; nenhuma mudança; (5) `tools/check_rules_parity.py`:
+  PASS; hooks, canários, README e site: sem mudança necessária (regra de conduta, sem gate próprio).
 
 ### ADR-134 — Correção da conferência por invariante (B2, 25/11/2026)
 
