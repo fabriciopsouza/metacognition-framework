@@ -220,14 +220,16 @@
 - Pontos de carga (mapa de impacto no CHANGELOG): sessões do Claude Code, pelo bloco global que o `sync-global` gera; Codex,
   por `%USERPROFILE%\.codex\AGENTS.md`; Gemini CLI, por `%USERPROFILE%\.gemini\GEMINI.md`. Os dois resumos apontam para
   esta regra. Trabalhador externo chamado pelo orquestrador recebe só o pedido, como revisor ou executor de tarefa fechada.
+
 ## 12. Status report semanal: toda segunda-feira (dono, 28/11/2026)
 
-- Vale para todo projeto ativo. O status report segue `guia/STATUS-REPORT-COM-FEEDBACK.md`: acompanhamento de ações mais
+- Vale para todos os projetos ativos. O status report segue `guia/STATUS-REPORT-COM-FEEDBACK.md`: acompanhamento de ações mais
   feedback construído (fato, impacto, pedido, prazo, consequência), em tabelas e checklists, mostrando o que trava, onde e
   quanto avançou.
 - O report tem duas partes: a **página publicada**, sempre no mesmo link, e o **PDF** com o link da página no rodapé, que o
   agente gera e abre para o dono lembrar de enviar.
 - Toda segunda-feira às 08:00, uma tarefa agendada local sincroniza, abre a página e lembra o dono. Quando o dono diz
   "status report semanal", o agente atualiza o ciclo, republica a página e gera e abre o PDF. Envio externo é do dono.
-- Projeto novo registra a própria tarefa (nome, pasta, página) e anota o comando de conferência no handoff.
+- Projeto novo registra a própria tarefa (nome, pasta, página) e anota no handoff o comando de conferência
+  (`Get-ScheduledTask -TaskName <nome>` e `(Get-ScheduledTaskInfo -TaskName <nome>).NextRunTime`).
 <!-- framework:global:fim -->

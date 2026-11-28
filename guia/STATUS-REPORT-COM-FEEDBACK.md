@@ -51,7 +51,7 @@ Transformar o acompanhamento de ações em feedback acionável. Cada bloqueio vi
 
 ## 6. Rotina semanal (toda segunda-feira)
 
-Padrão para todos os projetos (regra global 12). O report tem duas partes: a página publicada, sempre no mesmo link, e o PDF,
+Padrão para todos os projetos ativos (regra global 12). O report tem duas partes: a página publicada, sempre no mesmo link, e o PDF,
 com o link da página no rodapé.
 
 | # | Quem | Ação |

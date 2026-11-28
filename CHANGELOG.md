@@ -10,8 +10,10 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 - `.claude/global/CLAUDE-global.md`: regra 12, ordem do dono de 28/11/2026. Status report toda segunda-feira, em todos os
   projetos: página publicada no mesmo link e PDF aberto para o dono enviar; tarefa agendada local lembra às 08:00. [CONFIRMADO]
 - `guia/STATUS-REPORT-COM-FEEDBACK.md`: seção 6 nova (rotina semanal); a antiga seção 6 vira 7.
-- Mapa de impacto: bloco global gerado pelo `sync-global` (rodar após o merge); sem gate, hook ou canário novo (regra de
-  conduta); README e site sem mudança.
+- Mapa de impacto: (1) Claude Code: bloco global gerado por `.claude/hooks/sync-global.ps1` (rodar após o merge com
+  `pwsh -File .claude/hooks/sync-global.ps1` e conferir que `## 12. Status report semanal` aparece em `~/.claude/CLAUDE.md`);
+  (2) resumos do Codex (`~/.codex/AGENTS.md`) e do Gemini CLI (`~/.gemini/GEMINI.md`): sem mudança, porque a regra é de
+  conduta do agente com o dono e não muda papel de revisor; (3) sem gate, hook ou canário novo; README e site sem mudança.
 
 ### POP de status report com construção do feedback (28/11/2026)
 
