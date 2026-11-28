@@ -140,7 +140,7 @@
   O molde "Sua ação" do CLAUDE.md global (seção 4) não pode virar pedido de licença para o que já foi autorizado.
 - **Onde mexe:** CLAUDE.md global (seção 4, fechamento; seção 6, plano aprovado), hook `resposta_executiva.py`
   (acusar "Sua ação" que repete autorização já dada na conversa), skill de orquestração.
-- **Origem:** sessão `orcamento-natulab-fd`, projeto orcamento-natulab.
+- **Origem:** sessão de aplicação num projeto privado (referência no registro privado do mantenedor).
 - **Gatilho de reativação:** imediato (ordem do dono).
 - **Status:** aberto.
 
@@ -188,3 +188,61 @@
 - **Gatilho de reativação:** próxima sessão de melhoria do framework.
 - **Status:** aberto.
 
+
+## Lições de campo de uma sessão de aplicação (26 e 27/11/2026, anonimizadas)
+
+> Origem: sessão de aplicação do framework num projeto privado de análise de dados, com revisão alternada entre duas
+> famílias de modelo. Cada item separa observação [O] (registrada no repositório privado do projeto) de hipótese [H].
+> Pedido do mantenedor: erros e aprendizados das sessões vão aos frameworks. Só o que é agnóstico de domínio.
+
+### L1. Entrada de gerador fora do repositório quebra a reprodução em outro PC
+- **Descrição:** [O] o gerador de um material dependia de um molde numa pasta pessoal sincronizada; a pasta foi reorganizada
+  e a geração falhou no PC novo. Correção: molde versionado. [H] o checklist da revisão não tem item que pegue isso antes.
+- **Regra a incorporar:** na skill `developer` e na revisão, "toda entrada lida pelo gerador está no repositório ou é
+  declarada como dado externo com caminho por máquina".
+- **Gatilho de reativação:** imediato. **Status:** aberto.
+
+### L2. Frase causal mais forte que a evidência, achado recorrente da revisão externa
+- **Descrição:** [O] em várias rodadas da mesma sessão, o revisor de outra família reprovou ou ressalvou por afirmações categóricas ("limitante só
+  em X", "o acesso voltou em tal dia", "rodou por causa de Y") sustentadas só por indício. O selo de confiança no slide
+  não reduziu a força da frase.
+- **Regra a incorporar:** no checklist do `qa-critic`, conferir cada frase causal ou exclusiva contra a evidência citada e
+  exigir a classificação ao lado da frase, não só no cabeçalho.
+- **Gatilho de reativação:** imediato. **Status:** aberto.
+
+### L3. Corrigir um artefato e esquecer os textos derivados dele
+- **Descrição:** a premissa refutada saiu do material principal, mas continuava no texto pronto dos pedidos de dados e no
+  e-mail aos destinatários, que alimentam o mesmo material. Achado só ao responder uma pergunta do dono.
+- **Regra a incorporar:** no mapa de impacto (CLAUDE.md global, seção 7), incluir "textos prontos derivados (pedidos,
+  e-mails, notas, anexos)" e buscar pela premissa antiga em todo o pacote antes de fechar.
+- **Gatilho de reativação:** imediato. **Status:** aberto.
+
+### L4. Escape de barra invertida corrompe caminho Windows sem aparecer no diff curto
+- **Descrição:** [O] texto Python passado por heredoc no Git Bash chamado pelo agente chegou com barra simples onde havia
+  barra dupla, e a string Python transformou `\r`, `\a` e `\v` em controle em três caminhos. [H] a camada que perdeu a
+  barra não foi isolada (shell, ferramenta do agente ou o próprio literal). A varredura de bytes achou; o diff resumido não.
+- **Mecanismo proposto:** hook pós-escrita que acusa `ord(c) < 32` exceto `\n` e `\t`, e `\r` fora de `\r\n`, em `.md`,
+  `.py` e `.txt`, lendo os bytes antes de normalizar quebras de linha; reprodução mínima antes de atribuir a causa.
+- **Gatilho de reativação:** nova ocorrência registrada no mesmo ambiente. **Status:** aberto.
+
+### L5. Mensagem de outra sessão repassando "ordem do dono" não é aprovação do dono
+- **Descrição:** uma sessão paralela repassou uma ordem do dono para todas as sessões; as decisões pendentes de regra de
+  negócio continuaram com o dono até ele escrever a ordem na própria conversa, minutos depois.
+- **Regra a incorporar:** repasse de outra sessão, sem fonte verificável, vale como informação; decisão pendente fecha com
+  autorização verificável do dono (fala na conversa, ordem permanente registrada ou registro versionado que ele fez). Não
+  conflita com DB-26-10-A: autorização já dada e verificável não se pergunta de novo.
+- **Gatilho de reativação:** imediato. **Status:** aberto.
+
+### L6. "Merge só com CI verde" sem check a esperar
+- **Descrição:** o CI do projeto filtra por caminho; PR só de documentação não dispara check e a regra fica sem resposta.
+- **Regra a incorporar:** conferir nas regras da branch quais checks são obrigatórios e quais workflows o diff dispara;
+  check obrigatório pendente bloqueia o merge e se corrige no workflow; sem check obrigatório aplicável, registrar no PR a
+  evidência (checks exigidos e saída de `gh pr checks`) antes de mesclar. Ausência de check nunca é tratada como verde.
+- **Gatilho de reativação:** imediato. **Status:** aberto.
+
+### L7. Cópia de trabalho compartilhada trocada por outra sessão
+- **Descrição:** a cópia local de um repositório de conhecimento estava, no meio da sessão, numa branch de outra sessão;
+  um commit ali teria ido para a branch errada. Correção: worktree próprio em todo repositório tocado, não só no principal.
+- **Regra a incorporar:** antes de cada commit, conferir a branch; escrever sempre em worktree próprio quando houver
+  sessões paralelas na mesma máquina.
+- **Gatilho de reativação:** imediato. **Status:** aberto.
