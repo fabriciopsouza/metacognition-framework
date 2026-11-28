@@ -14,8 +14,9 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
   Identificadores vêm da biblioteca da empresa (regra 9); revisor só leitura não executa a regra. [CONFIRMADO por teste
   em 28/11/2026: `lookupContext` lê tabela e documento de conjunto de contexto; a referência direta ao conjunto na API
   conversacional foi aceita e ignorada; o contexto passado em `systemInstruction` foi usado na resposta]
-- Substitui a regra 10 "IA consultora" que outra sessão gravou direto em `~/.claude/CLAUDE.md` (fora da fonte, perdida no
-  próximo `sync-global`).
+- Convive com a regra 10 "IA consultora" que outra sessão gravou em `~/.claude/CLAUDE.md`, na seção local "Regras locais do
+  dono", fora do bloco gerado (o `sync-global` não a apaga). A regra 11 cobre e amplia a 10; retirar a 10 local é decisão
+  do dono.
 - Mapa de impacto: (1) Claude Code em qualquer repositório: bloco global gerado por `.claude/hooks/sync-global.ps1` (rodar
   após o merge e conferir a regra 11 em `~/.claude/CLAUDE.md`); (2) Codex: `~/.codex/AGENTS.md` (novo, fora do git, resumo
   que aponta para a regra); (3) Gemini CLI: `~/.gemini/GEMINI.md` (resumo no fim e ressalva de revisor no preâmbulo, fora do
