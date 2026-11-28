@@ -186,27 +186,29 @@
   "passar isso para todos os projetos/ repos como direcionamento perene para perguntas sobre o que ja existir, se nao
   existir, entao seguir do jeito que sempre fizemos, complemente, sempre deve ter um plano b"; "nao é pra olhar somente
   TABELAS. É pra olhar e usar os recursos do knowledge catalog via api se possivel, usar glossarios, usar context sets ou
-  pedir para o gemini usar, atualize isso para TODOS".
+  pedir para o gemini usar, atualize isso para TODOS"; "a intencao do gemini nao e responder somente com base na rag, mas
+  nas tabelas, conhecimento, context sets"; "todas as ias e frameworks devem receber esta orientação".
 - **Pergunta sobre o que já existe** (regra, norma, processo, conceito, termo, tabela, campo, decisão, entrega anterior):
-  consultar os recursos da empresa antes de varrer arquivos, nesta ordem, parando no primeiro que responder com lastro:
-  1. **Knowledge Catalog pela API** (Dataplex, `dataplex.googleapis.com/v1`): glossários e termos, ligações termo-coluna
-     (`entryLinks`), busca no catálogo, entradas e context sets. Na Vibra: glossário `vibra_kb_glossario`, projeto `vibra-dtan-spoke-eso-dev`, us-central1
-     (leitura conferida em 28/11/2026: `GET .../glossaries/vibra_kb_glossario/terms` com token do gcloud, HTTP 200);
-     scripts de referência no `%USERPROFILE%\vibra-kb-rag\scripts` (`create_glossario_dataplex.py`,
-     `audita_termos_glossario.py`, `aplica_conjunto_contexto_kc.py`). Só leitura (GET, search, lookup); gravar no catálogo
-     é da sessão dona (vibra-kb-rag).
-  2. **IA consultora com os recursos Google**, pedindo que use o catálogo, os glossários, os context sets e os RAGs. Na
-     Vibra é o agente de dados Gemini do BigQuery (Conversational Analytics API, location `global`; não é Vertex, que dá
-     403): no vibra-kb-rag, `python scripts/gemini_chat.py --grounded "<pergunta>" [dataset.tabela ...]`, gcloud no PATH;
-     padrão `vibra_kb.chunks`. O índice dos mapas de processo é a Lista Mestra de padrões.
-  3. **Biblioteca de conhecimento** (regra 9).
-  4. **Se não existir ou não houver lastro:** seguir do jeito de sempre (repositórios, fontes oficiais, consulta ao dado,
-     pesquisa) e complementar: registrar o achado (regra 9) e, quando couber, pedir à sessão dona que o leve ao catálogo.
-- **Plano B obrigatório:** declarar a alternativa antes de consultar. Recurso indisponível (403, cota, erro, sem gcloud,
-  sem API) → próximo passo da ordem, relatando o erro real. Resposta sem trecho citado → INFERIDO, conferida no passo 4.
-  Empresa sem catálogo ou sem consultora → começar pelo passo que existir.
-- A resposta consultiva é conferida no trecho citado (código e item), classificada e citada como fonte; nunca substitui a
-  QA nem é evidência sozinha. O que se envia à consultora respeita a classe de dado do projeto.
+  consultar os recursos da empresa do projeto antes de varrer arquivos, parando no primeiro passo que responder com lastro.
+  A empresa e os identificadores (projeto, catálogo, glossário, conjunto de contexto, consultora) saem da biblioteca da
+  empresa, resolvida como na regra 9; nunca de outra empresa.
+  1. **Catálogo de dados da empresa pela API, só leitura.** No Google Cloud (Knowledge Catalog, `dataplex.googleapis.com/v1`):
+     `searchEntries` acha os ativos; `lookupContext` lê o contexto de até 10 entradas (tabela, documento de conjunto de
+     contexto, termo), sempre pelo nome completo da entrada; `entries.get` e a listagem de termos do glossário leem o resto.
+     O recall da biblioteca (regra 9) roda no mesmo passo.
+  2. **IA consultora com os recursos da empresa, levando o contexto do passo 1.** O texto lido no catálogo (glossário,
+     conjunto de contexto, metadados) vai junto no pedido, por exemplo no `systemInstruction` da API conversacional do
+     Gemini, com as tabelas como fonte de dados. Não presumir que a consultora busca o catálogo sozinha: num teste de
+     28/11/2026, a referência direta ao conjunto de contexto foi aceita pela API e ignorada na resposta.
+  3. **Sem lastro:** seguir do jeito de sempre (repositórios, fontes oficiais, consulta ao dado, pesquisa) e complementar:
+     registrar o achado na biblioteca (regra 9) e pedir à sessão dona do catálogo que o inclua.
+- **Plano B obrigatório,** declarado antes de consultar: recurso indisponível (403, cota, erro, sem credencial, sem API) →
+  próximo passo, relatando o erro real; resposta sem trecho citado → INFERIDO, conferida no passo 3; empresa sem catálogo ou
+  sem consultora → começar pelo passo que existir.
+- Só leitura: gravar no catálogo, no glossário ou no conjunto de contexto é da sessão dona. A resposta consultiva é conferida
+  no trecho citado (código e item), classificada e citada como fonte; nunca substitui a QA nem é evidência sozinha.
+- O que vai à consultora segue a classe de dado do projeto (`.agent/classe-de-dado.json` ou a regra do CLAUDE.md do projeto).
+- **Revisor em papel só leitura** (QA, edge-case-hunter, pré-revisão) não executa esta regra: usa só o material do pedido.
 - Vale para toda IA e todo framework (Claude, Codex, Gemini, metacognition-framework, orquestrador multi-IA). Fora do Claude
-  Code, a mesma regra vai em `%USERPROFILE%\.codex\AGENTS.md` e `%USERPROFILE%\.gemini\GEMINI.md`.
+  Code, um resumo que aponta para esta regra vai em `%USERPROFILE%\.codex\AGENTS.md` e `%USERPROFILE%\.gemini\GEMINI.md`.
 <!-- framework:global:fim -->

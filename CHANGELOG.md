@@ -8,10 +8,12 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 ### Regra global 11 — perguntar primeiro ao que já existe, com plano B (28/11/2026)
 
 - `.claude/global/CLAUDE-global.md`: regra 11, ordem do dono de 28/11/2026, para toda IA e todo repositório. Pergunta sobre o
-  que já existe vai primeiro ao Knowledge Catalog pela API (glossários, `entryLinks`, busca, context sets), depois à IA
-  consultora com os recursos Google (na Vibra, agente de dados Gemini do BigQuery, não Vertex), depois à biblioteca; sem
-  lastro, segue o caminho de sempre e registra. Plano B declarado antes de consultar. [CONFIRMADO: leitura do glossário
-  `vibra_kb_glossario` pela API, HTTP 200, 28/11/2026]
+  que já existe vai primeiro ao catálogo de dados da empresa pela API, só leitura (`searchEntries`, `lookupContext` com nome
+  completo da entrada, glossário), com o recall da biblioteca; depois à IA consultora levando o contexto lido no pedido
+  (ex.: `systemInstruction`); sem lastro, segue o caminho de sempre e registra. Plano B declarado antes de consultar.
+  Identificadores vêm da biblioteca da empresa (regra 9); revisor só leitura não executa a regra. [CONFIRMADO por teste
+  em 28/11/2026: `lookupContext` lê tabela e documento de conjunto de contexto; a referência direta ao conjunto na API
+  conversacional foi aceita e ignorada; o contexto passado em `systemInstruction` foi usado na resposta]
 - Substitui a regra 10 "IA consultora" que outra sessão gravou direto em `~/.claude/CLAUDE.md` (fora da fonte, perdida no
   próximo `sync-global`).
 
