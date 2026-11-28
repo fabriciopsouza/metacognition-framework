@@ -5,6 +5,16 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### Regra global 11 — perguntar primeiro ao que já existe, com plano B (28/11/2026)
+
+- `.claude/global/CLAUDE-global.md`: regra 11, ordem do dono de 28/11/2026, para toda IA e todo repositório. Pergunta sobre o
+  que já existe vai primeiro ao Knowledge Catalog pela API (glossários, `entryLinks`, busca, context sets), depois à IA
+  consultora com os recursos Google (na Vibra, agente de dados Gemini do BigQuery, não Vertex), depois à biblioteca; sem
+  lastro, segue o caminho de sempre e registra. Plano B declarado antes de consultar. [CONFIRMADO: leitura do glossário
+  `vibra_kb_glossario` pela API, HTTP 200, 28/11/2026]
+- Substitui a regra 10 "IA consultora" que outra sessão gravou direto em `~/.claude/CLAUDE.md` (fora da fonte, perdida no
+  próximo `sync-global`).
+
 ### ADR-134 — Correção da conferência por invariante (B2, 25/11/2026)
 
 - `tools/conferir_invariante.py`, com `--decimal virgula`: milhar malformado ("1.2,5", "1.23") era lido como outro número;

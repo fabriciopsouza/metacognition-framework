@@ -179,4 +179,34 @@
 - Fato que afeta outra sessão (decisão do dono, contrato, incidente) vai para o quadro **e** por mensagem às
   afetadas. O quadro só se edita com `Edit` (recusa gravar sobre escrita alheia); nunca `Write` nem shell.
 - Limite: sessão fora do Claude Code (outra IDE, Codex) não carrega esta regra; o dono avisa a ela.
+
+## 11. Perguntar primeiro ao que já existe, com plano B (dono, 28/11/2026)
+
+- Dono, literal: "usem tb o gemini como apoio e ia consutora [...] assim vc nao gasta tokens teus procurando no material";
+  "passar isso para todos os projetos/ repos como direcionamento perene para perguntas sobre o que ja existir, se nao
+  existir, entao seguir do jeito que sempre fizemos, complemente, sempre deve ter um plano b"; "nao é pra olhar somente
+  TABELAS. É pra olhar e usar os recursos do knowledge catalog via api se possivel, usar glossarios, usar context sets ou
+  pedir para o gemini usar, atualize isso para TODOS".
+- **Pergunta sobre o que já existe** (regra, norma, processo, conceito, termo, tabela, campo, decisão, entrega anterior):
+  consultar os recursos da empresa antes de varrer arquivos, nesta ordem, parando no primeiro que responder com lastro:
+  1. **Knowledge Catalog pela API** (Dataplex, `dataplex.googleapis.com/v1`): glossários e termos, ligações termo-coluna
+     (`entryLinks`), busca no catálogo, entradas e context sets. Na Vibra: glossário `vibra_kb_glossario`, projeto `vibra-dtan-spoke-eso-dev`, us-central1
+     (leitura conferida em 28/11/2026: `GET .../glossaries/vibra_kb_glossario/terms` com token do gcloud, HTTP 200);
+     scripts de referência no `%USERPROFILE%\vibra-kb-rag\scripts` (`create_glossario_dataplex.py`,
+     `audita_termos_glossario.py`, `aplica_conjunto_contexto_kc.py`). Só leitura (GET, search, lookup); gravar no catálogo
+     é da sessão dona (vibra-kb-rag).
+  2. **IA consultora com os recursos Google**, pedindo que use o catálogo, os glossários, os context sets e os RAGs. Na
+     Vibra é o agente de dados Gemini do BigQuery (Conversational Analytics API, location `global`; não é Vertex, que dá
+     403): no vibra-kb-rag, `python scripts/gemini_chat.py --grounded "<pergunta>" [dataset.tabela ...]`, gcloud no PATH;
+     padrão `vibra_kb.chunks`. O índice dos mapas de processo é a Lista Mestra de padrões.
+  3. **Biblioteca de conhecimento** (regra 9).
+  4. **Se não existir ou não houver lastro:** seguir do jeito de sempre (repositórios, fontes oficiais, consulta ao dado,
+     pesquisa) e complementar: registrar o achado (regra 9) e, quando couber, pedir à sessão dona que o leve ao catálogo.
+- **Plano B obrigatório:** declarar a alternativa antes de consultar. Recurso indisponível (403, cota, erro, sem gcloud,
+  sem API) → próximo passo da ordem, relatando o erro real. Resposta sem trecho citado → INFERIDO, conferida no passo 4.
+  Empresa sem catálogo ou sem consultora → começar pelo passo que existir.
+- A resposta consultiva é conferida no trecho citado (código e item), classificada e citada como fonte; nunca substitui a
+  QA nem é evidência sozinha. O que se envia à consultora respeita a classe de dado do projeto.
+- Vale para toda IA e todo framework (Claude, Codex, Gemini, metacognition-framework, orquestrador multi-IA). Fora do Claude
+  Code, a mesma regra vai em `%USERPROFILE%\.codex\AGENTS.md` e `%USERPROFILE%\.gemini\GEMINI.md`.
 <!-- framework:global:fim -->
