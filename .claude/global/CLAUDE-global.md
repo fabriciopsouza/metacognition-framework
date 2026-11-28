@@ -238,9 +238,11 @@
 - Dono, literal: "os emails devem ter alguma identificaçaõ padronizada/ codigo de projeto, para facilitar acompanhamento e
   identificacao / recuperacao ao longo do tempo, inclusive pela IA".
 - Todo e-mail, mensagem de Teams ou chamado que o agente redige para envio começa o assunto com
-  `[<PROJ>-<TIPO>-<AAAAMMDD>-<NN>]`: PROJ = código curto do projeto, registrado no README ou no CLAUDE.md do projeto (ex.:
-  `GUIA`); TIPO = `SR` status report, `PED` pedido ou acesso, `DEC` decisão, `INF` informe, `FB` feedback; AAAAMMDD = data
-  da redação; NN = sequência do dia no projeto.
+  `[<PROJ>-<TIPO>-<AAAAMMDD>-<NN>]` (Teams, que não tem assunto: na primeira linha da mensagem). PROJ = código curto do
+  projeto, único entre os projetos do dono, registrado no README ou no CLAUDE.md do projeto (ex.: `GUIA`); TIPO = `SR` status
+  report, `PED` pedido ou acesso, `DEC` decisão, `INF` informe ou ata, `FB` feedback; AAAAMMDD = data da redação; NN = a partir
+  de 01, sequência única do dia no projeto (todos os tipos), tirada do registro de envio; número de rascunho descartado não
+  se reaproveita.
 - O corpo termina com `Código: <código> · Projeto <nome>`. Resposta e reenvio mantêm o código.
 - O registro de envio do projeto tem a coluna Código; o agente busca por ela para recuperar o histórico.
 - Projeto sem código: o agente propõe um (sigla do repositório, maiúsculas, até 8 letras), registra no README e avisa o dono.
