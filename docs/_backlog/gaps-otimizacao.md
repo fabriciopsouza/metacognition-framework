@@ -144,6 +144,51 @@
 - **Gatilho de reativação:** imediato (ordem do dono).
 - **Status:** aberto.
 
+## Débitos de uma validação de dados com revisão multi-modelo (27/11/2026)
+
+### DB-27-11-A. Ledger de QA grava no repositório errado
+- **O que acontece:** `tools/qa_evidence.py --junction` grava em `_meta/qa/junctions/` do framework mesmo quando a sessão
+  trabalha em outro repositório. Aconteceu em toda junção de uma rodada longa (mais de 5 vezes), e o agente moveu o arquivo
+  à mão a cada vez.
+- **Correção proposta:** gravar no repositório do artefato (raiz git do `--artefato`), com o framework só como último recurso
+  e aviso visível.
+- **Onde mexe:** `tools/qa_evidence.py` e seu canário.
+- **Origem:** sessão de validação de dados, 27/11/2026.
+- **Gatilho de reativação:** próxima sessão de melhoria do framework.
+- **Status:** aberto.
+
+### DB-27-11-B. Suíte local passa de 10 minutos e o status sai "sem saída"
+- **O que acontece:** `tools/post_canary_status.py` roda a suíte inteira; com o limite padrão do shell, ela é cortada e o
+  status `canarios-local` vai como `failure` "sem saída", travando o merge sem causa visível.
+- **Correção proposta:** documentar a execução em segundo plano no próprio script e na mensagem de falha; distinguir "suíte
+  cortada por tempo" de "suíte reprovou".
+- **Onde mexe:** `tools/post_canary_status.py`, `tools/run_canaries.py`.
+- **Origem:** sessão de validação de dados, 27/11/2026.
+- **Gatilho de reativação:** próxima sessão de melhoria do framework.
+- **Status:** aberto.
+
+### DB-27-11-C. Prescrição do revisor é hipótese, não ordem
+- **O que acontece:** uma revisão adversarial mandou trocar um filtro de data; o autor aplicou, e o confronto com a fonte
+  real mostrou que a forma original estava certa. A revisão seguinte mandou outra margem, também errada.
+- **Correção proposta:** na skill `qa-critic`, toda correção prescrita traz a evidência executada que a sustenta; sem ela,
+  o autor testa contra a fonte antes de aplicar e registra o resultado.
+- **Onde mexe:** `.agent/skills/qa-critic/SKILL.md`, `.claude/agents/qa-critic.md`.
+- **Origem:** sessão de validação de dados, 27/11/2026.
+- **Gatilho de reativação:** próxima sessão de melhoria do framework.
+- **Status:** aberto.
+
+### DB-27-11-D. Comparador declarou "sem divergência" sobre cobertura pequena
+- **O que acontece:** um motor de confronto limitava a comparação ao trecho que a fonte trouxe e dizia "sem divergência"
+  com 2% do universo comparado. Normalizador que não entende um valor devolvia vazio, e vazio dos dois lados contava como
+  igual. A revisão em modelo de tier superior achou os dois furos; a de tier inferior, não.
+- **Correção proposta:** na skill `validation-reporting`, cobertura (linhas fora do trecho, corte da fonte, regra sem caso)
+  é saída obrigatória e impede "validado"; valor ininteligível nunca é igual a outro.
+- **Onde mexe:** `_shared/validation-reporting/SKILL.md`.
+- **Origem:** sessão de validação de dados, 27/11/2026.
+- **Gatilho de reativação:** próxima sessão de melhoria do framework.
+- **Status:** aberto.
+
+
 ## Lições de campo de uma sessão de aplicação (26 e 27/11/2026, anonimizadas)
 
 > Origem: sessão de aplicação do framework num projeto privado de análise de dados, com revisão alternada entre duas
