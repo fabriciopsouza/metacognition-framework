@@ -5,6 +5,16 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### Regra global 13 — código padronizado em comunicados (28/11/2026)
+
+- `.claude/global/CLAUDE-global.md`: regra 13, ordem do dono de 28/11/2026. E-mail, Teams ou chamado redigido para envio leva
+  `[<PROJ>-<TIPO>-<AAAAMMDD>-<NN>]` no início do assunto e `Código: <código> · Projeto <nome>` no fim do corpo; registro de
+  envio com a coluna Código. [CONFIRMADO]
+- `guia/STATUS-REPORT-COM-FEEDBACK.md`: campo Código no molde do feedback e item no checklist.
+- Mapa de impacto: bloco global gerado pelo `sync-global` (rodar após o merge); sem gate, hook ou canário novo (regra de
+  conduta); README e site sem mudança. Codex e Gemini: resumo acrescentado em `%USERPROFILE%\.codex\AGENTS.md` e
+  `%USERPROFILE%\.gemini\GEMINI.md` (cópia anterior em `*.bak-20261128`). Orquestrador multi-IA: avisado por mensagem às sessões.
+
 ### Regra global 12 — status report semanal (28/11/2026)
 
 - `.claude/global/CLAUDE-global.md`: regra 12, ordem do dono de 28/11/2026. Status report toda segunda-feira, em todos os

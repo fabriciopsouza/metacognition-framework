@@ -232,4 +232,16 @@
   "status report semanal", o agente atualiza o ciclo, republica a página e gera e abre o PDF. Envio externo é do dono.
 - Projeto novo registra a própria tarefa (nome, pasta, página) e anota no handoff o comando de conferência
   (`Get-ScheduledTask -TaskName <nome>` e `(Get-ScheduledTaskInfo -TaskName <nome>).NextRunTime`).
+
+## 13. Código padronizado em comunicados (dono, 28/11/2026)
+
+- Dono, literal: "os emails devem ter alguma identificaçaõ padronizada/ codigo de projeto, para facilitar acompanhamento e
+  identificacao / recuperacao ao longo do tempo, inclusive pela IA".
+- Todo e-mail, mensagem de Teams ou chamado que o agente redige para envio começa o assunto com
+  `[<PROJ>-<TIPO>-<AAAAMMDD>-<NN>]`: PROJ = código curto do projeto, registrado no README ou no CLAUDE.md do projeto (ex.:
+  `GUIA`); TIPO = `SR` status report, `PED` pedido ou acesso, `DEC` decisão, `INF` informe, `FB` feedback; AAAAMMDD = data
+  da redação; NN = sequência do dia no projeto.
+- O corpo termina com `Código: <código> · Projeto <nome>`. Resposta e reenvio mantêm o código.
+- O registro de envio do projeto tem a coluna Código; o agente busca por ela para recuperar o histórico.
+- Projeto sem código: o agente propõe um (sigla do repositório, maiúsculas, até 8 letras), registra no README e avisa o dono.
 <!-- framework:global:fim -->

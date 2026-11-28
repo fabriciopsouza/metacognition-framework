@@ -37,6 +37,7 @@ Transformar o acompanhamento de ações em feedback acionável. Cada bloqueio vi
 | Prazo | Data pedida, motivo e data de envio coerente com o prazo |
 | Consequência | O que acontece sem atendimento (contorno, atraso, risco) |
 | Próximo checkpoint | Data da próxima verificação |
+| Código | No início do assunto, `[<PROJ>-<TIPO>-<AAAAMMDD>-<NN>]`; no fim do corpo, `Código: <código> · Projeto <nome>` (regra global 13) |
 
 ## 5. Checklist do status report
 
@@ -46,7 +47,8 @@ Transformar o acompanhamento de ações em feedback acionável. Cada bloqueio vi
 - [ ] Todo bloqueio crítico ou alto com feedback construído
 - [ ] Pedido sem resposta escalado um degrau
 - [ ] Cronograma atualizado com o efeito dos bloqueios, com checkpoint no ciclo de bloqueio crítico
-- [ ] Envio registrado (data, canal, destinatário) ou pendente de ordem do dono
+- [ ] Cada e-mail com o código padronizado no assunto e no fim do corpo (regra global 13)
+- [ ] Envio registrado (código, data, canal, destinatário) ou pendente de ordem do dono
 - [ ] Biblioteca de conhecimento: registrado ou "nada a registrar"
 
 ## 6. Rotina semanal (toda segunda-feira)
