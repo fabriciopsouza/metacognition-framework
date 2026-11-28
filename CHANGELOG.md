@@ -5,6 +5,11 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### POP de status report com construção do feedback (28/11/2026)
+
+- `guia/STATUS-REPORT-COM-FEEDBACK.md`: status report = acompanhamento de ações + feedback construído (fato, impacto, pedido, prazo, consequência, checkpoint), com escada de escalonamento e contagem de bloqueios por tipo. Pedido do dono de espelhar o método em todos os frameworks e repositórios. [CONFIRMADO]
+- Registra a orientação de consultar primeiro a IA consultora com os recursos da empresa (RAG por API) na pesquisa de domínio, com conferência na fonte. A regra está no CLAUDE.md global, regra 10, desde 28/11/2026. [CONFIRMADO]
+
 ### ADR-134 — Correção da conferência por invariante (B2, 25/11/2026)
 
 - `tools/conferir_invariante.py`, com `--decimal virgula`: milhar malformado ("1.2,5", "1.23") era lido como outro número;

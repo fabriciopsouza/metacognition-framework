@@ -77,6 +77,7 @@ skill-librarian · evals-engineer · governance-lead.
 - **Comece aqui:** `guia/INSTALAR-NO-VSCODE.md` (instalar) e `guia/SETUP.md` (3 modos).
 - **Quem lê o quê:** `guia/ORIENTACAO.md` (humano × IA).
 - **Uso diário:** `guia/GUIA-EQUIPE.md` · **Revisar repo:** `guia/COMO-REVISAR-OUTRO-REPO.md`.
+- **Status report com feedback:** `guia/STATUS-REPORT-COM-FEEDBACK.md` (acompanhamento + feedback construído).
 - **Git/versão:** `guia/GIT-VERSIONAMENTO.md` · **Referências:** `guia/REFERENCIAS.md`.
 - **Resiliência de acesso:** `guia/RESILIENCIA-ACESSO.md` (recovery de conta > chave local + push cedo).
 - **Versão web:** `guia/web/index.html` (abre no navegador).
