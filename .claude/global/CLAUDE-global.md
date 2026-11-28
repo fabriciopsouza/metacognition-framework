@@ -190,7 +190,8 @@
   nas tabelas, conhecimento, context sets"; "todas as ias e frameworks devem receber esta orientação".
 - **Pergunta sobre o que já existe** (regra, norma, processo, conceito, termo, tabela, campo, decisão, entrega anterior):
   consultar os recursos da empresa do projeto antes de varrer arquivos, parando no primeiro passo que responder com lastro.
-  0. **Resolver a empresa pela regra 9**, antes de tudo; sem resolução, aplicar a regra 9 (perguntar), nunca escolher.
+  0. **Resolver a empresa pela regra 9**, antes de tudo; sem resolução, aplicar a regra 9 (perguntar no fim da resposta,
+     regra 4), nunca escolher.
      Os identificadores (projeto, catálogo, glossário, conjunto de contexto, consultora) saem da biblioteca dessa empresa.
   1. **Biblioteca e catálogo de dados da empresa, só leitura.** O recall da biblioteca (regra 9) roda sempre, mesmo que o
      catálogo falhe. No Google Cloud (Knowledge Catalog, `dataplex.googleapis.com/v1`): `searchEntries` acha os ativos;
