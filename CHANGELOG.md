@@ -5,6 +5,14 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### Regra global 12 — status report semanal (28/11/2026)
+
+- `.claude/global/CLAUDE-global.md`: regra 12, ordem do dono de 28/11/2026. Status report toda segunda-feira, em todos os
+  projetos: página publicada no mesmo link e PDF aberto para o dono enviar; tarefa agendada local lembra às 08:00. [CONFIRMADO]
+- `guia/STATUS-REPORT-COM-FEEDBACK.md`: seção 6 nova (rotina semanal); a antiga seção 6 vira 7.
+- Mapa de impacto: bloco global gerado pelo `sync-global` (rodar após o merge); sem gate, hook ou canário novo (regra de
+  conduta); README e site sem mudança.
+
 ### POP de status report com construção do feedback (28/11/2026)
 
 - `guia/STATUS-REPORT-COM-FEEDBACK.md`: status report = acompanhamento de ações + feedback construído (fato, impacto, pedido, prazo, consequência, checkpoint), com escada de escalonamento e contagem de bloqueios por tipo. Pedido do dono de espelhar o método em todos os frameworks e repositórios. [CONFIRMADO]

@@ -49,7 +49,26 @@ Transformar o acompanhamento de ações em feedback acionável. Cada bloqueio vi
 - [ ] Envio registrado (data, canal, destinatário) ou pendente de ordem do dono
 - [ ] Biblioteca de conhecimento: registrado ou "nada a registrar"
 
-## 6. Relação com o resto do framework
+## 6. Rotina semanal (toda segunda-feira)
+
+Padrão para todos os projetos (regra global 12). O report tem duas partes: a página publicada, sempre no mesmo link, e o PDF,
+com o link da página no rodapé.
+
+| # | Quem | Ação |
+|---|---|---|
+| 1 | Tarefa agendada (segunda, 08:00, usuário conectado) | Sincroniza, se o projeto tiver sincronização; abre a página; grava um arquivo de lembrete; mostra o lembrete |
+| 2 | Dono | Abre a sessão no repositório e diz "status report semanal" |
+| 3 | Agente | Cria a pasta do ciclo e atualiza o quadro de ações, os bloqueios, o feedback e o cronograma |
+| 4 | Agente | Republica a página no mesmo link |
+| 5 | Agente | Gera e abre o PDF, com o link da página no rodapé |
+| 6 | Agente | Revisão adversarial, commit e PR |
+| 7 | Dono | Confere, envia e registra o envio |
+
+Cuidados: um lembrete deixado aberto bloqueia a tarefa e pode pular a semana seguinte; projeto sem sincronização desliga essa
+etapa. Implementação de referência (scripts de registro da tarefa, lembrete e PDF) fica no repositório do projeto que a criou,
+não aqui.
+
+## 7. Relação com o resto do framework
 
 - O status report derivado (`docs/projeto/STATUS-REPORT.md`, gerado por `tools/projeto_docs.py`) mostra o estado. Este POP acrescenta o feedback que destrava o estado.
 - Pesquisa de domínio pode ir primeiro à IA consultora com os recursos da empresa (RAG corporativo por API), que economiza a varredura de arquivos. A resposta é conferida na fonte antes de virar CONFIRMADO e não substitui a revisão adversarial.
