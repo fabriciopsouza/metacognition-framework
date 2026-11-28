@@ -5,6 +5,11 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### POP de status report com construção do feedback (28/11/2026)
+
+- `guia/STATUS-REPORT-COM-FEEDBACK.md`: status report = acompanhamento de ações + feedback construído (fato, impacto, pedido, prazo, consequência, checkpoint), com escada de escalonamento e contagem de bloqueios por tipo. Pedido do dono de espelhar o método em todos os frameworks e repositórios. [CONFIRMADO]
+- Registra a orientação de consultar primeiro a IA consultora com os recursos da empresa (RAG por API) na pesquisa de domínio, com conferência na fonte. A orientação está na regra 11 global (perguntar primeiro ao que já existe), que cobre e amplia a regra 10 local, ambas de 28/11/2026. [CONFIRMADO]
+
 ### Regra global 11 — perguntar primeiro ao que já existe, com plano B (28/11/2026)
 
 - `.claude/global/CLAUDE-global.md`: regra 11, ordem do dono de 28/11/2026, para toda IA e todo repositório. Pergunta sobre o
