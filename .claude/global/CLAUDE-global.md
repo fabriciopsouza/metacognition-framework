@@ -245,5 +245,7 @@
   se reaproveita.
 - O corpo termina com `Código: <código> · Projeto <nome>`. Resposta e reenvio mantêm o código.
 - O registro de envio do projeto tem a coluna Código; o agente busca por ela para recuperar o histórico.
+- Comunicado anterior à regra recebe código retroativo com a data da redação original, o rótulo "atribuído em <data>,
+  retroativo" e uma linha no registro de envio.
 - Projeto sem código: o agente propõe um (sigla do repositório, maiúsculas, até 8 letras), registra no README e avisa o dono.
 <!-- framework:global:fim -->
