@@ -1,6 +1,6 @@
 # POP: status report com construção do feedback
 
-Versão 1.0 · 28/11/2026 · Origem: pedido do dono, que vale para todas as sessões, repositórios e IAs: "registrar a construção do feedback como método além de acompanhamento de ações, e espelhar este método nos frameworks e nos repositórios todos".
+Versão 1.0 · 28/11/2026 · Origem: diretriz do mantenedor, válida para todas as sessões, repositórios e IAs: a construção do feedback passa a ser método, além do acompanhamento de ações, e é espelhada nos frameworks e repositórios.
 
 ## 1. Objetivo
 
