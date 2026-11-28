@@ -5,6 +5,24 @@ Maturidade: [CONSOLIDADO] / [EMERGENTE]. Confiança: [CONFIRMADO] / [INFERIDO].
 
 ## [Não lançado]
 
+### Regra global 11 — perguntar primeiro ao que já existe, com plano B (28/11/2026)
+
+- `.claude/global/CLAUDE-global.md`: regra 11, ordem do dono de 28/11/2026, para toda IA e todo repositório. Pergunta sobre o
+  que já existe vai primeiro ao catálogo de dados da empresa pela API, só leitura (`searchEntries`, `lookupContext` com nome
+  completo da entrada, glossário), com o recall da biblioteca; depois à IA consultora levando o contexto lido no pedido
+  (ex.: `systemInstruction`); sem lastro, segue o caminho de sempre e registra. Plano B declarado antes de consultar.
+  Identificadores vêm da biblioteca da empresa (regra 9); revisor só leitura não executa a regra. [CONFIRMADO por teste
+  em 28/11/2026: `lookupContext` lê tabela e documento de conjunto de contexto; a referência direta ao conjunto na API
+  conversacional foi aceita e ignorada; o contexto passado em `systemInstruction` foi usado na resposta]
+- Convive com a regra 10 "IA consultora" que outra sessão gravou em `~/.claude/CLAUDE.md`, na seção local "Regras locais do
+  dono", fora do bloco gerado (o `sync-global` não a apaga). A regra 11 cobre e amplia a 10; retirar a 10 local é decisão
+  do dono.
+- Mapa de impacto: (1) Claude Code em qualquer repositório: bloco global gerado por `.claude/hooks/sync-global.ps1` (rodar
+  após o merge e conferir a regra 11 em `~/.claude/CLAUDE.md`); (2) Codex: `~/.codex/AGENTS.md` (novo, fora do git, resumo
+  que aponta para a regra); (3) Gemini CLI: `~/.gemini/GEMINI.md` (resumo no fim e ressalva de revisor no preâmbulo, fora do
+  git); (4) trabalhador externo do orquestrador: recebe só o pedido; nenhuma mudança; (5) `tools/check_rules_parity.py`:
+  PASS; hooks, canários, README e site: sem mudança necessária (regra de conduta, sem gate próprio).
+
 ### ADR-134 — Correção da conferência por invariante (B2, 25/11/2026)
 
 - `tools/conferir_invariante.py`, com `--decimal virgula`: milhar malformado ("1.2,5", "1.23") era lido como outro número;
